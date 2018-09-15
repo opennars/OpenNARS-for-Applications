@@ -25,19 +25,32 @@ For more on the topic, read: "Insufficient Knowledge and Resources — A Biologi
 
 Attention and structures to attend
 ----------------------------------
-What requirements do the structures need to fullfill that we manipulate in our mind for all kind of purposes? What exactly happens in our mind if we think about our blue planet and jump to the oceans? Is everything we think about something we directly observe, simply some kind of experience-replay? Or do we compose structures we have never seen before, based on what seems to make sense to compose in a given context? NARS, ALANN, and ANSNA take the latter position, also taking creativity as an essential property of AGI. But how are these structures represented? As some kind of composition of ID's (NARS compound terms), as bit vectors (HTM SDR's), as some kind of implicit, potentially temporally unstable, transient, state in firing patterns (spiking neural networks)? As a subset of collections of weights in an old-school deep neural network? ANSNA takes the position that SDR's might be the most efficient way to encode mental compositions, with some initial work to support sensorimotor-relevant subsets of cognitive logic like NAL without using explicit terms or symbols: http://aleph.sagemath.org/?z=eJy1Vttu4zYQfTfgfxg4QCoCzG1RFIVR76Jo-1CgXRR13oyFQVF0zMK6LEkl3W367x1eRFGxpXVaNA-xNJw5Z3g4M6Ism1oZUKwq6nI-m88udlJpQ6FkDRihSg2mhgdRCcWMKGD94-9faUDv8ISL3mtXK2hqIyoj2QHEQZT4CI2SaKge5jPrtUXQ1V9_hxctPwtYwZvbr7-dzxpV20RkXW3v0Hh7fXs3nxVih9TmHr2zipWCLOczwL-HQ50jSQfpjXIH1gdkFReCu_1TwrSqX9lY1w9-eWhD8s2dBfOSXPufjHw3yFActIBbt-ncMqLXg8jitkiAHmFFldc1ppozLbkVEurG6ovYXkgtjNPYtM1BgKh4XTgRrSDo_qusWp0xmneCBJ5Nyf7MbinbyA9XOf4jDkyOJBjA1sKcgrIgzxZkEkOLj-0Wcy9Rtt_wpzV-F4lXUHAbSiIjSdRWVo8YGd-v8V0oLaxTSO_eSnAiwZh5Es24Jc9yQpzG7-snMHsB77__xRcpIvxQV7xVytbmKtbWorcuAjOPlnHuPoqmQiLCGlPCUxMpR2frGHR4H8fvImiqAziCn8vmILnTOuVIzB2N7E3jTEncCbKLtQUROBIM3yelilDOdL9XQu_rQ-Ea95u-TO1i1jBl8IXu2sMBf8kSLjyQXaBgzcBZBXv2iBQtLpS1EnAHuTSaugNEGbTbqtTwtBdoUs7ufaDeuTeLBwxD7brw29Qt50JrW2NtmW1CLljVlyGd6QInNy_Cpnw944UbebBAlbitMrfXJSxoSOW6yggMzqDL8S0M1exbAEnuPzUjleJVtksx4KePLTu4ivhCRDfIvSWnrMfA4jZMVnrd5uYcJNQlGo46khGX3nzG0mpltkbz1JJbC7beH1tm7S-a0H4lnLYWZUGBRYN1XgCWa7Rkl8_U5bVCx4CYxGMhab8xWz2d87sFPb31AEASwlch5McIMcEhUD6CEOKdCiiv12cwQgJyQnDTK-BDJgS4mRbAx0_tfxIgPwKI2SEOixt5Bz4-VnwcgdPxfaG4s24rV3ZHaMnAjng42ryYLwflkZ5Ydau3ECir1P-IKJ2nnoCM4Jyx9QiAk9iqeYXXBryJFcIwvne3rKwQReu2TEAb0SwhcGCPwPOVbQvb1X3EFsfYE1MFlhXe_9qqoO6hwqWuyeVuTLouhhxfr-LdJD6cIKA9FjnJFXc-wTS4QnRj5jz6Dp6cZk_P7v9JIGEgxELGUsu3SnB7CVydPiw_AxgZDr507uVvvCEAJf1y6fqF5q4guo-O_Qp-Qi4lH0Wx9BXYfz1w3AQccmaKvq3-ZYa-oyn7jxny9IvCF2Fg8uHE5P0E8A9f3BYCUE56Ac7QIbi8Ro5TqnDaaUMot-LE4XeWRsNcYGqSdq2xHB1GMEAj5-X5uiMdKmHvoPPZPzTNvkM=&lang=sage
-A big question that remains unanswered is, according to what criteria are patterns considered, used, de-priorized, or even completely forgotten? The ALANN model by Tony Lofthouse provides the potentially most promising answer to that question. Having studied attention mechanisms for NARS, AERA, various FARG architectures (https://cogsci.indiana.edu/book.html), and others as discussed in Helgi Páll Helgason's Ph.D. thesis (see https://en.ru.is/media/td/Helgi_Pall_Helgason_PhD_CS_HR.pdf), and extensively tested a prototype of the ALANN system, it is likely everything necessary to solve the resource allocation problem in an artificial mind.
+What requirements do the structures need to fullfill that we manipulate in our mind for all kind of purposes? What exactly happens in our mind if we think about our blue planet and jump to the oceans? Is everything we think about something we directly observe, simply some kind of experience-replay? Or do we compose structures we have never seen before, based on what seems to make sense to compose in a given context? NARS, ALANN, and ANSNA take the latter position, also taking creativity as an essential property of AGI. But how are these structures represented? As some kind of composition of ID's (NARS compound terms), as bit vectors (HTM SDR's), as some kind of implicit, potentially temporally unstable, transient, state in firing patterns (spiking neural networks)? As a subset of collections of weights in an old-school deep neural network? ANSNA takes the position that SDR's might be the most efficient way to encode mental compositions, with some initial work to support sensorimotor-relevant subsets of cognitive logic like NAL without using explicit terms or symbols: https://bit.ly/2NfgHc7
+
+Given that, according to what criteria are patterns considered, used, de-priorized, or even completely forgotten? The ALANN model by Tony Lofthouse provides the potentially most promising answer to that question. Having studied attention mechanisms for NARS, AERA, various FARG architectures (https://cogsci.indiana.edu/book.html), and others as discussed in Helgi Páll Helgason's Ph.D. thesis (see https://en.ru.is/media/td/Helgi_Pall_Helgason_PhD_CS_HR.pdf), and extensively tested a prototype of the ALANN system, it is likely most complete solution to the resource allocation problem in an artificial mind.
 
 ANSNA in a nutshell
 -------------------
-- Concept-centric SDR-based memory structure
-- SDR-based representation of experienced and inferred structures.
-- Cognitive logic applied on SDR's, restricted to NAL7/8: sequences and implications to exploit and use correlations in inputs
-- ALANN control system
+- Overcoming symbolic limitations (space usage, inefficiency in matching) by the use of SDR encodings: SDR-based representation of experienced and inferred structures.
+- Concept-centric SDR-based memory structure to efficiently capture structure of the world.
+- Cognitive logic applied on SDR's rather than "symbols", restricted to NAL7/8: sequences and implications to exploit and use correlations in inputs.
+- ALANN control system.
+- Intended to be much simpler and orders of magnitudes more efficient for sensorimotor learning than OpenNARS could be. OpenNARS was designed to also work with high-level user input, for which case the compound term/symbol encodings for output etc., and tons of additional inference rule that slow the system down for such purposes are necessary.
 
+ANSNA the name
+--------------
+Adaptive - ALANN control model to obey AIKR and to solve the mental resource allocation problem.
+Neuro-Symbolic - "Sub-symbolic" SDR encodings, yet all advantages of cognitive logic.
+Network - Nodes learning conceptual structure while having several neural network properties, such as activation spreading.
+Agent - Goal to "close the loop", to learn conceptual knowledge from sensor data and to act according to own motivations.
 
-What ANSNA, NARS and ALANN have in common
------------------------------------------
+So what is ANSNA
+----------------
+Neural network, or reasoning system? I don't know, maybe something in-between, or both, must I decide? :)
+Hopefully one day a thinking machine that learns everything from sensory data and interacts with the environment.
+
+What ANSNA, NARS and ALANN have in common, important properties of AGI
+----------------------------------------------------------------------
 1. Obeying AIKR.
 0. Experience-grounded rather than model-theoretic.
 1. Attention Mechanism and important system-eigendynamics as a source of creativity.
@@ -46,8 +59,3 @@ What ANSNA, NARS and ALANN have in common
 3. Conceptual representations of patterns in the experience.
 5. Real-time operation: Ability to deal with events that come in at any moment.
 6. Knowledge representation that has both symbolic and sub-symbolic, or neuro-symbolic, aspects.
-
-
-
-
-
