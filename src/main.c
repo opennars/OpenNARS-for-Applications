@@ -19,7 +19,7 @@
 #define SDR_NUM_BLOCKS SDR_TERM_SIZE / SDR_BLOCK_SIZE
 typedef struct
 {
-	__uint128_t blocks[SDR_NUM_BLOCKS];
+	SDR_BLOCK_TYPE blocks[SDR_NUM_BLOCKS];
 }SDR;
 SDR input_terms[TERMS_MAX];
 _Bool input_terms_used[TERMS_MAX];
