@@ -185,6 +185,6 @@ void main()
 	SDR *mySDR = getTerm(1);
 	printSDRFull(mySDR);
 	//not ready yet:
-	//applySeqPermutation(mySDR, true);
-	printSDRFull(mySDR);
+	SDR sdr2 = applySeqPermutation(*mySDR, true);
+	printSDRFull(&sdr2);
 }
