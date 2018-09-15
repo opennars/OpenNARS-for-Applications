@@ -40,8 +40,11 @@ ANSNA in a nutshell
 ANSNA the name
 --------------
 Adaptive - ALANN control model to obey AIKR and to solve the mental resource allocation problem.
+
 Neuro-Symbolic - "Sub-symbolic" SDR encodings, yet all advantages of cognitive logic.
+
 Network - Nodes learning conceptual structure while having several neural network properties, such as activation spreading.
+
 Agent - Goal to "close the loop", to learn conceptual knowledge from sensor data and to act according to own motivations.
 
 So what is ANSNA
