@@ -11,6 +11,7 @@ Especially since the great successes of DL (Deep Learning), and although DL tech
 - OpenNARS: https://www.youtube.com/watch?v=hAO1zRj2z9A
 - OpenNARS: https://www.youtube.com/watch?v=GEmcT4Nk-78
 - OpenCog: https://www.youtube.com/watch?v=X8C7nhIULZs
+
 These current proto-AGI systems "close the loop", they go from perception to conceptual knowledge, and then to action. Definitely not by keeping track of and simply using the action of highest utility for a situation, but because the consequences of applying the action, in the current context, are both understood and desired by the AGI system.
 
 Learning from the past
