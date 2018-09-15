@@ -1,2 +1,2 @@
 # ANSNA
-Adaptive Neuro-Symbolic Network Agent
+Adaptive Neuro-Symbolic Network Architecture
