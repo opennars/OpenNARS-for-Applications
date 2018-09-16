@@ -35,7 +35,7 @@ ANSNA in a nutshell
 - Concept-centric SDR-based memory structure to efficiently capture structure of the world.
 - Cognitive logic applied on SDR's rather than "symbols", restricted to NAL7/8: sequences and implications to exploit and use correlations in inputs.
 - ALANN control system.
-- Intended to be much simpler and orders of magnitudes more efficient for sensorimotor learning than OpenNARS could be. OpenNARS was designed to also work with high-level user input, for which case the compound term/symbol encodings for output etc., and tons of additional inference rule that slow the system down for such purposes are necessary.
+- Intended to be much simpler and orders of magnitudes more efficient for sensorimotor learning than OpenNARS could be. OpenNARS was designed to also work with high-level user input, for which case the compound term/symbol encodings for output etc., and tons of additional inference rule, that slow the system down, for such purposes, are necessary.
 
 ANSNA the name
 --------------
