@@ -34,6 +34,11 @@ typedef struct
 SDR input_terms[TERMS_MAX];
 bool input_terms_used[TERMS_MAX];
 
+//Term types
+SDR sequence;
+SDR implication;
+SDR inheritance;
+
 //Macros//
 //-------//
 //Iterate all the blocks of an SDR
@@ -63,22 +68,22 @@ void SDR_INIT();
 //Get an SDR for the input term which is a number from 1 to TERMS_MAX
 SDR* getTerm(int number);
 //Read the jth bit in the ith block of the SDR
-int SDRReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
+int SDRReadBitInBlock(SDR *sdr, int block_i, int block_bit_j);
 //Write the jth bit in the ith block of the SDR with value
-void SDRWriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value)
+void SDRWriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value);
 //Read the ith bit in the SDR:
-int SDRReadBit(SDR *sdr, int bit_i)
+int SDRReadBit(SDR *sdr, int bit_i);
 
 //Write the ith bit in the SDR with value:
-void SDRWriteBit(SDR *sdr, int bit_i, int value)
+void SDRWriteBit(SDR *sdr, int bit_i, int value);
 //Print a SDR including zero bits
-void printSDRFull(SDR *sdr)
+void printSDRFull(SDR *sdr);
 // print indices of true bits
-void printSDRWhereTrue(SDR *sdr)
+void printSDRWhereTrue(SDR *sdr);
 //One SDR minus the other
-SDR SDRMinus(SDR a, SDR b)
+SDR SDRMinus(SDR a, SDR b);
 //Union of both SDR's
-SDR SDRUnion(SDR a, SDR b)
+SDR SDRUnion(SDR a, SDR b);
 //Create a copy of the SDR
 SDR SDRCopy(SDR original);
 //Apply the seq_permutation to the SDR

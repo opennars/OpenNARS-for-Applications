@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "SDR.h"
+#include "Memory.h"
 
 int main() 
 {

@@ -15,7 +15,6 @@
 
 //Parameters//
 //----------//
-#define CONCEPT_TERMS 512
 #define CONCEPT_COUNT 64
 
 typedef struct {
@@ -23,6 +22,9 @@ typedef struct {
     Concept *concepts[CONCEPT_COUNT];
 } Memory;
 
-void concept_init(Concept *concept, SDR *name)
+void memory_init(Memory *memory);
+
+void memory_appendConcept(Memory *memory, Concept *concept);
+
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef CONCEPT_H
 #define CONCEPT_H
 
+#include "SDR.h"
+
 ///////////////////
 //  SDR Concept  //
 ///////////////////
