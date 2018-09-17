@@ -142,23 +142,23 @@ SDR SDRInheritance(SDR a, SDR b)
     return SDRSet(inheritance, SDRTuple(&a,&b));
 }
 
-double SDRMatch(SDR part,SDR full)
+double SDRMatch(SDR *part,SDR *full)
 {
     int countOneInBoth = 0;
     int countOneInPart = 0;
     ITERATE_SDR_BITS(i,j,
-        countOneInBoth += (SDRReadBitInBlock(&part,i,j) & SDRReadBitInBlock(&full,i,j));
-        countOneInPart += SDRReadBitInBlock(&part,i,j);
+        countOneInBoth += (SDRReadBitInBlock(part,i,j) & SDRReadBitInBlock(full,i,j));
+        countOneInPart += SDRReadBitInBlock(part,i,j);
     )
     return (double)countOneInBoth / countOneInPart;
 }
 
 double SDRTermType(SDR type, SDR sdr)
 {
-    return SDRMatch(type, sdr);
+    return SDRMatch(&type, &sdr);
 }
 
-double SDREqualTerm(SDR a, SDR b)
+double SDREqualTerm(SDR *a, SDR *b)
 {
     return SDRMatch(a, b) * SDRMatch(b, a);
 }

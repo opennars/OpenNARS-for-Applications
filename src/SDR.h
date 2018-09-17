@@ -99,10 +99,10 @@ SDR SDRImplication(SDR a, SDR b);
 //Inheritance
 SDR SDRInheritance(SDR a, SDR b);
 //Match confidence when matching the part SDR to the full
-double SDRMatch(SDR part,SDR full);
+double SDRMatch(SDR *part, SDR *full);
 //Whether a SDR is of a certain type (type is also encoded in the SDR)
 double SDRTermType(SDR type, SDR sdr);
 //Equality is symmetric:
-double SDREqualTerm(SDR a, SDR b);
+double SDREqualTerm(SDR *a, SDR *b);
 
 #endif

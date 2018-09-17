@@ -29,7 +29,7 @@ Concept *memory_getClosestConceptByName(Memory *memory, SDR *name) {
             continue;
         }
 
-        double distance = SDREqualTerm(*(memory->concepts[i]->name), *name);
+        double distance = SDREqualTerm(memory->concepts[i]->name, name);
         if (distance < closestConceptDistance) {
             closestConceptDistance = distance;
             closestConceptByName = memory->concepts[i];
