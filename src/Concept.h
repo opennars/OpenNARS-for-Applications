@@ -14,7 +14,6 @@
 //Parameters//
 //----------//
 #define CONCEPT_TERMS 512
-#define CONCEPT_COUNT 64
 
 //Data structure//
 //--------------//
