@@ -103,20 +103,22 @@ void printSDRFull(SDR *sdr)
 	printf("\n");
 }
 //One SDR minus the other
-SDR* SDRMinus(SDR *a, SDR *b)
+SDR SDRMinus(SDR a, SDR b)
 {
-	SDR *c = (SDR*) calloc(1,sizeof(SDR));
+	SDR c;
 	ITERATE_SDR_BLOCKS(i,
-		c->blocks[i] = a->blocks[i] & (~b->blocks[i]);
+		c.blocks[i] = a.blocks[i] & (~b.blocks[i]);
 	)
+	return c;
 }
 //Union of both SDR's
-void SDRUnion(SDR *a, SDR *b)
+SDR SDRUnion(SDR a, SDR b)
 {
-	SDR *c = (SDR*) calloc(1,sizeof(SDR));
+	SDR c;
 	ITERATE_SDR_BLOCKS(i,
-		c->blocks[i] = a->blocks[i] | b->blocks[i];
+		c.blocks[i] = a.blocks[i] | b.blocks[i];
 	)
+	return c;
 }
 //permutation for sequence encoding
 int seq_permutation[SDR_TERM_SIZE];
@@ -140,20 +142,20 @@ void swap(SDR *sdr, int bit_i, int bit_j)
 	SDRWriteBit(sdr, bit_j, temp);
 }
 //Copy SDR:
-SDR *SDRCopy(SDR *original)
+SDR SDRCopy(SDR original)
 {
-	SDR *c = (SDR*) calloc(1,sizeof(SDR));
+	SDR c;
 	ITERATE_SDR_BLOCKS(i,
-		c->blocks[i] = original->blocks[i];
+		c.blocks[i] = original.blocks[i];
 	)
 }
 //Apply the seq_permutation to the SDR
-SDR* applySeqPermutation(SDR *sdr, bool forward)
+SDR applySeqPermutation(SDR sdr, bool forward)
 {
-	SDR *c = SDRCopy(sdr);
+	SDR c = SDRCopy(sdr);
 	for(int i=0; i<SDR_TERM_SIZE; i++)
 	{
-		swap(c, i, forward ? seq_permutation[i] : seq_permutation_inverse[i]);
+		swap(&c, i, forward ? seq_permutation[i] : seq_permutation_inverse[i]);
 	}
 	return c;
 }
@@ -162,8 +164,8 @@ SDR* applySeqPermutation(SDR *sdr, bool forward)
 //Tuple on the other hand:
 void SDRTuple(SDR *a, SDR *b)
 {
-	SDR* bPerm = applySeqPermutation(b,true);
-	return SDRSet(a, bPerm);	
+	SDR bPerm = applySeqPermutation(*b,true);
+	return SDRSet(*a, bPerm);	
 }
 
 
@@ -183,6 +185,6 @@ void main()
 	SDR *mySDR = getTerm(1);
 	printSDRFull(mySDR);
 	//not ready yet:
-	//applySeqPermutation(mySDR, true);
-	printSDRFull(mySDR);
+	SDR sdr2 = applySeqPermutation(*mySDR, true);
+	printSDRFull(&sdr2);
 }
