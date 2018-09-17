@@ -102,7 +102,6 @@ void printSDRFull(SDR *sdr)
 	)
 	printf("\n");
 }
-
 // print indices of true bits
 void printSDRWhereTrue(SDR *sdr) {
 	ITERATE_SDR_BITS(i,j,
@@ -112,7 +111,6 @@ void printSDRWhereTrue(SDR *sdr) {
 	)
 	printf("===\n");
 }
-
 //One SDR minus the other
 SDR SDRMinus(SDR a, SDR b)
 {
@@ -162,7 +160,7 @@ SDR SDRCopy(SDR original)
 	return c;
 }
 //Apply the seq_permutation to the SDR
-SDR applySeqPermutation(SDR sdr, bool forward)
+SDR Permute(SDR sdr, bool forward)
 {
 	SDR c = SDRCopy(sdr);
 	for(int i=0; i<SDR_TERM_SIZE; i++)
@@ -175,20 +173,64 @@ SDR applySeqPermutation(SDR sdr, bool forward)
 SDR SDRSet(SDR a, SDR b) {
 	return SDRUnion(a, b);
 }
-
 //Tuple on the other hand:
 SDR SDRTuple(SDR *a, SDR *b)
 {
 	SDR bPerm = applySeqPermutation(*b,true);
 	return SDRSet(*a, bPerm);	
 }
-
+//Term types
+SDR sequence;
+SDR implication;
+SDR inheritance;
+//Sequence
+SDR SDRSequence(SDR a, SDR b)
+{
+	return SDRSet(sequence, SDRTuple(&a,&b));
+}
+//Implication
+SDR SDRImplication(SDR a, SDR b)
+{
+	return SDRSet(implication, SDRTuple(&a,&b));
+}
+//Inheritance
+SDR SDRInheritance(SDR a, SDR b)
+{
+	return SDRSet(inheritance, SDRTuple(&a,&b));
+}
+//Match confidence when matching the part SDR to the full
+double SDRMatch(SDR part,SDR full)
+{
+	sum([partSDR[i]&fullSDR[i] for i in range(term_size)])/sum([partSDR[i] for i in range(term_size)])
+	int countOneInBoth = 0;
+	int countOneInPart = 0;
+	
+	ITERATE_SDR_BITS(i,j,
+		countOneInBoth += SDRReadBitInBlock(&part,i,j)&SDRReadBitInBlock(&full,i,j);
+		countOneInPart += SDRReadBitInBlock(&part,i,j);
+	)
+	return ((double)countOneInBoth) / ((double)countOneInPart);
+}
+//Whether a SDR is of a certain type (type is also encoded in the SDR)
+double SDRTermType(SDR type, SDR sdr)
+{
+	return SDRMatch(type, sdr);
+}
+//Equality is symmetric:
+double SDREqualTerm(SDR a, SDR b)
+{
+	return SDRMatch(a, b) * SDRMatch(b, a);
+}
+//double SDRContainsSubterm(
 
 //Module Init//
 //-----------//
 void SDR_INIT()
 {
 	initSequPermutation();
+	sequence = *getTerm(TERMS_MAX-1);
+	implication = *getTerm(TERMS_MAX-2);
+	inheritance = *getTerm(TERMS_MAX-3);
 }
 
 ///////////////////////
