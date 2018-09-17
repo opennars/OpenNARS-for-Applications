@@ -26,5 +26,6 @@ void memory_init(Memory *memory);
 
 void memory_appendConcept(Memory *memory, Concept *concept);
 
+Concept *memory_getClosestConceptByName(Memory *memory, SDR *name);
 
 #endif
