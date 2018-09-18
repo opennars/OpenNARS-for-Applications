@@ -1,4 +1,5 @@
 #include "Inference.h"
+#include "SDR.h"
 
 TruthValue getTruthValue(double frequency, double confidence)
 {
@@ -76,4 +77,46 @@ TruthValue intersection(TruthValue v1, TruthValue v2)
 	double f = and(f1, f2);
 	double c = and(c1, c2);
 	return getTruthValue(f, c);
+}
+
+
+
+
+
+
+// term-based detachment (deduction) step: a ==> b, a |- b
+SDR inference_detachment_forward(SDR *compound,SDR *component) {
+    SDR compoundMinusComponent = SDR_Minus(*compound, *component);
+
+    /*if SDR_TermType(Concurrent,compound) {
+        return SDR_Minus(compoundMinusComponent,Concurrent)
+    }*/
+    if (SDR_TermType(sequence, *compound)) {
+        return SDR_Permute(SDR_Minus(compoundMinusComponent, sequence), false);
+    }
+    else if (SDR_TermType(implication, *compound)) {
+        return SDR_Permute(SDR_Minus(compoundMinusComponent, implication), false); 
+    }
+    else if (SDR_TermType(predictiveImplication, *compound)) {
+        return SDR_Permute(SDR_Minus(compoundMinusComponent, predictiveImplication), false); 
+    }
+
+}
+
+// {Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
+SDR inference_eventDeduction(SDR *compound, TruthValue compoundTruth, SDR *component, TruthValue componentTruth, TruthValue *conclusionTruth) {
+	*conclusionTruth = deduction(compoundTruth, componentTruth);
+	return inference_detachment_forward(compound, component);
+}
+
+//{Event task a!, Precondition belief <a =/> b>.} |- Derived event task b!
+SDR inference_eventAbduction(SDR *compound, TruthValue compoundTruth, SDR *component, TruthValue componentTruth, TruthValue *conclusionTruth) {
+	*conclusionTruth = abduction(compoundTruth, componentTruth);
+	return inference_detachment_forward(compound, component);
+}
+
+//{Event task a., Event belief b.} |- Precondition and Postcondition belief <a =/> c>.
+SDR inference_eventInduction(SDR *subject, TruthValue subjectTruth, SDR *predicate, TruthValue predicateTruth, TruthValue *conclusionTruth) {
+	*conclusionTruth = induction(subjectTruth, predicateTruth);
+	return SDR_PredictiveImplication(*subject, *predicate);
 }

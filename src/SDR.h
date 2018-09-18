@@ -35,6 +35,7 @@ typedef struct
 SDR sequence;
 SDR implication;
 SDR inheritance;
+SDR predictiveImplication;
 
 //Macros//
 //-------//
@@ -92,6 +93,9 @@ SDR SDR_Tuple(SDR *a, SDR *b);
 SDR SDR_Sequence(SDR a, SDR b);
 //Implication
 SDR SDR_Implication(SDR a, SDR b);
+
+SDR SDR_PredictiveImplication(SDR a, SDR b);
+
 //Inheritance
 SDR SDR_Inheritance(SDR a, SDR b);
 //Match confidence when matching the part SDR to the full

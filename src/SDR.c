@@ -155,5 +155,6 @@ void SDR_INIT()
     sequence = *Encode_Term(TERMS_MAX-1);
     implication = *Encode_Term(TERMS_MAX-2);
     inheritance = *Encode_Term(TERMS_MAX-3);
+    predictiveImplication = *Encode_Term(TERMS_MAX-4);
 }
 
