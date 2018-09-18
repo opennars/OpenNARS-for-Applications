@@ -1,9 +1,19 @@
 #ifndef H_SCALARENCODER
 #define H_SCALARENCODER
 
+////////////////////
+//  Scalar encoder//
+////////////////////
+//Supports to encode a value in HTM way:
+//https://www.youtube.com/watch?v=V3Yqtpytif0&list=PL3yXMgtrZmDqhsFQzwUC9V8MeeVOQ7eZ9&index=6
+
+//References//
+//-----------//
 #include "SDR.h"
 
-/**
+//Methods//
+//-------//
+/** 
  * encodes a scalar integer value as a SDR
  *
  * /param w width of encoding of a single bucket
