@@ -21,17 +21,17 @@ void memory_appendConcept(Memory *memory, Concept *concept)
 }
 
 Concept *memory_getClosestConceptByName(Memory *memory, SDR *name) {
-    Concept *closestConceptByName = (Concept*)0;
-    double closestConceptDistance = 1000000000000000.0; // TODO< positive inf >
+    Concept *closestConceptByName = NULL;
+    double nearestConceptCloseness = -1;
 
     for (int i=0;i<CONCEPT_COUNT;i++) {
         if( !memory->concepts[i]) {
             continue;
         }
 
-        double distance = SDREqualTerm(memory->concepts[i]->name, name);
-        if (distance < closestConceptDistance) {
-            closestConceptDistance = distance;
+        double closeness = SDR_EqualTerm(memory->concepts[i]->name, name);
+        if (closeness > nearestConceptCloseness) {
+            nearestConceptCloseness = closeness;
             closestConceptByName = memory->concepts[i];
         }
     }
