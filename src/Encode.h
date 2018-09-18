@@ -11,6 +11,15 @@
 //-----------//
 #include "SDR.h"
 
+//Parameters//
+//----------//
+#define TERMS_MAX 100
+
+//Data structure//
+//--------------//
+SDR input_terms[TERMS_MAX];
+bool input_terms_used[TERMS_MAX];
+
 //Methods//
 //-------//
 /** 
@@ -21,6 +30,7 @@
  * /param max maximum of encoded range
  * /param value encoded value
  */
-SDR encoder_scalar(int w, int min, int max, int value);
+SDR Encode_Scalar(int w, int min, int max, int value);
+SDR* Encode_Term(int number);
 
 #endif
