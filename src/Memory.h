@@ -4,10 +4,7 @@
 ///////////////////
 //  ANSNA Memory //
 ///////////////////
-
-//Description//
-//-----------//
-//The memory of ANSNA
+//The conce-based memory of ANSNA
 
 //References//
 //////////////
@@ -22,10 +19,13 @@ typedef struct {
     Concept *concepts[CONCEPT_COUNT];
 } Memory;
 
+//Methods//
+//-------//
+//Init memory
 void memory_init(Memory *memory);
-
+//Add concept to memory
 void memory_appendConcept(Memory *memory, Concept *concept);
-
+//Return closest concept
 Concept *memory_getClosestConceptByName(Memory *memory, SDR *name);
 
 #endif

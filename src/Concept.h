@@ -6,9 +6,6 @@
 ///////////////////
 //  SDR Concept  //
 ///////////////////
-
-//Description//
-//-----------//
 //A concept named by a SDR
 
 //Parameters//
@@ -20,7 +17,6 @@
 typedef struct {
     /** name of the concept like in OpenNARS */
     SDR *name;
-    
     //null pointer indicates free space
     SDR *terms[CONCEPT_TERMS];
 } Concept;
