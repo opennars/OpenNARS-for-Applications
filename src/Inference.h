@@ -11,10 +11,14 @@
 //References//
 //-----------//
 #include <stdbool.h>
+#include "SDR.h"
+#include "Stamp.h"
 
 //Parameters//
 //----------//
 #define EVIDENTAL_HORIZON 1.0
+#define GOAL 1
+#define JUDGMENT 2
 
 //Data structure//
 //--------------//
@@ -24,6 +28,14 @@ typedef struct {
 	/** confidence */
 	double confidence;
 } TruthValue;
+
+typedef struct {
+	SDR sdr;
+	char type; //either JUDGMENT or GOAL
+	TruthValue truth;
+	Stamp stamp;	
+	double priority;
+} Task;
 
 //Methods//
 //-------//
@@ -46,5 +58,9 @@ TruthValue induction(TruthValue v1, TruthValue v2);
 TruthValue abduction(TruthValue v1, TruthValue v2);
 //{Event task a., Event belief b.} |- Derived event task (&/,a,b).
 TruthValue intersection(TruthValue v1, TruthValue v2);
+
+
+//{Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
+Task Inference_BeliefEventDeduction(Task component, Task compound);
 
 #endif

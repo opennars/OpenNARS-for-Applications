@@ -29,7 +29,7 @@ Concept *memory_getClosestConceptByName(Memory *memory, SDR *name) {
             continue;
         }
 
-        double closeness = SDR_EqualTerm(memory->concepts[i]->name, name);
+        double closeness = SDR_Similarity(*(memory->concepts[i]->name), *name);
         if (closeness > nearestConceptCloseness) {
             nearestConceptCloseness = closeness;
             closestConceptByName = memory->concepts[i];
