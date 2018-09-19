@@ -40,4 +40,6 @@ int array_length(Array *array);
 //Appent item to array
 bool array_append(Array *array, void *ptr);
 
+bool array_removeAt(Array *array, int idx);
+
 #endif
