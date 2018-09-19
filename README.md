@@ -33,10 +33,11 @@ Given certain experienced patterns exist within a mind, according to what criter
 ANSNA in a nutshell
 -------------------
 - Overcoming symbolic limitations (space usage, inefficiency in matching) by the use of SDR encodings: SDR-based representation of experienced and inferred structures.
-- Concept-centric SDR-based memory structure to efficiently capture structure of the world.
+- Concept-centric memory to efficiently capture structure of the world.
 - Cognitive logic applied on SDR's rather than "symbols", restricted to NAL7/8: sequences and implications to exploit and use correlations in inputs.
 - ALANN control system.
-- Intended to be much simpler and orders of magnitudes more efficient for sensorimotor learning than OpenNARS could be. OpenNARS was designed to also work with high-level user input, for which case the compound term/symbol encodings for output etc., and tons of additional inference rule, that slow the system down, for such purposes, are necessary.
+- Specialized to large-scale sensorimotor learning, different to OpenNARS which was designed to accept high-level user input: ANSNA comes with a minimal but essential subset of NAL7 and NAL8, allowing it to learn predictive hypotheses, procedure knowledge and categories using SDR encodings. 
+- SDR's instead of tree-based compound terms, allow to attach dozens of sensors values to inputs without issues.
 
 ANSNA the name
 --------------
