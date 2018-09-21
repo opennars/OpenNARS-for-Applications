@@ -80,12 +80,12 @@ TruthValue intersection(TruthValue v1, TruthValue v2)
 }
 
 // {Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
-Task Inference_BeliefEventDeduction(Task component, Task compound)
+Task Inference_BeliefEventDeduction(Task *component, Task *compound)
 {
-	TruthValue truth = deduction(compound.truth, component.truth);
-	SDR sdr = SDR_TupleGetSecondElement(&(compound.sdr),&(component.sdr));
+	TruthValue conclusionTruth = deduction(compound->truth, component->truth);
+	SDR sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr);
 	Stamp stamp = {0};
-	Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = truth, .stamp = stamp, .priority = 0 };
+	Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .priority = 0 };
 	return dummy;
 }
 
@@ -95,9 +95,14 @@ Task inference_eventAbduction(SDR *compound, TruthValue compoundTruth, SDR *comp
 	*conclusionTruth = abduction(compoundTruth, componentTruth);
 	return inference_detachment_forward(compound, component);
 }
+*/
 
 //{Event task a., Event belief b.} |- Precondition and Postcondition belief <a =/> c>.
-SDR inference_eventInduction(SDR *subject, TruthValue subjectTruth, SDR *predicate, TruthValue predicateTruth, TruthValue *conclusionTruth) {
-	*conclusionTruth = induction(subjectTruth, predicateTruth);
-	return SDR_Tuple(subject, predicate);
-}*/
+Task Inference_eventInduction(Task *subject, Task *predicate) {
+	TruthValue conclusionTruth = induction(subject->truth, predicate->truth);
+	SDR sdr = SDR_Tuple(&subject->sdr, &predicate->sdr);
+
+	Stamp stamp = {0};
+	Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .priority = 0 };
+	return dummy;
+}
