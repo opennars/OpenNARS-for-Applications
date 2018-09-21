@@ -58,6 +58,24 @@ SDR SDR_Union(SDR a, SDR b)
     return c;
 }
 
+SDR SDR_Intersection(SDR a, SDR b)
+{
+    SDR c;
+    ITERATE_SDR_BLOCKS(i,
+        c.blocks[i] = a.blocks[i] & b.blocks[i];
+    )
+    return c;
+}
+
+SDR SDR_Xor(SDR a, SDR b)
+{
+    SDR c;
+    ITERATE_SDR_BLOCKS(i,
+        c.blocks[i] = a.blocks[i] ^ b.blocks[i];
+    )
+    return c;
+}
+
 //permutation for sequence encoding
 int seq_permutation[SDR_SIZE];
 int seq_permutation_inverse[SDR_SIZE];
@@ -105,27 +123,22 @@ SDR SDR_Set(SDR a, SDR b)
 
 SDR SDR_Tuple(SDR *a, SDR *b)
 {
-    SDR bPerm = SDR_Permute(*b,true);
-    return SDR_Set(*a, bPerm);    
+    SDR aPerm = SDR_Permute(*a,true);
+    return SDR_Xor(aPerm,*b);    
 }
 
-SDR SDR_Sequence(SDR a, SDR b)
+SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
-    return SDR_Set(sequence, SDR_Tuple(&a,&b));
+    SDR aPerm = SDR_Permute(*secondElement, true);
+    return SDR_Xor(aPerm, *compound);
 }
 
-SDR implication;
-SDR SDR_Implication(SDR a, SDR b)
+SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-    return SDR_Set(implication, SDR_Tuple(&a,&b));
-}
+	SDR aPerm = SDR_Xor(*firstElement,*compound);
+	return SDR_Permute(aPerm, false);
 
-SDR inheritance;
-SDR SDR_Inheritance(SDR a, SDR b)
-{
-    return SDR_Set(inheritance, SDR_Tuple(&a,&b));
 }
-
 double SDR_Match(SDR *part,SDR *full)
 {
     int countOneInBoth = 0;
@@ -137,23 +150,18 @@ double SDR_Match(SDR *part,SDR *full)
     return (double)countOneInBoth / countOneInPart;
 }
 
-double SDR_TermType(SDR type, SDR sdr)
+double SDR_Inheritance(SDR full, SDR part)
 {
-    return SDR_Match(&type, &sdr);
+    return SDR_Match(&part, &full);
 }
 
-double SDR_EqualTerm(SDR *a, SDR *b)
+double SDR_Similarity(SDR a, SDR b)
 {
-    return SDR_Match(a, b) * SDR_Match(b, a);
+    return SDR_Match(&a, &b) * SDR_Match(&b, &a);
 }
-//double SDRContainsSubterm( TODO
 
-#include "Encode.h"
 void SDR_INIT()
 {
     initSequPermutation();
-    sequence = *Encode_Term(TERMS_MAX-1);
-    implication = *Encode_Term(TERMS_MAX-2);
-    inheritance = *Encode_Term(TERMS_MAX-3);
 }
 

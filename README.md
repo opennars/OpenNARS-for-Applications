@@ -20,22 +20,24 @@ The field of AGI is full of misconceptions. In fact, the issues of logic-based s
 
 AIKR
 ----
-Same as NARS as proposed bey Dr. Pei Wang, ANSNA takes the Assumption of Insufficient Knowledge and Resources (AIKR) as fundamental working assumption. Having understood this assumption, there is simply no rational way in believing that AGI could be built without obeying this principle. When resources wouldn't be an issue that need to be addressed, for deciding in which of the, seemingly, infinite directions, to think, in every moment in time, my precious reader, then please take your AIXI (https://en.wikipedia.org/wiki/AIXI) and go home. Or consider, that in such an universe, human attention for resource allocation within the brain would be superfluous, we would never forget, AGI would likely be everywhere, all the worms would have it, it's really not difficult to evolve a single equation, if following it would be anywhere near feasible and fruitful. 
+Same as NARS as proposed by Dr. Pei Wang, ANSNA takes the Assumption of Insufficient Knowledge and Resources (AIKR) as fundamental working assumption. Having understood this assumption, there is simply no rational way in believing that AGI could be built without obeying this principle. When resources wouldn't be an issue that need to be addressed, for deciding in which of the, seemingly, infinite directions, to think, in every moment in time, my precious reader, then please take your AIXI (https://en.wikipedia.org/wiki/AIXI) and go home. Or consider, that in such an universe, human attention for resource allocation within the brain would be superfluous, we would never forget, AGI would likely be everywhere, all the worms would have it, it's really not difficult to evolve a single equation, if following it would be anywhere near feasible and fruitful. 
 For more on the topic, read: "Insufficient Knowledge and Resources — A Biological Constraint and Its Functional Implications": https://pdfs.semanticscholar.org/aa7c/5b8b49eb132643242987cb5f4c45ededb2be.pdf
 
 Attention and structures to attend
 ----------------------------------
 What requirements do the structures need to fullfill that we manipulate in our mind for all kind of purposes? What exactly happens in our mind if we think about our blue planet and jump to the oceans? Is everything we think about something we directly observe, simply some kind of experience-replay? Or do we compose structures we have never seen before, based on what seems to make sense to compose in a given context? NARS, ALANN, and ANSNA take the latter position, also taking creativity as an essential property of AGI. But how are these structures represented? As some kind of composition of ID's (NARS compound terms), as bit vectors (HTM SDR's), as some kind of implicit, potentially temporally unstable, transient, state in firing patterns (spiking neural networks)? As a subset of collections of weights in an old-school deep neural network? ANSNA takes the position that SDR's are a highly efficient way to encode mental compositions. Some of my initial work to support sensorimotor-relevant subsets, of the cognitive logic NAL, developed bei Dr. Pei Wang, without using explicit terms or symbols, already suggests that: https://bit.ly/2NfgHc7
+https://bit.ly/2OwGdGl
 
 Given certain experienced patterns exist within a mind, according to what criteria are they considered, used, de-priorized, or even completely forgotten? The ALANN model by Tony Lofthouse provides the potentially most promising answer to that question. Having studied attention mechanisms for NARS, AERA, various FARG architectures (https://cogsci.indiana.edu/book.html), and others as discussed in Helgi Páll Helgason's Ph.D. thesis (see https://en.ru.is/media/td/Helgi_Pall_Helgason_PhD_CS_HR.pdf), and extensively tested a prototype of the ALANN system, it is likely most complete solution to the resource allocation problem in an artificial mind.
 
 ANSNA in a nutshell
 -------------------
 - Overcoming symbolic limitations (space usage, inefficiency in matching) by the use of SDR encodings: SDR-based representation of experienced and inferred structures.
-- Concept-centric SDR-based memory structure to efficiently capture structure of the world.
+- Concept-centric memory to efficiently capture structure of the world.
 - Cognitive logic applied on SDR's rather than "symbols", restricted to NAL7/8: sequences and implications to exploit and use correlations in inputs.
 - ALANN control system.
-- Intended to be much simpler and orders of magnitudes more efficient for sensorimotor learning than OpenNARS could be. OpenNARS was designed to also work with high-level user input, for which case the compound term/symbol encodings for output etc., and tons of additional inference rule, that slow the system down, for such purposes, are necessary.
+- Specialized to large-scale sensorimotor learning, different to OpenNARS which was designed to accept high-level user input: ANSNA comes with a minimal but essential subset of NAL7 and NAL8, allowing it to learn predictive hypotheses, procedure knowledge and categories using SDR encodings. 
+- SDR's instead of tree-based compound terms, allow to attach dozens of sensors values to inputs without issues.
 
 ANSNA the name
 --------------

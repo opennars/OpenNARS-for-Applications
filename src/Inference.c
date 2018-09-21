@@ -1,4 +1,5 @@
 #include "Inference.h"
+#include "SDR.h"
 
 TruthValue getTruthValue(double frequency, double confidence)
 {
@@ -77,3 +78,26 @@ TruthValue intersection(TruthValue v1, TruthValue v2)
 	double c = and(c1, c2);
 	return getTruthValue(f, c);
 }
+
+// {Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
+Task Inference_BeliefEventDeduction(Task component, Task compound)
+{
+	TruthValue truth = deduction(compound.truth, component.truth);
+	SDR sdr = SDR_TupleGetSecondElement(&(compound.sdr),&(component.sdr));
+	Stamp stamp = {0};
+	Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = truth, .stamp = stamp, .priority = 0 };
+	return dummy;
+}
+
+/*
+//{Event task a!, Precondition belief <a =/> b>.} |- Derived event task b!
+Task inference_eventAbduction(SDR *compound, TruthValue compoundTruth, SDR *component, TruthValue componentTruth, TruthValue *conclusionTruth) {
+	*conclusionTruth = abduction(compoundTruth, componentTruth);
+	return inference_detachment_forward(compound, component);
+}
+
+//{Event task a., Event belief b.} |- Precondition and Postcondition belief <a =/> c>.
+SDR inference_eventInduction(SDR *subject, TruthValue subjectTruth, SDR *predicate, TruthValue predicateTruth, TruthValue *conclusionTruth) {
+	*conclusionTruth = induction(subjectTruth, predicateTruth);
+	return SDR_Tuple(subject, predicate);
+}*/

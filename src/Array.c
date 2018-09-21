@@ -61,3 +61,21 @@ bool array_append(Array *array, void *ptr)
 	array->usedElements++;
 	return 1;
 }
+
+bool array_removeAt(Array *array, int idx) {
+	// TODO< check/assert >
+
+	int length = array_length(array);
+
+	for (int i=idx;i<length-1;i++) {
+		memcpy(
+			array_at(array, i),
+			array_at(array, i+1),
+			array->elementSize
+		);
+	}
+
+	array->usedElements--;
+
+	return 1;
+}

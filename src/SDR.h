@@ -31,11 +31,6 @@ typedef struct
     SDR_BLOCK_TYPE blocks[SDR_NUM_BLOCKS];
 }SDR;
 
-//Term types
-SDR sequence;
-SDR implication;
-SDR inheritance;
-
 //Macros//
 //-------//
 //Iterate all the blocks of an SDR
@@ -80,6 +75,10 @@ void SDR_PrintWhereTrue(SDR *sdr);
 SDR SDR_Minus(SDR a, SDR b);
 //Union of both SDR's
 SDR SDR_Union(SDR a, SDR b);
+//Intersection of both SDR's
+SDR SDR_Intersection(SDR a, SDR b);
+//Xor of both SDR's
+SDR SDR_Xor(SDR a, SDR b);
 //Create a copy of the SDR
 SDR SDR_Copy(SDR original);
 //Apply the seq_permutation to the SDR
@@ -88,16 +87,15 @@ SDR SDR_Permute(SDR sdr, bool forward);
 SDR SDR_Set(SDR a, SDR b);
 //Tuple on the other hand:
 SDR SDR_Tuple(SDR *a, SDR *b);
-//Sequence
-SDR SDR_Sequence(SDR a, SDR b);
-//Implication
-SDR SDR_Implication(SDR a, SDR b);
-//Inheritance
-SDR SDR_Inheritance(SDR a, SDR b);
+//Get the other element of the tuple
+SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement);
+SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
 //Match confidence when matching the part SDR to the full
 double SDR_Match(SDR *part, SDR *full);
-//Whether a SDR is of a certain type (type is also encoded in the SDR)
-double SDR_TermType(SDR type, SDR sdr);
+//The confidence measuring to what degree a SDR is a special case of another
+double SDR_Inheritance(SDR full, SDR part);
+//The confidence measuring to what degree a SDR is similar to another
+double SDR_Similarity(SDR a, SDR b);
 //Equality is symmetric:
 double SDR_EqualTerm(SDR *a, SDR *b);
 
