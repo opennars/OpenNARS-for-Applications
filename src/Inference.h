@@ -11,7 +11,6 @@
 //References//
 //-----------//
 #include <stdbool.h>
-
 #include "SDR.h"
 #include "Stamp.h"
 #include "Task.h"
@@ -20,11 +19,6 @@
 //Parameters//
 //----------//
 #define EVIDENTAL_HORIZON 1.0
-
-//Data structure//
-//--------------//
-
-
 
 
 //Methods//

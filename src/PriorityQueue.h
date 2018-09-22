@@ -1,27 +1,36 @@
 #ifndef PRIORITYQUEUE_H
 #define PRIORITYQUEUE_H
 
-#include "Array.h"
+///////////////////////////
+//  ANSNA priority queue //
+///////////////////////////
+//The priority queue for concepts and tasks
+//Idea from https://stackoverflow.com/a/2935995
 
-#define PRIORITYQUEUE_LEVELS 100
+//References//
+//-----------//
+#include "AttentionValue.h"
 
-// lower priorities are favored
+//Parameters//
+//----------//
+#define MAX_ELEMENTS 1000000
 
+//Data structure//
+//--------------//
+#define DefinePriorityQueue(QueueName, n, itemsname) \
+	typedef struct \
+	{ \
+		int itemsname##_amount; \
+		AttentionValue itemsname[n]; \
+		} \
+		QueueName;
+DefinePriorityQueue(PriorityQueue, 0, items)
 
-typedef struct {
-	// -1 : not used
-	int priority;
-	Array fifo;
-} FifoAndPriorityTuple;
-
-typedef struct {
-	// priorities are ordered
-	FifoAndPriorityTuple levels[PRIORITYQUEUE_LEVELS];
-} PriorityQueue;
-
+//Methods//
+//-------//
 void PriorityQueue_init(PriorityQueue *queue);
 
-void PriorityQueue_add(PriorityQueue *queue, int priority, void *element);
+void PriorityQueue_add(PriorityQueue *queue, AttentionValue *element);
 
 void *PriorityQueue_next(PriorityQueue *queue);
 

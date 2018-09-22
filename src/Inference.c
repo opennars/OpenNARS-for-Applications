@@ -101,7 +101,6 @@ Task inference_eventAbduction(SDR *compound, TruthValue compoundTruth, SDR *comp
 Task Inference_eventInduction(Task *subject, Task *predicate) {
 	TruthValue conclusionTruth = induction(subject->truth, predicate->truth);
 	SDR sdr = SDR_Tuple(&subject->sdr, &predicate->sdr);
-
 	Stamp stamp = {0};
 	Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .priority = 0 };
 	return dummy;

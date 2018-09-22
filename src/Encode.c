@@ -19,10 +19,10 @@ SDR Encode_Scalar(int w, int min, int max, int value) {
 	return result;
 }
 
-SDR* Encode_Term(int number)
+SDR Encode_Term(int number)
 {
     if(input_terms_used[number])
-        return &(input_terms[number]);
+        return input_terms[number];
     for(int i=0; i<SDR_ONES; i++)
     {
         //1. choose which block to go into
@@ -33,5 +33,5 @@ SDR* Encode_Term(int number)
         input_terms[number].blocks[block_i] |= (1 << bit_j);
     }
     input_terms_used[number] = true;
-    return &(input_terms[number]);
+    return input_terms[number];
 }

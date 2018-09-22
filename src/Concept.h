@@ -1,34 +1,40 @@
 #ifndef CONCEPT_H
 #define CONCEPT_H
 
-#include "SDR.h"
-#include "Task.h"
-
 ///////////////////
 //  SDR Concept  //
 ///////////////////
 //A concept named by a SDR
 
+//References//
+//-----------//
+#include "SDR.h"
+#include "Task.h"
+#include "AttentionValue.h"
+
 //Parameters//
 //----------//
-//#define CONCEPT_TERMS 512
-#define CONCEPT_TASKS 512
+#define PRECONDITION_BELIEFS_MAX 512
+#define POSTCONDITION_BELIEFS_MAX 512
+#define EVENT_BELIEFS_MAX 512
 
 //Data structure//
 //--------------//
 typedef struct {
+	AttentionValue attention;
     /** name of the concept like in OpenNARS */
-    SDR *name;
-    //null pointer indicates free space
-    //SDR *terms[CONCEPT_TERMS];
-
-
-    //null pointer indicates free space
-    Task *tasks[CONCEPT_TASKS];
+    SDR name;
+    Task event_beliefs[EVENT_BELIEFS_MAX];
+    int event_beliefs_amount;
+    Task precondition_beliefs[PRECONDITION_BELIEFS_MAX];
+    int precondition_beliefs_amount;
+    Task postcondition_beliefs[POSTCONDITION_BELIEFS_MAX];
+    int postcondition_beliefs_amount;
 } Concept;
 
 //Methods//
 //-------//
-void concept_init(Concept *concept, SDR *name);
+//Reset the concept and assign a new name to it
+void Concept_RESET(Concept *concept, SDR name);
 
 #endif

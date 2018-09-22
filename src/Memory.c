@@ -1,40 +1,38 @@
 #include "Memory.h"
 #include "Concept.h"
 
-void memory_init(Memory *memory)
+void memory_RESET(Memory *memory)
 {
-    for (int i=0;i<CONCEPT_COUNT;i++) {
-        memory->concepts[i] = (void*)0;
-    }
+    memory->concepts_amount = 0;
 }
 
 void memory_appendConcept(Memory *memory, Concept *concept)
 {
     // naive simple algorithm to search next free space
     // TODO< keep track of last insert index and reuse >
-    for (int i=0;i<CONCEPT_COUNT;i++) {
+    /*for (int i=0;i<CONCEPT_COUNT;i++) {
         if( !memory->concepts[i]) {
             memory->concepts[i] = concept;
             return;
         }
-    }
+    }*/
 }
 
 Concept *memory_getClosestConceptByName(Memory *memory, SDR *name) {
-    Concept *closestConceptByName = NULL;
+    /*Concept *closestConceptByName = NULL;
     double nearestConceptCloseness = -1;
 
-    for (int i=0;i<CONCEPT_COUNT;i++) {
+    for (int i=0; i<memory->n_concepts; i++) {
         if( !memory->concepts[i]) {
             continue;
         }
 
-        double closeness = SDR_Similarity(*(memory->concepts[i]->name), *name);
+        double closeness = SDR_Similarity(memory->concepts[i]->name, *name);
         if (closeness > nearestConceptCloseness) {
             nearestConceptCloseness = closeness;
             closestConceptByName = memory->concepts[i];
         }
-    }
+    }*/
 
-    return closestConceptByName;
+    return NULL; //closestConceptByName;
 }

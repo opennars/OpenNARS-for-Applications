@@ -1,9 +1,9 @@
 #include "Concept.h"
 
-void concept_init(Concept *concept, SDR *name)
+void Concept_RESET(Concept *concept, SDR name)
 {
     concept->name = name;
-    for (int i=0;i<CONCEPT_TASKS;i++) {
-        concept->tasks[i] = (void*)0;
-    }
+	concept->event_beliefs_amount = 0;
+	concept->precondition_beliefs_amount = 0;
+	concept->postcondition_beliefs_amount = 0;
 }
