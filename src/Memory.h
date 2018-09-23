@@ -18,9 +18,9 @@
 
 //Data structure//
 //--------------//
-DefinePriorityQueue(Memory, CONCEPT_COUNT, concepts)
+DefinePriorityQueue(Memory, CONCEPT_COUNT, Concept, concepts)
 Memory memory;
-DefinePriorityQueue(CyclingTasks, CYCLING_TASKS_COUNT, tasks)
+DefinePriorityQueue(CyclingTasks, CYCLING_TASKS_COUNT, Task, tasks)
 CyclingTasks tasks; 
 //TODO do we really need an additional one or can cyclingTasks, inputTasks and derivedTasks compete in the same queue?
 

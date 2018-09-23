@@ -9,30 +9,30 @@
 
 //References//
 //-----------//
-#include "AttentionValue.h"
-
-//Parameters//
-//----------//
-#define MAX_ELEMENTS 1000000
+#include <stdlib.h>
 
 //Data structure//
 //--------------//
-#define DefinePriorityQueue(QueueName, n, itemsname) \
+#define DefinePriorityQueue(QueueName, n, Type, itemsname) \
 	typedef struct \
 	{ \
 		int itemsname##_amount; \
-		AttentionValue itemsname[n]; \
+		Type itemsname[n]; \
 		} \
 		QueueName;
-DefinePriorityQueue(PriorityQueue, 0, items)
+typedef struct
+{
+	double priority;
+} Prioritized;
+DefinePriorityQueue(PriorityQueue, 0, Prioritized, items)
 
 //Methods//
 //-------//
-void PriorityQueue_init(PriorityQueue *queue);
 
-void PriorityQueue_add(PriorityQueue *queue, AttentionValue *element);
-
-void *PriorityQueue_next(PriorityQueue *queue);
+//Push element into the queue. Note that while data struct surely starts with Prioritized (so has priority), it contains the entire data of the item
+//so might be a Task or Concept, so make sure to pass sizeof(Task) or sizeof(Concept) as datasize
+void PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements);
+void PriorityQueue_Pop(PriorityQueue *queue, Prioritized *returnedItem, int itemsize);
 
 #endif
 
