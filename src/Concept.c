@@ -12,9 +12,8 @@ void Concept_RESET(Concept *concept, SDR name)
 		int pieces = SDR_BLOCK_SIZE / (sizeof(CONCEPT_HASH_TYPE));
 		for(int j=0; j<pieces; j++)
 		{
-			CONCEPT_HASH_TYPE AllOnesPart = -1;
 			int shift_right = j*8*sizeof(CONCEPT_HASH_TYPE); //each j shifts 8*NUM_BYTES_OF_CONCEPT_HASH_TYPE
-			hash |= (name.blocks[i] >> shift_right) & AllOnesPart;
+			hash |= name.blocks[i] >> shift_right;
 		}
     )
     concept->name_hash = hash;
