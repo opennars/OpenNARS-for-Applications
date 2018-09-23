@@ -9,7 +9,6 @@ void Concept_RESET(Concept *concept, SDR name)
 	//Generate CRC checksum too:
 	uint64_t crc = 0; 
 	ITERATE_SDR_BLOCKS(i,
-		concept->name.blocks[i];
 		crc = crc64(crc, &(name.blocks[i]), sizeof(SDR_BLOCK_TYPE));
 	)
 	concept->name_hash = crc;
