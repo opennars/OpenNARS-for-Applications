@@ -35,7 +35,7 @@ int main()
 
     printf("SDR for number 30:\n");
     SDR_PrintWhereTrue(&sdrForNumber);
-	*/
+    */
 
 
 

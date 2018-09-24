@@ -10,12 +10,12 @@
 #define JUDGMENT 2
 
 typedef struct {
-	AttentionValue attention;
-	SDR sdr;
-	char type; //either JUDGMENT or GOAL
-	TruthValue truth;
-	Stamp stamp;	
-	double priority;
+    AttentionValue attention;
+    SDR sdr;
+    char type; //either JUDGMENT or GOAL
+    TruthValue truth;
+    Stamp stamp;    
+    double priority;
 } Task;
 
 #endif

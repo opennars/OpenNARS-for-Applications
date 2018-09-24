@@ -10,19 +10,20 @@
 //References//
 //-----------//
 #include <stdlib.h>
+#include <stdbool.h>
 
 //Data structure//
 //--------------//
 #define DefinePriorityQueue(QueueName, n, Type, itemsname) \
-	typedef struct \
-	{ \
-		int itemsname##_amount; \
-		Type itemsname[n]; \
-		} \
-		QueueName;
+    typedef struct \
+    { \
+        int itemsname##_amount; \
+        Type itemsname[n]; \
+        } \
+        QueueName;
 typedef struct
 {
-	double priority;
+    double priority;
 } Prioritized;
 DefinePriorityQueue(PriorityQueue, 0, Prioritized, items)
 
@@ -31,7 +32,13 @@ DefinePriorityQueue(PriorityQueue, 0, Prioritized, items)
 
 //Push element into the queue. Note that while data struct surely starts with Prioritized (so has priority), it contains the entire data of the item
 //so might be a Task or Concept, so make sure to pass sizeof(Task) or sizeof(Concept) as datasize
-void PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements);
+//returns if the object as rejected
+typedef struct
+{
+    bool added;
+    bool evicted;
+} PriorityQueue_Push_Feedback;
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evicted_item);
 void PriorityQueue_Pop(PriorityQueue *queue, Prioritized *returnedItem, int itemsize);
 
 #endif

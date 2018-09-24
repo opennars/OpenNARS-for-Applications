@@ -2,10 +2,10 @@
 #define TRUTHVALUE_H
 
 typedef struct {
-	/** frequency */
-	double frequency;
-	/** confidence */
-	double confidence;
+    /** frequency */
+    double frequency;
+    /** confidence */
+    double confidence;
 } TruthValue;
 
 #endif

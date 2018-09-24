@@ -1,7 +1,8 @@
 #include "PriorityQueue.h"
 
-void PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements)
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evicted_item)
 {
+    PriorityQueue_Push_Feedback feedback = {0};
     int i = queue->items_amount + 1;
     int j = i / 2;
     //"move the item "up" (exchanging child with parent) till element to insert priority is smaller than the node
@@ -11,6 +12,12 @@ void PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, i
         {
             //queue->items[i] = queue->items[j];
             memcpy(&(queue->items[i]), &(queue->items[j]), itemsize);
+        } 
+        else //item_j got evicted as there was no space(i) move it to, it gets replaced with item_j/2 now
+        {
+                //evicted_item = queue->items[j];
+                feedback.evicted = true;
+                memcpy(evicted_item, &(queue->items[j]), itemsize);
         }
         i = j;
         j = j / 2; //parent
@@ -19,9 +26,11 @@ void PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, i
     if(i < maxElements) //we can't put the element there if it's outside of the array
     {
         //queue->items[i] = item;
+        feedback.added = true;
         memcpy(&(queue->items[i]), item, itemsize);
     }
     queue->items_amount++;
+    return feedback;
 }
 
 void PriorityQueue_Pop(PriorityQueue *queue, Prioritized *returnedItem, int itemsize)

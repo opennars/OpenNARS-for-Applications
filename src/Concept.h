@@ -22,7 +22,7 @@
 //Data structure//
 //--------------//
 typedef struct {
-	AttentionValue attention;
+    AttentionValue attention;
     /** name of the concept like in OpenNARS */
     SDR name;
     CONCEPT_HASH_TYPE name_hash;

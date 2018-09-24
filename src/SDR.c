@@ -98,20 +98,20 @@ SDR SDR_Permute(SDR *sdr, bool forward)
     int shiftToLeftmost = (sizeof(SDR_BLOCK_TYPE)-1);
     if(forward)
     {
-		for(int i=0; i<SDR_NUM_BLOCKS; i++)
-		{
-			SDR_BLOCK_TYPE left_bit = c.blocks[i] & (1 << shiftToLeftmost);
-			c.blocks[i] = (c.blocks[i]<<1) | (left_bit > 0);
-		}
-	}
-	else
-	{
-		for(int i=0; i<SDR_NUM_BLOCKS; i++)
-		{
-			SDR_BLOCK_TYPE right_bit = c.blocks[i] & 1;
-			c.blocks[i] = (c.blocks[i]>>1) | (right_bit << shiftToLeftmost);
-		}
-	}
+        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        {
+            SDR_BLOCK_TYPE left_bit = c.blocks[i] & (1 << shiftToLeftmost);
+            c.blocks[i] = (c.blocks[i]<<1) | (left_bit > 0);
+        }
+    }
+    else
+    {
+        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        {
+            SDR_BLOCK_TYPE right_bit = c.blocks[i] & 1;
+            c.blocks[i] = (c.blocks[i]>>1) | (right_bit << shiftToLeftmost);
+        }
+    }
     return c;
 }
 
@@ -134,8 +134,8 @@ SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-	SDR aPerm = SDR_Xor(firstElement, compound);
-	return SDR_Permute(&aPerm, false);
+    SDR aPerm = SDR_Xor(firstElement, compound);
+    return SDR_Permute(&aPerm, false);
 
 }
 double SDR_Match(SDR *part,SDR *full)
