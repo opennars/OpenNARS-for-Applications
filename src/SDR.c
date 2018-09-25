@@ -40,54 +40,40 @@ void SDR_PrintWhereTrue(SDR *sdr) {
     printf("===\n");
 }
 
-SDR SDR_Minus(SDR a, SDR b)
+SDR SDR_Minus(SDR *a, SDR *b)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a.blocks[i] & (~b.blocks[i]);
+        c.blocks[i] = a->blocks[i] & (~b->blocks[i]);
     )
     return c;
 }
 
-SDR SDR_Union(SDR a, SDR b)
+SDR SDR_Union(SDR *a, SDR *b)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a.blocks[i] | b.blocks[i];
+        c.blocks[i] = a->blocks[i] | b->blocks[i];
     )
     return c;
 }
 
-SDR SDR_Intersection(SDR a, SDR b)
+SDR SDR_Intersection(SDR *a, SDR *b)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a.blocks[i] & b.blocks[i];
+        c.blocks[i] = a->blocks[i] & b->blocks[i];
     )
     return c;
 }
 
-SDR SDR_Xor(SDR a, SDR b)
+SDR SDR_Xor(SDR *a, SDR *b)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a.blocks[i] ^ b.blocks[i];
+        c.blocks[i] = a->blocks[i] ^ b->blocks[i];
     )
     return c;
-}
-
-//permutation for sequence encoding
-int seq_permutation[SDR_SIZE];
-int seq_permutation_inverse[SDR_SIZE];
-void initSequPermutation()
-{
-    for(int i=0; i<=SDR_SIZE-2; i++)
-    {
-        //choose an random integer so that 0<=i<=j<=SDR_SIZE
-        int j = i+(random() % (SDR_SIZE-i));
-        seq_permutation[i] = j;
-        seq_permutation_inverse[j] = i;
-    }
 }
 
 void swap(SDR *sdr, int bit_i, int bit_j)
@@ -98,45 +84,58 @@ void swap(SDR *sdr, int bit_i, int bit_j)
     SDR_WriteBit(sdr, bit_j, temp);
 }
 
-SDR SDR_Copy(SDR original)
+SDR SDR_Copy(SDR *original)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = original.blocks[i];
+        c.blocks[i] = original->blocks[i];
     )
     return c;
 }
-SDR SDR_Permute(SDR sdr, bool forward)
+SDR SDR_Permute(SDR *sdr, bool forward)
 {
     SDR c = SDR_Copy(sdr);
-    for(int i=0; i<SDR_SIZE; i++)
+    int shiftToLeftmost = (sizeof(SDR_BLOCK_TYPE)-1);
+    if(forward)
     {
-        swap(&c, i, forward ? seq_permutation[i] : seq_permutation_inverse[i]);
+        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        {
+            SDR_BLOCK_TYPE left_bit = c.blocks[i] & (1 << shiftToLeftmost);
+            c.blocks[i] = (c.blocks[i]<<1) | (left_bit > 0);
+        }
+    }
+    else
+    {
+        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        {
+            SDR_BLOCK_TYPE right_bit = c.blocks[i] & 1;
+            c.blocks[i] = (c.blocks[i]>>1) | (right_bit << shiftToLeftmost);
+        }
     }
     return c;
 }
 
-SDR SDR_Set(SDR a, SDR b)
+SDR SDR_Set(SDR *a, SDR *b)
 {
     return SDR_Union(a, b);
 }
 
 SDR SDR_Tuple(SDR *a, SDR *b)
 {
-    SDR aPerm = SDR_Permute(*a,true);
-    return SDR_Xor(aPerm,*b);    
+    SDR aPerm = SDR_Permute(a,true);
+    return SDR_Xor(&aPerm, b);    
 }
 
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
-    SDR aPerm = SDR_Permute(*secondElement, true);
-    return SDR_Xor(aPerm, *compound);
+    SDR aPerm = SDR_Permute(secondElement, true);
+    return SDR_Xor(&aPerm, compound);
 }
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-	SDR aPerm = SDR_Xor(*firstElement,*compound);
-	return SDR_Permute(aPerm, false);
+    SDR aPerm = SDR_Xor(firstElement, compound);
+    return SDR_Permute(&aPerm, false);
 
 }
 double SDR_Match(SDR *part,SDR *full)
@@ -150,18 +149,13 @@ double SDR_Match(SDR *part,SDR *full)
     return (double)countOneInBoth / countOneInPart;
 }
 
-double SDR_Inheritance(SDR full, SDR part)
+double SDR_Inheritance(SDR *full, SDR *part)
 {
     return SDR_Match(&part, &full);
 }
 
-double SDR_Similarity(SDR a, SDR b)
+double SDR_Similarity(SDR *a, SDR *b)
 {
     return SDR_Match(&a, &b) * SDR_Match(&b, &a);
-}
-
-void SDR_INIT()
-{
-    initSequPermutation();
 }
 

@@ -11,8 +11,8 @@
 
 /** Stamp as implemented by all NARS implementations */
 typedef struct {
-	/** ids of stamp */
-	long ids[STAMP_SIZE];
+    /** ids of stamp */
+    long ids[STAMP_SIZE];
 } Stamp;
 
 void stamp_init(Stamp *stamp);

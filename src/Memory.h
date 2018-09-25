@@ -9,23 +9,29 @@
 //References//
 //////////////
 #include "Concept.h"
+#include "PriorityQueue.h"
 
 //Parameters//
 //----------//
-#define CONCEPT_COUNT 64
+#define CONCEPTS_MAX 10000
+#define BUFFER_TASKS_MAX 64
 
-typedef struct {
-    //null pointer indicates free space
-    Concept *concepts[CONCEPT_COUNT];
-} Memory;
+//Data structure//
+//--------------//
+DefinePriorityQueue(Memory, CONCEPTS_MAX, Concept, concepts)
+Memory memory;
+DefinePriorityQueue(AttentionBuffer, BUFFER_TASKS_MAX, Task, tasks)
+AttentionBuffer buffer; 
+//TODO do we really need an additional one or can cyclingTasks, inputTasks and derivedTasks compete in the same queue?
 
 //Methods//
 //-------//
+//TODO do check which methods shouldn't be just PriorityQueue methods
 //Init memory
-void memory_init(Memory *memory);
+void Memory_RESET();
 //Add concept to memory
-void memory_appendConcept(Memory *memory, Concept *concept);
+void Memory_addConcept(Concept *concept);
 //Return closest concept
-Concept *memory_getClosestConceptByName(Memory *memory, SDR *name);
+Concept* Memory_getClosestConceptByName(SDR *name);
 
 #endif
