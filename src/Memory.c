@@ -19,15 +19,9 @@ void Memory_addConcept(Concept *concept)
         {
             if(SDR_ReadBit(&(concept->name), j))
             {
-                for(int i=0; i<CONCEPTS_MAX; i++)
-                {
-                    if(bitToConcept[j][i] == 0)
-                    {
-                        bitToConcept[j][i] = concept->name_hash;
-                        bitToConceptAmount[j]++;
-                        break; //already inserted  
-                    }
-                }
+				int i = bitToConceptAmount[j]; //insert on top
+				bitToConcept[j][i] = concept->name_hash;
+				bitToConceptAmount[j]++;
              }
          }    
     }
