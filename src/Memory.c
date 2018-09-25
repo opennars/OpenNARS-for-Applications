@@ -60,12 +60,12 @@ void Memory_addConcept(Concept *concept)
 
 typedef struct
 {
-	SDR_HASH_TYPE concept;
-	int count;
+    SDR_HASH_TYPE concept;
+    int count;
 } Vote;
 Concept* Memory_getClosestConceptByName(SDR *taskSDR)
 {
-	SDR_HASH_TYPE taskhash = SDR_Hash(taskSDR);
+    SDR_HASH_TYPE taskhash = SDR_Hash(taskSDR);
     Vote voting[CONCEPTS_MAX];
     int votes = 0;
     Vote best = {0};
@@ -75,45 +75,45 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
         {
             for(int i=0; i<bitToConceptAmount[j]; i++)
             {
-				int use_index = votes;
-				bool existed = false;
-				//check first if the SDR already got a vote
-				//and if yes, increment that one instead creating a new one
-				SDR_HASH_TYPE voted_concept = bitToConcept[j][i];
-				for(int h=0; h<votes; h++)
-				{
-					if(voting[h].concept == voted_concept)
-					{
-						use_index = h;
-						existed = true;
-						break;
-					}
-				}
-				voting[use_index].concept = voted_concept;
-				voting[use_index].count = existed ? 1 : voting[use_index].count+1;
-				if(voting[use_index].count > best.count)
-				{
-					best = voting[use_index];
-				}
-				if(!existed)
-				{
-					votes++;
-				}
-			}
+                int use_index = votes;
+                bool existed = false;
+                //check first if the SDR already got a vote
+                //and if yes, increment that one instead creating a new one
+                SDR_HASH_TYPE voted_concept = bitToConcept[j][i];
+                for(int h=0; h<votes; h++)
+                {
+                    if(voting[h].concept == voted_concept)
+                    {
+                        use_index = h;
+                        existed = true;
+                        break;
+                    }
+                }
+                voting[use_index].concept = voted_concept;
+                voting[use_index].count = existed ? 1 : voting[use_index].count+1;
+                if(voting[use_index].count > best.count)
+                {
+                    best = voting[use_index];
+                }
+                if(!existed)
+                {
+                    votes++;
+                }
+            }
         }
     }
     if(votes == 0)
     {
-		return 0;
-	}
-	//And now retrieve a concept with the same hash:
-	for(int i=0; i<memory.concepts_amount; i++)
-	{
-			if(memory.concepts[i].name_hash == best.concept)
-			{
-				//TODO make sure that each block is equal
-				return &(memory.concepts[i]);
-			}
-	}
+        return 0;
+    }
+    //And now retrieve a concept with the same hash:
+    for(int i=0; i<memory.concepts_amount; i++)
+    {
+            if(memory.concepts[i].name_hash == best.concept)
+            {
+                //TODO make sure that each block is equal
+                return &(memory.concepts[i]);
+            }
+    }
     return NULL; //closestConceptByName;
 }
