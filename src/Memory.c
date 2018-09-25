@@ -19,9 +19,9 @@ void Memory_addConcept(Concept *concept)
         {
             if(SDR_ReadBit(&(concept->name), j))
             {
-				int i = bitToConceptAmount[j]; //insert on top
-				bitToConcept[j][i] = concept->name_hash;
-				bitToConceptAmount[j]++;
+                int i = bitToConceptAmount[j]; //insert on top
+                bitToConcept[j][i] = concept->name_hash;
+                bitToConceptAmount[j]++;
              }
          }    
     }
