@@ -32,6 +32,6 @@ void Memory_RESET();
 //Add concept to memory
 void Memory_addConcept(Concept *concept);
 //Return closest concept
-Concept* Memory_getClosestConceptByName(SDR *name);
+Concept* Memory_getClosestConceptByName(SDR *taskSDR);
 
 #endif

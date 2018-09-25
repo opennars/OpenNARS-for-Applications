@@ -22,6 +22,7 @@
 #define SDR_ONES 5
 #define SDR_BLOCK_TYPE __uint128_t
 #define SDR_BLOCK_SIZE sizeof(SDR_BLOCK_TYPE)
+#define SDR_HASH_TYPE uint64_t
 
 //Data structure//
 //--------------//
@@ -51,7 +52,7 @@ typedef struct
 //Transformation for bit index abstraction across the array of blocks
 #define SDR_INDEX_TO_BLOCK_AND_BIT(bit_i, block_i,block_bit_i) \
     int block_i = bit_i / SDR_BLOCK_SIZE;\
-    int block_bit_i = bit_i % SDR_BLOCK_SIZE;\
+    int block_bit_i = bit_i % SDR_BLOCK_SIZE;
 
 //Methods//
 //-------//
@@ -94,5 +95,7 @@ double SDR_Inheritance(SDR *full, SDR *part);
 double SDR_Similarity(SDR *a, SDR *b);
 //Equality is symmetric:
 double SDR_EqualTerm(SDR *a, SDR *b);
+//Hash of SDR
+SDR_HASH_TYPE SDR_Hash(SDR *name);
 
 #endif

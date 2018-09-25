@@ -17,7 +17,6 @@
 #define PRECONDITION_BELIEFS_MAX 512
 #define POSTCONDITION_BELIEFS_MAX 512
 #define EVENT_BELIEFS_MAX 512
-#define CONCEPT_HASH_TYPE uint64_t
 
 //Data structure//
 //--------------//
@@ -25,7 +24,7 @@ typedef struct {
     AttentionValue attention;
     /** name of the concept like in OpenNARS */
     SDR name;
-    CONCEPT_HASH_TYPE name_hash;
+    SDR_HASH_TYPE name_hash;
     Task event_beliefs[EVENT_BELIEFS_MAX];
     int event_beliefs_amount;
     Task precondition_beliefs[PRECONDITION_BELIEFS_MAX];
