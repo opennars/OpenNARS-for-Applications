@@ -84,7 +84,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
                     }
                 }
                 voting[use_index].concept = voted_concept;
-                voting[use_index].count = existed ? 1 : voting[use_index].count+1;
+                voting[use_index].count = existed ? voting[use_index].count+1 : 1;
                 if(voting[use_index].count > best.count)
                 {
                     best = voting[use_index];
@@ -98,7 +98,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     }
     if(votes == 0)
     {
-        return 0;
+        return NULL;
     }
     //And now retrieve a concept with the same hash:
     for(int i=0; i<memory.concepts_amount; i++)
