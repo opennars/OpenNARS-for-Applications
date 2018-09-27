@@ -122,7 +122,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     double bestValSoFar = -1;
     for(int i=0; i<memory.concepts_amount; i++)
     {
-        double curVal = SDR_Inheritance(taskSDR, memory.concepts[i].name);
+        double curVal = SDR_Inheritance(taskSDR, &(memory.concepts[i].name));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
