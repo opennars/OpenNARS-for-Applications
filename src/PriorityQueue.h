@@ -38,7 +38,7 @@ typedef struct
     bool added;
     bool evicted;
 } PriorityQueue_Push_Feedback;
-PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evicted_item);
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evictedItem);
 void PriorityQueue_Pop(PriorityQueue *queue, Prioritized *returnedItem, int itemsize);
 
 #endif

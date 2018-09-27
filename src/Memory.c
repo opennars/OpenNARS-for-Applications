@@ -27,7 +27,7 @@ void Memory_addConcept(Concept *concept)
                 bitToConcept[j][i] = concept->name_hash;
                 bitToConceptAmount[j]++;
              }
-         }    
+         }
     }
     if(feedback.evicted)
     {

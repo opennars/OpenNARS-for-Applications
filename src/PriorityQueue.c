@@ -1,6 +1,6 @@
 #include "PriorityQueue.h"
 
-PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evicted_item)
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evictedItem)
 {
     PriorityQueue_Push_Feedback feedback = {0};
     int i = queue->items_amount + 1;
@@ -17,7 +17,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized
         {
                 //evicted_item = queue->items[j];
                 feedback.evicted = true;
-                memcpy(evicted_item, &(queue->items[j]), itemsize);
+                memcpy(evictedItem, &(queue->items[j]), itemsize);
         }
         i = j;
         j = j / 2; //parent
