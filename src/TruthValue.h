@@ -24,11 +24,11 @@ double and(double a, double b);
 double or(double a, double b);
 double w2c(double w);
 double c2w(double c);
-TruthValue getTruthValue(double frequency, double confidence);
-TruthValue revision(TruthValue v1, TruthValue v2);
-TruthValue deduction(TruthValue v1, TruthValue v2);
-TruthValue induction(TruthValue v1, TruthValue v2);
-TruthValue abduction(TruthValue v1, TruthValue v2);
-TruthValue intersection(TruthValue v1, TruthValue v2);
+TruthValue TruthValue_GetTruthValue(double frequency, double confidence);
+TruthValue TruthValue_Revision(TruthValue v1, TruthValue v2);
+TruthValue TruthValue_Deduction(TruthValue v1, TruthValue v2);
+TruthValue TruthValue_Induction(TruthValue v1, TruthValue v2);
+TruthValue TruthValue_Abduction(TruthValue v1, TruthValue v2);
+TruthValue TruthValue_Intersection(TruthValue v1, TruthValue v2);
 
 #endif

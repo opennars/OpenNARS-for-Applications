@@ -20,7 +20,7 @@ double c2w(double c)
     return EVIDENTAL_HORIZON * c / (1 - c);
 }
 
-TruthValue getTruthValue(double frequency, double confidence)
+TruthValue TruthValue_GetTruthValue(double frequency, double confidence)
 {
     TruthValue result;
     result.frequency = frequency;
@@ -28,7 +28,7 @@ TruthValue getTruthValue(double frequency, double confidence)
     return result;
 }
 
-TruthValue revision(TruthValue v1, TruthValue v2)
+TruthValue TruthValue_Revision(TruthValue v1, TruthValue v2)
 {
     double f1 = v1.frequency;
     double f2 = v2.frequency;
@@ -37,10 +37,10 @@ TruthValue revision(TruthValue v1, TruthValue v2)
     double w = w1 + w2;
     double f = (w1 * f1 + w2 * f2) / w;
     double c = w2c(w);
-    return getTruthValue(f,c);
+    return TruthValue_GetTruthValue(f,c);
 }
 
-TruthValue deduction(TruthValue v1, TruthValue v2)
+TruthValue TruthValue_Deduction(TruthValue v1, TruthValue v2)
 {
     double f1 = v1.frequency;
     double f2 = v2.frequency;
@@ -48,15 +48,15 @@ TruthValue deduction(TruthValue v1, TruthValue v2)
     double c2 = v2.confidence;
     double f = and(f1, f2);
     double c = and(and(c1, c2), f);
-    return getTruthValue(f,c);
+    return TruthValue_GetTruthValue(f,c);
 }
 
-TruthValue induction(TruthValue v1, TruthValue v2)
+TruthValue TruthValue_Induction(TruthValue v1, TruthValue v2)
 {
-    return abduction(v2, v1);
+    return TruthValue_Abduction(v2, v1);
 }
 
-TruthValue abduction(TruthValue v1, TruthValue v2)
+TruthValue TruthValue_Abduction(TruthValue v1, TruthValue v2)
 {
     double f1 = v1.frequency;
     double f2 = v2.frequency;
@@ -64,10 +64,10 @@ TruthValue abduction(TruthValue v1, TruthValue v2)
     double c2 = v2.confidence;
     double w = and(f2, and(c1, c2));
     double c = w2c(w);
-    return getTruthValue(f1, c);
+    return TruthValue_GetTruthValue(f1, c);
 }
 
-TruthValue intersection(TruthValue v1, TruthValue v2)
+TruthValue TruthValue_Intersection(TruthValue v1, TruthValue v2)
 {
     double f1 = v1.frequency;
     double f2 = v2.frequency;
@@ -75,5 +75,5 @@ TruthValue intersection(TruthValue v1, TruthValue v2)
     double c2 = v2.confidence;
     double f = and(f1, f2);
     double c = and(c1, c2);
-    return getTruthValue(f, c);
+    return TruthValue_GetTruthValue(f, c);
 }

@@ -164,7 +164,7 @@ TruthValue SDR_Inheritance(SDR *full, SDR *part)
 
 TruthValue SDR_Similarity(SDR *a, SDR *b)
 {
-    return intersection(SDR_Match(a,b), SDR_Match(b,a));
+    return TruthValue_Intersection(SDR_Match(a,b), SDR_Match(b,a));
 }
 
 SDR_HASH_TYPE SDR_Hash(SDR *name)

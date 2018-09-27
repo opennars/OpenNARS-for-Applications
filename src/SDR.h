@@ -96,8 +96,6 @@ TruthValue SDR_Match(SDR *part, SDR *full);
 TruthValue SDR_Inheritance(SDR *full, SDR *part);
 //The confidence measuring to what degree a SDR is similar to another
 TruthValue SDR_Similarity(SDR *a, SDR *b);
-//Equality is symmetric:
-double SDR_EqualTerm(SDR *a, SDR *b);
 //Hash of SDR
 SDR_HASH_TYPE SDR_Hash(SDR *name);
 
