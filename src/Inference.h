@@ -16,10 +16,6 @@
 #include "Task.h"
 #include "TruthValue.h"
 
-//Parameters//
-//----------//
-#define EVIDENTAL_HORIZON 1.0
-
 //Methods//
 //-------//
 //{Event task a., Event belief b.} |- Derived event task (&/,a,b).

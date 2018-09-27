@@ -143,25 +143,28 @@ SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
     return b;
 
 }
-double SDR_Match(SDR *part,SDR *full)
+TruthValue SDR_Match(SDR *part,SDR *full)
 {
     int countOneInBoth = 0;
-    int countOneInPart = 0;
+    int generalCaseMisses1Bit = 0;
     ITERATE_SDR_BITS(i,j,
         countOneInBoth += (SDR_ReadBitInBlock(part,i,j) & SDR_ReadBitInBlock(full,i,j));
-        countOneInPart += SDR_ReadBitInBlock(part,i,j);
+        generalCaseMisses1Bit += (~SDR_ReadBitInBlock(part,i,j) & SDR_ReadBitInBlock(full,i,j));
     )
-    return (double)countOneInBoth / countOneInPart;
+    double E_total = countOneInBoth + generalCaseMisses1Bit;
+    double f_total = ((double) countOneInBoth)/E_total; 
+    TruthValue truth = { .frequency = f_total, .confidence = w2c(E_total)};
+    return truth;
 }
 
-double SDR_Inheritance(SDR *full, SDR *part)
+TruthValue SDR_Inheritance(SDR *full, SDR *part)
 {
     return SDR_Match(part, full);
 }
 
-double SDR_Similarity(SDR *a, SDR *b)
+TruthValue SDR_Similarity(SDR *a, SDR *b)
 {
-    return SDR_Match(a, b) * SDR_Match(b, a);
+    return intersection(SDR_Match(a,b), SDR_Match(b,a));
 }
 
 SDR_HASH_TYPE SDR_Hash(SDR *name)
