@@ -156,17 +156,17 @@ double SDR_Match(SDR *part,SDR *full)
 
 double SDR_Inheritance(SDR *full, SDR *part)
 {
-    return SDR_Match(&part, &full);
+    return SDR_Match(part, full);
 }
 
 double SDR_Similarity(SDR *a, SDR *b)
 {
-    return SDR_Match(&a, &b) * SDR_Match(&b, &a);
+    return SDR_Match(a, b) * SDR_Match(b, a);
 }
 
 SDR_HASH_TYPE SDR_Hash(SDR *name)
 {
-    SDR_HASH_TYPE hash;
+	SDR_HASH_TYPE hash = 0;
     ITERATE_SDR_BLOCKS(i,
         int pieces = SDR_BLOCK_SIZE / (sizeof(SDR_HASH_TYPE));
         for(int j=0; j<pieces; j++)

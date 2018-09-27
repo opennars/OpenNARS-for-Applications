@@ -60,7 +60,7 @@ typedef struct
 Concept* Memory_getClosestConceptByName(SDR *taskSDR)
 {
     SDR_HASH_TYPE taskhash = SDR_Hash(taskSDR);
-    Vote voting[CONCEPTS_MAX];
+    Vote voting[CONCEPTS_MAX] = {0};
     int votes = 0;
     Vote best = {0};
     for(int j=0; j<SDR_SIZE; j++)
