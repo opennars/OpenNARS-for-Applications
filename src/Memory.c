@@ -111,11 +111,10 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     {
         if(memory.concepts[i].name_hash == best.concept)
         {
-            //TODO make sure that each block is equal
             return &(memory.concepts[i]);
         }
     }
-    return NULL; //closestConceptByName;
+    return NULL;
 #endif
 #if MATCH_STRATEGY == EXHAUSTIVE
     Concept *best = NULL;
