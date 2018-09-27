@@ -15,6 +15,9 @@
 //----------//
 #define CONCEPTS_MAX 10000
 #define BUFFER_TASKS_MAX 64
+#define VOTING 1
+#define EXHAUSTIVE 2
+#define MATCH_STRATEGY VOTING
 
 //Data structure//
 //--------------//

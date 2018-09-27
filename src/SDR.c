@@ -76,7 +76,7 @@ SDR SDR_Xor(SDR *a, SDR *b)
     return c;
 }
 
-void swap(SDR *sdr, int bit_i, int bit_j)
+void SDR_Swap(SDR *sdr, int bit_i, int bit_j)
 {
     //temp <- a, then a <- b, then b <- temp
     int temp = SDR_ReadBit(sdr, bit_i);
@@ -130,16 +130,16 @@ SDR SDR_Tuple(SDR *a, SDR *b)
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
     SDR bPerm = SDR_Permute(secondElement, false);
-    SDR sdrxor = SDR_Xor(bPerm,compound);
-    SDR a = SDR_Permute(sdrxor, true);
+    SDR sdrxor = SDR_Xor(&bPerm,compound);
+    SDR a = SDR_Permute(&sdrxor, true);
     return a;
 }
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
     SDR aPerm = SDR_Permute(firstElement, true);
-    SDR sdrxor = SDR_Xor(aPerm,compound);
-    SDR b = SDR_Permute(sdrxor, false);
+    SDR sdrxor = SDR_Xor(&aPerm,compound);
+    SDR b = SDR_Permute(&sdrxor, false);
     return b;
 
 }

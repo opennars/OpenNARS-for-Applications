@@ -6,13 +6,17 @@ void memory_RESET()
     memory.concepts_amount = 0;
 }
 
+#if MATCH_STRATEGY == VOTING
 SDR_HASH_TYPE bitToConcept[SDR_SIZE][CONCEPTS_MAX];
 int bitToConceptAmount[SDR_SIZE];
+#endif
+
 void Memory_addConcept(Concept *concept)
 {
     //try to add it, and if successful add to voting structure
     Concept evicted;
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&memory, &concept, sizeof(Concept), CONCEPTS_MAX, &evicted);
+#if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
         for(int j=0; j<SDR_SIZE; j++)
@@ -50,6 +54,7 @@ void Memory_addConcept(Concept *concept)
              }
          }
     }
+#endif
 }
 
 typedef struct
@@ -59,6 +64,7 @@ typedef struct
 } Vote;
 Concept* Memory_getClosestConceptByName(SDR *taskSDR)
 {
+#if MATCH_STRATEGY == VOTING
     SDR_HASH_TYPE taskhash = SDR_Hash(taskSDR);
     Vote voting[CONCEPTS_MAX] = {0};
     int votes = 0;
@@ -103,11 +109,26 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     //And now retrieve a concept with the same hash:
     for(int i=0; i<memory.concepts_amount; i++)
     {
-            if(memory.concepts[i].name_hash == best.concept)
-            {
-                //TODO make sure that each block is equal
-                return &(memory.concepts[i]);
-            }
+        if(memory.concepts[i].name_hash == best.concept)
+        {
+            //TODO make sure that each block is equal
+            return &(memory.concepts[i]);
+        }
     }
     return NULL; //closestConceptByName;
+#endif
+#if MATCH_STRATEGY == EXHAUSTIVE
+    Concept *best = NULL;
+    double bestValSoFar = -1;
+    for(int i=0; i<memory.concepts_amount; i++)
+    {
+        double curVal = SDR_Inheritance(taskSDR, memory.concepts[i].name);
+        if(curVal > bestValSoFar)
+        {
+            bestValSoFar = curVal;
+            best = &(memory.concepts[i]);
+        }
+    }
+    return best;
+#endif
 }

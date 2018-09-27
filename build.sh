@@ -4,4 +4,4 @@ do
     Str=$Str" ${i%.c}.c"
 done
 echo $Str
-gcc -g3 -o3 -Wall -Wmissing-prototypes -Wmissing-declarations  -Werror=missing-prototypes $Str -oANSNA
+gcc -g3 -o3 -Wall -Wmissing-declarations $Str -oANSNA
