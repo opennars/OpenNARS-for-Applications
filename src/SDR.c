@@ -123,19 +123,24 @@ SDR SDR_Set(SDR *a, SDR *b)
 SDR SDR_Tuple(SDR *a, SDR *b)
 {
     SDR aPerm = SDR_Permute(a,true);
-    return SDR_Xor(&aPerm, b);    
+    SDR bPerm = SDR_Permute(b,false);
+    return SDR_Xor(&aPerm, &bPerm);    
 }
 
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
-    SDR aPerm = SDR_Permute(secondElement, true);
-    return SDR_Xor(&aPerm, compound);
+    SDR bPerm = SDR_Permute(secondElement, false);
+    SDR sdrxor = SDR_Xor(bPerm,compound);
+    SDR a = SDR_Permute(sdrxor, true);
+    return a;
 }
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-    SDR aPerm = SDR_Xor(firstElement, compound);
-    return SDR_Permute(&aPerm, false);
+    SDR aPerm = SDR_Permute(firstElement, true);
+    SDR sdrxor = SDR_Xor(aPerm,compound);
+    SDR b = SDR_Permute(sdrxor, false);
+    return b;
 
 }
 double SDR_Match(SDR *part,SDR *full)
@@ -161,8 +166,8 @@ double SDR_Similarity(SDR *a, SDR *b)
 
 SDR_HASH_TYPE SDR_Hash(SDR *name)
 {
-	SDR_HASH_TYPE hash;
-	ITERATE_SDR_BLOCKS(i,
+    SDR_HASH_TYPE hash;
+    ITERATE_SDR_BLOCKS(i,
         int pieces = SDR_BLOCK_SIZE / (sizeof(SDR_HASH_TYPE));
         for(int j=0; j<pieces; j++)
         {
