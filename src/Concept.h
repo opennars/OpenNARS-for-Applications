@@ -10,7 +10,7 @@
 //-----------//
 #include "SDR.h"
 #include "Task.h"
-#include "AttentionValue.h"
+#include "Attention.h"
 
 //Parameters//
 //----------//
@@ -21,7 +21,8 @@
 //Data structure//
 //--------------//
 typedef struct {
-    AttentionValue attention;
+    Attention attention;
+    Usage usage;
     /** name of the concept like in OpenNARS */
     SDR name;
     SDR_HASH_TYPE name_hash;

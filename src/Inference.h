@@ -14,7 +14,7 @@
 #include "SDR.h"
 #include "Stamp.h"
 #include "Task.h"
-#include "TruthValue.h"
+#include "Truth.h"
 
 //Methods//
 //-------//

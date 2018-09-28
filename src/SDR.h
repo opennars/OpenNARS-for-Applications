@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "TruthValue.h"
+#include "Truth.h"
 
 //Parameters//
 //----------//
@@ -91,11 +91,11 @@ SDR SDR_Tuple(SDR *a, SDR *b);
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement);
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
 //Match confidence when matching the part SDR to the full
-TruthValue SDR_Match(SDR *part, SDR *full);
+Truth SDR_Match(SDR *part, SDR *full);
 //The confidence measuring to what degree a SDR is a special case of another
-TruthValue SDR_Inheritance(SDR *full, SDR *part);
+Truth SDR_Inheritance(SDR *full, SDR *part);
 //The confidence measuring to what degree a SDR is similar to another
-TruthValue SDR_Similarity(SDR *a, SDR *b);
+Truth SDR_Similarity(SDR *a, SDR *b);
 //Hash of SDR
 SDR_HASH_TYPE SDR_Hash(SDR *name);
 

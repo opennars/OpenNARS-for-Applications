@@ -3,19 +3,18 @@
 
 #include "SDR.h"
 #include "Stamp.h"
-#include "TruthValue.h"
-#include "AttentionValue.h"
+#include "Truth.h"
+#include "Attention.h"
 
 #define GOAL 1
 #define JUDGMENT 2
 
 typedef struct {
-    AttentionValue attention;
+    Attention attention;
     SDR sdr;
     char type; //either JUDGMENT or GOAL
-    TruthValue truth;
-    Stamp stamp;    
-    double priority;
+    Truth truth;
+    Stamp stamp;
 } Task;
 
 #endif
