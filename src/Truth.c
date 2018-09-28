@@ -20,14 +20,6 @@ double c2w(double c)
     return EVIDENTAL_HORIZON * c / (1 - c);
 }
 
-Truth Truth_GetTruth(double frequency, double confidence)
-{
-    Truth result;
-    result.frequency = frequency;
-    result.confidence = confidence;
-    return result;
-}
-
 Truth Truth_Revision(Truth v1, Truth v2)
 {
     double f1 = v1.frequency;
@@ -37,7 +29,7 @@ Truth Truth_Revision(Truth v1, Truth v2)
     double w = w1 + w2;
     double f = (w1 * f1 + w2 * f2) / w;
     double c = w2c(w);
-    return Truth_GetTruth(f,c);
+    return (Truth) {.frequency = f, .confidence = c};
 }
 
 Truth Truth_Deduction(Truth v1, Truth v2)
@@ -48,7 +40,7 @@ Truth Truth_Deduction(Truth v1, Truth v2)
     double c2 = v2.confidence;
     double f = and(f1, f2);
     double c = and(and(c1, c2), f);
-    return Truth_GetTruth(f,c);
+    return (Truth) {.frequency = f, .confidence = c};
 }
 
 Truth Truth_Induction(Truth v1, Truth v2)
@@ -64,7 +56,7 @@ Truth Truth_Abduction(Truth v1, Truth v2)
     double c2 = v2.confidence;
     double w = and(f2, and(c1, c2));
     double c = w2c(w);
-    return Truth_GetTruth(f1, c);
+    return (Truth) {.frequency = f1, .confidence = c};;
 }
 
 Truth Truth_Intersection(Truth v1, Truth v2)
@@ -75,5 +67,5 @@ Truth Truth_Intersection(Truth v1, Truth v2)
     double c2 = v2.confidence;
     double f = and(f1, f2);
     double c = and(c1, c2);
-    return Truth_GetTruth(f, c);
+    return (Truth) {.frequency = f, .confidence = c};
 }

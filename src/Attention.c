@@ -9,8 +9,8 @@ Attention Attention_forgetTask(Attention *taskAttention)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime)
 {
-    Attention ret;
     double usefulness = Usage_usefulness(conceptUsage, currentTime);
     double lowerPriorityBarrier = usefulness * USEFULNESS_MAX_PRIORITY_BARRIER;
-    ret.priority = MAX(lowerPriorityBarrier, conceptAttention->priority * conceptAttention->durability);
+    return (Attention) { .priority = MAX(lowerPriorityBarrier, conceptAttention->priority * conceptAttention->durability),
+                         .durability = conceptAttention->durability };
 }
