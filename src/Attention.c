@@ -14,3 +14,15 @@ Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsa
     return (Attention) { .priority = MAX(lowerPriorityBarrier, conceptAttention->priority * conceptAttention->durability),
                          .durability = conceptAttention->durability };
 }
+
+Attention Attention_activateConcept(Attention *conceptAttention, Attention *taskAttention)
+{
+    return (Attention) { .priority = or(conceptAttention->priority, taskAttention->priority),
+                         .durability = conceptAttention->durability };
+}
+
+Attention Attention_deriveTask(Attention *conceptAttention, Truth *beliefTruth)
+{
+    return (Attention) { .priority = conceptAttention->priority * Truth_Expectation(*beliefTruth),
+                         .durability = conceptAttention->durability };
+}

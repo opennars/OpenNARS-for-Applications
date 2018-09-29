@@ -82,7 +82,9 @@ void SDR_Swap(SDR *sdr, int bit_i, int bit_j);
 //Create a copy of the SDR
 SDR SDR_Copy(SDR *original);
 //Apply the seq_permutation to the SDR
-SDR SDR_Permute(SDR *sdr, bool forward);
+SDR SDR_Permute(SDR *sdr, int *permutation);
+//Two faster permutations
+SDR SDR_PermuteByRotation(SDR *sdr, bool forward);
 //Set can be made by simply using the SDRUnion
 SDR SDR_Set(SDR *a, SDR *b);
 //Tuple on the other hand:
@@ -98,5 +100,7 @@ Truth SDR_Inheritance(SDR *full, SDR *part);
 Truth SDR_Similarity(SDR *a, SDR *b);
 //Hash of SDR
 SDR_HASH_TYPE SDR_Hash(SDR *name);
+//SDR init
+void SDR_INIT();
 
 #endif

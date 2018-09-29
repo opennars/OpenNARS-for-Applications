@@ -8,6 +8,7 @@
 //References//
 //-----------//
 #include "Usage.h"
+#include "Truth.h"
 
 //Data structure//
 //--------------//

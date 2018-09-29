@@ -92,7 +92,7 @@ SDR SDR_Copy(SDR *original)
     )
     return c;
 }
-SDR SDR_Permute(SDR *sdr, bool forward)
+SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
 {
     SDR c = SDR_Copy(sdr);
     int shiftToLeftmost = (sizeof(SDR_BLOCK_TYPE)-1);
@@ -120,26 +120,32 @@ SDR SDR_Set(SDR *a, SDR *b)
     return SDR_Union(a, b);
 }
 
+//permutation for tuple encoding
+int permS[SDR_SIZE];
+int permS_inv[SDR_SIZE];
+int permP[SDR_SIZE];
+int permP_inv[SDR_SIZE];
+
 SDR SDR_Tuple(SDR *a, SDR *b)
 {
-    SDR aPerm = SDR_Permute(a,true);
-    SDR bPerm = SDR_Permute(b,false);
+    SDR aPerm = SDR_Permute(a,permS);
+    SDR bPerm = SDR_Permute(b,permP);
     return SDR_Xor(&aPerm, &bPerm);    
 }
 
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
-    SDR bPerm = SDR_Permute(secondElement, false);
+    SDR bPerm = SDR_Permute(secondElement, &permP);
     SDR sdrxor = SDR_Xor(&bPerm,compound);
-    SDR a = SDR_Permute(&sdrxor, true);
+    SDR a = SDR_Permute(&sdrxor, &permS_inv);
     return a;
 }
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-    SDR aPerm = SDR_Permute(firstElement, true);
+    SDR aPerm = SDR_Permute(firstElement, &permS);
     SDR sdrxor = SDR_Xor(&aPerm,compound);
-    SDR b = SDR_Permute(&sdrxor, false);
+    SDR b = SDR_Permute(&sdrxor, &permP_inv);
     return b;
 
 }
@@ -181,3 +187,29 @@ SDR_HASH_TYPE SDR_Hash(SDR *name)
     return hash;
 }
 
+void initSequPermutation(int *perm, int *perm_inverse)
+{
+    for(int i=0; i<=SDR_SIZE-2; i++)
+    {
+        //choose an random integer so that 0<=i<=j<=SDR_SIZE
+        int j = i+(random() % (SDR_SIZE-i));
+        perm[i] = j;
+        perm_inverse[j] = i;
+    }
+}
+
+SDR SDR_Permute(SDR *sdr, int *permutation)
+{
+    SDR c = SDR_Copy(sdr);
+    for(int i=0; i<SDR_SIZE; i++)
+    {
+        swap(&c, i, permutation[i]);
+    }
+    return c;
+}
+
+void SDR_INIT()
+{
+    initSequPermutation(&permS, &permS_inv);
+    initSequPermutation(&permP, &permP_inv);
+}

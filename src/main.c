@@ -6,6 +6,7 @@
 
 int main() 
 {
+    SDR_INIT();
     SDR mySDR = Encode_Term(1);
     SDR_PrintWhereTrue(&mySDR);
     //not ready yet:

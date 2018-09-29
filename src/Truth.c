@@ -20,6 +20,11 @@ double c2w(double c)
     return EVIDENTAL_HORIZON * c / (1 - c);
 }
 
+double Truth_Expectation(Truth v)
+{
+    return (v.confidence * (v.frequency - 0.5f) + 0.5f);
+}
+
 Truth Truth_Revision(Truth v1, Truth v2)
 {
     double f1 = v1.frequency;
