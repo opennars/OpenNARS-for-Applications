@@ -24,11 +24,6 @@
 #define SDR_BLOCK_TYPE __uint128_t
 #define SDR_BLOCK_SIZE sizeof(SDR_BLOCK_TYPE)
 #define SDR_HASH_TYPE uint64_t
-//permutation for tuple encoding
-extern int SDR_permS[SDR_SIZE];
-extern int SDR_permS_inv[SDR_SIZE];
-extern int SDR_permP[SDR_SIZE];
-extern int SDR_permP_inv[SDR_SIZE];
 
 //Data structure//
 //--------------//
@@ -86,6 +81,8 @@ SDR SDR_Xor(SDR *a, SDR *b);
 void SDR_Swap(SDR *sdr, int bit_i, int bit_j);
 //Create a copy of the SDR
 SDR SDR_Copy(SDR *original);
+//Generate a random permutation and its inverse
+SDR_GeneratePermutation(int *perm, int *perm_inverse);
 //Apply the seq_permutation to the SDR
 SDR SDR_Permute(SDR *sdr, int *permutation);
 //Two faster permutations
