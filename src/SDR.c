@@ -189,12 +189,21 @@ SDR_HASH_TYPE SDR_Hash(SDR *name)
 
 void initSequPermutation(int *perm, int *perm_inverse)
 {
+    for(int i=0; i<SDR_SIZE; i++)
+    {
+        perm[i] = i;
+    }
     for(int i=0; i<=SDR_SIZE-2; i++)
     {
         //choose an random integer so that 0<=i<=j<=SDR_SIZE
         int j = i+(random() % (SDR_SIZE-i));
-        perm[i] = j;
-        perm_inverse[j] = i;
+        int temp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = temp;
+    }
+    for(int i=0; i<SDR_SIZE; i++)
+    {
+        perm_inverse[perm[i]] = i;
     }
 }
 
@@ -203,7 +212,7 @@ SDR SDR_Permute(SDR *sdr, int *permutation)
     SDR c = SDR_Copy(sdr);
     for(int i=0; i<SDR_SIZE; i++)
     {
-        swap(&c, i, permutation[i]);
+        SDR_Swap(&c, i, permutation[i]);
     }
     return c;
 }
