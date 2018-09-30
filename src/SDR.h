@@ -24,6 +24,11 @@
 #define SDR_BLOCK_TYPE __uint128_t
 #define SDR_BLOCK_SIZE sizeof(SDR_BLOCK_TYPE)
 #define SDR_HASH_TYPE uint64_t
+//permutation for tuple encoding
+extern int SDR_permS[SDR_SIZE];
+extern int SDR_permS_inv[SDR_SIZE];
+extern int SDR_permP[SDR_SIZE];
+extern int SDR_permP_inv[SDR_SIZE];
 
 //Data structure//
 //--------------//

@@ -10,7 +10,7 @@ int main()
     SDR mySDR = Encode_Term(1);
     SDR_PrintWhereTrue(&mySDR);
     //not ready yet:
-    SDR sdr2 = SDR_Permute(&mySDR, true);
+    SDR sdr2 = SDR_PermuteByRotation(&mySDR, true);
     SDR_PrintWhereTrue(&sdr2);
     /*
     // memory
