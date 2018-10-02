@@ -29,6 +29,7 @@ typedef struct {
     SDR_HASH_TYPE name_hash;
     FIFO event_beliefs;
     FIFO event_goals;
+    //TODO replace with Table, same as belief tables in OpenNARS:
     Implication precondition_beliefs[PRECONDITION_BELIEFS_MAX];
     int precondition_beliefs_amount;
     Implication postcondition_beliefs[POSTCONDITION_BELIEFS_MAX];

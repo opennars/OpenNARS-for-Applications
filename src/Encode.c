@@ -6,7 +6,7 @@
 SDR Encode_Scalar(int w, int min, int max, int value)
 {
     int n = SDR_SIZE;
-    int numberOfBuckets = n - w - 1;
+    int numberOfBuckets = n - w + 1;
     int range = max - min;
     int relative = value - min;
     // determine bucket into which the number falls into

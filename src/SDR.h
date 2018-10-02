@@ -98,6 +98,7 @@ SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
 //Match confidence when matching the part SDR to the full
 Truth SDR_Match(SDR *part, SDR *full);
 //The confidence measuring to what degree a SDR is a special case of another
+//also see https://github.com/patham9/ANSNA/wiki/SDRInheritance-for-matching,-and-its-truth-value
 Truth SDR_Inheritance(SDR *full, SDR *part);
 //The confidence measuring to what degree a SDR is similar to another
 Truth SDR_Similarity(SDR *a, SDR *b);

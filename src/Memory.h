@@ -5,6 +5,8 @@
 //  ANSNA Memory //
 ///////////////////
 //The conce-based memory of ANSNA
+//See voting mechanism to make it fast:
+//https://github.com/patham9/ANSNA/wiki/Voting-Schema
 
 //References//
 //////////////

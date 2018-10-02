@@ -10,6 +10,7 @@
 //References//
 //-----------//
 #include "Event.h"
+#include "Inference.h"
 
 //Parameters//
 //----------//
@@ -29,5 +30,9 @@ typedef struct
 void FIFO_RESET(FIFO *fifo);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
+//Add an event to the FIFO with potential revision, 
+//return revised element if revision worked, else event
+//also see https://github.com/patham9/ANSNA/wiki/Event-Revision
+Event FIFO_AddAndRevise(Event *event, FIFO *fifo);
 
 #endif
