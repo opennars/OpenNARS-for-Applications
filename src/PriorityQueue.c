@@ -1,6 +1,6 @@
 #include "PriorityQueue.h"
 
-#define PriorityQueue_Implementation(QueueType, ItemType, ItemsName)                                                                \
+#define PriorityQueue_Implementation(QueueType, ItemType)                                                                \
 QueueType##_Push_Feedback QueueType##_Push(QueueType *queue, ItemType item)                                                         \
 {                                                                                                                                   \
     QueueType##_Push_Feedback feedback = {0};                                                                                       \
@@ -65,5 +65,5 @@ ItemType QueueType##_Pop(QueueType *queue)                                      
     return returnedItem;                                                                                                            \
 }
 
-PriorityQueue_Implementation(ConceptQueue, Concept, concepts)
-PriorityQueue_Implementation(EventQueue, Event, events)
+PriorityQueue_Implementation(ConceptQueue, Concept)
+PriorityQueue_Implementation(EventQueue, Event)
