@@ -5,8 +5,9 @@
 //----------//
 #include <stdbool.h>
 
+//Parameters//
+//----------//
 #define STAMP_SIZE 20
-
 #define STAMP_FREE -1
 
 /** Stamp as implemented by all NARS implementations */
@@ -15,6 +16,8 @@ typedef struct {
     long evidentalBase[STAMP_SIZE];
 } Stamp;
 
+//Methods//
+//-------//
 void Stamp_RESET(Stamp *stamp);
 //zip stamp1 and stamp2 into a stamp
 Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2);

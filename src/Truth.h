@@ -5,6 +5,10 @@
 //  ANSNA truth value and truth functions //
 ////////////////////////////////////////////
 
+//References//
+//-----------//
+#include <math.h>
+
 //Data structure//
 //--------------//
 typedef struct {
@@ -16,7 +20,8 @@ typedef struct {
 
 //Parameters//
 //----------//
-#define EVIDENTAL_HORIZON 1.0
+#define TRUTH_EVIDENTAL_HORIZON 1.0
+#define TRUTH_PROJECTION_DECAY 0.99
 
 //Methods//
 //-------//
@@ -30,5 +35,7 @@ Truth Truth_Deduction(Truth v1, Truth v2);
 Truth Truth_Induction(Truth v1, Truth v2);
 Truth Truth_Abduction(Truth v1, Truth v2);
 Truth Truth_Intersection(Truth v1, Truth v2);
+Truth Truth_Eternalize(Truth v);
+Truth Truth_Projection(Truth v, long originalTime, long targetTime);
 
 #endif

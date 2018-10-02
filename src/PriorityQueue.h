@@ -31,7 +31,7 @@ DefinePriorityQueue(PriorityQueue, 0, Prioritized, items)
 //-------//
 
 //Push element into the queue. Note that while data struct surely starts with Prioritized (so has priority), it contains the entire data of the item
-//so might be a Task or Concept, so make sure to pass sizeof(Task) or sizeof(Concept) as datasize
+//so might be a Event or Concept, so make sure to pass sizeof(Event) or sizeof(Concept) as datasize
 //returns if the object as rejected
 typedef struct
 {

@@ -22,8 +22,9 @@
 #define SDR_SIZE 2048
 #define SDR_ONES 5
 #define SDR_BLOCK_TYPE __uint128_t
-#define SDR_BLOCK_SIZE sizeof(SDR_BLOCK_TYPE)
+#define SDR_BLOCK_SIZE 8*sizeof(SDR_BLOCK_TYPE)
 #define SDR_HASH_TYPE uint64_t
+#define SDR_HASH_TYPE_SIZE 8*sizeof(SDR_HASH_TYPE)
 
 //Data structure//
 //--------------//
@@ -82,7 +83,7 @@ void SDR_Swap(SDR *sdr, int bit_i, int bit_j);
 //Create a copy of the SDR
 SDR SDR_Copy(SDR *original);
 //Generate a random permutation and its inverse
-SDR_GeneratePermutation(int *perm, int *perm_inverse);
+void SDR_GeneratePermutation(int *perm, int *perm_inverse);
 //Apply the seq_permutation to the SDR
 SDR SDR_Permute(SDR *sdr, int *permutation);
 //Two faster permutations

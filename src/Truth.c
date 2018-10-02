@@ -12,12 +12,12 @@ double or(double a, double b)
 
 double w2c(double w)
 {
-    return w / (w + EVIDENTAL_HORIZON);
+    return w / (w + TRUTH_EVIDENTAL_HORIZON);
 }
 
 double c2w(double c)
 {
-    return EVIDENTAL_HORIZON * c / (1 - c);
+    return TRUTH_EVIDENTAL_HORIZON * c / (1 - c);
 }
 
 double Truth_Expectation(Truth v)
@@ -73,4 +73,18 @@ Truth Truth_Intersection(Truth v1, Truth v2)
     double f = and(f1, f2);
     double c = and(c1, c2);
     return (Truth) {.frequency = f, .confidence = c};
+}
+
+
+Truth Truth_Eternalize(Truth v)
+{
+    float f = v.frequency;
+    float c = v.confidence;
+    return (Truth) {.frequency = f, .confidence = w2c(c)};
+}
+
+Truth Truth_Projection(Truth v, long originalTime, long targetTime)
+{
+    double difference = abs(targetTime - originalTime);
+    return (Truth) { .frequency = v.frequency, .confidence = pow(TRUTH_PROJECTION_DECAY,difference)};
 }

@@ -14,7 +14,8 @@ SDR Encode_Scalar(int w, int min, int max, int value)
     int selectedBucket = (int)floor((double)numberOfBuckets * relative / range);
     SDR result = {0};
     // active bits as described in the paper
-    for (int bitIdx=selectedBucket; bitIdx<selectedBucket+w; bitIdx++) {
+    for (int bitIdx=selectedBucket; bitIdx<selectedBucket+w; bitIdx++)
+    {
         SDR_WriteBit(&result, bitIdx, 1);
     }
     return result;
@@ -23,7 +24,9 @@ SDR Encode_Scalar(int w, int min, int max, int value)
 SDR Encode_Term(int number)
 {
     if(input_terms_used[number])
+    {
         return input_terms[number];
+    }
     for(int i=0; i<SDR_ONES; i++)
     {
         //1. choose which block to go into

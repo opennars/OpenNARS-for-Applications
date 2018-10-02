@@ -8,30 +8,37 @@
 //But only a limited set:
 //the commented derivations are all that need to happen in ANSNA.
 
+//Parameters//
+//----------//
+#define REVISION_MAX_OCCURRENCE_DISTANCE 100
+
 //References//
 //-----------//
 #include <stdbool.h>
 #include "SDR.h"
 #include "Stamp.h"
-#include "Task.h"
+#include "Event.h"
+#include "Implication.h"
 #include "Truth.h"
 
 //Methods//
 //-------//
-//{Event task a., Event belief b.} |- Derived event task (&/,a,b).
-Task Inference_BeliefEventIntersection(Task *a, Task *b);
-//{Event task a., Event belief b.} |- Precondition and Postcondition belief <a =/> c>.
-Task Inference_BeliefInduction(Task *subject, Task *predicate);
-//{Precondition or Postcondition belief a., Precondition or Postcondition belief a.} |- 
-// Precondition or Postcondition belief a.
-Task Inference_BeliefRevision(Task *a, Task *b);
-//{Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
-Task Inference_BeliefEventDeduction(Task *component, Task *compound);
-//{Event task b!, Postcondition belief <a =/> b>.} |- Derived event task a!
-Task Inference_GoalEventDeduction(Task *component, Task *compound);
-//{Event task b., Postcondition belief <a =/> b>.} |- Derived event task a.
-Task Inference_BeliefEventAbduction(Task *component, Task *compound);
-//{Event task a!, Precondition belief <a =/> b>.} |- Derived event task b!
-Task Inference_GoalEventAbduction(Task *component, Task *compound);
+//{Event a., Event b.} |- Event (&/,a,b).
+Event Inference_BeliefIntersection(Event *a, Event *b);
+//{Event a., Event b.} |- Implication <a =/> c>.
+Implication Inference_BeliefInduction(Event *a, Event *b);
+//{Event a., Event a.} |- Event a.
+//{Event a!, Event a!} |- Event a!
+Event Inference_EventRevision(Event *a, Event *b);
+//{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
+Implication Inference_ImplicationRevision(Implication *a, Implication *b);
+//{Event a., Implication <a =/> b>.} |- Event b.
+Event Inference_BeliefDeduction(Event *component, Implication *compound);
+//{Event b!, Implication <a =/> b>.} |- Event a!
+Event Inference_GoalDeduction(Event *component, Implication *compound);
+//{Event b., Implication <a =/> b>.} |- Event a.
+Event Inference_BeliefAbduction(Event *component, Implication *compound);
+//{Event task a!, Implication <a =/> b>.} |- Event b!
+Event Inference_GoalAbduction(Event *component, Implication *compound);
 
 #endif

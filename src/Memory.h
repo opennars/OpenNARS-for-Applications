@@ -23,9 +23,9 @@
 //--------------//
 DefinePriorityQueue(Memory, CONCEPTS_MAX, Concept, concepts)
 Memory memory;
-DefinePriorityQueue(AttentionBuffer, BUFFER_TASKS_MAX, Task, tasks)
+DefinePriorityQueue(AttentionBuffer, BUFFER_TASKS_MAX, Event, events)
 AttentionBuffer buffer; 
-//TODO do we really need an additional one or can cyclingTasks, inputTasks and derivedTasks compete in the same queue?
+//TODO do we really need an additional one or can cyclingEvents, inputEvents and derivedEvents compete in the same queue?
 
 //Methods//
 //-------//

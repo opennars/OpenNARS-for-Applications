@@ -9,14 +9,15 @@
 //References//
 //-----------//
 #include "SDR.h"
-#include "Task.h"
+#include "Event.h"
+#include "Implication.h"
 #include "Attention.h"
+#include "FIFO.h"
 
 //Parameters//
 //----------//
 #define PRECONDITION_BELIEFS_MAX 512
 #define POSTCONDITION_BELIEFS_MAX 512
-#define EVENT_BELIEFS_MAX 512
 
 //Data structure//
 //--------------//
@@ -26,11 +27,11 @@ typedef struct {
     /** name of the concept like in OpenNARS */
     SDR name;
     SDR_HASH_TYPE name_hash;
-    Task event_beliefs[EVENT_BELIEFS_MAX];
-    int event_beliefs_amount;
-    Task precondition_beliefs[PRECONDITION_BELIEFS_MAX];
+    FIFO event_beliefs;
+    FIFO event_goals;
+    Implication precondition_beliefs[PRECONDITION_BELIEFS_MAX];
     int precondition_beliefs_amount;
-    Task postcondition_beliefs[POSTCONDITION_BELIEFS_MAX];
+    Implication postcondition_beliefs[POSTCONDITION_BELIEFS_MAX];
     int postcondition_beliefs_amount;
 } Concept;
 

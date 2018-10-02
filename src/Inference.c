@@ -1,73 +1,104 @@
 #include "Inference.h"
 #include "SDR.h"
 
-//{Event task a., Event belief b.} |- Derived event task (&/,a,b).
-Task Inference_BeliefEventIntersection(Task *a, Task *b)
+#define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp);
+#define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
+                long conclusionTime = (a->occurrenceTime + b->occurrenceTime)/2.0; \
+                Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
+                Truth truthB = Truth_Projection(b->truth, b->occurrenceTime, conclusionTime);
+                
+//{Event a., Event b.} |- Event (&/,a,b).
+Event Inference_BeliefIntersection(Event *a, Event *b)
 {
-    Truth conclusionTruth = Truth_Intersection(a->truth, b->truth);
-    SDR sdr = SDR_Tuple(&a->sdr,&b->sdr);
-    Stamp stamp = Stamp_make(&a->stamp, &b->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP_AND_TIME(a,b)
+    return (Event) { .sdr = SDR_Tuple(&a->sdr,&b->sdr),
+                     .type = EVENT_TYPE_BELIEF,
+                     .truth = Truth_Intersection(truthA, truthB),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = conclusionTime,
+                     .attention = {0} };
 }
 
-//{Event task a., Event belief b.} |- Precondition and Postcondition belief <a =/> c>.
-Task Inference_BeliefInduction(Task *subject, Task *predicate)
+//{Event a., Event b.} |- Implication <a =/> c>.
+Implication Inference_BeliefInduction(Event *a, Event *b)
 {
-    Truth conclusionTruth = Truth_Induction(subject->truth, predicate->truth);
-    SDR sdr = SDR_Tuple(&subject->sdr, &predicate->sdr);
-    Stamp stamp = Stamp_make(&subject->stamp, &predicate->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP_AND_TIME(a,b)
+    return  (Implication) { .sdr = SDR_Tuple(&a->sdr, &b->sdr), 
+                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)), 
+                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }
 
-//{Precondition or Postcondition belief a., Precondition or Postcondition belief a.} |- 
-// Precondition or Postcondition belief a.
-Task Inference_BeliefRevision(Task *a, Task *b)
+//{Event a., Event a.} |- Event a.
+//{Event a!, Event a!} |- Event a!
+Event Inference_EventRevision(Event *a, Event *b)
 {
-    Truth conclusionTruth = Truth_Revision(a->truth, b->truth);
-    SDR sdr = a->sdr;
-    Stamp stamp = Stamp_make(&a->stamp, &b->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP_AND_TIME(a,b)
+    if(abs(a->occurrenceTime - b->occurrenceTime) > REVISION_MAX_OCCURRENCE_DISTANCE)
+    {
+        return (Event) {0};
+    }
+    return (Event) { .sdr = SDR_Intersection(&a->sdr, &b->sdr), 
+                     .type = a->type,
+                     .truth = Truth_Revision(truthA, truthB),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = conclusionTime, 
+                     .attention = {0} };
 }
 
-//{Event task a., Postcondition belief <a =/> b>.} |- Derived event task b.
-Task Inference_BeliefEventDeduction(Task *component, Task *compound)
+//{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
+Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
-    Truth conclusionTruth = Truth_Deduction(compound->truth, component->truth);
-    SDR sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr);
-    Stamp stamp = Stamp_make(&component->stamp, &compound->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP(a,b)
+    return (Implication) { .sdr = SDR_Intersection(&a->sdr, &b->sdr), 
+                           .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
+                           .stamp = conclusionStamp, 
+                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + b->occurrenceTimeOffset)/2.0 };
 }
 
-//{Event task b!, Postcondition belief <a =/> b>.} |- Derived event task a!
-Task Inference_GoalEventDeduction(Task *component, Task *compound)
+//{Event a., Implication <a =/> b>.} |- Event b.
+Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
-    Truth conclusionTruth = Truth_Deduction(compound->truth, component->truth);
-    SDR sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr);
-    Stamp stamp = Stamp_make(&component->stamp, &compound->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP(component,compound)
+    return (Event) { .sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr), 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset,
+                     .attention = {0} };
 }
 
-//{Event task b., Postcondition belief <a =/> b>.} |- Derived event task a.
-Task Inference_BeliefEventAbduction(Task *component, Task *compound)
+//{Event b!, Implication <a =/> b>.} |- Event a!
+Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
-    Truth conclusionTruth = Truth_Abduction(compound->truth, component->truth);
-    SDR sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr);
-    Stamp stamp = Stamp_make(&component->stamp, &compound->stamp);
-    Task dummy = { .sdr = sdr, .type = JUDGMENT, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP(component,compound)
+    return (Event) { .sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr), 
+                     .type = EVENT_TYPE_GOAL, 
+                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .attention = {0} };
 }
 
-//{Event task a!, Precondition belief <a =/> b>.} |- Derived event task b!
-Task Inference_GoalEventAbduction(Task *component, Task *compound)
+//{Event b., Implication <a =/> b>.} |- Event a.
+Event Inference_BeliefAbduction(Event *component, Implication *compound)
 {
-    Truth conclusionTruth = Truth_Abduction(compound->truth, component->truth);
-    SDR sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr);
-    Stamp stamp = Stamp_make(&component->stamp, &compound->stamp);
-    Task dummy = { .sdr = sdr, .type = GOAL, .truth = conclusionTruth, .stamp = stamp, .attention = {0} };
-    return dummy;
+    DERIVATION_STAMP(component,compound)
+    return (Event) { .sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr), 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = Truth_Abduction(compound->truth, component->truth), 
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .attention = {0} };
+}
+
+//{Event task a!, Implication <a =/> b>.} |- Event b!
+Event Inference_GoalAbduction(Event *component, Implication *compound)
+{
+    DERIVATION_STAMP(component,compound)
+    return (Event) { .sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr), 
+                     .type = EVENT_TYPE_GOAL,
+                     .truth = Truth_Abduction(compound->truth, component->truth), 
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset,
+                     .attention = {0} };
 }

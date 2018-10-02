@@ -177,10 +177,10 @@ SDR_HASH_TYPE SDR_Hash(SDR *name)
 {
     SDR_HASH_TYPE hash = 0;
     ITERATE_SDR_BLOCKS(i,
-        int pieces = SDR_BLOCK_SIZE / (sizeof(SDR_HASH_TYPE));
+        int pieces = SDR_BLOCK_SIZE / SDR_HASH_TYPE_SIZE;
         for(int j=0; j<pieces; j++)
         {
-            int shift_right = j*8*sizeof(SDR_HASH_TYPE); //each j shifts 8*NUM_BYTES_OF_CONCEPT_HASH_TYPE
+            int shift_right = j*SDR_HASH_TYPE_SIZE; //each j shifts 8*NUM_BYTES_OF_CONCEPT_HASH_TYPE
             hash |= (name->blocks[i] >> shift_right);
         }
     )
