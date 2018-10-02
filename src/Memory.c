@@ -3,7 +3,7 @@
 
 void memory_RESET()
 {
-    memory.concepts_amount = 0;
+    memory.items_amount = 0;
 }
 
 #if MATCH_STRATEGY == VOTING
@@ -14,8 +14,7 @@ int bitToConceptAmount[SDR_SIZE];
 void Memory_addConcept(Concept *concept)
 {
     //try to add it, and if successful add to voting structure
-    Concept evicted;
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&memory, &concept, sizeof(Concept), CONCEPTS_MAX, &evicted);
+    ConceptQueue_Push_Feedback feedback = ConceptQueue_Push(&memory, *concept);
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
@@ -38,7 +37,7 @@ void Memory_addConcept(Concept *concept)
             {
                 for(int i=0; i<bitToConceptAmount[j]; i++)
                 {
-                    if(bitToConcept[j][i] == evicted.name_hash)
+                    if(bitToConcept[j][i] == feedback.evicted_item.name_hash)
                     {
                         bitToConcept[j][i] = 0;
                         //Now move the above ones down to remove the gap
@@ -107,11 +106,11 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
         return NULL;
     }
     //And now retrieve a concept with the same hash:
-    for(int i=0; i<memory.concepts_amount; i++)
+    for(int i=0; i<memory.items_amount; i++)
     {
-        if(memory.concepts[i].name_hash == best.concept)
+        if(memory.items[i].name_hash == best.concept)
         {
-            return &(memory.concepts[i]);
+            return &(memory.items[i]);
         }
     }
     return NULL;
@@ -119,13 +118,13 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
 #if MATCH_STRATEGY == EXHAUSTIVE
     Concept *best = NULL;
     double bestValSoFar = -1;
-    for(int i=0; i<memory.concepts_amount; i++)
+    for(int i=0; i<memory.items_amount; i++)
     {
-        double curVal = SDR_Inheritance(taskSDR, &(memory.concepts[i].name));
+        double curVal = SDR_Inheritance(taskSDR, &(memory.items[i].name));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
-            best = &(memory.concepts[i]);
+            best = &(memory.items[i]);
         }
     }
     return best;

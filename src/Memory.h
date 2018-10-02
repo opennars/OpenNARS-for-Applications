@@ -15,18 +15,14 @@
 
 //Parameters//
 //----------//
-#define CONCEPTS_MAX 10000
-#define BUFFER_TASKS_MAX 64
 #define VOTING 1
 #define EXHAUSTIVE 2
 #define MATCH_STRATEGY VOTING
 
 //Data structure//
 //--------------//
-DefinePriorityQueue(Memory, CONCEPTS_MAX, Concept, concepts)
-Memory memory;
-DefinePriorityQueue(AttentionBuffer, BUFFER_TASKS_MAX, Event, events)
-AttentionBuffer buffer; 
+ConceptQueue memory;
+EventQueue buffer; 
 //TODO do we really need an additional one or can cyclingEvents, inputEvents and derivedEvents compete in the same queue?
 
 //Methods//

@@ -11,35 +11,40 @@
 //-----------//
 #include <stdlib.h>
 #include <stdbool.h>
+#include "Event.h"
+#include "Concept.h"
+
+//Parameters//
+//----------//
+#define CONCEPTS_MAX 10000
+#define EVENTS_MAX 64
 
 //Data structure//
 //--------------//
-#define DefinePriorityQueue(QueueName, n, Type, itemsname) \
-    typedef struct \
-    { \
-        int itemsname##_amount; \
-        Type itemsname[n]; \
-        } \
-        QueueName;
-typedef struct
-{
-    double priority;
-} Prioritized;
-DefinePriorityQueue(PriorityQueue, 0, Prioritized, items)
+#define PriorityQueue_Header(QueueType, MaxSize, ItemType)                                                                  \
+static int QueueType##_MaxSize = MaxSize;                                                                                   \
+typedef struct                                                                                                              \
+{                                                                                                                           \
+    int items_amount;                                                                                                       \
+    ItemType items[MaxSize];                                                                                                \
+} QueueType;                                                                                                                \
+                                                                                                                            \
+typedef struct                                                                                                              \
+{                                                                                                                           \
+    bool added;                                                                                                             \
+    bool evicted;                                                                                                           \
+    ItemType evicted_item;                                                                                                  \
+} QueueType##_Push_Feedback;                                                                                                \
+                                                                                                                            \
+/*Methods*/                                                                                                                 \
+/*-------*/                                                                                                                 \
+/*Push element into the queue*/                                                                                             \
+QueueType##_Push_Feedback QueueType##_Push(QueueType *queue, ItemType item);                                                \
+/*Pop first element from the queue*/                                                                                        \
+ItemType QueueType##_Pop(QueueType *queue);
 
-//Methods//
-//-------//
-
-//Push element into the queue. Note that while data struct surely starts with Prioritized (so has priority), it contains the entire data of the item
-//so might be a Event or Concept, so make sure to pass sizeof(Event) or sizeof(Concept) as datasize
-//returns if the object as rejected
-typedef struct
-{
-    bool added;
-    bool evicted;
-} PriorityQueue_Push_Feedback;
-PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, Prioritized *item, int itemsize, int maxElements, Prioritized *evictedItem);
-void PriorityQueue_Pop(PriorityQueue *queue, Prioritized *returnedItem, int itemsize);
+PriorityQueue_Header(ConceptQueue, CONCEPTS_MAX, Concept);  
+PriorityQueue_Header(EventQueue, EVENTS_MAX, Event);                                                                 
 
 #endif
 
