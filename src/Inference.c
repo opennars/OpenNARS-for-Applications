@@ -15,8 +15,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = conclusionTime,
-                     .attention = {0} };
+                     .occurrenceTime = conclusionTime };
 }
 
 //{Event a., Event b.} |- Implication <a =/> c>.
@@ -41,8 +40,7 @@ Event Inference_EventRevision(Event *a, Event *b)
                      .type = a->type,
                      .truth = Truth_Revision(truthA, truthB),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = conclusionTime, 
-                     .attention = {0} };
+                     .occurrenceTime = conclusionTime };
 }
 
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
@@ -63,8 +61,7 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset,
-                     .attention = {0} };
+                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
@@ -75,8 +72,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
-                     .attention = {0} };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
 }
 
 //{Event b., Implication <a =/> b>.} |- Event a.
@@ -87,8 +83,7 @@ Event Inference_BeliefAbduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
-                     .attention = {0} };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
 }
 
 //{Event task a!, Implication <a =/> b>.} |- Event b!
@@ -99,6 +94,5 @@ Event Inference_GoalAbduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL,
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset,
-                     .attention = {0} };
+                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
 }
