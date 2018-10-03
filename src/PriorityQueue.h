@@ -11,40 +11,33 @@
 //-----------//
 #include <stdlib.h>
 #include <stdbool.h>
-#include "Event.h"
-#include "Concept.h"
-
-//Parameters//
-//----------//
-#define CONCEPTS_MAX 10000
-#define EVENTS_MAX 64
 
 //Data structure//
 //--------------//
-#define PriorityQueue_Header(QueueType, MaxSize, ItemType)                                                                  \
-static int QueueType##_MaxSize = MaxSize;                                                                                   \
-typedef struct                                                                                                              \
-{                                                                                                                           \
-    int items_amount;                                                                                                       \
-    ItemType items[MaxSize];                                                                                                \
-} QueueType;                                                                                                                \
-                                                                                                                            \
-typedef struct                                                                                                              \
-{                                                                                                                           \
-    bool added;                                                                                                             \
-    bool evicted;                                                                                                           \
-    ItemType evicted_item;                                                                                                  \
-} QueueType##_Push_Feedback;                                                                                                \
-                                                                                                                            \
-/*Methods*/                                                                                                                 \
-/*-------*/                                                                                                                 \
-/*Push element into the queue*/                                                                                             \
-QueueType##_Push_Feedback QueueType##_Push(QueueType *queue, ItemType item);                                                \
-/*Pop first element from the queue*/                                                                                        \
-ItemType QueueType##_Pop(QueueType *queue);
+typedef struct
+{
+    double priority;
+    void *address;
+} Item;
+typedef struct
+{
+    Item *items;
+    int items_amount;
+} PriorityQueue;
 
-PriorityQueue_Header(ConceptQueue, CONCEPTS_MAX, Concept);  
-PriorityQueue_Header(EventQueue, EVENTS_MAX, Event);                                                                 
+//Methods//
+//-------//
+typedef struct
+{
+    bool added;
+    Item addedItem;
+    bool evicted;
+    Item evictedItem;
+} PriorityQueue_Push_Feedback;
+//Push element of a certain priority into the queue.
+//If successful, addedItem will point to the item in the data structure, with address of the evicted item
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority, int maxElements);
+Item PriorityQueue_Pop(PriorityQueue *queue);
 
 #endif
 

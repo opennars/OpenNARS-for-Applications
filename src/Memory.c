@@ -1,9 +1,25 @@
 #include "Memory.h"
 #include "Concept.h"
 
+Concept concept_storage[CONCEPTS_MAX];
+Event event_storage[EVENTS_MAX];
+Item concept_items_storage[CONCEPTS_MAX];
+Item event_items_storage[EVENTS_MAX];
+
 void memory_RESET()
 {
-    memory.items_amount = 0;
+    concepts.items = concept_items_storage;
+    events.items = event_items_storage;
+    for(int i=0; i<CONCEPTS_MAX; i++)
+    {
+        concept_storage[i] = (Concept) {0};
+        concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
+    }
+    for(int i=0; i<EVENTS_MAX; i++)
+    {
+        event_storage[i] = (Event) {0};
+        events.items[i] = (Item) { .address = &(event_storage[i]) };
+    }
 }
 
 #if MATCH_STRATEGY == VOTING
@@ -14,7 +30,7 @@ int bitToConceptAmount[SDR_SIZE];
 void Memory_addConcept(Concept *concept)
 {
     //try to add it, and if successful add to voting structure
-    ConceptQueue_Push_Feedback feedback = ConceptQueue_Push(&memory, *concept);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority, CONCEPTS_MAX);
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
@@ -27,6 +43,9 @@ void Memory_addConcept(Concept *concept)
                 bitToConceptAmount[j]++;
              }
          }
+         Concept *toRecycle = (Concept*) feedback.addedItem.address;
+         *toRecycle = (Concept) {0};
+         Concept_SetName(toRecycle, concept->name);
     }
     if(feedback.evicted)
     {
@@ -37,7 +56,7 @@ void Memory_addConcept(Concept *concept)
             {
                 for(int i=0; i<bitToConceptAmount[j]; i++)
                 {
-                    if(bitToConcept[j][i] == feedback.evicted_item.name_hash)
+                    if(bitToConcept[j][i] == ((Concept*)feedback.evictedItem.address)->name_hash)
                     {
                         bitToConcept[j][i] = 0;
                         //Now move the above ones down to remove the gap
@@ -106,11 +125,12 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
         return NULL;
     }
     //And now retrieve a concept with the same hash:
-    for(int i=0; i<memory.items_amount; i++)
+    //TODO, NO, REFERENCES CAN BE USED NOW!!
+    for(int i=0; i<concepts.items_amount; i++)
     {
-        if(memory.items[i].name_hash == best.concept)
+        if(((Concept*)concepts.items[i].address)->name_hash == best.concept)
         {
-            return &(memory.items[i]);
+            return &(concepts.items[i]);
         }
     }
     return NULL;
@@ -118,13 +138,13 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
 #if MATCH_STRATEGY == EXHAUSTIVE
     Concept *best = NULL;
     double bestValSoFar = -1;
-    for(int i=0; i<memory.items_amount; i++)
+    for(int i=0; i<concepts.items_amount; i++)
     {
-        double curVal = SDR_Inheritance(taskSDR, &(memory.items[i].name));
+        double curVal = SDR_Inheritance(taskSDR, &(concepts.items[i].name));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
-            best = &(memory.items[i]);
+            best = (Concept*) (memory.items[i]->address);
         }
     }
     return best;
