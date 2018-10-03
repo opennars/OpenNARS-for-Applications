@@ -31,6 +31,12 @@ void Memory_addConcept(Concept *concept)
 {
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority, CONCEPTS_MAX);
+    if(feedback.added)
+    {
+        Concept *toRecycle = (Concept*) feedback.addedItem.address;
+        *toRecycle = (Concept) {0};
+        Concept_SetName(toRecycle, concept->name);
+    }
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
@@ -43,9 +49,6 @@ void Memory_addConcept(Concept *concept)
                 bitToConceptAmount[j]++;
              }
          }
-         Concept *toRecycle = (Concept*) feedback.addedItem.address;
-         *toRecycle = (Concept) {0};
-         Concept_SetName(toRecycle, concept->name);
     }
     if(feedback.evicted)
     {
