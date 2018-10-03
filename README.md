@@ -54,7 +54,7 @@ So what is ANSNA
 Neural network, or reasoning system? I don't know, maybe something in-between, or both, must I decide? :)
 Hopefully one day a thinking machine that learns everything from sensory data and interacts with the environment.
 
-What ANSNA, NARS and ALANN have in common, important properties of AGI
+What ANSNA, NARS and ALANN have in common
 ----------------------------------------------------------------------
 1. Obeying AIKR.
 0. Experience-grounded rather than model-theoretic.
