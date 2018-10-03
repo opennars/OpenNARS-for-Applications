@@ -1,13 +1,5 @@
 #include "Stamp.h"
 
-void Stamp_RESET(Stamp *stamp)
-{
-    for (int i=0;i<STAMP_SIZE;i++)
-    {
-        stamp->evidentalBase[i] = STAMP_FREE;
-    }
-}
-
 Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
 {
     Stamp ret = {0};

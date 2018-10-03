@@ -18,7 +18,6 @@ typedef struct {
 
 //Methods//
 //-------//
-void Stamp_RESET(Stamp *stamp);
 //zip stamp1 and stamp2 into a stamp
 Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2);
 //true iff there is evidental base overlap between a and b
