@@ -8,7 +8,7 @@
 //Parameters//
 //----------//
 #define STAMP_SIZE 20
-#define STAMP_FREE -1
+#define STAMP_FREE 0
 
 /** Stamp as implemented by all NARS implementations */
 typedef struct {

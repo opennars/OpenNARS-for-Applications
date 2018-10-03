@@ -21,8 +21,23 @@ SDR Encode_Scalar(int w, int min, int max, int value)
     return result;
 }
 
-SDR Encode_Term(int number)
+//A fast hash function for strings
+//https://stackoverflow.com/questions/7666509/hash-function-for-string
+//answer by cnicutar:
+unsigned long hash(unsigned char *str)
 {
+    unsigned long hash = 5381;
+    int c;
+    while (c = *str++)
+    {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+    return hash;
+}
+
+SDR Encode_Term(char *name)
+{
+    int number = hash(name)%TERMS_MAX;
     if(input_terms_used[number])
     {
         return input_terms[number];

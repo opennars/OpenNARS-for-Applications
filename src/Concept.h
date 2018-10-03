@@ -38,7 +38,7 @@ typedef struct {
 
 //Methods//
 //-------//
-//Reset the concept and assign a new name to it
-void Concept_RESET(Concept *concept, SDR name);
+//Assign a new name to a concept
+void Concept_SetName(Concept *concept, SDR name);
 
 #endif

@@ -26,8 +26,6 @@ typedef struct
 
 //Methods//
 //-------//
-//Reset FIFO
-void FIFO_RESET(FIFO *fifo);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Add an event to the FIFO with potential revision, 

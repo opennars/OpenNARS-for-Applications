@@ -31,6 +31,7 @@ bool input_terms_used[TERMS_MAX];
  * /param value encoded value
  */
 SDR Encode_Scalar(int w, int min, int max, int value);
-SDR Encode_Term(int number);
+//Encodes a term 
+SDR Encode_Term(char *name);
 
 #endif
