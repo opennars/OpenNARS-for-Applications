@@ -23,12 +23,21 @@ void memory_RESET()
 }
 
 #if MATCH_STRATEGY == VOTING
-SDR_HASH_TYPE bitToConcept[SDR_SIZE][CONCEPTS_MAX];
+Concept* bitToConcept[SDR_SIZE][CONCEPTS_MAX];
 int bitToConceptAmount[SDR_SIZE];
 #endif
 
 void Memory_addConcept(Concept *concept)
 {
+#if USE_HASHING == true
+    for(int i=0; i<concepts.items_amount; i++)
+    {
+        if(((Concept*)concepts.items[i].address)->name_hash == concept->name_hash)
+        {
+            return &(concepts.items[i]);
+        }
+    }
+#endif
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority, CONCEPTS_MAX);
     if(feedback.added)
@@ -45,7 +54,7 @@ void Memory_addConcept(Concept *concept)
             if(SDR_ReadBit(&(concept->name), j))
             {
                 int i = bitToConceptAmount[j]; //insert on top
-                bitToConcept[j][i] = concept->name_hash;
+                bitToConcept[j][i] = concept;
                 bitToConceptAmount[j]++;
              }
          }
@@ -59,7 +68,7 @@ void Memory_addConcept(Concept *concept)
             {
                 for(int i=0; i<bitToConceptAmount[j]; i++)
                 {
-                    if(bitToConcept[j][i] == ((Concept*)feedback.evictedItem.address)->name_hash)
+                    if(bitToConcept[j][i] == (Concept*)feedback.evictedItem.address)
                     {
                         bitToConcept[j][i] = 0;
                         //Now move the above ones down to remove the gap
@@ -80,7 +89,7 @@ void Memory_addConcept(Concept *concept)
 
 typedef struct
 {
-    SDR_HASH_TYPE concept;
+    Concept *concept;
     int count;
 } Vote;
 Concept* Memory_getClosestConceptByName(SDR *taskSDR)
@@ -100,7 +109,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
                 bool existed = false;
                 //check first if the SDR already got a vote
                 //and if yes, increment that one instead creating a new one
-                SDR_HASH_TYPE voted_concept = bitToConcept[j][i];
+                Concept *voted_concept = bitToConcept[j][i];
                 for(int h=0; h<votes; h++)
                 {
                     if(voting[h].concept == voted_concept)
@@ -127,16 +136,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     {
         return NULL;
     }
-    //And now retrieve a concept with the same hash:
-    //TODO, NO, REFERENCES CAN BE USED NOW!!
-    for(int i=0; i<concepts.items_amount; i++)
-    {
-        if(((Concept*)concepts.items[i].address)->name_hash == best.concept)
-        {
-            return &(concepts.items[i]);
-        }
-    }
-    return NULL;
+    return best.concept;
 #endif
 #if MATCH_STRATEGY == EXHAUSTIVE
     Concept *best = NULL;

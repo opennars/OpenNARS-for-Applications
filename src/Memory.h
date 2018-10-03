@@ -19,6 +19,7 @@
 #define EVENTS_MAX 64
 #define VOTING 1
 #define EXHAUSTIVE 2
+#define USE_HASHING true
 #define MATCH_STRATEGY VOTING
 
 //Data structure//
