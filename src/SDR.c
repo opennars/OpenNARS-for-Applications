@@ -95,7 +95,7 @@ SDR SDR_Copy(SDR *original)
 SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
 {
     SDR c = SDR_Copy(sdr);
-    int shiftToLeftmost = (sizeof(SDR_BLOCK_TYPE)-1);
+    int shiftToLeftmost = SDR_BLOCK_SIZE-1;
     if(forward)
     {
         for(int i=0; i<SDR_NUM_BLOCKS; i++)
