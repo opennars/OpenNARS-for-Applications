@@ -7,11 +7,17 @@
 int main() 
 {
     SDR_INIT();
-    SDR mySDR = Encode_Term(1);
+    SDR mySDR = Encode_Term("term1");
     SDR_PrintWhereTrue(&mySDR);
     //not ready yet:
     SDR sdr2 = SDR_PermuteByRotation(&mySDR, true);
     SDR_PrintWhereTrue(&sdr2);
+    
+    Stamp stamp1 = (Stamp) { .evidentalBase = {1,2} };
+    Stamp stamp2 = (Stamp) { .evidentalBase = {2,3,4} };
+    Stamp stamp3 = Stamp_make(&stamp1, &stamp2);
+    Stamp_print(&stamp3);
+    printf("overlapped? %d\n",Stamp_checkOverlap(&stamp1,&stamp2));
     /*
     // memory
     Memory memory;

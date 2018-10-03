@@ -5,11 +5,11 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
     Stamp ret = {0};
     bool processStamp1 = true;
     bool processStamp2 = true;
-    for (int j=0,i=0;i<STAMP_SIZE;i++)
+    for (int j=0, i=0; i<STAMP_SIZE; i++)
     {
         if(processStamp1)
         {
-            if(stamp1->evidentalBase[j] != STAMP_FREE)
+            if(stamp1->evidentalBase[i] != STAMP_FREE)
             {
                 ret.evidentalBase[j] = stamp1->evidentalBase[i];
                 j++;
@@ -25,7 +25,7 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
         }
         if(processStamp2)
         {
-            if(stamp2->evidentalBase[j] != STAMP_FREE)
+            if(stamp2->evidentalBase[i] != STAMP_FREE)
             {
                 ret.evidentalBase[j] = stamp2->evidentalBase[i];
                 j++;
@@ -68,4 +68,18 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
         }
     }
     return false;
+}
+
+void Stamp_print(Stamp *stamp)
+{
+    printf("stamp=");
+    for(int i=0; i<STAMP_SIZE; i++)
+    {
+        if(stamp->evidentalBase[i] == STAMP_FREE)
+        {
+            break;
+        }
+        printf("%d,", stamp->evidentalBase[i]);
+    }
+    printf("\n");
 }

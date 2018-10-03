@@ -22,5 +22,7 @@ typedef struct {
 Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2);
 //true iff there is evidental base overlap between a and b
 bool Stamp_checkOverlap(Stamp *a, Stamp *b);
+//print stamp
+void Stamp_print(Stamp *stamp);
 
 #endif
