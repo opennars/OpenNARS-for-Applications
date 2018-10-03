@@ -21,10 +21,16 @@
 typedef struct {
     Attention attention;
     SDR sdr;
+    SDR_HASH_TYPE sdr_hash;
     char type; //either JUDGMENT or GOAL
     Truth truth;
     Stamp stamp;
     long occurrenceTime; 
 } Event;
+
+//Methods//
+//-------//
+//Assign a new name to an event
+void Event_SetSDR(Event *event, SDR sdr);
 
 #endif

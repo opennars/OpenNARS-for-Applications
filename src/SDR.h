@@ -103,7 +103,7 @@ Truth SDR_Inheritance(SDR *full, SDR *part);
 //The confidence measuring to what degree a SDR is similar to another
 Truth SDR_Similarity(SDR *a, SDR *b);
 //Hash of SDR
-SDR_HASH_TYPE SDR_Hash(SDR *name);
+SDR_HASH_TYPE SDR_Hash(SDR *sdr);
 //SDR init
 void SDR_INIT();
 

@@ -11,10 +11,16 @@
 //--------------//
 typedef struct {
     SDR sdr;
+    SDR_HASH_TYPE sdr_hash;
     Truth truth;
     Stamp stamp;
     long occurrenceTimeOffset;
 } Implication;
+
+//Methods//
+//-------//
+//Assign a new name to an implication
+void Implication_SetSDR(Implication *implication, SDR sdr);
 
 #endif
 

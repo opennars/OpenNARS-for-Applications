@@ -1,8 +1,8 @@
 #include "Concept.h"
 
-void Concept_SetName(Concept *concept, SDR name)
+void Concept_SetSDR(Concept *concept, SDR sdr)
 {
-    concept->name = name;
+    concept->sdr = sdr;
     //Generate hash too:
-    concept->name_hash = SDR_Hash(&name);
+    concept->sdr_hash = SDR_Hash(&sdr);
 }

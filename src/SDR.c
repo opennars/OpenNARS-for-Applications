@@ -173,7 +173,7 @@ Truth SDR_Similarity(SDR *a, SDR *b)
     return Truth_Intersection(SDR_Match(a,b), SDR_Match(b,a));
 }
 
-SDR_HASH_TYPE SDR_Hash(SDR *name)
+SDR_HASH_TYPE SDR_Hash(SDR *sdr)
 {
     SDR_HASH_TYPE hash = 0;
     ITERATE_SDR_BLOCKS(i,
@@ -181,7 +181,7 @@ SDR_HASH_TYPE SDR_Hash(SDR *name)
         for(int j=0; j<pieces; j++)
         {
             int shift_right = j*SDR_HASH_TYPE_SIZE; //each j shifts 8*NUM_BYTES_OF_CONCEPT_HASH_TYPE
-            hash |= (name->blocks[i] >> shift_right);
+            hash |= (sdr->blocks[i] >> shift_right);
         }
     )
     return hash;

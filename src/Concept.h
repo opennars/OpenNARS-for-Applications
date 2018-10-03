@@ -25,8 +25,8 @@ typedef struct {
     Attention attention;
     Usage usage;
     /** name of the concept like in OpenNARS */
-    SDR name;
-    SDR_HASH_TYPE name_hash;
+    SDR sdr;
+    SDR_HASH_TYPE sdr_hash;
     FIFO event_beliefs;
     FIFO event_goals;
     //TODO replace with Table, same as belief tables in OpenNARS:
@@ -39,6 +39,6 @@ typedef struct {
 //Methods//
 //-------//
 //Assign a new name to a concept
-void Concept_SetName(Concept *concept, SDR name);
+void Concept_SetSDR(Concept *concept, SDR sdr);
 
 #endif

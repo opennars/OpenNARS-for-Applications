@@ -29,29 +29,20 @@ int bitToConceptAmount[SDR_SIZE];
 
 void Memory_addConcept(Concept *concept)
 {
-#if USE_HASHING == true
-    for(int i=0; i<concepts.items_amount; i++)
-    {
-        if(((Concept*)concepts.items[i].address)->name_hash == concept->name_hash)
-        {
-            return &(concepts.items[i]);
-        }
-    }
-#endif
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority, CONCEPTS_MAX);
     if(feedback.added)
     {
         Concept *toRecycle = (Concept*) feedback.addedItem.address;
         *toRecycle = (Concept) {0};
-        Concept_SetName(toRecycle, concept->name);
+        Concept_SetSDR(toRecycle, concept->sdr);
     }
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
         for(int j=0; j<SDR_SIZE; j++)
         {
-            if(SDR_ReadBit(&(concept->name), j))
+            if(SDR_ReadBit(&(concept->sdr), j))
             {
                 int i = bitToConceptAmount[j]; //insert on top
                 bitToConcept[j][i] = concept;
@@ -64,7 +55,7 @@ void Memory_addConcept(Concept *concept)
         //if a concept was evicted, delete from voting structure
         for(int j=0; j<SDR_SIZE; j++)
         {
-            if(SDR_ReadBit(&(concept->name), j))
+            if(SDR_ReadBit(&(concept->sdr), j))
             {
                 for(int i=0; i<bitToConceptAmount[j]; i++)
                 {
@@ -92,16 +83,25 @@ typedef struct
     Concept *concept;
     int count;
 } Vote;
-Concept* Memory_getClosestConceptByName(SDR *taskSDR)
+Concept* Memory_getClosestConcept(Event *event)
 {
+    SDR *eventSDR = &(event->sdr);
+#if USE_HASHING == true
+    for(int i=0; i<concepts.items_amount; i++)
+    {
+        if(((Concept*)concepts.items[i].address)->sdr_hash == event->sdr_hash)
+        {
+            return &(concepts.items[i]);
+        }
+    }
+#endif
 #if MATCH_STRATEGY == VOTING
-    SDR_HASH_TYPE taskhash = SDR_Hash(taskSDR);
     Vote voting[CONCEPTS_MAX] = {0};
     int votes = 0;
     Vote best = {0};
     for(int j=0; j<SDR_SIZE; j++)
     {
-        if(SDR_ReadBit(taskSDR, j))
+        if(SDR_ReadBit(eventSDR, j))
         {
             for(int i=0; i<bitToConceptAmount[j]; i++)
             {
@@ -143,7 +143,7 @@ Concept* Memory_getClosestConceptByName(SDR *taskSDR)
     double bestValSoFar = -1;
     for(int i=0; i<concepts.items_amount; i++)
     {
-        double curVal = SDR_Inheritance(taskSDR, &(concepts.items[i].name));
+        double curVal = SDR_Inheritance(eventSDR, &(concepts.items[i].sdr));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
