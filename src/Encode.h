@@ -14,6 +14,7 @@
 //Parameters//
 //----------//
 #define TERMS_MAX 100
+#define TERM_ONES 5
 
 //Data structure//
 //--------------//

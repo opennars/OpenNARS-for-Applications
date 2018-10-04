@@ -42,7 +42,7 @@ SDR Encode_Term(char *name)
     {
         return input_terms[number];
     }
-    for(int i=0; i<SDR_ONES; i++)
+    for(int i=0; i<TERM_ONES; i++)
     {
         //1. choose which block to go into
         int block_i = rand() % SDR_NUM_BLOCKS;

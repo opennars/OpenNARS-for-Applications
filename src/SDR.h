@@ -20,7 +20,6 @@
 //Parameters//
 //----------//
 #define SDR_SIZE 2048
-#define SDR_ONES 5
 #define SDR_BLOCK_TYPE __uint128_t
 #define SDR_BLOCK_SIZE (8*sizeof(SDR_BLOCK_TYPE))
 #define SDR_HASH_TYPE uint64_t
@@ -68,6 +67,8 @@ int SDR_ReadBit(SDR *sdr, int bit_i);
 void SDR_WriteBit(SDR *sdr, int bit_i, int value);
 //Print a SDR including zero bits
 void SDR_PrintFull(SDR *sdr);
+// count amount of true bits
+int SDR_CountTrue(SDR *sdr);
 // print indices of true bits
 void SDR_PrintWhereTrue(SDR *sdr);
 //One SDR minus the other

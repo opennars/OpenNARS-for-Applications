@@ -8,7 +8,7 @@ int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
 
 void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value)
 {
-    sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(1 << block_bit_j))) | (((SDR_BLOCK_TYPE)value) << block_bit_j);
+    sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(((SDR_BLOCK_TYPE)1) << block_bit_j))) | (((SDR_BLOCK_TYPE)value) << block_bit_j);
 }
 
 int SDR_ReadBit(SDR *sdr, int bit_i)
@@ -31,13 +31,27 @@ void SDR_PrintFull(SDR *sdr)
     printf("\n");
 }
 
-void SDR_PrintWhereTrue(SDR *sdr) {
+void SDR_PrintWhereTrue(SDR *sdr)
+{
     ITERATE_SDR_BITS(i,j,
-        if (SDR_ReadBitInBlock(sdr,i,j)) {
-            printf("(%d,%d)\n", i, j);
+        if (SDR_ReadBitInBlock(sdr,i,j)) 
+        {
+            printf("[%d](%d,%d)\n", i*SDR_BLOCK_SIZE+j, i, j);
         }
     )
     printf("===\n");
+}
+
+int SDR_CountTrue(SDR *sdr)
+{
+    int cnt = 0;
+    ITERATE_SDR_BITS(i,j,
+        if (SDR_ReadBitInBlock(sdr,i,j)) 
+        {
+            cnt++;
+        }
+    )
+    return cnt;
 }
 
 SDR SDR_Minus(SDR *a, SDR *b)
