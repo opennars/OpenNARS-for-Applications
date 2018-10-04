@@ -8,7 +8,7 @@ int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
 
 void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value)
 {
-    sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(1 << block_bit_j))) | (value << block_bit_j);
+    sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(1 << block_bit_j))) | (((SDR_BLOCK_TYPE)value) << block_bit_j);
 }
 
 int SDR_ReadBit(SDR *sdr, int bit_i)
@@ -84,17 +84,9 @@ void SDR_Swap(SDR *sdr, int bit_i, int bit_j)
     SDR_WriteBit(sdr, bit_j, temp);
 }
 
-SDR SDR_Copy(SDR *original)
-{
-    SDR c;
-    ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = original->blocks[i];
-    )
-    return c;
-}
 SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
 {
-    SDR c = SDR_Copy(sdr);
+    SDR c = *sdr;
     int shiftToLeftmost = SDR_BLOCK_SIZE-1;
     if(forward)
     {
@@ -147,8 +139,8 @@ SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
     SDR sdrxor = SDR_Xor(&aPerm,compound);
     SDR b = SDR_Permute(&sdrxor, &SDR_permP_inv);
     return b;
-
 }
+
 Truth SDR_Match(SDR *part,SDR *full)
 {
     int countOneInBoth = 0;
@@ -209,7 +201,7 @@ void SDR_GeneratePermutation(int *perm, int *perm_inverse)
 
 SDR SDR_Permute(SDR *sdr, int *permutation)
 {
-    SDR c = SDR_Copy(sdr);
+    SDR c = *sdr;
     for(int i=0; i<SDR_SIZE; i++)
     {
         SDR_Swap(&c, i, permutation[i]);

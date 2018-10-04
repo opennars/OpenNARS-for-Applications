@@ -80,8 +80,6 @@ SDR SDR_Intersection(SDR *a, SDR *b);
 SDR SDR_Xor(SDR *a, SDR *b);
 //Swaps two bits of the SDR:
 void SDR_Swap(SDR *sdr, int bit_i, int bit_j);
-//Create a copy of the SDR
-SDR SDR_Copy(SDR *original);
 //Generate a random permutation and its inverse
 void SDR_GeneratePermutation(int *perm, int *perm_inverse);
 //Apply the seq_permutation to the SDR

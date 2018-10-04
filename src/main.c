@@ -21,6 +21,16 @@ void SDR_Test()
     }
     SDR sdr3 = SDR_Permute(&mySDR, perm);
     SDR_PrintWhereTrue(&sdr3);
+    
+    SDR sdrTest = {0};
+    SDR_WriteBit(&sdrTest, 255, 1);
+    SDR_Swap(&sdrTest, 255, 256);
+    
+    //SDR_WriteBitInBlock(&sdrTest, 1, 127, 1);
+    SDR_PrintWhereTrue(&sdrTest);
+    printf("bit255=%d\n", SDR_ReadBit(&sdrTest, 255));
+    printf("bit254=%d\n", SDR_ReadBit(&sdrTest, 254));
+    printf("bit256=%d\n", SDR_ReadBit(&sdrTest, 256));
 }
 
 void Stamp_Test()
