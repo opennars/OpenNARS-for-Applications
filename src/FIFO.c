@@ -32,12 +32,20 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
             }
         }
     }
+    //overlap happened, we can't revise, so just add the event to FIFO
     if(Stamp_checkOverlap(&event->stamp, &closest.stamp))
     {
         FIFO_Add(event, fifo);
-        return *event;
+        return (Event) {0};
     }
     Event revised = Inference_EventRevision(&closest, event);
+    //Revision into the middle of both occurrence times leaded to truth lower than the premises, don't revise and add event
+    if(revised.truth.confidence < closest.truth.confidence && revised.truth.confidence < event->truth.confidence)
+    {
+        FIFO_Add(event, fifo);
+        return (Event) {0};
+    }
+    //Else we add the revised one and set the closest one to be deleted/0
     fifo->array[closest_i] = (Event) {0};
     FIFO_Add(&revised, fifo);
     return revised;

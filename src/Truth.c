@@ -75,7 +75,6 @@ Truth Truth_Intersection(Truth v1, Truth v2)
     return (Truth) {.frequency = f, .confidence = c};
 }
 
-
 Truth Truth_Eternalize(Truth v)
 {
     float f = v.frequency;
@@ -86,5 +85,5 @@ Truth Truth_Eternalize(Truth v)
 Truth Truth_Projection(Truth v, long originalTime, long targetTime)
 {
     double difference = abs(targetTime - originalTime);
-    return (Truth) { .frequency = v.frequency, .confidence = pow(TRUTH_PROJECTION_DECAY,difference)};
+    return (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference)};
 }

@@ -29,7 +29,7 @@ typedef struct
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Add an event to the FIFO with potential revision, 
-//return revised element if revision worked, else event
+//return revised element if revision worked, else {0}
 //also see https://github.com/patham9/ANSNA/wiki/Event-Revision
 Event FIFO_AddAndRevise(Event *event, FIFO *fifo);
 

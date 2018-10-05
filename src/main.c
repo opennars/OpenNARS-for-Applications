@@ -37,6 +37,41 @@ void SDR_Test()
     printf("<<SDR Test successful\n");
 }
 
+void FIFO_Test()
+{
+    printf(">>FIFO test start\n");
+    FIFO fifo;
+    //First, evaluate whether the fifo works, not leading to overflow
+    for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
+    {
+        Event event1 = (Event) { .sdr = Encode_Term("test"), 
+                                 .type = EVENT_TYPE_BELIEF, 
+                                 .truth = {.frequency = 1.0, .confidence = 0.9},
+                                 .stamp = (Stamp) { .evidentalBase = {i} }, 
+                                 .occurrenceTime = i*10 };
+        FIFO_Add(&event1, &fifo);
+    }
+    for(int i=0; i<FIFO_SIZE; i++)
+    {
+        assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0]);
+    }
+    //now see whether a new item is revised with the correct one:
+    int i=10; //revise with item 10, which has occurrence time 10
+    int newbase = FIFO_SIZE*2+1;
+    Event event2 = (Event) { .sdr = Encode_Term("test"), 
+                             .type = EVENT_TYPE_BELIEF, 
+                             .truth = {.frequency = 1.0, .confidence = 0.9},
+                             .stamp = (Stamp) { .evidentalBase = {newbase} }, 
+                             .occurrenceTime = i*10+3 };
+    Event ret = FIFO_AddAndRevise(&event2, &fifo);
+    assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3);
+    assert(ret.stamp.evidentalBase[0] == i);
+    assert(ret.stamp.evidentalBase[1] == newbase);
+    printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
+    assert(ret.truth.confidence > 0.9);
+    printf("<<FIFO Test successful\n");
+}
+
 void Stamp_Test()
 {
     printf(">>Stamp test start\n");
@@ -56,7 +91,7 @@ int main()
     SDR_INIT();
     SDR_Test();
     Stamp_Test();
-    
+    FIFO_Test();
     /*
     // memory
     Memory memory;
