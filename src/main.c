@@ -9,7 +9,7 @@ void assert(bool b, char* message)
     if(!b)
     {
         printf(message);
-        printf("Test error\n");
+        printf("\nTest error\n");
         exit(1);
     }
 }
@@ -36,7 +36,6 @@ void SDR_Test()
     assert(SDR_ReadBit(&sdrTest, 254) == 0, "bit was not set, should be 0");
     assert(SDR_ReadBit(&sdrTest, 255) == 0, "bit was swapped to 0, should be 0");
     assert(SDR_ReadBit(&sdrTest, 256) == 1, "bit was swapped to 1, should be 1");
-    //SDR_PrintWhereTrue(&sdrTest);
     printf("testing tuples now:\n");
     SDR_PrintWhereTrue(&mySDR);
     SDR mySDR2 = Encode_Term("term2");
