@@ -80,7 +80,7 @@ SDR SDR_Intersection(SDR *a, SDR *b);
 //Xor of both SDR's
 SDR SDR_Xor(SDR *a, SDR *b);
 //Swaps two bits of the SDR:
-void SDR_Swap(SDR *sdr, int bit_i, int bit_j);
+void SDR_Swap(SDR *write, SDR *read, int bit_i, int bit_j);
 //Generate a random permutation and its inverse
 void SDR_GeneratePermutation(int *perm, int *perm_inverse);
 //Apply the seq_permutation to the SDR
@@ -96,6 +96,8 @@ SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement);
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
 //Match confidence when matching the part SDR to the full
 Truth SDR_Match(SDR *part, SDR *full);
+//Whether two SDR's are equal completely, only used for testing!
+bool SDR_Equal(SDR *a, SDR *b);
 //The confidence measuring to what degree a SDR is a special case of another
 //also see https://github.com/patham9/ANSNA/wiki/SDRInheritance-for-matching,-and-its-truth-value
 Truth SDR_Inheritance(SDR *full, SDR *part);

@@ -90,12 +90,12 @@ SDR SDR_Xor(SDR *a, SDR *b)
     return c;
 }
 
-void SDR_Swap(SDR *sdr, int bit_i, int bit_j)
+void SDR_Swap(SDR *write, SDR *read, int bit_i, int bit_j)
 {
     //temp <- a, then a <- b, then b <- temp
-    int temp = SDR_ReadBit(sdr, bit_i);
-    SDR_WriteBit(sdr, bit_i, SDR_ReadBit(sdr, bit_j));
-    SDR_WriteBit(sdr, bit_j, temp);
+    int temp = SDR_ReadBit(read, bit_i);
+    SDR_WriteBit(write, bit_i, SDR_ReadBit(read, bit_j));
+    SDR_WriteBit(write, bit_j, temp);
 }
 
 SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
@@ -169,6 +169,17 @@ Truth SDR_Match(SDR *part,SDR *full)
     return truth;
 }
 
+bool SDR_Equal(SDR *a, SDR *b)
+{
+    ITERATE_SDR_BLOCKS(i,
+        if(a->blocks[i] != b->blocks[i])
+        {
+            return false;
+        }
+    )
+    return true;
+}
+
 Truth SDR_Inheritance(SDR *full, SDR *part)
 {
     return SDR_Match(part, full);
@@ -218,7 +229,7 @@ SDR SDR_Permute(SDR *sdr, int *permutation)
     SDR c = *sdr;
     for(int i=0; i<SDR_SIZE; i++)
     {
-        SDR_Swap(&c, i, permutation[i]);
+        SDR_Swap(&c, sdr, i, permutation[i]);
     }
     return c;
 }
