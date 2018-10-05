@@ -65,8 +65,10 @@ void FIFO_Test()
                              .occurrenceTime = i*10+3 };
     Event ret = FIFO_AddAndRevise(&event2, &fifo);
     assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3);
-    assert(ret.stamp.evidentalBase[0] == i);
-    assert(ret.stamp.evidentalBase[1] == newbase);
+    assert(ret.stamp.evidentalBase[0] == i && ret.stamp.evidentalBase[1] == newbase);
+    assert(fifo.array[FIFO_SIZE-i].type == EVENT_TYPE_DELETED); //as it was replaced
+    Event addedRet = fifo.array[fifo.currentIndex == 0 ? FIFO_SIZE-1 : fifo.currentIndex - 1];
+    assert(addedRet.stamp.evidentalBase[0] == i && addedRet.stamp.evidentalBase[1] == newbase); //it is at the first position of the FIFO now
     printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
     assert(ret.truth.confidence > 0.9);
     printf("<<FIFO Test successful\n");
