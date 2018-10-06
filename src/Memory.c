@@ -8,8 +8,8 @@ Item event_items_storage[EVENTS_MAX];
 
 void memory_RESET()
 {
-    concepts.items = concept_items_storage;
-    events.items = event_items_storage;
+    PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
+    PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
         concept_storage[i] = (Concept) {0};
@@ -30,7 +30,7 @@ int bitToConceptAmount[SDR_SIZE];
 void Memory_addConcept(Concept *concept)
 {
     //try to add it, and if successful add to voting structure
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority, CONCEPTS_MAX);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
     if(feedback.added)
     {
         Concept *toRecycle = (Concept*) feedback.addedItem.address;
@@ -87,7 +87,7 @@ Concept* Memory_getClosestConcept(Event *event)
 {
     SDR *eventSDR = &(event->sdr);
 #if USE_HASHING == true
-    for(int i=0; i<concepts.items_amount; i++)
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
         if(((Concept*)concepts.items[i].address)->sdr_hash == event->sdr_hash)
         {

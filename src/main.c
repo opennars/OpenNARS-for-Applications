@@ -17,6 +17,7 @@ void assert(bool b, char* message)
 void SDR_Test()
 {
     printf(">>SDR Test Start\n");
+    printf("testing encoding and permutation:\n");
     SDR mySDR = Encode_Term("term1");
     assert(SDR_CountTrue(&mySDR) == TERM_ONES, "SDR term should have TERM_ONES ones");
     SDR sdr2 = SDR_PermuteByRotation(&mySDR, true);
@@ -27,20 +28,13 @@ void SDR_Test()
     SDR_GeneratePermutation(perm, perm_inv);
     SDR sdr3 = SDR_Permute(&mySDR, perm);
     SDR mySDR_recons2 = SDR_Permute(&sdr3, perm_inv);
-    SDR_PrintWhereTrue(&mySDR);
-    SDR_PrintWhereTrue(&sdr3);
-    SDR_PrintWhereTrue(&mySDR_recons2);
     assert(SDR_Equal(&mySDR_recons2, &mySDR), "Inverse permutation should lead to original result");
     printf("testing tuples now:\n");
-    SDR_PrintWhereTrue(&mySDR);
     SDR mySDR2 = Encode_Term("term2");
-    SDR_PrintWhereTrue(&mySDR2);
     printf("recons:");
     SDR tuple = SDR_Tuple(&mySDR, &mySDR2);
     SDR SDR1Recons = SDR_TupleGetFirstElement(&tuple, &mySDR2);
-    SDR_PrintWhereTrue(&SDR1Recons);
     SDR SDR2Recons = SDR_TupleGetSecondElement(&tuple, &mySDR);
-    SDR_PrintWhereTrue(&SDR2Recons);
     Truth selfTest = SDR_Similarity(&mySDR, &mySDR);
     printf("sdr1 sdr1 similarity: %f %f\n", selfTest.frequency, selfTest.confidence);
     assert(selfTest.frequency == 1, "No negative evidence is allowed to be found when matching to itself");
@@ -51,7 +45,7 @@ void SDR_Test()
     Truth t3 = SDR_Similarity(&mySDR, &SDR2Recons);
     assert(t3.frequency < 0.5, "These elements should mostly differ");
     Truth t4 = SDR_Similarity(&mySDR2, &SDR1Recons);
-    assert(t3.frequency < 0.5, "These elements should mostly differtoo");
+    assert(t3.frequency < 0.5, "These elements should mostly differ too");
     printf("<<SDR Test successful\n");
 }
 
@@ -106,6 +100,31 @@ void Stamp_Test()
     printf("<<Stamp test successful\n");
 }
 
+void PriorityQueue_Test()
+{
+    printf(">>PriorityQueue test start\n");
+    PriorityQueue queue;
+    int n_items = 10;
+    Item items[n_items];
+    for(int i=0; i<n_items; i++)
+    {
+        items[i].address = (void*) i;
+        items[i].priority = 1/((double) i+2);
+    }
+    PriorityQueue_RESET(&queue, items, n_items);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0);
+    if(feedback.added)
+    {
+        feedback.addedItem.address = (void*) 666;
+        printf("item was added\n");
+    }
+    if(feedback.evicted)
+    {
+        printf("evicted item %f %d\n", feedback.evictedItem.priority, (int)feedback.evictedItem.address);
+    }
+    printf("<<PriorityQueue test successful\n");
+}
+
 int main() 
 {
     srand(1337);
@@ -113,6 +132,8 @@ int main()
     SDR_Test();
     Stamp_Test();
     FIFO_Test();
+    PriorityQueue_Test();
+    
     /*
     // memory
     Memory memory;
