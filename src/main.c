@@ -9,7 +9,7 @@ void assert(bool b, char* message)
     if(!b)
     {
         printf(message);
-        printf("\nTest error\n");
+        printf("\nTest failed.\n");
         exit(1);
     }
 }
@@ -108,19 +108,24 @@ void PriorityQueue_Test()
     Item items[n_items];
     for(int i=0; i<n_items; i++)
     {
-        items[i].address = (void*) i;
-        items[i].priority = 1/((double) i+2);
+        items[i].address = (void*) (i);
+        items[i].priority = 0;
     }
     PriorityQueue_RESET(&queue, items, n_items);
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0);
-    if(feedback.added)
+    for(int i=0, evictions=0; i<n_items*2; i++)
     {
-        feedback.addedItem.address = (void*) 666;
-        printf("item was added\n");
-    }
-    if(feedback.evicted)
-    {
-        printf("evicted item %f %d\n", feedback.evictedItem.priority, (int)feedback.evictedItem.address);
+        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0/((double) (n_items*2-i)));
+        if(feedback.added)
+        {
+            printf("item was added %f %d\n", feedback.addedItem.priority, (int)feedback.addedItem.address);
+        }
+        if(feedback.evicted)
+        {
+            assert(evictions>0 || feedback.evictedItem.priority == 1.0/((double) (n_items*2)), "the evicted item has to be the lowest priority one");
+            assert(queue.itemsAmount < n_items, "eviction should only happen when full!");
+            printf("evicted item %f %d\n", feedback.evictedItem.priority, (int)feedback.evictedItem.address);
+            evictions++;
+        }
     }
     printf("<<PriorityQueue test successful\n");
 }

@@ -4,6 +4,7 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
 {
     queue->items = items;
     queue->maxElements = maxElements;
+    queue->itemsAmount = 0;
 }
 
 PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority)
