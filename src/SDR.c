@@ -90,14 +90,6 @@ SDR SDR_Xor(SDR *a, SDR *b)
     return c;
 }
 
-void SDR_Swap(SDR *write, SDR *read, int bit_i, int bit_j)
-{
-    //temp <- a, then a <- b, then b <- temp
-    int temp = SDR_ReadBit(read, bit_i);
-    SDR_WriteBit(write, bit_i, SDR_ReadBit(read, bit_j));
-    SDR_WriteBit(write, bit_j, temp);
-}
-
 SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
 {
     SDR c = *sdr;
@@ -226,10 +218,13 @@ void SDR_GeneratePermutation(int *perm, int *perm_inverse)
 
 SDR SDR_Permute(SDR *sdr, int *permutation)
 {
-    SDR c = *sdr;
+    SDR c = {0};
     for(int i=0; i<SDR_SIZE; i++)
     {
-        SDR_Swap(&c, sdr, i, permutation[i]);
+        if(SDR_ReadBit(sdr, i))
+        {
+            SDR_WriteBit(&c, permutation[i], 1);
+        }
     }
     return c;
 }

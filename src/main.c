@@ -28,14 +28,9 @@ void SDR_Test()
     SDR sdr3 = SDR_Permute(&mySDR, perm);
     SDR mySDR_recons2 = SDR_Permute(&sdr3, perm_inv);
     SDR_PrintWhereTrue(&mySDR);
+    SDR_PrintWhereTrue(&sdr3);
     SDR_PrintWhereTrue(&mySDR_recons2);
     assert(SDR_Equal(&mySDR_recons2, &mySDR), "Inverse permutation should lead to original result");
-    SDR sdrTest = {0};
-    SDR_WriteBit(&sdrTest, 255, 1);
-    SDR_Swap(&sdrTest, &sdrTest, 256, 255);
-    assert(SDR_ReadBit(&sdrTest, 254) == 0, "bit was not set, should be 0");
-    assert(SDR_ReadBit(&sdrTest, 255) == 0, "bit was swapped to 0, should be 0");
-    assert(SDR_ReadBit(&sdrTest, 256) == 1, "bit was swapped to 1, should be 1");
     printf("testing tuples now:\n");
     SDR_PrintWhereTrue(&mySDR);
     SDR mySDR2 = Encode_Term("term2");
@@ -50,13 +45,13 @@ void SDR_Test()
     printf("sdr1 sdr1 similarity: %f %f\n", selfTest.frequency, selfTest.confidence);
     assert(selfTest.frequency == 1, "No negative evidence is allowed to be found when matching to itself");
     Truth t1 = SDR_Similarity(&mySDR, &SDR1Recons);
-    printf("sdr1 sdr1recons similarity: %f %f\n", t1.frequency, t1.confidence);
+    assert(t1.frequency == 1, "Reconstructed tuple element1 should be almost the same as the original");
     Truth t2 = SDR_Similarity(&mySDR2, &SDR2Recons);
-    printf("sdr2 sdr2recons similarity: %f %f\n", t2.frequency, t2.confidence);
+    assert(t2.frequency == 1, "Reconstructed tuple element2 should be almost the same as the original");
     Truth t3 = SDR_Similarity(&mySDR, &SDR2Recons);
-    printf("sdr1 sdr2recons similarity: %f %f\n", t3.frequency, t3.confidence);
+    assert(t3.frequency < 0.5, "These elements should mostly differ");
     Truth t4 = SDR_Similarity(&mySDR2, &SDR1Recons);
-    printf("sdr2 sdr1recons similarity: %f %f\n", t4.frequency, t4.confidence);
+    assert(t3.frequency < 0.5, "These elements should mostly differtoo");
     printf("<<SDR Test successful\n");
 }
 
