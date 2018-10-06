@@ -39,7 +39,7 @@ void SDR_Test()
     SDR tuple = SDR_Tuple(&mySDR, &mySDR2);
     SDR SDR1Recons = SDR_TupleGetFirstElement(&tuple, &mySDR2);
     SDR_PrintWhereTrue(&SDR1Recons);
-    SDR SDR2Recons = SDR_TupleGetFirstElement(&tuple, &mySDR);
+    SDR SDR2Recons = SDR_TupleGetSecondElement(&tuple, &mySDR);
     SDR_PrintWhereTrue(&SDR2Recons);
     Truth selfTest = SDR_Similarity(&mySDR, &mySDR);
     printf("sdr1 sdr1 similarity: %f %f\n", selfTest.frequency, selfTest.confidence);
