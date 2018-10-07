@@ -7,76 +7,180 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
     queue->itemsAmount = 0;
 }
 
-PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority)
+#define at(i) (queue->items[i])
+
+void swap(PriorityQueue *queue, int index1, int index2)
 {
-    PriorityQueue_Push_Feedback feedback = {0};
-    int i = queue->itemsAmount + 1;
-    int j = i / 2;
-    //"move the item "up" (exchanging child with parent) till element to insert priority is smaller than the node
-    while(i > 1 && queue->items[j].priority <= priority)
+    Item temp = at(index1);
+    at(index1) = at(index2);
+    at(index2) = temp;
+}
+
+bool isOnMaxLevel(int i)
+{ 
+    int level=-1;
+    int n = i+1;
+    while(n)
     {
-        if(i < queue->maxElements) //we can't put the parent there if it's outside of the array
-        {
-            queue->items[i] = queue->items[j];
-        } 
-        else //item_j got evicted as there was no space(i) move it to, it gets replaced with item_j/2 now
-        {
-            feedback.evicted = true;
-            feedback.evictedItem = queue->items[j];
-        }
-        i = j;
-        j = j / 2; //parent
+      n = n >> 1;
+      level++;
     }
-    //now put element at the "free" parent, which was already copied to the child (which itself was copied to its child..):
-    if(i < queue->maxElements) //we can't put the element there if it's outside of the array
+    return level & 1; /*% 2*/;
+}
+
+int parent(int i) 
+{ 
+    return ((i+1)/2)-1;
+}
+
+int grandparent(int i) 
+{ 
+    return ((i+1)/4)-1;
+}
+
+int leftChild(int i) 
+{ 
+    return 2*i + 1;
+}
+
+int leftGrandChild(int i)
+{ 
+    return 4*i + 3;
+}
+
+int smallestChild(PriorityQueue *queue, int i, bool invert) 
+{ //return smallest of children or self if no children
+    int l = leftChild(i);
+    if(l >= queue->itemsAmount)
+    { 
+        return i; //no children, return self
+    }
+    int r = l+1; //right child
+    if(r < queue->itemsAmount)
     {
-        queue->items[i].priority = priority;
-        //if not evicted, item address already points to the related item storage item,
-        //else use address of evicted item
-        if(feedback.evicted) 
+        Item lv = at(l);
+        Item rv = at(r);
+        if((rv.priority < lv.priority)^invert)
         {
-            queue->items[i].address = feedback.evictedItem.address;
+            return r;
         }
+    }
+    return l;
+}
+
+int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
+{//return smallest of grandchildren or self if no children
+    int l = leftGrandChild(i);
+    if(l >= queue->itemsAmount)
+    {
+        return i;
+    }
+    Item lv = at(l);
+    int min = l;
+    for(int r=l+1; r<queue->itemsAmount && r < l+4; r++) 
+    { //iterate on three grandsiblings (they are consecutive)
+        Item rv = at(r);
+        if((rv.priority < lv.priority)^invert)
+        {
+            lv = rv;
+            min = r;
+        }
+    }
+    return min;
+}
+  
+void trickleDown(PriorityQueue *queue, int i, bool invert)
+{   //assert(invert == isOnMaxLevel(i));
+    while(1)
+    {
+        //enforce min-max property on level(i), we need to check children and grandchildren
+        int m = smallestChild(queue, i, invert);
+        if(m == i)
+        {
+            break; //no children
+        }
+        if((at(m).priority < at(i).priority)^invert) //swap children, max property on level(i)+1 automatically enforced
+        {
+            swap(queue, i, m);
+        }
+        int j = smallestGrandChild(queue, i, invert);
+        if(j == i)
+        {
+            break; //no grandchildren
+        }
+        if((at(j).priority < at(i).priority)^invert) 
+        {
+            swap(queue, i, j);
+            i = j; //we need to enforce min-max property on level(j) now.
+        } 
         else
         {
-            queue->itemsAmount++;
+            break; //no swap, finish
         }
-        feedback.added = true;
-        feedback.addedItem = queue->items[i];
-        
     }
+}
+
+void bubbleUp(PriorityQueue *queue, int i)
+{
+    int m;
+    m = parent(i);
+    bool invert = isOnMaxLevel(i);
+    if (m>=0 && ((at(i).priority > at(m).priority)^invert))
+    {
+        swap(queue, i, m);
+        i = m;
+        invert = !invert;
+    }
+    m = grandparent(i);
+    while (m>=0 && ((at(i).priority < at(m).priority)^invert))
+    {
+        swap(queue, i,m);
+        i = m;
+        m = grandparent(i);
+    }
+}
+
+
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority)
+{
+    PriorityQueue_Push_Feedback feedback = (PriorityQueue_Push_Feedback) {0};
+    //first evict if necessary
+    if(queue->itemsAmount >= queue->maxElements)
+    {
+        if(priority < at(0).priority)
+        { //smaller than smallest
+            return feedback;
+        }
+        feedback.evicted = true;
+        feedback.evictedItem = PriorityQueue_PopMin(queue);
+    }
+    at(queue->itemsAmount).priority = priority;
+    if(feedback.evicted)
+    {
+        at(queue->itemsAmount).address = feedback.evictedItem.address; 
+    }
+    feedback.added = true;
+    feedback.addedItem = at(queue->itemsAmount);
+    queue->itemsAmount++;
+    bubbleUp(queue, queue->itemsAmount-1);
     return feedback;
 }
 
-Item PriorityQueue_Pop(PriorityQueue *queue)
+Item PriorityQueue_PopMin(PriorityQueue *queue)
 {
-    //No items, we can only return null
-    if (!queue->itemsAmount)
-    {
-        return (Item) {0};
-    }
-    //the highest priority item is the first in the array
-    Item returnedItem = queue->items[1];
-    queue->items[1] = queue->items[queue->itemsAmount];
-    //if we remove it the amount gets reduced
+    Item item = at(0);
+    at(0) = at(queue->itemsAmount-1);
     queue->itemsAmount--;
-    //heapify what is left after the removal (decide new parent, propagate this handling iteratively down the tree)
-    int current = 1, left, right, largest;
-    while(current != queue->itemsAmount+1)
-    {
-        int left = 2*current;
-        int right = left+1;
-        largest = queue->itemsAmount+1;
-        if (left <= queue->itemsAmount && queue->items[left].priority >= queue->items[largest].priority)
-        {
-            largest = left; //left is largest
-        }
-        if (right <= queue->itemsAmount && queue->items[right].priority >= queue->items[largest].priority)
-        {
-            largest = right; //move up right child
-        }
-        queue->items[current] = queue->items[largest];
-        current = largest;
-    }
-    return returnedItem;
+    trickleDown(queue, 0, false); //enforce minmax heap property
+    return item;
+}
+
+Item PriorityQueue_PopMax(PriorityQueue *queue)
+{
+    int p = smallestChild(queue, 0, true);
+    Item item = at(p);
+    at(p) = at(queue->itemsAmount-1); //replace max with last item
+    queue->itemsAmount--;
+    trickleDown(queue, p, true); //enforce minmax heap property
+    return item;
 }

@@ -5,7 +5,7 @@
 //  ANSNA priority queue //
 ///////////////////////////
 //The priority queue for concepts and tasks
-//Idea from https://stackoverflow.com/a/2935995
+//Ported from https://github.com/quxiaofeng/python-stl/blob/master/meshlab/MeshLabSrc_AllInc_v132/meshlab/src/plugins_experimental/edit_ocme/src/cache/old/mmheap.h
 
 //References//
 //-----------//
@@ -37,13 +37,14 @@ typedef struct
 
 //Methods//
 //-------//
-//Initializes the priority queue
+//Resets the priority queue
 void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements);
 //Push element of a certain priority into the queue.
 //If successful, addedItem will point to the item in the data structure, with address of the evicted item, if eviction happened
 PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority);
 //Retrieve first item of the queue
-Item PriorityQueue_Pop(PriorityQueue *queue);
+Item PriorityQueue_PopMin(PriorityQueue *queue);
+Item PriorityQueue_PopMax(PriorityQueue *queue);
 
 #endif
 
