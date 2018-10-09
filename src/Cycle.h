@@ -1,8 +1,8 @@
-#ifndef H_CONTROL
-#define H_CONTROL
+#ifndef H_CYCLE
+#define H_CYCLE
 
 /////////////////////////////////////
-//  ALANN Control Loop             //
+//  ALANN Control Cycle            //
 /////////////////////////////////////
 //A FIFO-like structure, that only supports put in and overwrites
 //the oldest task when full
