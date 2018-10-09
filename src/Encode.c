@@ -49,7 +49,7 @@ SDR Encode_Term(char *name)
         //2. choose at which position to put 1
         int bit_j = rand() % SDR_BLOCK_SIZE;
         //3. put it there
-        input_terms[number].blocks[block_i] |= (1 << bit_j);
+        SDR_WriteBitInBlock(&input_terms[number], block_i, bit_j, 1);
     }
     input_terms_used[number] = true;
     return input_terms[number];
