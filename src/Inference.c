@@ -32,7 +32,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
-    if(abs(a->occurrenceTime - b->occurrenceTime) > REVISION_MAX_OCCURRENCE_DISTANCE)
+    if(labs(a->occurrenceTime - b->occurrenceTime) > REVISION_MAX_OCCURRENCE_DISTANCE)
     {
         return (Event) {0};
     }

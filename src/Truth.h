@@ -8,6 +8,7 @@
 //References//
 //-----------//
 #include <math.h>
+#include <stdlib.h>
 
 //Data structure//
 //--------------//
