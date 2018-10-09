@@ -52,7 +52,7 @@ void SDR_Test()
 void FIFO_Test()
 {
     printf(">>FIFO test start\n");
-    FIFO fifo;
+    FIFO fifo = {0};
     //First, evaluate whether the fifo works, not leading to overflow
     for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
@@ -130,6 +130,32 @@ void PriorityQueue_Test()
     printf("<<PriorityQueue test successful\n");
 }
 
+void Table_Test()
+{
+    printf(">>Table test start\n");
+    Table table = {0};
+    for(int i=TABLE_SIZE*2; i>=1; i--)
+    {
+        Implication imp = (Implication) { .sdr = Encode_Term("test"), 
+                                          .truth = (Truth) { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
+                                          .stamp = (Stamp) { .evidentalBase = {i} },
+                                          .occurrenceTimeOffset = 10 };
+        Table_Add(&table, &imp);
+    }
+    for(int i=0; i<TABLE_SIZE; i++)
+    {
+        assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
+    }
+    Implication imp = (Implication) { .sdr = Encode_Term("test"), 
+                                      .truth = (Truth) { .frequency = 1.0, .confidence = 0.9},
+                                      .stamp = (Stamp) { .evidentalBase = {TABLE_SIZE*2+1} },
+                                      .occurrenceTimeOffset = 10 };
+    assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
+    Table_AddAndRevise(&table, &imp);
+    assert(table.array[0].truth.confidence>0.9, "The revision result should be more confident than the premises.");
+    printf("<<Table test successful\n");
+}
+
 int main() 
 {
     srand(1337);
@@ -138,6 +164,7 @@ int main()
     Stamp_Test();
     FIFO_Test();
     PriorityQueue_Test();
+    Table_Test();
     
     /*
     // memory

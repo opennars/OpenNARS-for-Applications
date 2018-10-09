@@ -13,6 +13,7 @@
 #include "Implication.h"
 #include "Attention.h"
 #include "FIFO.h"
+#include "Table.h"
 
 //Parameters//
 //----------//

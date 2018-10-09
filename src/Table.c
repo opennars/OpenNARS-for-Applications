@@ -5,9 +5,9 @@
 void Table_Add(Table *table, Implication *imp)
 {
     double impTruthExp = Truth_Expectation(imp->truth);
-    for(int i=0; i<table->itemsAmount; i++)
+    for(int i=0; i<TABLE_SIZE; i++)
     {
-        if(impTruthExp > Truth_Expectation(table->array[i].truth))
+        if(i==table->itemsAmount || impTruthExp > Truth_Expectation(table->array[i].truth))
         {
             //ok here it has to go, move down the rest, evicting the last element if we hit TABLE_SIZE-1.
             for(int j=MIN(table->itemsAmount, TABLE_SIZE-1); j>i; j--)
