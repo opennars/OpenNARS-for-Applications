@@ -36,7 +36,7 @@ void SDR_PrintWhereTrue(SDR *sdr)
     ITERATE_SDR_BITS(i,j,
         if (SDR_ReadBitInBlock(sdr,i,j)) 
         {
-            printf("[%d](%d,%d)\n", i*SDR_BLOCK_SIZE+j, i, j);
+            printf("[%lu](%d,%d)\n", i*SDR_BLOCK_SIZE+j, i, j);
         }
     )
     printf("===\n");
@@ -133,17 +133,17 @@ SDR SDR_Tuple(SDR *a, SDR *b)
 
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement)
 {
-    SDR bPerm = SDR_Permute(secondElement, &SDR_permP);
-    SDR sdrxor = SDR_Xor(&bPerm,compound);
-    SDR a = SDR_Permute(&sdrxor, &SDR_permS_inv);
+    SDR bPerm = SDR_Permute(secondElement, SDR_permP);
+    SDR sdrxor = SDR_Xor(&bPerm, compound);
+    SDR a = SDR_Permute(&sdrxor, SDR_permS_inv);
     return a;
 }
 
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
 {
-    SDR aPerm = SDR_Permute(firstElement, &SDR_permS);
-    SDR sdrxor = SDR_Xor(&aPerm,compound);
-    SDR b = SDR_Permute(&sdrxor, &SDR_permP_inv);
+    SDR aPerm = SDR_Permute(firstElement, SDR_permS);
+    SDR sdrxor = SDR_Xor(&aPerm, compound);
+    SDR b = SDR_Permute(&sdrxor, SDR_permP_inv);
     return b;
 }
 
@@ -231,6 +231,6 @@ SDR SDR_Permute(SDR *sdr, int *permutation)
 
 void SDR_INIT()
 {
-    SDR_GeneratePermutation(&SDR_permS, &SDR_permS_inv);
-    SDR_GeneratePermutation(&SDR_permP, &SDR_permP_inv);
+    SDR_GeneratePermutation(SDR_permS, SDR_permS_inv);
+    SDR_GeneratePermutation(SDR_permP, SDR_permP_inv);
 }
