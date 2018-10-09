@@ -32,10 +32,6 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
-    if(labs(a->occurrenceTime - b->occurrenceTime) > REVISION_MAX_OCCURRENCE_DISTANCE)
-    {
-        return (Event) {0};
-    }
     return (Event) { .sdr = SDR_Intersection(&a->sdr, &b->sdr), 
                      .type = a->type,
                      .truth = Truth_Revision(truthA, truthB),

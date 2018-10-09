@@ -8,10 +8,6 @@
 //But only a limited set:
 //the commented derivations are all that need to happen in ANSNA.
 
-//Parameters//
-//----------//
-#define REVISION_MAX_OCCURRENCE_DISTANCE 100
-
 //References//
 //-----------//
 #include <stdbool.h>
