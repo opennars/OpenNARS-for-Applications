@@ -79,7 +79,7 @@ void Stamp_print(Stamp *stamp)
         {
             break;
         }
-        printf("%d,", stamp->evidentalBase[i]);
+        printf("%ld,", stamp->evidentalBase[i]);
     }
     printf("\n");
 }

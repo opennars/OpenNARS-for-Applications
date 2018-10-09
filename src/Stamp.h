@@ -4,6 +4,7 @@
 //References//
 //----------//
 #include <stdbool.h>
+#include <stdio.h>
 
 //Parameters//
 //----------//
