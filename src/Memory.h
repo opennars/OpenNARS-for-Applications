@@ -15,7 +15,7 @@
 
 //Parameters//
 //----------//
-#define CONCEPTS_MAX 10000
+#define CONCEPTS_MAX 1000 //TODO statically alloc once on INIT, as can lead in value too large for the compiler to handle
 #define EVENTS_MAX 64
 #define VOTING 1
 #define EXHAUSTIVE 2
