@@ -84,6 +84,6 @@ Truth Truth_Eternalize(Truth v)
 
 Truth Truth_Projection(Truth v, long originalTime, long targetTime)
 {
-    double difference = abs(targetTime - originalTime);
+    double difference = labs(targetTime - originalTime);
     return (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference)};
 }

@@ -15,6 +15,7 @@
 //References//
 //-----------//
 #include <stdbool.h>
+#include <stdlib.h>
 #include "SDR.h"
 #include "Stamp.h"
 #include "Event.h"
