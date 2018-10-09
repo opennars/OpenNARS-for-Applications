@@ -4,6 +4,7 @@
 //References//
 //----------//
 #include "Implication.h"
+#include "Inference.h"
 
 //Parameters//
 //----------//
