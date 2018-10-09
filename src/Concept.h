@@ -15,11 +15,6 @@
 #include "FIFO.h"
 #include "Table.h"
 
-//Parameters//
-//----------//
-#define PRECONDITION_BELIEFS_MAX 512
-#define POSTCONDITION_BELIEFS_MAX 512
-
 //Data structure//
 //--------------//
 typedef struct {
@@ -31,9 +26,9 @@ typedef struct {
     FIFO event_beliefs;
     FIFO event_goals;
     //TODO replace with Table, same as belief tables in OpenNARS:
-    Implication precondition_beliefs[PRECONDITION_BELIEFS_MAX];
+    Table precondition_beliefs;
     int precondition_beliefs_amount;
-    Implication postcondition_beliefs[POSTCONDITION_BELIEFS_MAX];
+    Table postcondition_beliefs;
     int postcondition_beliefs_amount;
 } Concept;
 
