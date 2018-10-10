@@ -29,6 +29,9 @@
 PriorityQueue concepts;
 PriorityQueue events; 
 
+//Macros
+
+
 //Methods//
 //-------//
 //TODO do check which methods shouldn't be just PriorityQueue methods
@@ -38,5 +41,6 @@ void Memory_RESET();
 void Memory_addConcept(SDR *sdr, Attention attention);
 //Return closest concept
 int Memory_getClosestConcept(Event *event);
-
+//Add event to memory
+void Memory_addEvent(Event *event);
 #endif

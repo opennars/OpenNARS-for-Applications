@@ -165,3 +165,13 @@ int Memory_getClosestConcept(Event *event)
     return best_i;
 #endif
 }
+
+void Memory_addEvent(Event *event)
+{
+    PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, event->attention.priority);
+    if(pushed.added)
+    {
+        Event *toRecyle = pushed.addedItem.address;
+        *toRecyle = *event;
+    }
+}

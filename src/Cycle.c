@@ -9,9 +9,11 @@ void composition(Concept *B, Concept *A, Event *b)
         Event *a = &A->event_beliefs.array[0]; //most recent, highest revised
         if(a->type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
-            Implication result = Inference_BeliefInduction(&a, &b);
-            Table_AddAndRevise(&B->precondition_beliefs, &result);
-            Table_AddAndRevise(&A->postcondition_beliefs, &result);
+            Implication implication = Inference_BeliefInduction(&a, &b);
+            Table_AddAndRevise(&B->precondition_beliefs, &implication);
+            Table_AddAndRevise(&A->postcondition_beliefs, &implication);
+            Event sequence = Inference_BeliefIntersection(&a, &b);
+            Memory_addEvent(&sequence);
         }
     }
 }
@@ -29,9 +31,7 @@ void decomposition(Concept *c, Event *e)
                 Event res = Inference_BeliefDeduction(&e, &postcon);
                 res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
                 c->postcondition_beliefs.array[0] = Inference_AssumptionOfFailure(&postcon); //TODO do better
-                PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, res.attention.priority);
-                Event *toRecyle = pushed.addedItem.address;
-                *toRecyle = res;
+                Memory_addEvent(&res);
             }
         }
         if(c->precondition_beliefs.itemsAmount>0)
@@ -41,9 +41,7 @@ void decomposition(Concept *c, Event *e)
             {
                 Event res = Inference_BeliefAbduction(&e, &precon);
                 res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
-                PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, res.attention.priority);
-                Event *toRecyle = pushed.addedItem.address;
-                *toRecyle = res;
+                Memory_addEvent(&res);
             }
         }
     }
@@ -57,9 +55,7 @@ void decomposition(Concept *c, Event *e)
             {
                 Event res = Inference_GoalAbduction(&e, &postcon);
                 res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
-                PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, res.attention.priority);
-                Event *toRecyle = pushed.addedItem.address;
-                *toRecyle = res;
+                Memory_addEvent(&res);
             }
         }
         if(c->precondition_beliefs.itemsAmount>0)
@@ -69,9 +65,7 @@ void decomposition(Concept *c, Event *e)
             {
                 Event res = Inference_GoalDeduction(&e, &precon);
                 res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
-                PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, res.attention.priority);
-                Event *toRecyle = pushed.addedItem.address;
-                *toRecyle = res;
+                Memory_addEvent(&res);
             }
         }
     }
@@ -98,15 +92,11 @@ void cycle()
         Event revised = FIFO_AddAndRevise(e, fifo);
         if(revised.type != EVENT_TYPE_DELETED)
         {
-            PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, revised.attention.priority);
-            Event *toRecycle = pushed.addedItem.address;
-            *toRecycle = revised;
+            Memory_addEvent(&revised);
         }
         //relatively forget the event, as it was used, and add back to events
         e->attention = Attention_forgetEvent(&e->attention);
-        PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, e->attention.priority);
-        Event *toRecyle = pushed.addedItem.address;
-        *toRecyle = *e;
+        Memory_addEvent(e);
         //trigger composition-based inference hypothesis formation
         for(int j=0; j<CONCEPT_SELECTIONS; j++)
         {
