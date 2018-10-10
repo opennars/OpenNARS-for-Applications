@@ -85,7 +85,7 @@ void cycle()
         }
         //activate concepts attention with the event's attention
         c->attention = Attention_activateConcept(&c->attention, &e->attention); 
-        PriorityQueue_bubbleUp(&concepts,closest_concept_i); //priority was increased
+        PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
         //add a new concept for e too at the end, just before it needs to be identified with something existing
         Memory_addConcept(&e->sdr, Attention_activateConcept(&c->attention, &e->attention));
     }

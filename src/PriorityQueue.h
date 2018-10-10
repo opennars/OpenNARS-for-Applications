@@ -45,7 +45,8 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
 //Retrieve first item of the queue
 Item PriorityQueue_PopMin(PriorityQueue *queue);
 Item PriorityQueue_PopMax(PriorityQueue *queue);
-void PriorityQueue_bubbleUp(PriorityQueue *queue, int i);
+//make sure that the new priority is really higher!
+void PriorityQueue_IncreasePriority(PriorityQueue *queue, int i, double newPriority);
 
 #endif
 
