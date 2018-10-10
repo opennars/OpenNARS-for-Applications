@@ -4,7 +4,7 @@ int currentTime = 0;
 void composition(Concept *B, Concept *A, Event *b)
 {
     //temporal induction and intersection
-    if(A->event_beliefs.itemsAmount > 0)
+    if(b->type == EVENT_TYPE_BELIEF && A->event_beliefs.itemsAmount > 0)
     {
         Event *a = &A->event_beliefs.array[0]; //most recent, highest revised
         if(a->type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&a->stamp, &b->stamp))
@@ -21,52 +21,28 @@ void composition(Concept *B, Concept *A, Event *b)
 void decomposition(Concept *c, Event *e)
 {
     //detachment
-    if(e->type == EVENT_TYPE_BELIEF)
+    if(c->postcondition_beliefs.itemsAmount>0)
     {
-        if(c->postcondition_beliefs.itemsAmount>0)
+        Implication postcon = c->postcondition_beliefs.array[0];
+        if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
         {
-            Implication postcon = c->postcondition_beliefs.array[0];
-            if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
-            {
-                Event res = Inference_BeliefDeduction(&e, &postcon);
-                res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
-                c->postcondition_beliefs.array[0] = Inference_AssumptionOfFailure(&postcon); //TODO do better
-                Memory_addEvent(&res);
-            }
-        }
-        if(c->precondition_beliefs.itemsAmount>0)
-        {
-            Implication precon = c->precondition_beliefs.array[0];
-            if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
-            {
-                Event res = Inference_BeliefAbduction(&e, &precon);
-                res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
-                Memory_addEvent(&res);
-            }
+            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(&e, &postcon) : Inference_GoalAbduction(&e, &postcon);
+            res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
+            Memory_addEvent(&res);
+            //add negative evidence to the used predictive hypothesis (assumption of failure, for extinction)
+            Table_PopHighestTruthExpectationElement(&c->postcondition_beliefs);
+            Implication updated = Inference_AssumptionOfFailure(&postcon);
+            Table_Add(&c->postcondition_beliefs, &updated);
         }
     }
-    else
-    if(e->type == EVENT_TYPE_GOAL)
+    if(c->precondition_beliefs.itemsAmount>0)
     {
-        if(c->postcondition_beliefs.itemsAmount>0)
+        Implication precon = c->precondition_beliefs.array[0];
+        if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
         {
-            Implication postcon = c->postcondition_beliefs.array[0];
-            if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
-            {
-                Event res = Inference_GoalAbduction(&e, &postcon);
-                res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
-                Memory_addEvent(&res);
-            }
-        }
-        if(c->precondition_beliefs.itemsAmount>0)
-        {
-            Implication precon = c->precondition_beliefs.array[0];
-            if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
-            {
-                Event res = Inference_GoalDeduction(&e, &precon);
-                res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
-                Memory_addEvent(&res);
-            }
+            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(&e, &precon) : Inference_GoalDeduction(&e, &precon);
+            res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
+            Memory_addEvent(&res);
         }
     }
 }

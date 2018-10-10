@@ -48,3 +48,13 @@ void Table_AddAndRevise(Table *table, Implication *imp)
     //3. add imp too:
     Table_Add(table, imp);
 }
+
+Implication Table_PopHighestTruthExpectationElement(Table *table)
+{
+    Implication result = table->array[0];
+    for(int i=1; i<table->itemsAmount; i++)
+    {
+        table->array[i-1] = table->array[i];
+    }
+    return result;
+}
