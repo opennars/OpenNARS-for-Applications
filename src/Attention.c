@@ -21,7 +21,7 @@ Attention Attention_activateConcept(Attention *conceptAttention, Attention *task
                          .durability = conceptAttention->durability };
 }
 
-Attention Attention_deriveTask(Attention *conceptAttention, Truth *beliefTruth)
+Attention Attention_deriveEvent(Attention *conceptAttention, Truth *beliefTruth)
 {
     return (Attention) { .priority = conceptAttention->priority * Truth_Expectation(*beliefTruth),
                          .durability = conceptAttention->durability };

@@ -32,5 +32,9 @@ typedef struct {
 Attention Attention_forgetTask(Attention *taskAttention);
 //Relatively forget a concept after it received a task
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime);
+//activate a concept with a even
+Attention Attention_activateConcept(Attention *conceptAttention, Attention *taskAttention);
+//derive an event
+Attention Attention_deriveEvent(Attention *conceptAttention, Truth *beliefTruth);
 
 #endif

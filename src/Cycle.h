@@ -10,10 +10,15 @@
 //References//
 //-----------//
 #include "Memory.h"
+#include "Attention.h"
+#include "Concept.h"
+#include "Event.h"
 
 //Parameters//
 //----------//
 #define EVENT_SELECTIONS 10
+//for temporal induction:
+#define CONCEPT_SELECTIONS 10
 
 //Methods//
 //-------//

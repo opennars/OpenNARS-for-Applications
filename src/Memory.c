@@ -27,19 +27,21 @@ Concept* bitToConcept[SDR_SIZE][CONCEPTS_MAX];
 int bitToConceptAmount[SDR_SIZE];
 #endif
 
-void Memory_addConcept(Concept *concept)
+void Memory_addConcept(SDR *sdr, Attention attention)
 {
     //try to add it, and if successful add to voting structure
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
     if(feedback.added)
     {
         Concept *toRecycle = (Concept*) feedback.addedItem.address;
         *toRecycle = (Concept) {0};
-        Concept_SetSDR(toRecycle, concept->sdr);
+        Concept_SetSDR(toRecycle, *sdr);
+        toRecycle->attention = attention;
     }
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
+        Concept *concept = feedback.addedItem.address;
         for(int j=0; j<SDR_SIZE; j++)
         {
             if(SDR_ReadBit(&(concept->sdr), j))
@@ -52,6 +54,7 @@ void Memory_addConcept(Concept *concept)
     }
     if(feedback.evicted)
     {
+        Concept *concept = feedback.evictedItem.address;
         //if a concept was evicted, delete from voting structure
         for(int j=0; j<SDR_SIZE; j++)
         {
@@ -83,7 +86,7 @@ typedef struct
     Concept *concept;
     int count;
 } Vote;
-Concept* Memory_getClosestConcept(Event *event)
+int Memory_getClosestConcept(Event *event)
 {
     SDR *eventSDR = &(event->sdr);
 #if USE_HASHING == true
@@ -134,12 +137,21 @@ Concept* Memory_getClosestConcept(Event *event)
     }
     if(votes == 0)
     {
-        return NULL;
+        return MEMORY_MATCH_NO_CONCEPT;
     }
-    return best.concept;
+    //TODO IMPROVE:
+    int best_i = 0;
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        if(concepts.items[i].address == best.concept)
+        {
+            return best_i;
+        }
+    }
+    return MEMORY_MATCH_NO_CONCEPT;
 #endif
 #if MATCH_STRATEGY == EXHAUSTIVE
-    Concept *best = NULL;
+    int best_i = MEMORY_MATCH_NO_CONCEPT;
     double bestValSoFar = -1;
     for(int i=0; i<concepts.items_amount; i++)
     {
@@ -147,9 +159,9 @@ Concept* Memory_getClosestConcept(Event *event)
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
-            best = (Concept*) (memory.items[i]->address);
+            best_i = i;
         }
     }
-    return best;
+    return best_i;
 #endif
 }

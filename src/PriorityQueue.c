@@ -120,7 +120,7 @@ void trickleDown(PriorityQueue *queue, int i, bool invert)
     }
 }
 
-void bubbleUp(PriorityQueue *queue, int i)
+void PriorityQueue_bubbleUp(PriorityQueue *queue, int i)
 {
     int m;
     m = parent(i);
@@ -162,7 +162,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     feedback.added = true;
     feedback.addedItem = at(queue->itemsAmount);
     queue->itemsAmount++;
-    bubbleUp(queue, queue->itemsAmount-1);
+    PriorityQueue_bubbleUp(queue, queue->itemsAmount-1);
     return feedback;
 }
 

@@ -10,6 +10,7 @@
 
 //References//
 //////////////
+#include "SDR.h"
 #include "Concept.h"
 #include "PriorityQueue.h"
 
@@ -21,6 +22,7 @@
 #define EXHAUSTIVE 2
 #define USE_HASHING true
 #define MATCH_STRATEGY VOTING
+#define MEMORY_MATCH_NO_CONCEPT -1
 
 //Data structure//
 //--------------//
@@ -33,8 +35,8 @@ PriorityQueue events;
 //Init memory
 void Memory_RESET();
 //Add concept to memory
-void Memory_addConcept(Concept *concept);
+void Memory_addConcept(SDR *sdr, Attention attention);
 //Return closest concept
-Concept* Memory_getClosestConcept(Event *event);
+int Memory_getClosestConcept(Event *event);
 
 #endif

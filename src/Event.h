@@ -25,7 +25,7 @@ typedef struct {
     char type; //either JUDGMENT or GOAL
     Truth truth;
     Stamp stamp;
-    long occurrenceTime; 
+    long occurrenceTime;
 } Event;
 
 //Methods//
