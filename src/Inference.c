@@ -92,3 +92,10 @@ Event Inference_GoalAbduction(Event *component, Implication *compound)
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
 }
+
+Implication Inference_AssumptionOfFailure(Implication *compound)
+{
+    Implication imp = *compound;
+    imp.truth = Truth_Revision(imp.truth, (Truth) {.frequency=0.0, .confidence=ASSUMPTION_OF_FAILURE_CONFIDENCE});
+    return imp;
+}
