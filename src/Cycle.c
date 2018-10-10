@@ -12,7 +12,7 @@ void composition(Concept *B, Concept *A, Event *b)
             Implication implication = Inference_BeliefInduction(&a, &b);
             Table_AddAndRevise(&B->precondition_beliefs, &implication);
             Table_AddAndRevise(&A->postcondition_beliefs, &implication);
-            Event sequence = Inference_BeliefIntersection(&a, &b);
+            Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(&a, &b) : Inference_BeliefIntersection(&b, &a);
             Memory_addEvent(&sequence);
         }
     }
