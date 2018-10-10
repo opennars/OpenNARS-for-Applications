@@ -79,7 +79,7 @@ void FIFO_Test()
     assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3, "occurrence time has to be within");
     assert(ret.stamp.evidentalBase[0] == i && ret.stamp.evidentalBase[1] == newbase, "it has to be the new event");
     assert(fifo.array[FIFO_SIZE-i].type == EVENT_TYPE_DELETED, "FIFO should have deleted the entry"); //as it was replaced
-    Event addedRet = fifo.array[fifo.currentIndex == 0 ? FIFO_SIZE-1 : fifo.currentIndex - 1]; //it is at the "first" position of the FIFO now
+    Event addedRet = fifo.array[fifo.itemsAmount == 0 ? FIFO_SIZE-1 : fifo.itemsAmount - 1]; //it is at the "first" position of the FIFO now
     assert(addedRet.stamp.evidentalBase[0] == i && addedRet.stamp.evidentalBase[1] == newbase, "it has to be the new event");
     printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
     assert(ret.truth.confidence > 0.9, "confidence of revision result should be higher than premise's");

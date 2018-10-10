@@ -11,8 +11,7 @@
 //-----------//
 #include "Memory.h"
 #include "Attention.h"
-#include "Concept.h"
-#include "Event.h"
+#include "Inference.h"
 
 //Parameters//
 //----------//

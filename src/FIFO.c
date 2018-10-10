@@ -2,8 +2,8 @@
 
 void FIFO_Add(Event *event, FIFO *fifo)
 {
-    fifo->array[fifo->currentIndex] = *event;
-    fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
+    fifo->array[fifo->itemsAmount] = *event;
+    fifo->itemsAmount = (fifo->itemsAmount + 1) % FIFO_SIZE;
 }
 
 Event FIFO_AddAndRevise(Event *event, FIFO *fifo)

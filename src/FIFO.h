@@ -20,7 +20,7 @@
 //--------------//
 typedef struct
 {
-    int currentIndex;
+    int itemsAmount;
     Event array[FIFO_SIZE];
 } FIFO;
 

@@ -1,9 +1,19 @@
 #include "Cycle.h"
 
 int currentTime = 0;
-void composition(Concept *c, Event *e)
+void composition(Concept *B, Concept *A, Event *b)
 {
     //temporal induction and intersection
+    for(int i=0; i<A->event_beliefs.itemsAmount; i++)
+    {
+        Event *a = &A->event_beliefs.array[i];
+        if(a->type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&a->stamp, &b->stamp))
+        {
+            Implication result = Inference_BeliefInduction(&a, &b);
+            Table_AddAndRevise(&B->precondition_beliefs, &result);
+            Table_AddAndRevise(&A->postcondition_beliefs, &result);
+        }
+    }
 }
 
 void decomposition(Concept *c, Event *e)
@@ -45,8 +55,8 @@ void cycle()
         for(int j=0; j<CONCEPT_SELECTIONS; j++)
         {
             Item item = PriorityQueue_PopMax(&concepts);
-            Concept *c = item.address;
-            composition(c, e); // deriving a =/> b
+            Concept *d = item.address;
+            composition(c, d, e); // deriving a =/> b
         }
         //activate concepts attention with the event's attention
         c->attention = Attention_activateConcept(&c->attention, &e->attention); 
