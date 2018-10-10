@@ -1,6 +1,6 @@
 #include "Attention.h"
 
-Attention Attention_forgetTask(Attention *taskAttention)
+Attention Attention_forgetEvent(Attention *taskAttention)
 {
     return (Attention) { .priority   = taskAttention->priority * taskAttention->durability,
                          .durability = taskAttention->durability };

@@ -29,7 +29,7 @@ typedef struct {
 //Methods//
 //-------//
 //Relative forget a task after it goes through attention buffer 
-Attention Attention_forgetTask(Attention *taskAttention);
+Attention Attention_forgetEvent(Attention *taskAttention);
 //Relatively forget a concept after it received a task
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime);
 //activate a concept with a even
