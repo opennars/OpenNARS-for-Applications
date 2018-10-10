@@ -85,11 +85,14 @@ void cycle()
             continue;
         }
         Concept *c = concepts.items[closest_concept_i].address;
+        Truth matchTruth = SDR_Inheritance(&e->sdr, &c->sdr);
+        Event eMatch = *e;
+        eMatch.truth = Truth_Revision(e->truth, matchTruth);
         //apply decomposition-based inference: prediction/explanation
-        decomposition(c, e);
+        decomposition(c, &eMatch);
         //add event to the FIFO of the concept
         FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
-        Event revised = FIFO_AddAndRevise(e, fifo);
+        Event revised = FIFO_AddAndRevise(&eMatch, fifo);
         if(revised.type != EVENT_TYPE_DELETED)
         {
             Memory_addEvent(&revised);
@@ -102,7 +105,7 @@ void cycle()
         {
             Item item = PriorityQueue_PopMax(&concepts);
             Concept *d = item.address;
-            composition(c, d, e); // deriving a =/> b
+            composition(c, d, &eMatch); // deriving a =/> b
         }
         //activate concepts attention with the event's attention
         c->attention = Attention_activateConcept(&c->attention, &e->attention); 
