@@ -9,10 +9,10 @@ void composition(Concept *B, Concept *A, Event *b)
         Event *a = &A->event_beliefs.array[0]; //most recent, highest revised
         if(a->type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
-            Implication implication = Inference_BeliefInduction(&a, &b);
+            Implication implication = Inference_BeliefInduction(a, b);
             Table_AddAndRevise(&B->precondition_beliefs, &implication);
             Table_AddAndRevise(&A->postcondition_beliefs, &implication);
-            Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(&a, &b) : Inference_BeliefIntersection(&b, &a);
+            Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
             Memory_addEvent(&sequence);
         }
     }
@@ -26,7 +26,7 @@ void decomposition(Concept *c, Event *e)
         Implication postcon = c->postcondition_beliefs.array[0];
         if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
         {
-            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(&e, &postcon) : Inference_GoalAbduction(&e, &postcon);
+            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(e, &postcon) : Inference_GoalAbduction(e, &postcon);
             res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
             Memory_addEvent(&res);
             //add negative evidence to the used predictive hypothesis (assumption of failure, for extinction)
@@ -40,7 +40,7 @@ void decomposition(Concept *c, Event *e)
         Implication precon = c->precondition_beliefs.array[0];
         if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
         {
-            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(&e, &precon) : Inference_GoalDeduction(&e, &precon);
+            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
             res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
             Memory_addEvent(&res);
         }
@@ -55,7 +55,7 @@ void cycle()
         Item item = PriorityQueue_PopMax(&events);
         Event *e = item.address;
         //determine the concept it is related to
-        int closest_concept_i = Memory_getClosestConcept(&e);
+        int closest_concept_i = Memory_getClosestConcept(e);
         if(closest_concept_i == MEMORY_MATCH_NO_CONCEPT)
         {
             continue;
