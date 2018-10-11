@@ -45,7 +45,7 @@ void SDR_Test()
     Truth t3 = SDR_Similarity(&mySDR, &SDR2Recons);
     assert(t3.frequency < 0.5, "These elements should mostly differ");
     Truth t4 = SDR_Similarity(&mySDR2, &SDR1Recons);
-    assert(t3.frequency < 0.5, "These elements should mostly differ too");
+    assert(t4.frequency < 0.5, "These elements should mostly differ too");
     printf("<<SDR Test successful\n");
 }
 
