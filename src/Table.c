@@ -56,5 +56,6 @@ Implication Table_PopHighestTruthExpectationElement(Table *table)
     {
         table->array[i-1] = table->array[i];
     }
+    table->itemsAmount--;
     return result;
 }
