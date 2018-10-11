@@ -7,7 +7,7 @@ void composition(Concept *B, Concept *A, Event *b)
     if(b->type == EVENT_TYPE_BELIEF && A->event_beliefs.itemsAmount > 0)
     {
         Event *a = &A->event_beliefs.array[0]; //most recent, highest revised
-        if(a->type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&a->stamp, &b->stamp))
+        if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
             Implication implication = Inference_BeliefInduction(a, b);
             Table_AddAndRevise(&B->precondition_beliefs, &implication);

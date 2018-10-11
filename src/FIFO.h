@@ -21,6 +21,7 @@
 typedef struct
 {
     int itemsAmount;
+    int currentIndex;
     Event array[FIFO_SIZE];
 } FIFO;
 

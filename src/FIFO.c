@@ -1,15 +1,23 @@
 #include "FIFO.h"
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 void FIFO_Add(Event *event, FIFO *fifo)
 {
-    fifo->array[fifo->itemsAmount] = *event;
-    fifo->itemsAmount = (fifo->itemsAmount + 1) % FIFO_SIZE;
+    fifo->array[fifo->currentIndex] = *event;
+    fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
+    fifo->itemsAmount = MIN(fifo->currentIndex + 1, FIFO_SIZE);
 }
 
 Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
 {
     Event closest = {0};
     int closest_i = -1;
+    if(fifo->itemsAmount == 0)
+    {
+        FIFO_Add(event, fifo);
+        return (Event) {0};
+    }
     for(int i=0; i<FIFO_SIZE; i++)
     {
         if(fifo->array[i].type != EVENT_TYPE_DELETED)

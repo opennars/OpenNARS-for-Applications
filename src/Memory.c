@@ -92,9 +92,13 @@ int Memory_getClosestConcept(Event *event)
 #if USE_HASHING == true
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        if(((Concept*)concepts.items[i].address)->sdr_hash == event->sdr_hash)
+        Concept *c = ((Concept*)concepts.items[i].address);
+        if(c->sdr_hash == event->sdr_hash)
         {
-            return &(concepts.items[i]);
+            if(SDR_Equal(&c->sdr, &event->sdr))
+            {
+                return i;
+            }
         }
     }
 #endif
