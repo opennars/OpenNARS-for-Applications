@@ -25,6 +25,8 @@ typedef struct {
 //to allow useful concepts to survive in the memory priority queue even though
 //they might not be useful in the current moment 
 #define USEFULNESS_MAX_PRIORITY_BARRIER 0.1
+#define EVENT_DURABILITY 0.5
+#define CONCEPT_DURABILITY 0.5
 
 //Methods//
 //-------//
@@ -34,7 +36,9 @@ Attention Attention_forgetEvent(Attention *taskAttention);
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime);
 //activate a concept with a even
 Attention Attention_activateConcept(Attention *conceptAttention, Attention *taskAttention);
-//derive an event
-Attention Attention_deriveEvent(Attention *conceptAttention, Truth *beliefTruth);
+//attention of derived event
+Attention Attention_deriveEvent(Attention *conceptAttention, Truth *truth);
+//attention of input event
+Attention Attention_inputEvent(Truth *truth);
 
 #endif

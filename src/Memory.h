@@ -12,6 +12,7 @@
 //////////////
 #include "SDR.h"
 #include "Concept.h"
+#include "Event.h"
 #include "PriorityQueue.h"
 
 //Parameters//
@@ -29,16 +30,12 @@
 PriorityQueue concepts;
 PriorityQueue events; 
 
-//Macros
-
-
 //Methods//
 //-------//
-//TODO do check which methods shouldn't be just PriorityQueue methods
 //Init memory
 void Memory_RESET();
 //Add concept to memory
-void Memory_addConcept(SDR *sdr, Attention attention);
+Concept* Memory_addConcept(SDR *sdr, Attention attention);
 //Return closest concept
 int Memory_getClosestConcept(Event *event);
 //Add event to memory

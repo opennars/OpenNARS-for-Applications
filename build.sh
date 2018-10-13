@@ -4,4 +4,4 @@ do
     Str=$Str" ${i%.c}.c"
 done
 echo $Str
-gcc -g3 -o3 -Wall -lm -Wmissing-declarations $Str -oANSNA
+gcc -g3 -o3 -Wall -lm $Str -oANSNA

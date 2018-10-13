@@ -1,5 +1,4 @@
 #include "Memory.h"
-#include "Concept.h"
 
 Concept concept_storage[CONCEPTS_MAX];
 Event event_storage[EVENTS_MAX];
@@ -27,27 +26,27 @@ Concept* bitToConcept[SDR_SIZE][CONCEPTS_MAX];
 int bitToConceptAmount[SDR_SIZE];
 #endif
 
-void Memory_addConcept(SDR *sdr, Attention attention)
+Concept* Memory_addConcept(SDR *sdr, Attention attention)
 {
+    Concept *addedConcept = NULL;
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
     if(feedback.added)
     {
-        Concept *toRecycle = (Concept*) feedback.addedItem.address;
-        *toRecycle = (Concept) {0};
-        Concept_SetSDR(toRecycle, *sdr);
-        toRecycle->attention = attention;
+        addedConcept = (Concept*) feedback.addedItem.address;
+        *addedConcept = (Concept) {0};
+        Concept_SetSDR(addedConcept, *sdr);
+        addedConcept->attention = attention;
     }
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
     {
-        Concept *concept = feedback.addedItem.address;
         for(int j=0; j<SDR_SIZE; j++)
         {
-            if(SDR_ReadBit(&(concept->sdr), j))
+            if(SDR_ReadBit(&(addedConcept->sdr), j))
             {
                 int i = bitToConceptAmount[j]; //insert on top
-                bitToConcept[j][i] = concept;
+                bitToConcept[j][i] = addedConcept;
                 bitToConceptAmount[j]++;
              }
          }
@@ -79,6 +78,7 @@ void Memory_addConcept(SDR *sdr, Attention attention)
          }
     }
 #endif
+    return addedConcept;
 }
 
 typedef struct

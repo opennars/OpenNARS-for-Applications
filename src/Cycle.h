@@ -22,6 +22,6 @@
 //Methods//
 //-------//
 //Apply one inference cyle
-void cycle();
+void cycle(long currentTime);
 
 #endif

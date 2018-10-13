@@ -1,6 +1,5 @@
 #include "Cycle.h"
 
-int currentTime = 0;
 void composition(Concept *B, Concept *A, Event *b)
 {
     //temporal induction and intersection
@@ -47,7 +46,7 @@ void decomposition(Concept *c, Event *e)
     }
 }
 
-void cycle()
+void cycle(long currentTime)
 {
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
@@ -56,38 +55,45 @@ void cycle()
         Event *e = item.address;
         //determine the concept it is related to
         int closest_concept_i = Memory_getClosestConcept(e);
-        if(closest_concept_i == MEMORY_MATCH_NO_CONCEPT)
+        if(closest_concept_i != MEMORY_MATCH_NO_CONCEPT)
         {
-            continue;
+            Concept *c = concepts.items[closest_concept_i].address;
+            c->usage = Usage_use(&c->usage, currentTime);
+            Truth matchTruth = SDR_Inheritance(&e->sdr, &c->sdr);
+            Event eMatch = *e;
+            eMatch.truth = Truth_Revision(e->truth, matchTruth);
+            //apply decomposition-based inference: prediction/explanation
+            decomposition(c, &eMatch);
+            //add event to the FIFO of the concept
+            FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
+            Event revised = FIFO_AddAndRevise(&eMatch, fifo);
+            if(revised.type != EVENT_TYPE_DELETED)
+            {
+                Memory_addEvent(&revised);
+            }
+            //relatively forget the event, as it was used, and add back to events
+            e->attention = Attention_forgetEvent(&e->attention);
+            Memory_addEvent(e);
+            //trigger composition-based inference hypothesis formation
+            Item selectedItem[CONCEPT_SELECTIONS];
+            for(int j=0; j<CONCEPT_SELECTIONS; j++)
+            {
+                selectedItem[j] = PriorityQueue_PopMax(&concepts);
+                composition(c, selectedItem[j].address, &eMatch); // deriving a =/> b
+            }
+            for(int j=CONCEPT_SELECTIONS-1; j>=0; j--)
+            {
+                //we assume the queue remembered the addresses by swapping the relevant item with the itemsAmount one on PopMax
+                //else updating the voting table would be very expensive
+                PriorityQueue_Push(&concepts, selectedItem[j].priority);
+            }
+            //activate concepts attention with the event's attention
+            c->attention = Attention_activateConcept(&c->attention, &e->attention); 
+            PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
         }
-        Concept *c = concepts.items[closest_concept_i].address;
-        Truth matchTruth = SDR_Inheritance(&e->sdr, &c->sdr);
-        Event eMatch = *e;
-        eMatch.truth = Truth_Revision(e->truth, matchTruth);
-        //apply decomposition-based inference: prediction/explanation
-        decomposition(c, &eMatch);
-        //add event to the FIFO of the concept
-        FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
-        Event revised = FIFO_AddAndRevise(&eMatch, fifo);
-        if(revised.type != EVENT_TYPE_DELETED)
-        {
-            Memory_addEvent(&revised);
-        }
-        //relatively forget the event, as it was used, and add back to events
-        e->attention = Attention_forgetEvent(&e->attention);
-        Memory_addEvent(e);
-        //trigger composition-based inference hypothesis formation
-        for(int j=0; j<CONCEPT_SELECTIONS; j++)
-        {
-            Item item = PriorityQueue_PopMax(&concepts);
-            Concept *d = item.address;
-            composition(c, d, &eMatch); // deriving a =/> b
-        }
-        //activate concepts attention with the event's attention
-        c->attention = Attention_activateConcept(&c->attention, &e->attention); 
-        PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
         //add a new concept for e too at the end, just before it needs to be identified with something existing
-        Memory_addConcept(&e->sdr, Attention_activateConcept(&c->attention, &e->attention));
+        Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
+        FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
     }
     //relative forget concepts:
     for(int i=0; i<concepts.itemsAmount; i++) //as all concepts are forgotten the order won't change
@@ -96,5 +102,4 @@ void cycle()
         c->attention = Attention_forgetConcept(&c->attention, &c->usage, currentTime);
         concepts.items[i].priority = c->attention.priority;
     }
-    currentTime++;
 }
