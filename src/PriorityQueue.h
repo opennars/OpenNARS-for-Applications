@@ -47,6 +47,7 @@ Item PriorityQueue_PopMin(PriorityQueue *queue);
 Item PriorityQueue_PopMax(PriorityQueue *queue);
 //make sure that the new priority is really higher!
 void PriorityQueue_IncreasePriority(PriorityQueue *queue, int i, double newPriority);
+Item PriorityQueue_PopAt(PriorityQueue *queue, int i);
 
 #endif
 

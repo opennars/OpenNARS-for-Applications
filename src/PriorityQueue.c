@@ -174,7 +174,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
 Item PriorityQueue_PopMin(PriorityQueue *queue)
 {
     Item item = at(0);
-    at(0) = at(queue->itemsAmount-1);
+    swap(queue, 0, queue->itemsAmount-1);
     queue->itemsAmount--;
     trickleDown(queue, 0, false); //enforce minmax heap property
     return item;
@@ -184,8 +184,17 @@ Item PriorityQueue_PopMax(PriorityQueue *queue)
 {
     int p = smallestChild(queue, 0, true);
     Item item = at(p);
-    at(p) = at(queue->itemsAmount-1); //replace max with last item
+    swap(queue, p, queue->itemsAmount-1); //swap max with last item
     queue->itemsAmount--;
     trickleDown(queue, p, true); //enforce minmax heap property
+    return item;
+}
+
+Item PriorityQueue_PopAt(PriorityQueue *queue, int i)
+{
+    Item item = at(i);
+    swap(queue, i, queue->itemsAmount-1); 
+    queue->itemsAmount--;
+    trickleDown(queue, i, true); //enforce minmax heap property
     return item;
 }

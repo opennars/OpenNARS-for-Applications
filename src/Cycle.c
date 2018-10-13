@@ -101,5 +101,11 @@ void cycle(long currentTime)
         Concept *c = concepts.items[i].address;
         c->attention = Attention_forgetConcept(&c->attention, &c->usage, currentTime);
         concepts.items[i].priority = c->attention.priority;
+        //deal with usefulness changing the order of the else strictly monotonous forgetting
+        if(c->attention.priority < USEFULNESS_MAX_PRIORITY_BARRIER)
+        {
+            Item it = PriorityQueue_PopAt(&concepts, i);
+            PriorityQueue_Push(&concepts, c->attention.priority);
+        }
     }
 }
