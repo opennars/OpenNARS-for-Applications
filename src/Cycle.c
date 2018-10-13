@@ -50,9 +50,9 @@ void decomposition(Concept *c, Event *e, long currentTime)
 //Lazy relative forgetting, making sure the first element also deserves to be the first
 Item popForgetPushPop(PriorityQueue *queue, bool isConcept, long currentTime)
 {
-    //1. get an event from the event queue
+    //1. pop an item
     Item item = PriorityQueue_PopMax(queue);
-    //pop forget push pop strategy, to make sure we get an element that is still relevant:
+    //2. forget item the more the longer it wasn't last forgotten
     double priority = 0;
     if(isConcept)
     {
@@ -66,16 +66,18 @@ Item popForgetPushPop(PriorityQueue *queue, bool isConcept, long currentTime)
         Attention ret = Attention_forgetEvent(&e->attention, currentTime);
         priority = ret.priority;
     }
+    //3. push it again
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(queue, priority);
     if(!feedback.added)
     {
         return (Item) {0};
     }
     feedback.addedItem.address = item.address;
+    //4. check if the pushed item is still considered the Max
     Item item2 = PriorityQueue_PopMax(queue);
     if(item2.address != item.address)
-    {
-        return (Item) {0}; //item did not deserve to be the highest, it just wasn't selected to be relative forgotten for some time
+    { //item did not deserve to be the highest, it just wasn't selected
+        return (Item) {0}; //to be relative forgotten for some time
     }
     return item;
 }
@@ -117,7 +119,7 @@ void cycle(long currentTime)
             Item selectedItem[CONCEPT_SELECTIONS];
             int conceptsSelected = 0;
             for(int j=0; j<CONCEPT_SELECTIONS; j++)
-            {
+            {   //by doing inference with the highest priority concepts
                 selectedItem[j] = popForgetPushPop(&concepts, true, currentTime);
                 if(selectedItem[j].address == 0)
                 {
@@ -127,7 +129,7 @@ void cycle(long currentTime)
                 conceptsSelected++;
             }
             for(int j=0; j<conceptsSelected; j++)
-            {
+            {   //push again what we popped
                 PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
                 feedback.addedItem.address = selectedItem[j].address;
             }
