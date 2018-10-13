@@ -5,7 +5,6 @@
 //-----------//
 #include "SDR.h"
 #include "Stamp.h"
-#include "Truth.h"
 
 //Data structure//
 //--------------//

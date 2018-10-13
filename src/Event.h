@@ -10,7 +10,6 @@
 //-----------//
 #include "SDR.h"
 #include "Stamp.h"
-#include "Truth.h"
 #include "Attention.h"
 
 //Data structure//

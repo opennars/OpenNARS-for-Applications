@@ -9,7 +9,6 @@
 
 //References//
 //-----------//
-#include "Event.h"
 #include "Inference.h"
 
 //Parameters//

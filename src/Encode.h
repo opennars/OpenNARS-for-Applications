@@ -9,6 +9,8 @@
 
 //References//
 //-----------//
+#include <string.h>
+#include <math.h>
 #include "SDR.h"
 
 //Parameters//

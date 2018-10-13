@@ -12,11 +12,8 @@
 //-----------//
 #include <stdbool.h>
 #include <stdlib.h>
-#include "SDR.h"
-#include "Stamp.h"
 #include "Event.h"
 #include "Implication.h"
-#include "Truth.h"
 
 //Parameters//
 //----------//

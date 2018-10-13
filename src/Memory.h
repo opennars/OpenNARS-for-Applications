@@ -10,9 +10,7 @@
 
 //References//
 //////////////
-#include "SDR.h"
 #include "Concept.h"
-#include "Event.h"
 #include "PriorityQueue.h"
 
 //Parameters//

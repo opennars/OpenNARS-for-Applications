@@ -1,5 +1,5 @@
-#ifndef CONCEPT_H
-#define CONCEPT_H
+#ifndef ANSNA_H
+#define ANSNA_H
 
 ////////////////////////////////////////////////////
 //  ANSNA - Adaptive Neuro-Symbolic Network Agent //

@@ -5,7 +5,7 @@ Event event_storage[EVENTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Item event_items_storage[EVENTS_MAX];
 
-void memory_RESET()
+void Memory_RESET()
 {
     PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
     PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);

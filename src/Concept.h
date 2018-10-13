@@ -8,10 +8,6 @@
 
 //References//
 //-----------//
-#include "SDR.h"
-#include "Event.h"
-#include "Implication.h"
-#include "Attention.h"
 #include "FIFO.h"
 #include "Table.h"
 

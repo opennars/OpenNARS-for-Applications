@@ -10,8 +10,6 @@
 //References//
 //-----------//
 #include "Memory.h"
-#include "Attention.h"
-#include "Inference.h"
 
 //Parameters//
 //----------//
