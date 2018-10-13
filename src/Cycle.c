@@ -81,11 +81,10 @@ void cycle(long currentTime)
                 selectedItem[j] = PriorityQueue_PopMax(&concepts);
                 composition(c, selectedItem[j].address, &eMatch); // deriving a =/> b
             }
-            for(int j=CONCEPT_SELECTIONS-1; j>=0; j--)
+            for(int j=0; j<CONCEPT_SELECTIONS; j++)
             {
-                //we assume the queue remembered the addresses by swapping the relevant item with the itemsAmount one on PopMax
-                //else updating the voting table would be very expensive
-                PriorityQueue_Push(&concepts, selectedItem[j].priority);
+                PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
+                feedback.addedItem.address = selectedItem[j].address;
             }
             //activate concepts attention with the event's attention
             c->attention = Attention_activateConcept(&c->attention, &e->attention); 
@@ -105,7 +104,8 @@ void cycle(long currentTime)
         if(c->attention.priority < USEFULNESS_MAX_PRIORITY_BARRIER)
         {
             Item it = PriorityQueue_PopAt(&concepts, i);
-            PriorityQueue_Push(&concepts, c->attention.priority);
+            PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, c->attention.priority);
+            feedback.addedItem.address = c;
         }
     }
 }
