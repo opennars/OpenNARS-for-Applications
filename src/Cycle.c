@@ -97,7 +97,7 @@ void cycle(long currentTime)
     }
     //relative forget concepts:
     for(int i=0; i<concepts.itemsAmount; i++) //as all concepts are forgotten the order won't change
-    { //making this operation very cheap, not demanding any heap operation
+    { //making this operation very cheap, not demanding any heap operation, except for these items that fall below USEFULNESS_MAX_PRIORITY_BARRIER
         Concept *c = concepts.items[i].address;
         c->attention = Attention_forgetConcept(&c->attention, &c->usage, currentTime);
         concepts.items[i].priority = c->attention.priority;
