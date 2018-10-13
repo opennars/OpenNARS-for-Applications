@@ -8,14 +8,14 @@ void Event_SetSDR(Event *event, SDR sdr)
 }
 
 long base = 1;
-Event Event_InputEvent(SDR sdr, char type, Truth truth, long occurrenceTime)
+Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime)
 {
-    return (Event) { .attention = Attention_inputEvent(&truth),
+    return (Event) { .attention = Attention_inputEvent(&truth, currentTime),
                      .sdr = sdr, 
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
-                     .occurrenceTime = occurrenceTime };
+                     .occurrenceTime = currentTime };
 }
 
 void Event_RESET()

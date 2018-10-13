@@ -1,6 +1,6 @@
 #include "Cycle.h"
 
-void composition(Concept *B, Concept *A, Event *b)
+void composition(Concept *B, Concept *A, Event *b, long currentTime)
 {
     //temporal induction and intersection
     if(b->type == EVENT_TYPE_BELIEF && A->event_beliefs.itemsAmount > 0)
@@ -12,12 +12,13 @@ void composition(Concept *B, Concept *A, Event *b)
             Table_AddAndRevise(&B->precondition_beliefs, &implication);
             Table_AddAndRevise(&A->postcondition_beliefs, &implication);
             Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
+            sequence.attention = Attention_deriveEvent(&B->attention, &sequence.truth, currentTime);
             Memory_addEvent(&sequence);
         }
     }
 }
 
-void decomposition(Concept *c, Event *e)
+void decomposition(Concept *c, Event *e, long currentTime)
 {
     //detachment
     if(c->postcondition_beliefs.itemsAmount>0)
@@ -26,7 +27,7 @@ void decomposition(Concept *c, Event *e)
         if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
         {
             Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(e, &postcon) : Inference_GoalAbduction(e, &postcon);
-            res.attention = Attention_deriveEvent(&c->attention, &postcon.truth);
+            res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
             Memory_addEvent(&res);
             //add negative evidence to the used predictive hypothesis (assumption of failure, for extinction)
             Table_PopHighestTruthExpectationElement(&c->postcondition_beliefs);
@@ -40,10 +41,43 @@ void decomposition(Concept *c, Event *e)
         if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
         {
             Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
-            res.attention = Attention_deriveEvent(&c->attention, &precon.truth);
+            res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
             Memory_addEvent(&res);
         }
     }
+}
+
+//Lazy relative forgetting, making sure the first element also deserves to be the first
+Item popForgetPushPop(PriorityQueue *queue, bool isConcept, long currentTime)
+{
+    //1. get an event from the event queue
+    Item item = PriorityQueue_PopMax(queue);
+    //pop forget push pop strategy, to make sure we get an element that is still relevant:
+    double priority = 0;
+    if(isConcept)
+    {
+        Concept *c = (Concept*) item.address;
+        Attention ret = Attention_forgetConcept(&c->attention, &c->usage, currentTime);
+        priority = ret.priority;
+    }
+    else
+    {
+        Event *e = (Event*) item.address;
+        Attention ret = Attention_forgetEvent(&e->attention, currentTime);
+        priority = ret.priority;
+    }
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(queue, priority);
+    if(!feedback.added)
+    {
+        return (Item) {0};
+    }
+    feedback.addedItem.address = item.address;
+    Item item2 = PriorityQueue_PopMax(queue);
+    if(item2.address != item.address)
+    {
+        return (Item) {0}; //item did not deserve to be the highest, it just wasn't selected to be relative forgotten for some time
+    }
+    return item;
 }
 
 void cycle(long currentTime)
@@ -51,8 +85,13 @@ void cycle(long currentTime)
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
         //1. get an event from the event queue
-        Item item = PriorityQueue_PopMax(&events);
+        Item item = popForgetPushPop(&events, false, currentTime);
+        if(item.address == 0)
+        {
+            continue;
+        }
         Event *e = item.address;
+        //end pop forget push pop strategu
         //determine the concept it is related to
         int closest_concept_i = Memory_getClosestConcept(e);
         if(closest_concept_i != MEMORY_MATCH_NO_CONCEPT)
@@ -63,7 +102,7 @@ void cycle(long currentTime)
             Event eMatch = *e;
             eMatch.truth = Truth_Revision(e->truth, matchTruth);
             //apply decomposition-based inference: prediction/explanation
-            decomposition(c, &eMatch);
+            decomposition(c, &eMatch, currentTime);
             //add event to the FIFO of the concept
             FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
             Event revised = FIFO_AddAndRevise(&eMatch, fifo);
@@ -72,16 +111,22 @@ void cycle(long currentTime)
                 Memory_addEvent(&revised);
             }
             //relatively forget the event, as it was used, and add back to events
-            e->attention = Attention_forgetEvent(&e->attention);
+            e->attention = Attention_forgetEvent(&e->attention, currentTime);
             Memory_addEvent(e);
             //trigger composition-based inference hypothesis formation
             Item selectedItem[CONCEPT_SELECTIONS];
+            int conceptsSelected = 0;
             for(int j=0; j<CONCEPT_SELECTIONS; j++)
             {
-                selectedItem[j] = PriorityQueue_PopMax(&concepts);
-                composition(c, selectedItem[j].address, &eMatch); // deriving a =/> b
+                selectedItem[j] = popForgetPushPop(&concepts, true, currentTime);
+                if(selectedItem[j].address == 0)
+                {
+                    continue;
+                }
+                composition(c, selectedItem[j].address, &eMatch, currentTime); // deriving a =/> b
+                conceptsSelected++;
             }
-            for(int j=0; j<CONCEPT_SELECTIONS; j++)
+            for(int j=0; j<conceptsSelected; j++)
             {
                 PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
                 feedback.addedItem.address = selectedItem[j].address;
@@ -93,19 +138,5 @@ void cycle(long currentTime)
         //add a new concept for e too at the end, just before it needs to be identified with something existing
         Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
         FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
-    }
-    //relative forget concepts:
-    for(int i=0; i<concepts.itemsAmount; i++) //as all concepts are forgotten the order won't change
-    { //making this operation very cheap, not demanding any heap operation, except for these items that fall below USEFULNESS_MAX_PRIORITY_BARRIER
-        Concept *c = concepts.items[i].address;
-        c->attention = Attention_forgetConcept(&c->attention, &c->usage, currentTime);
-        concepts.items[i].priority = c->attention.priority;
-        //deal with usefulness changing the order of the else strictly monotonous forgetting
-        if(c->attention.priority < USEFULNESS_MAX_PRIORITY_BARRIER)
-        {
-            Item it = PriorityQueue_PopAt(&concepts, i);
-            PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, c->attention.priority);
-            feedback.addedItem.address = c;
-        }
     }
 }

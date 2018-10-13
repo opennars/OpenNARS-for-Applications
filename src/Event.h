@@ -34,6 +34,6 @@ void Event_RESET();
 //Assign a new name to an event
 void Event_SetSDR(Event *event, SDR sdr);
 //construct an input event
-Event Event_InputEvent(SDR sdr, char type, Truth truth, long occurrenceTime);
+Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime);
 
 #endif

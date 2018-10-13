@@ -17,6 +17,8 @@ typedef struct {
     double priority;
     //how fast the item decays
     double durability;
+    //when relative forgetting was applied the last time to the item
+    long lastForgotten;
 } Attention;
 
 //Parameters//
@@ -31,14 +33,14 @@ typedef struct {
 //Methods//
 //-------//
 //Relative forget a task after it goes through attention buffer 
-Attention Attention_forgetEvent(Attention *taskAttention);
+Attention Attention_forgetEvent(Attention *eventAttention, long currentTime);
 //Relatively forget a concept after it received a task
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime);
 //activate a concept with a even
-Attention Attention_activateConcept(Attention *conceptAttention, Attention *taskAttention);
+Attention Attention_activateConcept(Attention *conceptAttention, Attention *eventAttention);
 //attention of derived event
-Attention Attention_deriveEvent(Attention *conceptAttention, Truth *truth);
+Attention Attention_deriveEvent(Attention *conceptAttention, Truth *truth, long currentTime);
 //attention of input event
-Attention Attention_inputEvent(Truth *truth);
+Attention Attention_inputEvent(Truth *truth, long currentTime);
 
 #endif
