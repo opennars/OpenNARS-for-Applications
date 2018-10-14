@@ -48,7 +48,7 @@ void decomposition(Concept *c, Event *e, long currentTime)
 }
 
 //Lazy relative forgetting, making sure the first element also deserves to be the first
-Item popForgetPushPop(PriorityQueue *queue, bool isConcept, long currentTime)
+Item popAndForget(PriorityQueue *queue, bool isConcept, long currentTime)
 {
     //1. pop an item
     Item item = PriorityQueue_PopMax(queue);
@@ -87,7 +87,7 @@ void cycle(long currentTime)
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
         //1. get an event from the event queue
-        Item item = popForgetPushPop(&events, false, currentTime);
+        Item item = popAndForget(&events, false, currentTime);
         if(item.address == 0)
         {
             continue;
@@ -120,7 +120,7 @@ void cycle(long currentTime)
             int conceptsSelected = 0;
             for(int j=0; j<CONCEPT_SELECTIONS; j++)
             {   //by doing inference with the highest priority concepts
-                selectedItem[j] = popForgetPushPop(&concepts, true, currentTime);
+                selectedItem[j] = popAndForget(&concepts, true, currentTime);
                 if(selectedItem[j].address == 0)
                 {
                     continue;

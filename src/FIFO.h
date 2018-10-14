@@ -23,6 +23,11 @@ typedef struct
     int currentIndex;
     Event array[FIFO_SIZE];
 } FIFO;
+typedef struct
+{
+    int index;
+    Event projectedEvent;
+} FIFO_Query_Result;
 
 //Methods//
 //-------//
@@ -32,5 +37,8 @@ void FIFO_Add(Event *event, FIFO *fifo);
 //return revised element if revision worked, else {0}
 //also see https://github.com/patham9/ANSNA/wiki/Event-Revision
 Event FIFO_AddAndRevise(Event *event, FIFO *fifo);
+//Get the best item for the occurrenceTime, projected to occurrenceTime, 
+//plus the information where it was
+FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime);
 
 #endif

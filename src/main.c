@@ -159,7 +159,7 @@ void Table_Test()
 int main() 
 {
     srand(1337);
-    SDR_INIT();
+    ANSNA_INIT();
     SDR_Test();
     Stamp_Test();
     FIFO_Test();
