@@ -25,7 +25,7 @@ typedef struct
 } FIFO;
 typedef struct
 {
-    int index;
+    Event *originalEvent;
     Event projectedEvent;
 } FIFO_Query_Result;
 

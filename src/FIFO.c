@@ -35,7 +35,7 @@ FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenc
             }
         }
     }
-    return (FIFO_Query_Result) { .index = closest_i, 
+    return (FIFO_Query_Result) { .originalEvent = &fifo->array[closest_i], 
                                  .projectedEvent = closest };
 }
 
@@ -61,7 +61,7 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
         return (Event) {0};
     }
     //Else we add the revised one and set the closest one to be deleted/0
-    fifo->array[closest.index] = (Event) {0};
+    *(closest.originalEvent) = (Event) {0};
     FIFO_Add(&revised, fifo);
     return revised;
 }
