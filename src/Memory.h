@@ -22,20 +22,31 @@
 #define USE_HASHING true
 #define MATCH_STRATEGY VOTING
 #define MEMORY_MATCH_NO_CONCEPT -1
+#define OPERATIONS_MAX 1000
 
 //Data structure//
 //--------------//
+//Data structures
 PriorityQueue concepts;
-PriorityQueue events; 
+PriorityQueue events;
+typedef void (*Action)(void);
+typedef struct
+{
+    SDR sdr;
+    Action action;
+}Operation;
+Operation operations[OPERATIONS_MAX];
 
 //Methods//
 //-------//
 //Init memory
-void Memory_RESET();
+void Memory_INIT();
 //Add concept to memory
 Concept* Memory_addConcept(SDR *sdr, Attention attention);
 //Return closest concept
 int Memory_getClosestConcept(Event *event);
 //Add event to memory
 void Memory_addEvent(Event *event);
+//Add operation to memory
+void Memory_addOperation(Operation op);
 #endif

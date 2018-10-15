@@ -29,8 +29,8 @@ typedef struct {
 
 //Methods//
 //-------//
-//Reset module
-void Event_RESET();
+//Init/Reset module
+void Event_INIT();
 //Assign a new name to an event
 void Event_SetSDR(Event *event, SDR sdr);
 //construct an input event

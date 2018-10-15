@@ -5,7 +5,8 @@ Event event_storage[EVENTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Item event_items_storage[EVENTS_MAX];
 
-void Memory_RESET()
+int operations_index = 0;
+void Memory_INIT()
 {
     PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
     PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
@@ -19,6 +20,11 @@ void Memory_RESET()
         event_storage[i] = (Event) {0};
         events.items[i] = (Item) { .address = &(event_storage[i]) };
     }
+    for(int i=0; i<OPERATIONS_MAX; i++)
+    {
+        operations[i] = (Operation) {0};
+    }
+    operations_index = 0;
 }
 
 #if MATCH_STRATEGY == VOTING
@@ -157,9 +163,9 @@ int Memory_getClosestConcept(Event *event)
 #if MATCH_STRATEGY == EXHAUSTIVE
     int best_i = MEMORY_MATCH_NO_CONCEPT;
     double bestValSoFar = -1;
-    for(int i=0; i<concepts.items_amount; i++)
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
-        double curVal = SDR_Inheritance(eventSDR, &(concepts.items[i].sdr));
+        double curVal = Truth_Expectation(SDR_Inheritance(eventSDR, &(((Concept*)concepts.items[i].address)->sdr)));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
@@ -178,4 +184,10 @@ void Memory_addEvent(Event *event)
         Event *toRecyle = pushed.addedItem.address;
         *toRecyle = *event;
     }
+}
+
+void Memory_addOperation(Operation op)
+{
+    operations[operations_index%OPERATIONS_MAX] = op;
+    operations_index++;
 }

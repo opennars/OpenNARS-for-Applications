@@ -18,7 +18,7 @@ Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime)
                      .occurrenceTime = currentTime };
 }
 
-void Event_RESET()
+void Event_INIT()
 {
     base = 1;
 }
