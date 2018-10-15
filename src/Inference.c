@@ -43,10 +43,15 @@ Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
-    return (Implication) { .sdr = SDR_Intersection(&a->sdr, &b->sdr), 
-                           .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
+    Implication B = *b;
+    SDR_PrintWhereTrue(&b->sdr);
+    SDR_PrintWhereTrue(&a->sdr);
+    //symmetric case of https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
+    B.truth = Truth_Analogy(SDR_Similarity(&b->sdr, &a->sdr), b->truth);
+    return (Implication) { .sdr = a->sdr, 
+                           .truth = Truth_Projection(Truth_Revision(a->truth, B.truth), a->occurrenceTimeOffset, B.occurrenceTimeOffset),
                            .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + b->occurrenceTimeOffset)/2.0 };
+                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + B.occurrenceTimeOffset)/2.0 };
 }
 
 //{Event a., Implication <a =/> b>.} |- Event b.

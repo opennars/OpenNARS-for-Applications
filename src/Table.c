@@ -26,16 +26,13 @@ void Table_AddAndRevise(Table *table, Implication *imp)
     //1. get closest item in the table
     int best_i = -1;
     double best_expectation = 0;
-    Truth best_truth;
     for(int i=0; i<table->itemsAmount; i++)
     {
-        Truth tsim = SDR_Similarity(&imp->sdr, &table->array[i].sdr);
-        double cur_expectation = Truth_Expectation(tsim);
+        double cur_expectation = Truth_Expectation(SDR_Similarity(&imp->sdr, &table->array[i].sdr));
         if(cur_expectation > best_expectation)
         {
             best_i = i;
             best_expectation = cur_expectation;
-            best_truth = tsim;
         }
     }
     //2. if there was one, revise with closest, and add the revised element
@@ -44,13 +41,8 @@ void Table_AddAndRevise(Table *table, Implication *imp)
         Implication* closest = &table->array[best_i];
         if(!Stamp_checkOverlap(&closest->stamp, &imp->stamp))
         {
-            Implication penalized_closest = *closest;
-            Implication penalized_imp = *imp;
-            penalized_closest.truth.confidence *= best_truth.frequency;
-            penalized_imp.truth.confidence *= best_truth.frequency;
-            Implication revised = Inference_ImplicationRevision(&penalized_closest, &penalized_imp);
-            if(revised.truth.confidence > penalized_closest.truth.confidence &&
-               revised.truth.confidence > penalized_imp.truth.confidence)
+            Implication revised = Inference_ImplicationRevision(closest, imp);
+            if(revised.truth.confidence > closest->truth.confidence)
             {
                 Table_Add(table, &revised);
             }

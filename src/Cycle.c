@@ -100,9 +100,9 @@ void cycle(long currentTime)
         {
             Concept *c = concepts.items[closest_concept_i].address;
             c->usage = Usage_use(&c->usage, currentTime);
-            Truth matchTruth = SDR_Inheritance(&e->sdr, &c->sdr);
+            //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
             Event eMatch = *e;
-            eMatch.truth = Truth_Revision(e->truth, matchTruth);
+            eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
             //apply decomposition-based inference: prediction/explanation
             decomposition(c, &eMatch, currentTime);
             //add event to the FIFO of the concept
