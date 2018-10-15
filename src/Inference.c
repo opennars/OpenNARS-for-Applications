@@ -32,7 +32,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .sdr = SDR_Intersection(&a->sdr, &b->sdr), 
+    return (Event) { .sdr = a->sdr, 
                      .type = a->type,
                      .truth = Truth_Revision(truthA, truthB),
                      .stamp = conclusionStamp, 
@@ -44,8 +44,6 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
     Implication B = *b;
-    SDR_PrintWhereTrue(&b->sdr);
-    SDR_PrintWhereTrue(&a->sdr);
     //symmetric case of https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     B.truth = Truth_Analogy(SDR_Similarity(&b->sdr, &a->sdr), b->truth);
     return (Implication) { .sdr = a->sdr, 
