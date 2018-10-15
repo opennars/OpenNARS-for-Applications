@@ -46,8 +46,8 @@ void Table_AddAndRevise(Table *table, Implication *imp)
         {
             Implication penalized_closest = *closest;
             Implication penalized_imp = *imp;
-            penalized_closest.truth = Truth_Intersection(penalized_closest.truth, best_truth);
-            penalized_imp.truth = Truth_Intersection(penalized_imp.truth, best_truth);
+            penalized_closest.truth.confidence *= best_truth.frequency;
+            penalized_imp.truth.confidence *= best_truth.frequency;
             Implication revised = Inference_ImplicationRevision(&penalized_closest, &penalized_imp);
             if(revised.truth.confidence > penalized_closest.truth.confidence &&
                revised.truth.confidence > penalized_imp.truth.confidence)
