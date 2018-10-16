@@ -121,6 +121,28 @@ PotentialExecutionResult potentialExecution(Concept *c, Event *goal, long curren
     return result;
 }
 
+PotentialExecutionResult motorBabbling()
+{
+    PotentialExecutionResult result = (PotentialExecutionResult) {0};
+    int n_ops = OPERATIONS_MAX;
+    for(int i=0; i<OPERATIONS_MAX; i++)
+    {
+        if(operations[i].action == 0)
+        {
+            n_ops = i;
+            break;
+        }
+    }
+    if(n_ops > 0)
+    {
+        int chosen = random() % n_ops;
+        result.op = operations[chosen];
+        (*result.op.action)();
+        result.executed = true;
+    }
+    return result;
+}
+
 void motorTagging(Concept *c, Operation op)
 {
     Event ev = FIFO_GetNewestElement(&c->event_beliefs);
@@ -146,12 +168,15 @@ void cycle(long currentTime)
         if(closest_concept_i != MEMORY_MATCH_NO_CONCEPT)
         {
             Concept *c = concepts.items[closest_concept_i].address;
-            c->usage = Usage_use(&c->usage, currentTime);
             //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
             Event eMatch = *e;
             eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
             //apply decomposition-based inference: prediction/explanation
-            decomposition(c, &eMatch, currentTime);
+            if(currentTime - c->usage.lastUsed > CONCEPT_WAIT_TIME)
+            {
+                decomposition(c, &eMatch, currentTime);
+            }
+            c->usage = Usage_use(&c->usage, currentTime);
             //add event to the FIFO of the concept
             FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
             Event revised = FIFO_AddAndRevise(&eMatch, fifo);
@@ -163,8 +188,16 @@ void cycle(long currentTime)
             }
             if(goal != NULL)
             {
-                consideredOperation = potentialExecution(c, goal, currentTime);   
-                if(consideredOperation.matched)
+                consideredOperation = potentialExecution(c, goal, currentTime);
+                //if no operation matched, try motor babbling with a certain chance
+                if(!consideredOperation.matched && !consideredOperation.executed)
+                {
+                    if(random() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+                    {
+                        consideredOperation = motorBabbling();
+                    } 
+                }
+                if(consideredOperation.executed)
                 {
                     motorTagging(c, consideredOperation.op);
                 }
@@ -182,7 +215,7 @@ void cycle(long currentTime)
                 {
                     continue;
                 }
-                if(consideredOperation.matched)
+                if(consideredOperation.executed)
                 {
                     motorTagging(selectedItem[j].address, consideredOperation.op);
                 }

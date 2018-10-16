@@ -18,6 +18,10 @@
 #define CONCEPT_SELECTIONS 10
 //for decision making:
 #define DECISION_THRESHOLD 0.5
+//motor babbling chance
+#define MOTOR_BABBLING_CHANCE 0.001
+//concept wait time to be used when it was used
+#define CONCEPT_WAIT_TIME 100
 
 //Methods//
 //-------//
