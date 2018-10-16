@@ -14,6 +14,11 @@ void composition(Concept *B, Concept *A, Event *b, long currentTime)
             Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
             sequence.attention = Attention_deriveEvent(&B->attention, &sequence.truth, currentTime);
             Memory_addEvent(&sequence);
+            IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
+        }
+        else
+        {
+            IN_DEBUG( Stamp_print(&a->stamp); Stamp_print(&b->stamp); )
         }
     }
 }
@@ -33,6 +38,7 @@ void decomposition(Concept *c, Event *e, long currentTime)
             Table_PopHighestTruthExpectationElement(&c->postcondition_beliefs);
             Implication updated = Inference_AssumptionOfFailure(&postcon);
             Table_Add(&c->postcondition_beliefs, &updated);
+            IN_OUTPUT( printf("DETACHED FORWARD EVENT: "); Event_Print(&res); )
         }
     }
     if(c->precondition_beliefs.itemsAmount>0)
@@ -43,6 +49,7 @@ void decomposition(Concept *c, Event *e, long currentTime)
             Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
             res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
             Memory_addEvent(&res);
+            IN_OUTPUT( printf("DETACHED BACKWARD EVENT: "); Event_Print(&res); )
         }
     }
 }
@@ -52,6 +59,11 @@ Item popAndForget(PriorityQueue *queue, bool isConcept, long currentTime)
 {
     //1. pop an item
     Item item = PriorityQueue_PopMax(queue);
+    return item;
+    if(item.address == 0)
+    {
+        return item;
+    }
     //2. forget item the more the longer it wasn't last forgotten
     double priority = 0;
     if(isConcept)
@@ -72,12 +84,16 @@ Item popAndForget(PriorityQueue *queue, bool isConcept, long currentTime)
     {
         return (Item) {0};
     }
-    feedback.addedItem.address = item.address;
+    else
+    {
+        feedback.addedItem.address = item.address;
+    }
     //4. check if the pushed item is still considered the Max
     Item item2 = PriorityQueue_PopMax(queue);
     if(item2.address != item.address)
     { //item did not deserve to be the highest, it just wasn't selected
-        return (Item) {0}; //to be relative forgotten for some time
+        //PriorityQueue_Push(queue, priority);
+        //return (Item) {0}; //to be relative forgotten for some time
     }
     return item;
 }
@@ -150,6 +166,45 @@ void motorTagging(Concept *c, Operation op)
     FIFO_AddAndRevise(&ev, &c->event_beliefs);
 }
 
+void temporalInference(Concept *c, Event *e, PotentialExecutionResult *consideredOperation, long currentTime)
+{
+    //trigger composition-based inference hypothesis formation
+    Item selectedItem[CONCEPT_SELECTIONS];
+    int conceptsSelected = 0;
+    for(int j=0; j<CONCEPT_SELECTIONS; j++)
+    {   //by doing inference with the highest priority concepts
+        selectedItem[j] = popAndForget(&concepts, true, currentTime);
+        if(selectedItem[j].address == 0)
+        {
+            IN_DEBUG
+            ( 
+                printf("Selecting concept failed, maybe item order changed.\n"); 
+                if(selectedItem[j].address != 0)
+                {
+                    SDR_PrintWhereTrue(&((Concept*) selectedItem[j].address)->sdr);
+                }
+            )
+            continue;
+        }
+        if(selectedItem[j].address == c)
+        {
+            IN_DEBUG( printf("Selected concept is the same as matched one.\n"); )
+        }
+        IN_DEBUG( printf("Concept was chosen as temporal inference partner:\n"); Concept_Print(selectedItem[j].address); )
+        if(consideredOperation->executed)
+        {
+            motorTagging(selectedItem[j].address, consideredOperation->op);
+        }
+        composition(c, selectedItem[j].address, e, currentTime); // deriving a =/> b
+        conceptsSelected++;
+    }
+    for(int j=0; j<conceptsSelected; j++)
+    {   //push again what we popped
+        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
+        *((Concept*) feedback.addedItem.address) = *((Concept*) selectedItem[j].address);
+    }
+}
+
 void cycle(long currentTime)
 {
     for(int i=0; i<EVENT_SELECTIONS; i++)
@@ -161,8 +216,10 @@ void cycle(long currentTime)
             IN_DEBUG( printf("Selecting event failed, maybe the item order changed.\n"); )
             continue;
         }
-        IN_DEBUG( printf("Event was selected:\n"); Event_Print(item.address); )
         Event *e = item.address;
+        Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
+        IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
+        //TODO better handling
         //end pop forget push pop strategu
         //determine the concept it is related to
         int closest_concept_i = Memory_getClosestConcept(e);
@@ -179,6 +236,10 @@ void cycle(long currentTime)
                 decomposition(c, &eMatch, currentTime);
             }
             c->usage = Usage_use(&c->usage, currentTime);
+            
+            //send event to the highest prioriry concepts
+            temporalInference(c, e, &consideredOperation, currentTime);
+            
             //add event to the FIFO of the concept
             FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
             Event revised = FIFO_AddAndRevise(&eMatch, fifo);
@@ -207,30 +268,7 @@ void cycle(long currentTime)
             //relatively forget the event, as it was used, and add back to events
             e->attention = Attention_forgetEvent(&e->attention, currentTime);
             Memory_addEvent(e);
-            //trigger composition-based inference hypothesis formation
-            Item selectedItem[CONCEPT_SELECTIONS];
-            int conceptsSelected = 0;
-            for(int j=0; j<CONCEPT_SELECTIONS; j++)
-            {   //by doing inference with the highest priority concepts
-                selectedItem[j] = popAndForget(&concepts, true, currentTime);
-                if(selectedItem[j].address == 0)
-                {
-                    IN_DEBUG( printf("Selecting concept failed, maybe the item order changed.\n"); )
-                    continue;
-                }
-                IN_DEBUG( printf("Concept was chosen as temporal inference partner:\n"); Concept_Print(item.address); )
-                if(consideredOperation.executed)
-                {
-                    motorTagging(selectedItem[j].address, consideredOperation.op);
-                }
-                composition(c, selectedItem[j].address, &eMatch, currentTime); // deriving a =/> b
-                conceptsSelected++;
-            }
-            for(int j=0; j<conceptsSelected; j++)
-            {   //push again what we popped
-                PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
-                feedback.addedItem.address = selectedItem[j].address;
-            }
+            
             //activate concepts attention with the event's attention
             c->attention = Attention_activateConcept(&c->attention, &e->attention); 
             PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
@@ -242,13 +280,41 @@ void cycle(long currentTime)
         if(!consideredOperation.matched) //(&/,a,op()) events don't form concepts, they are revised in a
         {
             //add a new concept for e too at the end, just before it needs to be identified with something existing
-            Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
-            FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+            bool duplicate = false; //todo improve
+            for(int i=0; i<concepts.itemsAmount; i++)
+            {
+                Concept *existing = concepts.items[i].address;
+                //SDR_PrintWhereTrue(&existing->sdr);
+                if(existing->sdr_hash == e->sdr_hash)
+                {
+                    if(SDR_Equal(&existing->sdr, &e->sdr))
+                    {
+                        IN_DEBUG( printf("EXISTING CONCEPT \n"); )
+                        duplicate = true;
+                        break;
+                    }
+                }
+            }
+            if(!duplicate)
+            {
+                Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
+                if(eNativeConcept == NULL)
+                {
+                    IN_DEBUG( printf("ADDING CONCEPT FAILED"); )
+                }
+                else
+                {
+                    IN_DEBUG( printf("ADDED CONCEPT \n"); )
+                    FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+                }
+                
+            }
         }
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, e->attention.priority);
         if(feedback.added)
         {
-            Event_SetSDR(feedback.addedItem.address, e->sdr);
+            Event *added = feedback.addedItem.address;
+            *added = *e;
         }
     }
 }

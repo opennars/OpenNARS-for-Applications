@@ -16,7 +16,7 @@
 //----------//
 #define EVENT_SELECTIONS 1
 //for temporal induction:
-#define CONCEPT_SELECTIONS 1
+#define CONCEPT_SELECTIONS 2
 //for decision making:
 #define DECISION_THRESHOLD 0.5
 //motor babbling chance

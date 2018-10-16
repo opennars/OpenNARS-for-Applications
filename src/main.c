@@ -159,17 +159,15 @@ void Table_Test()
 void ANSNA_Test()
 {
     printf(">>ANSNA test start\n");
-    printf("INJECTING event a\n");
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
-    for(int i=0; i<10; i++)
+    for(int i=0; i<8; i++)
     {
-        if(i == 5)
+        if(i == 3)
         {
-            printf("INJECTING event b\n");
             ANSNA_AddInput(Encode_Term("b"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
         }
-        printf("\nNew inference cycle:\n----------\n");
         ANSNA_Cycles(1);
+        printf("TICK\n");
     }
     printf("<<ANSNA test successful\n");
 }

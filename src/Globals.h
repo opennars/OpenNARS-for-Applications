@@ -1,4 +1,5 @@
-#define DEBUG 1
+#define DEBUG 0
+#define OUTPUT 1
 #define DEBUG_INFO(x) {if(DEBUG == 1){}}
 
 #ifdef DEBUG
@@ -8,3 +9,4 @@
 #endif
 
 #define IN_DEBUG(x) {if(DEBUG){ x } }
+#define IN_OUTPUT(x) {if(OUTPUT){ x } }

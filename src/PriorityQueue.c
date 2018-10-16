@@ -173,6 +173,10 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
 
 Item PriorityQueue_PopMin(PriorityQueue *queue)
 {
+    if(queue->itemsAmount == 0)
+    {
+        return (Item) {0};
+    }
     Item item = at(0);
     swap(queue, 0, queue->itemsAmount-1);
     queue->itemsAmount--;
@@ -182,6 +186,10 @@ Item PriorityQueue_PopMin(PriorityQueue *queue)
 
 Item PriorityQueue_PopMax(PriorityQueue *queue)
 {
+    if(queue->itemsAmount == 0)
+    {
+        return (Item) {0};
+    }
     int p = smallestChild(queue, 0, true);
     Item item = at(p);
     swap(queue, p, queue->itemsAmount-1); //swap max with last item
@@ -192,6 +200,10 @@ Item PriorityQueue_PopMax(PriorityQueue *queue)
 
 Item PriorityQueue_PopAt(PriorityQueue *queue, int i)
 {
+    if(queue->itemsAmount == 0)
+    {
+        return (Item) {0};
+    }
     Item item = at(i);
     swap(queue, i, queue->itemsAmount-1); 
     queue->itemsAmount--;
