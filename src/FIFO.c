@@ -9,7 +9,7 @@ void FIFO_Add(Event *event, FIFO *fifo)
     fifo->itemsAmount = MIN(fifo->currentIndex + 1, FIFO_SIZE);
 }
 
-FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime)
+FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime, SDR *referenceSdr)
 {
     int closest_i = -1;
     Event closest = {0};
@@ -20,6 +20,8 @@ FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenc
             if(closest.type == EVENT_TYPE_DELETED)
             {
                 closest = fifo->array[i];
+                closest.truth = Truth_Analogy(SDR_Similarity(referenceSdr, &closest.sdr), closest.truth);
+                closest.sdr = *referenceSdr;
                 closest.truth = Truth_Projection(closest.truth, closest.occurrenceTime, occurrenceTime);
                 closest_i = i;
             }
@@ -27,6 +29,7 @@ FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenc
             {
                 Event potential_closest = fifo->array[i];
                 potential_closest.truth = Truth_Projection(potential_closest.truth, potential_closest.occurrenceTime, occurrenceTime);
+                potential_closest.occurrenceTime = occurrenceTime;
                 if(potential_closest.truth.confidence > closest.truth.confidence)
                 {
                     closest = potential_closest;
@@ -46,14 +49,14 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
         FIFO_Add(event, fifo);
         return (Event) {0};
     }
-    FIFO_Query_Result closest = FIFO_GetHighestConfidentProjectedTo(fifo, event->occurrenceTime);    
+    FIFO_Query_Result closest = FIFO_GetHighestConfidentProjectedTo(fifo, event->occurrenceTime, &event->sdr);    
     //overlap happened, we can't revise, so just add the event to FIFO
     if(Stamp_checkOverlap(&event->stamp, &closest.projectedEvent.stamp))
     {
         FIFO_Add(event, fifo);
         return (Event) {0};
     }
-    Event revised = Inference_EventRevision(&closest.projectedEvent, event);
+    Event revised = Inference_EventRevision(closest.originalEvent, event);
     //Revision into the middle of both occurrence times leaded to truth lower than the premises, don't revise and add event
     if(revised.truth.confidence < closest.projectedEvent.truth.confidence && revised.truth.confidence < event->truth.confidence)
     {
@@ -64,4 +67,13 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
     *(closest.originalEvent) = (Event) {0};
     FIFO_Add(&revised, fifo);
     return revised;
+}
+
+Event FIFO_GetNewestElement(FIFO *fifo)
+{
+    if(fifo->itemsAmount == 0)
+    {
+        return (Event) {0};
+    }
+    return fifo->array[fifo->currentIndex == 0 ? FIFO_SIZE-1 : fifo->currentIndex-1];
 }

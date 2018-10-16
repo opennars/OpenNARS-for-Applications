@@ -97,6 +97,8 @@ SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
 Truth SDR_Match(SDR *part, SDR *full);
 //Whether two SDR's are equal completely, only used for testing!
 bool SDR_Equal(SDR *a, SDR *b);
+//Whether the 1-bits of a are a subset of the 1-bits of b
+bool SDR_Subset(SDR *a, SDR *b);
 //The confidence measuring to what degree a SDR is a special case of another
 //also see https://github.com/patham9/ANSNA/wiki/SDRInheritance-for-matching,-and-its-truth-value
 Truth SDR_Inheritance(SDR *full, SDR *part);

@@ -16,6 +16,8 @@
 #define EVENT_SELECTIONS 10
 //for temporal induction:
 #define CONCEPT_SELECTIONS 10
+//for decision making:
+#define DECISION_THRESHOLD 0.5
 
 //Methods//
 //-------//

@@ -82,6 +82,52 @@ Item popAndForget(PriorityQueue *queue, bool isConcept, long currentTime)
     return item;
 }
 
+typedef struct
+{
+    bool matched;
+    bool executed;
+    Operation op;
+}PotentialExecutionResult;
+
+//it returns whether and which operation matched and whether it was executed
+PotentialExecutionResult potentialExecution(Concept *c, Event *goal, long currentTime)
+{
+    PotentialExecutionResult result = (PotentialExecutionResult) {0};
+    for(int i=0; i<OPERATIONS_MAX; i++)
+    {
+        Event G = *goal;
+        Operation op = operations[i];
+        if(op.action == 0)
+        {
+            break;
+        }
+        result.matched = SDR_Subset(&op.sdr, &G.sdr);
+        if(result.matched)
+        {
+            result.op = op;
+            G.truth = Truth_Projection(G.truth, G.occurrenceTime, currentTime);
+            G.occurrenceTime = currentTime;
+            SDR a_rest = SDR_Minus(&goal->sdr, &op.sdr);
+            Event b = FIFO_GetHighestConfidentProjectedTo(&c->event_beliefs, currentTime, &a_rest).projectedEvent;
+            if(Truth_Expectation(Truth_Deduction(G.truth, b.truth)) > DECISION_THRESHOLD)
+            {
+                result.executed = true;
+                (*op.action)();
+            }
+            return result;
+        }
+        
+    }
+    return result;
+}
+
+void motorTagging(Concept *c, Operation op)
+{
+    Event ev = FIFO_GetNewestElement(&c->event_beliefs);
+    ev.sdr = SDR_Union(&ev.sdr, &op.sdr);
+    FIFO_AddAndRevise(&ev, &c->event_beliefs);
+}
+
 void cycle(long currentTime)
 {
     for(int i=0; i<EVENT_SELECTIONS; i++)
@@ -96,6 +142,7 @@ void cycle(long currentTime)
         //end pop forget push pop strategu
         //determine the concept it is related to
         int closest_concept_i = Memory_getClosestConcept(e);
+        PotentialExecutionResult consideredOperation = (PotentialExecutionResult) {0};
         if(closest_concept_i != MEMORY_MATCH_NO_CONCEPT)
         {
             Concept *c = concepts.items[closest_concept_i].address;
@@ -108,9 +155,19 @@ void cycle(long currentTime)
             //add event to the FIFO of the concept
             FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
             Event revised = FIFO_AddAndRevise(&eMatch, fifo);
+            Event *goal = e->type == EVENT_TYPE_GOAL ? e : NULL;
             if(revised.type != EVENT_TYPE_DELETED)
             {
+                goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
                 Memory_addEvent(&revised);
+            }
+            if(goal != NULL)
+            {
+                consideredOperation = potentialExecution(c, goal, currentTime);   
+                if(consideredOperation.matched)
+                {
+                    motorTagging(c, consideredOperation.op);
+                }
             }
             //relatively forget the event, as it was used, and add back to events
             e->attention = Attention_forgetEvent(&e->attention, currentTime);
@@ -125,6 +182,10 @@ void cycle(long currentTime)
                 {
                     continue;
                 }
+                if(consideredOperation.matched)
+                {
+                    motorTagging(selectedItem[j].address, consideredOperation.op);
+                }
                 composition(c, selectedItem[j].address, &eMatch, currentTime); // deriving a =/> b
                 conceptsSelected++;
             }
@@ -137,8 +198,11 @@ void cycle(long currentTime)
             c->attention = Attention_activateConcept(&c->attention, &e->attention); 
             PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
         }
-        //add a new concept for e too at the end, just before it needs to be identified with something existing
-        Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
-        FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+        if(!consideredOperation.matched) //(&/,a,op()) events don't form concepts, they are revised in a
+        {
+            //add a new concept for e too at the end, just before it needs to be identified with something existing
+            Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
+            FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+        }
     }
 }

@@ -172,6 +172,17 @@ bool SDR_Equal(SDR *a, SDR *b)
     return true;
 }
 
+bool SDR_Subset(SDR *a, SDR *b)
+{
+    ITERATE_SDR_BITS(i,j,
+        if(SDR_ReadBitInBlock(a,i,j) && !SDR_ReadBitInBlock(b,i,j))
+        {
+            return false;
+        }
+    )
+    return true;
+}
+
 Truth SDR_Inheritance(SDR *full, SDR *part)
 {
     return SDR_Match(part, full);
