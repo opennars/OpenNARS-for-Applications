@@ -35,5 +35,7 @@ void Event_INIT();
 void Event_SetSDR(Event *event, SDR sdr);
 //construct an input event
 Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime);
+//print event
+void Event_Print(Event *event);
 
 #endif

@@ -42,5 +42,7 @@ Attention Attention_activateConcept(Attention *conceptAttention, Attention *even
 Attention Attention_deriveEvent(Attention *conceptAttention, Truth *truth, long currentTime);
 //attention of input event
 Attention Attention_inputEvent(Truth *truth, long currentTime);
+//attention print
+void Attention_Print(Attention *attention);
 
 #endif

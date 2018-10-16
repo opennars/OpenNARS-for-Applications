@@ -39,3 +39,8 @@ Attention Attention_inputEvent(Truth *truth, long currentTime)
                          .durability = EVENT_DURABILITY,
                          .lastForgotten = currentTime };
 }
+
+void Attention_Print(Attention *attention)
+{
+    printf("Attention: priority=%f, durability=%f, lastForgotten=%d\n", attention->priority, attention->durability, attention->lastForgotten);
+}

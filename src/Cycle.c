@@ -158,8 +158,10 @@ void cycle(long currentTime)
         Item item = popAndForget(&events, false, currentTime);
         if(item.address == 0)
         {
+            IN_DEBUG( printf("Selecting event failed, maybe the item order changed.\n"); )
             continue;
         }
+        IN_DEBUG( printf("Event was selected:\n"); Event_Print(item.address); )
         Event *e = item.address;
         //end pop forget push pop strategu
         //determine the concept it is related to
@@ -213,8 +215,10 @@ void cycle(long currentTime)
                 selectedItem[j] = popAndForget(&concepts, true, currentTime);
                 if(selectedItem[j].address == 0)
                 {
+                    IN_DEBUG( printf("Selecting concept failed, maybe the item order changed.\n"); )
                     continue;
                 }
+                IN_DEBUG( printf("Concept was chosen as temporal inference partner:\n"); Concept_Print(item.address); )
                 if(consideredOperation.executed)
                 {
                     motorTagging(selectedItem[j].address, consideredOperation.op);
@@ -231,11 +235,20 @@ void cycle(long currentTime)
             c->attention = Attention_activateConcept(&c->attention, &e->attention); 
             PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
         }
+        else
+        {
+            assert(concepts.itemsAmount == 0, "No matching concept is only allowed to happen if memory is empty.");
+        }
         if(!consideredOperation.matched) //(&/,a,op()) events don't form concepts, they are revised in a
         {
             //add a new concept for e too at the end, just before it needs to be identified with something existing
             Concept *eNativeConcept = Memory_addConcept(&e->sdr, e->attention);
             FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+        }
+        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, e->attention.priority);
+        if(feedback.added)
+        {
+            Event_SetSDR(feedback.addedItem.address, e->sdr);
         }
     }
 }

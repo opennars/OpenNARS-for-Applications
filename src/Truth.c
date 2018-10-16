@@ -94,3 +94,8 @@ Truth Truth_Projection(Truth v, long originalTime, long targetTime)
     double difference = labs(targetTime - originalTime);
     return (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference)};
 }
+
+void Truth_Print(Truth *truth)
+{
+    printf("Truth: frequency=%f, confidence=%f\n", truth->frequency, truth->confidence);
+}

@@ -39,5 +39,6 @@ Truth Truth_Abduction(Truth v1, Truth v2);
 Truth Truth_Intersection(Truth v1, Truth v2);
 Truth Truth_Eternalize(Truth v);
 Truth Truth_Projection(Truth v, long originalTime, long targetTime);
+void Truth_Print(Truth *truth);
 
 #endif
