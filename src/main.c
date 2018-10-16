@@ -156,6 +156,14 @@ void Table_Test()
     printf("<<Table test successful\n");
 }
 
+void ANSNA_Test()
+{
+    printf(">>ANSNA test start\n");
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    //ANSNA_Cycles(1);
+    printf("<<ANSNA test successful\n");
+}
+
 int main() 
 {
     srand(1337);
@@ -165,7 +173,7 @@ int main()
     FIFO_Test();
     PriorityQueue_Test();
     Table_Test();
-    
+    ANSNA_Test();
     /*
     // memory
     Memory memory;
