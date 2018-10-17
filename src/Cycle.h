@@ -26,7 +26,9 @@
 //min confidence
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.01
-#define MAX_PREDICTIONS 5
+#define MAX_FORWARD 5
+#define MAX_BACKWARD 5
+#define MAX_INDUCTIONS 5
 
 //Methods//
 //-------//

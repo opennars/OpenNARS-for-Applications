@@ -26,11 +26,11 @@ Implication Table_AddAndRevise(Table *table, Implication *imp)
     Implication RetRevised = (Implication) {0};
     //1. get closest item in the table
     int best_i = -1;
-    double best_expectation = 0;
+    double best_expectation = 0.0;
     for(int i=0; i<table->itemsAmount; i++)
     {
         double cur_expectation = Truth_Expectation(SDR_Similarity(&imp->sdr, &table->array[i].sdr));
-        if(cur_expectation > best_expectation)
+        if(cur_expectation > best_expectation && !Stamp_checkOverlap(&imp->stamp, &table->array[i].stamp))
         {
             best_i = i;
             best_expectation = cur_expectation;
@@ -40,15 +40,12 @@ Implication Table_AddAndRevise(Table *table, Implication *imp)
     if(best_i != -1)
     {
         Implication* closest = &table->array[best_i];
-        if(!Stamp_checkOverlap(&closest->stamp, &imp->stamp))
+        Implication revised = Inference_ImplicationRevision(closest, imp);
+        Implication_SetSDR(&revised, imp->sdr); //update sdr hash
+        if(revised.truth.confidence > closest->truth.confidence)
         {
-            Implication revised = Inference_ImplicationRevision(closest, imp);
-            Implication_SetSDR(&revised, revised.sdr); //update sdr hash
-            if(revised.truth.confidence > closest->truth.confidence)
-            {
-                Table_Add(table, &revised);
-                RetRevised = revised;
-            }
+            Table_Add(table, &revised);
+            RetRevised = revised;
         }
     }
     //3. add imp too:

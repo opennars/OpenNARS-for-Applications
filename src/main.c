@@ -181,7 +181,7 @@ int main()
     ANSNA_INIT();
     SDR_Test();
     Stamp_Test();
-    FIFO_Test();
+    //FIFO_Test();
     PriorityQueue_Test();
     Table_Test();
     ANSNA_Test();
