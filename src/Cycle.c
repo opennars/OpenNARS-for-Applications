@@ -59,7 +59,6 @@ Item popAndForget(PriorityQueue *queue, bool isConcept, long currentTime)
 {
     //1. pop an item
     Item item = PriorityQueue_PopMax(queue);
-    return item;
     if(item.address == 0)
     {
         return item;
