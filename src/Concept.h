@@ -23,9 +23,7 @@ typedef struct {
     FIFO event_goals;
     //TODO replace with Table, same as belief tables in OpenNARS:
     Table precondition_beliefs;
-    int precondition_beliefs_amount;
     Table postcondition_beliefs;
-    int postcondition_beliefs_amount;
 } Concept;
 
 //Methods//

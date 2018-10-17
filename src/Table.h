@@ -19,7 +19,7 @@ typedef struct {
 //Methods//
 //-------//
 void Table_Add(Table *table, Implication *imp);
-void Table_AddAndRevise(Table *table, Implication *imp);
+Implication Table_AddAndRevise(Table *table, Implication *imp);
 Implication Table_PopHighestTruthExpectationElement(Table *table);
 
 #endif

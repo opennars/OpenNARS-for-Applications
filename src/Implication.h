@@ -20,6 +20,7 @@ typedef struct {
 //-------//
 //Assign a new name to an implication
 void Implication_SetSDR(Implication *implication, SDR sdr);
+void Implication_Print(Implication *implication);
 
 #endif
 

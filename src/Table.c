@@ -21,8 +21,9 @@ void Table_Add(Table *table, Implication *imp)
     }
 }
 
-void Table_AddAndRevise(Table *table, Implication *imp)
+Implication Table_AddAndRevise(Table *table, Implication *imp)
 {
+    Implication RetRevised = (Implication) {0};
     //1. get closest item in the table
     int best_i = -1;
     double best_expectation = 0;
@@ -42,14 +43,17 @@ void Table_AddAndRevise(Table *table, Implication *imp)
         if(!Stamp_checkOverlap(&closest->stamp, &imp->stamp))
         {
             Implication revised = Inference_ImplicationRevision(closest, imp);
+            Implication_SetSDR(&revised, revised.sdr); //update sdr hash
             if(revised.truth.confidence > closest->truth.confidence)
             {
                 Table_Add(table, &revised);
+                RetRevised = revised;
             }
         }
     }
     //3. add imp too:
     Table_Add(table, imp);
+    return RetRevised;
 }
 
 Implication Table_PopHighestTruthExpectationElement(Table *table)

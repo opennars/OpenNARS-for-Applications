@@ -9,10 +9,20 @@ void composition(Concept *B, Concept *A, Event *b, long currentTime)
         if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
             Implication implication = Inference_BeliefInduction(a, b);
-            Table_AddAndRevise(&B->precondition_beliefs, &implication);
-            Table_AddAndRevise(&A->postcondition_beliefs, &implication);
+            if(implication.truth.confidence >= MIN_CONFIDENCE)
+            {
+                IN_OUTPUT( printf("Formed implication: "); Implication_Print(&implication); )
+                Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs, &implication);
+                IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("Revised pre-condition implication: "); Implication_Print(&revised_precon); } )
+                Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs, &implication);
+                IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("Revised post-condition implication: "); Implication_Print(&revised_postcon); } )
+            }
             Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
-            sequence.attention = Attention_deriveEvent(&B->attention, &sequence.truth, currentTime);
+            sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);
+            if(sequence.truth.confidence < MIN_CONFIDENCE || sequence.attention.priority < MIN_PRIORITY)
+            {
+                return;
+            }
             Memory_addEvent(&sequence);
             IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
         }
@@ -23,33 +33,61 @@ void composition(Concept *B, Concept *A, Event *b, long currentTime)
     }
 }
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 void decomposition(Concept *c, Event *e, long currentTime)
 {
     //detachment
     if(c->postcondition_beliefs.itemsAmount>0)
     {
-        Implication postcon = c->postcondition_beliefs.array[0];
-        if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
+        int k=0;
+        for(int i=0; i<c->postcondition_beliefs.itemsAmount; i++)
         {
-            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(e, &postcon) : Inference_GoalAbduction(e, &postcon);
-            res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
-            Memory_addEvent(&res);
-            //add negative evidence to the used predictive hypothesis (assumption of failure, for extinction)
-            Table_PopHighestTruthExpectationElement(&c->postcondition_beliefs);
-            Implication updated = Inference_AssumptionOfFailure(&postcon);
-            Table_Add(&c->postcondition_beliefs, &updated);
-            IN_OUTPUT( printf("DETACHED FORWARD EVENT: "); Event_Print(&res); )
+            Implication postcon = c->postcondition_beliefs.array[i];
+            if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
+            {
+                Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(e, &postcon) : Inference_GoalAbduction(e, &postcon);
+                res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
+                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                {
+                    continue;
+                }
+                Memory_addEvent(&res);
+                //add negative evidence to the used predictive hypothesis (assumption of failure, for extinction)
+                Table_PopHighestTruthExpectationElement(&c->postcondition_beliefs);
+                Implication updated = Inference_AssumptionOfFailure(&postcon);
+                Table_Add(&c->postcondition_beliefs, &updated);
+                k++;
+                IN_OUTPUT( printf("DETACHED FORWARD EVENT: "); Event_Print(&res); )
+                if(k>MAX_PREDICTIONS)
+                {
+                    break;
+                }
+            }
         }
     }
     if(c->precondition_beliefs.itemsAmount>0)
     {
-        Implication precon = c->precondition_beliefs.array[0];
-        if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
+        int k=0;
+        for(int i=0; i<c->precondition_beliefs.itemsAmount; i++)
         {
-            Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
-            res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
-            Memory_addEvent(&res);
-            IN_OUTPUT( printf("DETACHED BACKWARD EVENT: "); Event_Print(&res); )
+            Implication precon = c->precondition_beliefs.array[i];
+            if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
+            {
+                Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
+                res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
+                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                {
+                    continue;
+                }
+                Memory_addEvent(&res);
+                k++;
+                IN_OUTPUT( printf("DETACHED BACKWARD EVENT: "); Event_Print(&res); )
+                if(k>MAX_PREDICTIONS)
+                {
+                    break;
+                }
+            }
         }
     }
 }
@@ -200,12 +238,17 @@ void temporalInference(Concept *c, Event *e, PotentialExecutionResult *considere
     for(int j=0; j<conceptsSelected; j++)
     {   //push again what we popped
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, selectedItem[j].priority);
-        *((Concept*) feedback.addedItem.address) = *((Concept*) selectedItem[j].address);
+        if(feedback.added)
+        {
+            *((Concept*) feedback.addedItem.address) = *((Concept*) selectedItem[j].address);
+        }
     }
 }
 
 void cycle(long currentTime)
 {
+    Item selectedItem[EVENT_SELECTIONS];
+    int eventsSelected = 0;
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
         //1. get an event from the event queue
@@ -215,6 +258,8 @@ void cycle(long currentTime)
             IN_DEBUG( printf("Selecting event failed, maybe the item order changed.\n"); )
             continue;
         }
+        selectedItem[eventsSelected] = item;
+        eventsSelected++;
         Event *e = item.address;
         Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
         IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
@@ -235,18 +280,17 @@ void cycle(long currentTime)
                 decomposition(c, &eMatch, currentTime);
             }
             c->usage = Usage_use(&c->usage, currentTime);
-            
             //send event to the highest prioriry concepts
             temporalInference(c, e, &consideredOperation, currentTime);
-            
             //add event to the FIFO of the concept
             FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
             Event revised = FIFO_AddAndRevise(&eMatch, fifo);
             Event *goal = e->type == EVENT_TYPE_GOAL ? e : NULL;
-            if(revised.type != EVENT_TYPE_DELETED)
+            if(revised.type != EVENT_TYPE_DELETED && revised.truth.confidence >= MIN_CONFIDENCE && revised.attention.priority >= MIN_PRIORITY)
             {
                 goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
                 Memory_addEvent(&revised);
+                IN_OUTPUT( printf("REVISED EVENT: "); Event_Print(&revised); )
             }
             if(goal != NULL)
             {
@@ -267,7 +311,6 @@ void cycle(long currentTime)
             //relatively forget the event, as it was used, and add back to events
             e->attention = Attention_forgetEvent(&e->attention, currentTime);
             Memory_addEvent(e);
-            
             //activate concepts attention with the event's attention
             c->attention = Attention_activateConcept(&c->attention, &e->attention); 
             PriorityQueue_IncreasePriority(&concepts,closest_concept_i, c->attention.priority); //priority was increased
@@ -316,4 +359,12 @@ void cycle(long currentTime)
             *added = *e;
         }
     }
+    /*for(int j=0; j<eventsSelected; j++)
+    {   //push again what we popped
+        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, selectedItem[j].priority);
+        if(feedback.added)
+        {
+            *((Concept*) feedback.addedItem.address) = *((Concept*) selectedItem[j].address);
+        }
+    }*/
 }

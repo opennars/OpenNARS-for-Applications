@@ -14,15 +14,19 @@
 
 //Parameters//
 //----------//
-#define EVENT_SELECTIONS 1
+#define EVENT_SELECTIONS 5
 //for temporal induction:
-#define CONCEPT_SELECTIONS 2
+#define CONCEPT_SELECTIONS 5
 //for decision making:
 #define DECISION_THRESHOLD 0.5
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE 0.001
 //concept wait time to be used when it was used
 #define CONCEPT_WAIT_TIME 100
+//min confidence
+#define MIN_CONFIDENCE 0.01
+#define MIN_PRIORITY 0.01
+#define MAX_PREDICTIONS 5
 
 //Methods//
 //-------//
