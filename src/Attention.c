@@ -42,5 +42,5 @@ Attention Attention_inputEvent(Truth *truth, long currentTime)
 
 void Attention_Print(Attention *attention)
 {
-    printf("Attention: priority=%f, durability=%f, lastForgotten=%d\n", attention->priority, attention->durability, attention->lastForgotten);
+    printf("Attention: priority=%f, durability=%f, lastForgotten=%ld\n", attention->priority, attention->durability, attention->lastForgotten);
 }

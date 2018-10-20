@@ -152,12 +152,14 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     //first evict if necessary
     if(queue->itemsAmount >= queue->maxElements)
     {
-        if(priority < at(0).priority)
+		double minPriority = at(0).priority;
+        if(priority < minPriority)
         { //smaller than smallest
             return feedback;
         }
         feedback.evicted = true;
-        feedback.evictedItem = PriorityQueue_PopMin(queue);
+        feedback.evictedItem.priority = minPriority;
+        PriorityQueue_PopMin(queue, &feedback.evictedItem.address);
     }
     at(queue->itemsAmount).priority = priority;
     if(feedback.evicted)
@@ -171,42 +173,47 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     return feedback;
 }
 
-Item PriorityQueue_PopMin(PriorityQueue *queue)
+bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress)
 {
     if(queue->itemsAmount == 0)
     {
-        return (Item) {0};
+        return false;
     }
     Item item = at(0);
     swap(queue, 0, queue->itemsAmount-1);
     queue->itemsAmount--;
     trickleDown(queue, 0, false); //enforce minmax heap property
-    return item;
+    *returnItemAddress = item.address; 
+    return true;
 }
 
-Item PriorityQueue_PopMax(PriorityQueue *queue)
+bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress)
 {
     if(queue->itemsAmount == 0)
     {
-        return (Item) {0};
+        return false;
     }
     int p = smallestChild(queue, 0, true);
     Item item = at(p);
     swap(queue, p, queue->itemsAmount-1); //swap max with last item
     queue->itemsAmount--;
     trickleDown(queue, p, true); //enforce minmax heap property
-    return item;
+    *returnItemAddress = item.address; 
+    return true;
 }
 
-Item PriorityQueue_PopAt(PriorityQueue *queue, int i)
+bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
 {
     if(queue->itemsAmount == 0)
     {
-        return (Item) {0};
+        return false;
     }
     Item item = at(i);
     swap(queue, i, queue->itemsAmount-1); 
     queue->itemsAmount--;
     trickleDown(queue, i, true); //enforce minmax heap property
-    return item;
+    *returnItemAddress = item.address; 
+    return true;
+    
+    
 }

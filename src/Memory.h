@@ -21,7 +21,6 @@
 #define EXHAUSTIVE 2
 #define USE_HASHING true
 #define MATCH_STRATEGY EXHAUSTIVE
-#define MEMORY_MATCH_NO_CONCEPT -1
 #define OPERATIONS_MAX 1000
 
 //Data structure//
@@ -41,12 +40,20 @@ Operation operations[OPERATIONS_MAX];
 //-------//
 //Init memory
 void Memory_INIT();
-//Add concept to memory
-Concept* Memory_addConcept(SDR *sdr, Attention attention);
+//Find a concept
+bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
+//Create a new concept
+Concept* Memory_Conceptualize(SDR *sdr, Attention attention);
 //Return closest concept
-int Memory_getClosestConcept(Event *event);
+bool Memory_getClosestConcept(Event *event, int *returnIndex);
+//Add an already existing concept to memory that was taken out from the concept priority queue
+bool Memory_addConcept(Concept *concept);
 //Add event to memory
-void Memory_addEvent(Event *event);
+bool Memory_addEvent(Event *event);
 //Add operation to memory
 void Memory_addOperation(Operation op);
+//Reset events
+void Memory_ResetEvents();
+//Reset concepts
+void Memory_ResetConcepts();
 #endif

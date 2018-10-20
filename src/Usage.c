@@ -15,5 +15,5 @@ Usage Usage_use(Usage *usage, long currentTime)
 
 void Usage_Print(Usage *usage)
 {
-    printf("Usage: useCount=%d lastUsed%d\n", usage->useCount, usage->lastUsed);
+    printf("Usage: useCount=%d lastUsed=%d\n", usage->useCount, usage->lastUsed);
 }

@@ -7,6 +7,7 @@
 
 //References//
 //-----------//
+#include <stdio.h>
 #include "Usage.h"
 #include "Truth.h"
 

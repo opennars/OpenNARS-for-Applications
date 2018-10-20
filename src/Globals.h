@@ -1,4 +1,4 @@
-#define DEBUG 0
+#define DEBUG 1
 #define OUTPUT 1
 #define DEBUG_INFO(x) {if(DEBUG == 1){}}
 
@@ -10,3 +10,7 @@
 
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 #define IN_OUTPUT(x) {if(OUTPUT){ x } }
+
+#include <stdbool.h>
+
+void assert(bool b, char* message);

@@ -35,7 +35,7 @@ unsigned long hash(unsigned char *str)
 
 SDR Encode_Term(char *name)
 {
-    int number = hash(name)%TERMS_MAX;
+    int number = hash((unsigned char*)name)%TERMS_MAX;
     if(input_terms_used[number])
     {
         return input_terms[number];

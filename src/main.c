@@ -3,16 +3,7 @@
 #include "SDR.h"
 #include "Memory.h"
 #include "Encode.h"
-
-void assert(bool b, char* message)
-{
-    if(!b)
-    {
-        printf("%s", message);
-        printf("\nTest failed.\n");
-        exit(1);
-    }
-}
+#include "ANSNA.h"
 
 void SDR_Test()
 {
@@ -108,7 +99,7 @@ void PriorityQueue_Test()
     Item items[n_items];
     for(int i=0; i<n_items; i++)
     {
-        items[i].address = (void*) (i);
+        items[i].address = (void*) ((long) i+1);
         items[i].priority = 0;
     }
     PriorityQueue_RESET(&queue, items, n_items);
@@ -117,11 +108,11 @@ void PriorityQueue_Test()
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0/((double) (n_items*2-i)));
         if(feedback.added)
         {
-            printf("item was added %f %d\n", feedback.addedItem.priority, (int)feedback.addedItem.address);
+            printf("item was added %f %ld\n", feedback.addedItem.priority, (long)feedback.addedItem.address);
         }
         if(feedback.evicted)
         {
-            printf("evicted item %f %d\n", feedback.evictedItem.priority, (int)feedback.evictedItem.address);
+            printf("evicted item %f %ld\n", feedback.evictedItem.priority, (long)feedback.evictedItem.address);
             assert(evictions>0 || feedback.evictedItem.priority == 1.0/((double) (n_items*2)), "the evicted item has to be the lowest priority one");
             assert(queue.itemsAmount < n_items+1, "eviction should only happen when full!");
             evictions++;
@@ -162,11 +153,10 @@ void ANSNA_Test()
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     for(int i=0; i<200; i++)
     {
-        i++;
+        int k=i%2;
         if(i % 3 == 0)
         {
-            int h = i%3;
-            char c[2] = {'a'+i,0};
+            char c[2] = {'a'+k,0};
             ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
         }
         ANSNA_Cycles(1);

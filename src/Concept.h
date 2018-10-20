@@ -17,6 +17,7 @@ typedef struct {
     Attention attention;
     Usage usage;
     /** name of the concept like in OpenNARS */
+    long id; //ID assigned to the concept on conceptualization, cleaner than using its address
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
     FIFO event_beliefs;
@@ -30,5 +31,7 @@ typedef struct {
 //-------//
 //Assign a new name to a concept
 void Concept_SetSDR(Concept *concept, SDR sdr);
+//print a concept
+void Concept_Print(Concept *concept);
 
 #endif

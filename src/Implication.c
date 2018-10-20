@@ -14,5 +14,5 @@ void Implication_Print(Implication *implication)
     SDR_PrintWhereTrue(&implication->sdr);
     Truth_Print(&implication->truth);
     Stamp_print(&implication->stamp);
-    printf("occurrenceTimeOffset=%d\n\n", implication->occurrenceTimeOffset);
+    printf("occurrenceTimeOffset=%ld\n\n", implication->occurrenceTimeOffset);
 }

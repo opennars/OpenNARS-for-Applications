@@ -6,25 +6,38 @@ Item concept_items_storage[CONCEPTS_MAX];
 Item event_items_storage[EVENTS_MAX];
 
 int operations_index = 0;
-void Memory_INIT()
+
+void Memory_ResetEvents()
 {
-    PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
-    PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
-    for(int i=0; i<CONCEPTS_MAX; i++)
-    {
-        concept_storage[i] = (Concept) {0};
-        concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
-    }
-    for(int i=0; i<EVENTS_MAX; i++)
+	PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
+	for(int i=0; i<EVENTS_MAX; i++)
     {
         event_storage[i] = (Event) {0};
         events.items[i] = (Item) { .address = &(event_storage[i]) };
     }
+}
+
+void Memory_ResetConcepts()
+{
+	PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
+    for(int i=0; i<CONCEPTS_MAX; i++)
+    {
+        concept_storage[i] = (Concept) {0};
+        concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
+    }	
+}
+
+long concept_id = 1;
+void Memory_INIT()
+{
+	Memory_ResetConcepts();
+	Memory_ResetEvents();
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         operations[i] = (Operation) {0};
     }
     operations_index = 0;
+    concept_id = 1;
 }
 
 #if MATCH_STRATEGY == VOTING
@@ -32,17 +45,39 @@ Concept* bitToConcept[SDR_SIZE][CONCEPTS_MAX];
 int bitToConceptAmount[SDR_SIZE];
 #endif
 
-Concept* Memory_addConcept(SDR *sdr, Attention attention)
+bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-    Concept *addedConcept = NULL;
+	for(int i=0; i<concepts.itemsAmount; i++)
+	{
+		Concept *existing = concepts.items[i].address;
+		if(!USE_HASHING || existing->sdr_hash == sdr_hash)
+		{
+			if(SDR_Equal(&existing->sdr, sdr))
+			{
+				if(returnIndex != NULL)
+				{
+					*returnIndex = i;
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
+{
+	Concept *addedConcept = NULL;
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
     if(feedback.added)
     {
-        addedConcept = (Concept*) feedback.addedItem.address;
+		
+        addedConcept = feedback.addedItem.address;
         *addedConcept = (Concept) {0};
         Concept_SetSDR(addedConcept, *sdr);
         addedConcept->attention = attention;
+        addedConcept->id = concept_id++;
     }
 #if MATCH_STRATEGY == VOTING
     if(feedback.added)
@@ -92,22 +127,18 @@ typedef struct
     Concept *concept;
     int count;
 } Vote;
-int Memory_getClosestConcept(Event *event)
+bool Memory_getClosestConcept(Event *event, int *returnIndex)
 {
     SDR *eventSDR = &(event->sdr);
-#if USE_HASHING == true
-    for(int i=0; i<concepts.itemsAmount; i++)
+    if(concepts.itemsAmount == 0)
     {
-        Concept *c = ((Concept*)concepts.items[i].address);
-        if(c->sdr_hash == event->sdr_hash)
-        {
-            if(SDR_Equal(&c->sdr, &event->sdr))
-            {
-                return i;
-            }
-        }
-    }
-#endif
+		return false;	
+	}
+	int foundSameConcept_i;
+	if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
+	{
+		*returnIndex = foundSameConcept_i;
+	}
 #if MATCH_STRATEGY == VOTING
     Vote voting[CONCEPTS_MAX] = {0};
     int votes = 0;
@@ -147,7 +178,7 @@ int Memory_getClosestConcept(Event *event)
     }
     if(votes == 0)
     {
-        return MEMORY_MATCH_NO_CONCEPT;
+        return false;
     }
     //TODO IMPROVE:
     int best_i = 0;
@@ -155,13 +186,14 @@ int Memory_getClosestConcept(Event *event)
     {
         if(concepts.items[i].address == best.concept)
         {
-            return best_i;
+			*returnIndex = best_i;
+            return true;
         }
     }
-    return MEMORY_MATCH_NO_CONCEPT;
+    return false;
 #endif
 #if MATCH_STRATEGY == EXHAUSTIVE
-    int best_i = MEMORY_MATCH_NO_CONCEPT;
+    int best_i = -1;
     double bestValSoFar = -1;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -172,18 +204,33 @@ int Memory_getClosestConcept(Event *event)
             best_i = i;
         }
     }
-    return best_i;
+    *returnIndex = best_i;
+    return true;
 #endif
 }
 
-void Memory_addEvent(Event *event)
+bool Memory_addEvent(Event *event)
 {
-    PriorityQueue_Push_Feedback pushed = PriorityQueue_Push(&events, event->attention.priority);
-    if(pushed.added)
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, event->attention.priority);
+    if(feedback.added)
     {
-        Event *toRecyle = pushed.addedItem.address;
+        Event *toRecyle = feedback.addedItem.address;
         *toRecyle = *event;
+        return true;
     }
+    return false;
+}
+
+bool Memory_addConcept(Concept *concept)
+{
+	PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
+	if(feedback.added)
+	{
+		Concept *toRecyle = feedback.addedItem.address;
+        *toRecyle = *concept;
+        return true;
+	}
+	return false;
 }
 
 void Memory_addOperation(Operation op)

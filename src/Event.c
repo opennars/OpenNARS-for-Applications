@@ -32,5 +32,5 @@ void Event_Print(Event *event)
     printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));
     Truth_Print(&event->truth);
     Stamp_print(&event->stamp);
-    printf("occurrenceTime=%d\n\n", event->occurrenceTime);
+    printf("occurrenceTime=%ld\n\n", event->occurrenceTime);
 }

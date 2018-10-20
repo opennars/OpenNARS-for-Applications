@@ -5,6 +5,10 @@
 //  ANSNA usefulness value //
 /////////////////////////////
 
+//References//
+//-----------//
+#include <stdio.h>
+
 //Data structure//
 //--------------//
 typedef struct {
