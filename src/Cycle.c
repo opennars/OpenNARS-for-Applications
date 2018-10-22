@@ -10,29 +10,29 @@ Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
 
 bool popAndForgetConcept(long currentTime, Concept **returnConcept)
 {
-	Concept *popped = NULL;
-	if(PriorityQueue_PopMax(&concepts, (void*) &popped))
-	{
+    Concept *popped = NULL;
+    if(PriorityQueue_PopMax(&concepts, (void*) &popped))
+    {
         popped->attention = Attention_forgetConcept(&popped->attention, &popped->usage, currentTime);
         long popped_id = popped->id; //because popped ptr will be invalid to use after adding another concept
         if(Memory_addConcept(popped))
-		{
-			Concept *popped2 = NULL;
-			if(PriorityQueue_PopMax(&concepts, (void*) &popped2))
-			{
-				if(popped_id == popped2->id)
-				{
-					*returnConcept = popped2;
-					return true;
-				}
-				else
-				{
-					Memory_addConcept(popped2);
-				}
-			}
-		}
-	}
-	return false;
+        {
+            Concept *popped2 = NULL;
+            if(PriorityQueue_PopMax(&concepts, (void*) &popped2))
+            {
+                if(popped_id == popped2->id)
+                {
+                    *returnConcept = popped2;
+                    return true;
+                }
+                else
+                {
+                    Memory_addConcept(popped2);
+                }
+            }
+        }
+    }
+    return false;
 }
 
 void temporalInference(Concept *B, Event *b, long currentTime)
@@ -40,13 +40,13 @@ void temporalInference(Concept *B, Event *b, long currentTime)
     int conceptsSelected = 0;
     for(int j=0; j<CONCEPT_SELECTIONS; j++)
     {   //by doing inference with the highest priority concepts
-		Concept *A = NULL;
-		if(!popAndForgetConcept(currentTime, &A))
+        Concept *A = NULL;
+        if(!popAndForgetConcept(currentTime, &A))
         {
             IN_DEBUG( printf("Selecting concept failed, maybe item order changed.\n"); )
             continue;
         }
-		IN_DEBUG( if(A->id == B->id) { printf("Selected concept is the same as matched one.\n"); } )
+        IN_DEBUG( if(A->id == B->id) { printf("Selected concept is the same as matched one.\n"); } )
         selectedConcepts[j] = *A;
         IN_DEBUG( printf("Concept was chosen as temporal inference partner:\n"); Concept_Print(A); )
         RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
@@ -66,10 +66,10 @@ void popEvents()
         Event *e;
         if(!PriorityQueue_PopMax(&events, (void**) &e))
         {
-			assert(events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-			IN_DEBUG( printf("Selecting event failed, maybe there is no event left.\n"); )
+            assert(events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+            IN_DEBUG( printf("Selecting event failed, maybe there is no event left.\n"); )
             break;
-		}
+        }
         selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
         eventsSelected++; //that while processing, would make recycled pointers invalid to use
     }
@@ -81,14 +81,14 @@ void pushEvents(long currentTime)
     Memory_ResetEvents();
     for(int i=0; i<eventsSelected; i++)
     {
-		Event *e = &selectedEvents[i];
-		e->attention = Attention_forgetEvent(&e->attention, currentTime);
-		Memory_addEvent(e);
-	}
-	for(int i=0; i<eventsDerived; i++)
-	{
-		Memory_addEvent(&derivations[i]);
-	}	
+        Event *e = &selectedEvents[i];
+        e->attention = Attention_forgetEvent(&e->attention, currentTime);
+        Memory_addEvent(e);
+    }
+    for(int i=0; i<eventsDerived; i++)
+    {
+        Memory_addEvent(&derivations[i]);
+    }    
 }
 
 void cycle(long currentTime)
@@ -97,7 +97,7 @@ void cycle(long currentTime)
     popEvents();
     for(int i=0; i<eventsSelected; i++)
     {
-		Event *e = &selectedEvents[i];
+        Event *e = &selectedEvents[i];
         Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
         IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
         //determine the concept it is related to
@@ -156,12 +156,12 @@ void cycle(long currentTime)
         }
         if(!decision.matched && !Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL)) //not conceptualizing (&/,a,op())
         {   //add a new concept for e too at the end, as it does not exist already
-			Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
-			if(eNativeConcept != NULL)
-			{
-				IN_DEBUG( printf("ADDED CONCEPT \n"); )
-				FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
-			}
+            Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
+            if(eNativeConcept != NULL)
+            {
+                IN_DEBUG( printf("ADDED CONCEPT \n"); )
+                FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+            }
         }
     }
     pushEvents(currentTime);
