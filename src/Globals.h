@@ -1,4 +1,4 @@
-#define DEBUG 1
+#define DEBUG 0
 #define OUTPUT 1
 #define DEBUG_INFO(x) {if(DEBUG == 1){}}
 

@@ -151,12 +151,12 @@ void ANSNA_Test()
 {
     printf(">>ANSNA test start\n");
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
-    for(int i=0; i<200; i++)
+    for(int i=0; i<50; i++)
     {
         int k=i%2;
         if(i % 3 == 0)
         {
-            char c[2] = {'a'+k,0};
+            char c[2] = {'a'+10,0};
             ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
         }
         ANSNA_Cycles(1);

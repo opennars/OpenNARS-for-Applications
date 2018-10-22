@@ -33,10 +33,6 @@ void RuleTable_Composition(Concept *A, Concept *B, Event *b, long currentTime)
                 derivations[eventsDerived++] = sequence;
                 IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
             }
-            else
-            {
-                IN_DEBUG( Stamp_print(&a->stamp); Stamp_print(&b->stamp); )
-            }
         }
     }
 }
@@ -47,7 +43,6 @@ void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
     //detachment
     if(c->postcondition_beliefs.itemsAmount>0)
     {
-		exit(0);
         int k=0;
         for(int i=0; i<c->postcondition_beliefs.itemsAmount; i++)
         {

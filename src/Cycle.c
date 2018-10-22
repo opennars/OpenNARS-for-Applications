@@ -35,26 +35,39 @@ bool popAndForgetConcept(long currentTime, Concept **returnConcept)
     return false;
 }
 
+//by doing inference with the highest priority concepts
 void temporalInference(Concept *B, Event *b, long currentTime)
 {
+    int B_id = B->id;
     int conceptsSelected = 0;
     for(int j=0; j<CONCEPT_SELECTIONS; j++)
-    {   //by doing inference with the highest priority concepts
+    {
         Concept *A = NULL;
         if(!popAndForgetConcept(currentTime, &A))
         {
             IN_DEBUG( printf("Selecting concept failed, maybe item order changed.\n"); )
             continue;
         }
-        IN_DEBUG( if(A->id == B->id) { printf("Selected concept is the same as matched one.\n"); } )
-        selectedConcepts[j] = *A;
-        IN_DEBUG( printf("Concept was chosen as temporal inference partner:\n"); Concept_Print(A); )
-        RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
+        selectedConcepts[conceptsSelected] = *A;
+        //in case that we took the matched concept out, validate B pointer again:
+        if(A->id == B_id)
+        {
+            B = &selectedConcepts[conceptsSelected];
+        }
         conceptsSelected++;
     }
     for(int j=0; j<conceptsSelected; j++)
+    {   
+        Concept *A = &selectedConcepts[j];
+        IN_DEBUG( printf("Concept was chosen as temporal inference partner (equals matched? %d):\n", A->id == B->id); Concept_Print(A); )
+        RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
+    }
+    for(int j=0; j<conceptsSelected; j++)
     {   //push again what we popped
-        Memory_addConcept(&selectedConcepts[j]);
+        if(!Memory_addConcept(&selectedConcepts[j]))
+        {
+            IN_DEBUG( printf("Selected concept was not added anymore:\n"); Concept_Print(B); )
+        }
     }
 }
 
@@ -83,11 +96,18 @@ void pushEvents(long currentTime)
     {
         Event *e = &selectedEvents[i];
         e->attention = Attention_forgetEvent(&e->attention, currentTime);
-        Memory_addEvent(e);
+        if(e->attention.priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
+        {
+            Memory_addEvent(e);
+        }
     }
     for(int i=0; i<eventsDerived; i++)
     {
-        Memory_addEvent(&derivations[i]);
+        Event *e = &derivations[i];
+        if(e->attention.priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
+        {
+            Memory_addEvent(e);
+        }
     }    
 }
 
@@ -148,7 +168,7 @@ void cycle(long currentTime)
                 PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
             }
             //send event to the highest prioriry concepts
-            temporalInference(c, e, currentTime);
+            temporalInference(c, e, currentTime); //c pointer should not be used after this position, as it involves push operation to concepts
         }
         else
         {
