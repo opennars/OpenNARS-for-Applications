@@ -153,10 +153,10 @@ void ANSNA_Test()
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     for(int i=0; i<50; i++)
     {
-        int k=i%2;
+        int k=i%10;
         if(i % 3 == 0)
         {
-            char c[2] = {'a'+10,0};
+            char c[2] = {'a'+k,0};
             ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
         }
         ANSNA_Cycles(1);
