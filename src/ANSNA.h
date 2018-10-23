@@ -20,6 +20,6 @@ void ANSNA_Cycles(int cycles);
 //Add input
 void ANSNA_AddInput(SDR sdr, char type, Truth truth);
 //Add an operation
-void ANSNA_AddOperation(SDR *sdr, Action procedure);
+void ANSNA_AddOperation(SDR sdr, Action procedure);
 
 #endif

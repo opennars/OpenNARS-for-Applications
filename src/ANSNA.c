@@ -27,7 +27,7 @@ void ANSNA_AddInput(SDR sdr, char type, Truth truth)
     IN_OUTPUT( printf("INPUT EVENT"); Event_Print(&ev); )
 }
 
-void ANSNA_AddOperation(SDR *sdr, Action procedure)
+void ANSNA_AddOperation(SDR sdr, Action procedure)
 {
-    Memory_addOperation((Operation) {.sdr = *sdr, .action = procedure});
+    Memory_addOperation((Operation) {.sdr = sdr, .action = procedure});
 }

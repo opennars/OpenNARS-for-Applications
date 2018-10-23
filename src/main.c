@@ -147,9 +147,10 @@ void Table_Test()
     printf("<<Table test successful\n");
 }
 
-void ANSNA_Test()
+void ANSNA_Alphabet_Test()
 {
-    printf(">>ANSNA test start\n");
+    ANSNA_INIT();
+    printf(">>ANSNA Alphabet test start\n");
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     for(int i=0; i<50; i++)
     {
@@ -162,8 +163,33 @@ void ANSNA_Test()
         ANSNA_Cycles(1);
         printf("TICK\n");
     }
-    printf("<<ANSNA test successful\n");
+    printf("<<ANSNA Alphabet test successful\n");
 }
+
+void ANSNA_Procedure_Test()
+{
+    ANSNA_INIT();
+    bool executed = false;
+    void op()
+    {
+        printf("op executed by ANSNA\n");
+        executed = true;
+    }
+    printf(">>ANSNA Procedure test start\n");
+    ANSNA_AddOperation(Encode_Term("op"), op); 
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_Cycles(10);
+    ANSNA_AddInput(Encode_Term("op"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_Cycles(10);
+    ANSNA_AddInput(Encode_Term("result"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_Cycles(30);
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInput(Encode_Term("result"), EVENT_TYPE_GOAL, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_Cycles(50);
+    assert(executed, "ANSNA should have executed op!");
+    printf("<<ANSNA Procedure test successful\n");
+}
+
 
 int main() 
 {
@@ -171,10 +197,11 @@ int main()
     ANSNA_INIT();
     SDR_Test();
     Stamp_Test();
-    //FIFO_Test();
+    FIFO_Test();
     PriorityQueue_Test();
     Table_Test();
-    ANSNA_Test();
+    ANSNA_Alphabet_Test();
+    ANSNA_Procedure_Test();
     /*
     // memory
     Memory memory;
