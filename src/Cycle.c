@@ -128,6 +128,7 @@ void cycle(long currentTime)
             Concept *c = concepts.items[closest_concept_i].address;
             //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
             Event eMatch = *e;
+            eMatch.sdr = c->sdr;
             eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
             if(eMatch.truth.confidence > MIN_CONFIDENCE)
             {
