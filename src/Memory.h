@@ -29,12 +29,14 @@
 PriorityQueue concepts;
 PriorityQueue events;
 typedef void (*Action)(void);
+typedef void (*EventInspector)(Event *);
 typedef struct
 {
     SDR sdr;
     Action action;
 }Operation;
 Operation operations[OPERATIONS_MAX];
+EventInspector event_inspector;
 
 //Methods//
 //-------//

@@ -9,8 +9,8 @@ int operations_index = 0;
 
 void Memory_ResetEvents()
 {
-	PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
-	for(int i=0; i<EVENTS_MAX; i++)
+    PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
+    for(int i=0; i<EVENTS_MAX; i++)
     {
         event_storage[i] = (Event) {0};
         events.items[i] = (Item) { .address = &(event_storage[i]) };
@@ -19,19 +19,19 @@ void Memory_ResetEvents()
 
 void Memory_ResetConcepts()
 {
-	PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
+    PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
         concept_storage[i] = (Concept) {0};
         concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
-    }	
+    }   
 }
 
 long concept_id = 1;
 void Memory_INIT()
 {
-	Memory_ResetConcepts();
-	Memory_ResetEvents();
+    Memory_ResetConcepts();
+    Memory_ResetEvents();
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         operations[i] = (Operation) {0};
@@ -47,32 +47,32 @@ int bitToConceptAmount[SDR_SIZE];
 
 bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-	for(int i=0; i<concepts.itemsAmount; i++)
-	{
-		Concept *existing = concepts.items[i].address;
-		if(!USE_HASHING || existing->sdr_hash == sdr_hash)
-		{
-			if(SDR_Equal(&existing->sdr, sdr))
-			{
-				if(returnIndex != NULL)
-				{
-					*returnIndex = i;
-				}
-				return true;
-			}
-		}
-	}
-	return false;
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *existing = concepts.items[i].address;
+        if(!USE_HASHING || existing->sdr_hash == sdr_hash)
+        {
+            if(SDR_Equal(&existing->sdr, sdr))
+            {
+                if(returnIndex != NULL)
+                {
+                    *returnIndex = i;
+                }
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
 {
-	Concept *addedConcept = NULL;
+    Concept *addedConcept = NULL;
     //try to add it, and if successful add to voting structure
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
     if(feedback.added)
     {
-		
+        
         addedConcept = feedback.addedItem.address;
         *addedConcept = (Concept) {0};
         Concept_SetSDR(addedConcept, *sdr);
@@ -132,13 +132,13 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
     SDR *eventSDR = &(event->sdr);
     if(concepts.itemsAmount == 0)
     {
-		return false;	
-	}
-	int foundSameConcept_i;
-	if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
-	{
-		*returnIndex = foundSameConcept_i;
-	}
+        return false;   
+    }
+    int foundSameConcept_i;
+    if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
+    {
+        *returnIndex = foundSameConcept_i;
+    }
 #if MATCH_STRATEGY == VOTING
     Vote voting[CONCEPTS_MAX] = {0};
     int votes = 0;
@@ -186,7 +186,7 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
     {
         if(concepts.items[i].address == best.concept)
         {
-			*returnIndex = best_i;
+            *returnIndex = best_i;
             return true;
         }
     }
@@ -211,6 +211,10 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
 
 bool Memory_addEvent(Event *event)
 {
+    if(event_inspector != NULL)
+    {
+        (*event_inspector)(event);
+    }
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, event->attention.priority);
     if(feedback.added)
     {
@@ -223,14 +227,14 @@ bool Memory_addEvent(Event *event)
 
 bool Memory_addConcept(Concept *concept)
 {
-	PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
-	if(feedback.added)
-	{
-		Concept *toRecyle = feedback.addedItem.address;
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
+    if(feedback.added)
+    {
+        Concept *toRecyle = feedback.addedItem.address;
         *toRecyle = *concept;
         return true;
-	}
-	return false;
+    }
+    return false;
 }
 
 void Memory_addOperation(Operation op)
