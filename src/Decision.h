@@ -51,7 +51,7 @@ Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        int chosen = random() % n_ops;
+        int chosen = rand() % n_ops;
         result.op = operations[chosen];
         (*result.op.action)();
         result.executed = true;

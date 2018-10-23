@@ -166,17 +166,17 @@ void ANSNA_Alphabet_Test()
     printf("<<ANSNA Alphabet test successful\n");
 }
 
+bool ANSNA_Procedure_Test_Op_executed = false;
+void ANSNA_Procedure_Test_Op()
+{
+    printf("op executed by ANSNA\n");
+    ANSNA_Procedure_Test_Op_executed = true;
+}
 void ANSNA_Procedure_Test()
 {
     ANSNA_INIT();
-    bool executed = false;
-    void op()
-    {
-        printf("op executed by ANSNA\n");
-        executed = true;
-    }
     printf(">>ANSNA Procedure test start\n");
-    ANSNA_AddOperation(Encode_Term("op"), op); 
+    ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     ANSNA_Cycles(10);
     ANSNA_AddInput(Encode_Term("op"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
@@ -186,7 +186,7 @@ void ANSNA_Procedure_Test()
     ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     ANSNA_AddInput(Encode_Term("result"), EVENT_TYPE_GOAL, (Truth) { .frequency = 1.0, .confidence = 0.9 });
     ANSNA_Cycles(50);
-    assert(executed, "ANSNA should have executed op!");
+    assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
     printf("<<ANSNA Procedure test successful\n");
 }
 

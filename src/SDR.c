@@ -216,7 +216,7 @@ void SDR_GeneratePermutation(int *perm, int *perm_inverse)
     for(int i=0; i<=SDR_SIZE-2; i++)
     {
         //choose an random integer so that 0<=i<=j<=SDR_SIZE
-        int j = i+(random() % (SDR_SIZE-i));
+        int j = i+(rand() % (SDR_SIZE-i));
         int temp = perm[i];
         perm[i] = perm[j];
         perm[j] = temp;

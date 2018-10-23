@@ -153,7 +153,7 @@ void cycle(long currentTime)
                     //if no operation matched, try motor babbling with a certain chance
                     if(!decision.matched && !decision.executed)
                     {
-                        if(random() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+                        if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
                         {
                             decision = Decision_MotorBabbling();
                         } 
