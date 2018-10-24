@@ -19,10 +19,10 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 }
 
 //{Event a., Event b.} |- Implication <a =/> c>.
-Implication Inference_BeliefInduction(Event *a, Event *b)
+Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
-    return  (Implication) { .sdr = SDR_Tuple(&a->sdr, &b->sdr), 
+    return  (Implication) { .sdr = postcondition ? b->sdr : a->sdr, 
                             .truth = Truth_Induction(truthA, truthB),
                             .stamp = conclusionStamp,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
@@ -60,7 +60,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr), 
+    return (Event) { .sdr = compound->sdr, 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
@@ -71,7 +71,7 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr), 
+    return (Event) { .sdr = compound->sdr, 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
@@ -82,7 +82,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
 Event Inference_BeliefAbduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = SDR_TupleGetFirstElement(&compound->sdr,&component->sdr), 
+    return (Event) { .sdr = compound->sdr, 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 
@@ -93,7 +93,7 @@ Event Inference_BeliefAbduction(Event *component, Implication *compound)
 Event Inference_GoalAbduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = SDR_TupleGetSecondElement(&compound->sdr,&component->sdr), 
+    return (Event) { .sdr = compound->sdr, 
                      .type = EVENT_TYPE_GOAL,
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 

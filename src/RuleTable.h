@@ -10,18 +10,19 @@ void RuleTable_Composition(Concept *A, Concept *B, Event *b, long currentTime)
             Event *a = &A->event_beliefs.array[i];
             if(!Stamp_checkOverlap(&a->stamp, &b->stamp)) //TODO temporal overlap
             {
-                Implication implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b) : Inference_BeliefInduction(b, a);
+                Implication precondition_implication =   b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, false) : Inference_BeliefInduction(b, a, false);
+                Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
                 if(k>MAX_INDUCTIONS)
                 {
                     break;
                 }
                 k++;
-                if(implication.truth.confidence >= MIN_CONFIDENCE)
+                if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
                 {
-                    IN_OUTPUT( printf("Formed implication: "); Implication_Print(&implication); )
-                    Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs, &implication);
+                    IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
+                    Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs, &precondition_implication);
                     IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
-                    Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs, &implication);
+                    Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs, &postcondition_implication);
                     IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
                 }
                 Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);

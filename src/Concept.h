@@ -11,6 +11,11 @@
 #include "FIFO.h"
 #include "Table.h"
 
+//Parameters//
+//----------//
+#define CONCEPT_INTERPOLATION_STRENGTH 1.0
+#define CONCEPT_INTERPOLATION_INIT_STRENGTH 1.0
+
 //Data structure//
 //--------------//
 typedef struct {
@@ -22,9 +27,10 @@ typedef struct {
     SDR_HASH_TYPE sdr_hash;
     FIFO event_beliefs;
     FIFO event_goals;
-    //TODO replace with Table, same as belief tables in OpenNARS:
     Table precondition_beliefs;
     Table postcondition_beliefs;
+    //For concept interpolation:
+    double sdr_bit_counter[SDR_SIZE];
 } Concept;
 
 //Methods//
@@ -33,5 +39,7 @@ typedef struct {
 void Concept_SetSDR(Concept *concept, SDR sdr);
 //print a concept
 void Concept_Print(Concept *concept);
+//Interpolate concepts, see https://github.com/patham9/ANSNA/wiki/Concept:-Conceptual-Interpolation
+void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth);
 
 #endif

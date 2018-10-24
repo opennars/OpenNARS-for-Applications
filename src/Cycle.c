@@ -132,6 +132,7 @@ void cycle(long currentTime)
             eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
             if(eMatch.truth.confidence > MIN_CONFIDENCE)
             {
+                Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
                 //apply decomposition-based inference: prediction/explanation
                 //if(currentTime - c->usage.lastUsed > CONCEPT_WAIT_TIME)
                 {
