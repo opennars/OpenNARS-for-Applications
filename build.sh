@@ -4,4 +4,4 @@ do
     Str=$Str" ${i%.c}.c"
 done
 echo $Str
-gcc -pedantic -std=c11 -g3 -o3 -Wall $Str -lm -oANSNA
+gcc -DSDR_BLOCK_TYPE=__uint128_t -pedantic -std=c11 -g3 -o3 -Wall $Str -lm -oANSNA

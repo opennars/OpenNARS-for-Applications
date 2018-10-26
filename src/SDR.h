@@ -21,7 +21,9 @@
 //Parameters//
 //----------//
 #define SDR_SIZE 2048
-#define SDR_BLOCK_TYPE __uint128_t
+#ifndef SDR_BLOCK_TYPE
+#define SDR_BLOCK_TYPE uintmax_t
+#endif
 #define SDR_BLOCK_SIZE (8*sizeof(SDR_BLOCK_TYPE))
 #define SDR_HASH_TYPE uint64_t
 #define SDR_HASH_TYPE_SIZE (8*sizeof(SDR_HASH_TYPE))
