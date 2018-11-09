@@ -31,7 +31,7 @@ Given certain experienced patterns exist within a mind, according to what criter
 
 ANSNA in a nutshell
 -------------------
-- Overcoming symbolic limitations (space usage, inefficiency in matching) by the use of SDR encodings: SDR-based representation of experienced and inferred structures.
+- Overcoming symbolic limitations (space usage, inefficiency in matching and processing) by the use of SDR encodings: SDR-based representation of experienced and inferred structures.
 - Concept-centric memory to efficiently capture structure of the world.
 - Cognitive logic applied on SDR's rather than "symbols", restricted to NAL7/8 plus a SDR-based realization of NAL6: sequences and implications to exploit and use correlations in inputs, variable bits for learning general relationships. Inheritance and similarity naturally arise from symmetric and asymmetric SDR overlap evaluations.
 - ALANN control system.
