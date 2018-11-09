@@ -7,7 +7,7 @@ This project is trying to combine my most valuable insights about Dr. Pei Wang's
 
 Closing the loop
 ----------------
-Especially since the great successes of DL (Deep Learning), albeit mostly used to build passive sensory stimuli classifiers, symbolic systems suffer from bad reputation. Also justified, as many of them are rule based systems without any learning capacity whatsoever, mostly only following deductive ways of thinking. But there are exceptions, systems like NARS or OpenCog that can learn novel knowledge from their experience, by a combination of inference and other data mining processes:
+Especially since the great successes of DL (Deep Learning), albeit mostly used to build passive sensory stimuli classifiers, symbolic systems suffer from bad reputation. Also justified, as many of them are rule based systems without any learning capacity whatsoever, mostly only following deductive ways of reasoning. But there are exceptions, systems like NARS or OpenCog that can learn novel knowledge from their experience, by a combination of inference and other data mining processes:
 - OpenNARS: https://www.youtube.com/watch?v=hAO1zRj2z9A
 - OpenNARS: https://www.youtube.com/watch?v=GEmcT4Nk-78
 - OpenCog: https://www.youtube.com/watch?v=X8C7nhIULZs
