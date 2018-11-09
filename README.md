@@ -3,7 +3,7 @@ Adaptive Neuro-Symbolic Network Agent
 
 Goal
 ----
-This project is trying to combine my most valuable insights about Dr. Pei Wang's NARS (Non-Axiomatic Reasoning System), Jeffrey Hawkins HTM (Hierarchical Temporal Memory), Tony Lofthouse's ALANN (Adaptive Logic and Neural Network), Rod Rinkus's Sparsey, and my own projects of the last decade, for creating an autonomous sensorimotor agent that starts with zero knowledge and organizes its experience into conceptual units in such an efficient way that it can directly be applied for autonomous systems with rich sensory data.
+This project is trying to combine my most valuable insights about Dr. Pei Wang's NARS (Non-Axiomatic Reasoning System), Jeffrey Hawkins HTM (Hierarchical Temporal Memory), Tony Lofthouse's ALANN (Adaptive Logic and Neural Network), Rod Rinkus's Sparsey, Pentti Kanerva's SDM (Sparse distributed memory), and my own projects of the last decade, for creating an autonomous sensorimotor agent that starts with zero knowledge and organizes its experience into conceptual units in such an efficient way that it can directly be applied for autonomous systems with rich sensory data.
 
 Closing the loop
 ----------------
