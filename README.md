@@ -50,14 +50,13 @@ Agent - Goal to "close the loop", to learn conceptual knowledge from sensor data
 
 So what is ANSNA
 ----------------
-Some kind of spiking neural network, or a reasoning system? Maybe something in-between, or both, must I decide? :)
-Hopefully one day a general machine intelligence that learns general relationships from raw sensory data and interacts with the environment.
+Some kind of spiking neural network, or a reasoning system? That's a matter of interpretation, but it tries to combine principles from both paradigms. Hopefully one day it is a system that learns general relationships from raw sensory data and interacts with the environment.
 
 What ANSNA, NARS and ALANN have in common
 ----------------------------------------------------------------------
 1. Obeying AIKR.
-0. Experience-grounded rather than model-theoretic.
-1. Attention Mechanism and system-eigendynamics as a source of creativity.
+0. Experience-grounded rather than model-theoretic semantics.
+1. Attention Mechanism and system-eigendynamics as source for creativity.
 2. Lifelong online learning.
 4. NAL-based evidence measurement.
 3. Conceptual representations of patterns in the experience.
