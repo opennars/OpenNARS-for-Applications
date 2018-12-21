@@ -5,6 +5,12 @@ Goal
 ----
 This project is trying to combine my most valuable insights about Dr. Pei Wang's NARS (Non-Axiomatic Reasoning System), Jeffrey Hawkins HTM (Hierarchical Temporal Memory), Tony Lofthouse's ALANN (Adaptive Logic and Neural Network), Rod Rinkus's Sparsey, Pentti Kanerva's SDM (Sparse distributed memory), and my own projects of the last decade, for creating an autonomous sensorimotor agent that starts with zero knowledge and organizes its experience into conceptual units in such an efficient way that it can directly be applied for autonomous systems with rich sensory data. (Wiki: https://github.com/patham9/ANSNA/wiki)
 
+How
+---
+ANSNA makes use of events, each holding a Sparse Distributed Representation (SDR's). ANSNA is able to compose and decompose them into new events using union, tuple, intersection and union operations, and can learn co-occurrence statistics in terms of which sets of events predict which others using Non-Axiomatic Logic. All events are mapped to a container (concept) with the closest SDR to itself, and both input and derived ones come with an attention value attached, where only high-priority events will be processed often, and the lowest ones forgotten at full capacity, to work under the available resource supply. Some of these events are beliefs, and lead to the derivation of predicted events, or the strenghening of learned predictive implications, and some are goals, and lead to the derivation of subgoals. Some of these derived goals have a SDR that triggers an operation.
+In summary, the SDR encoding allows to effectively match aspects of a similar but in certain aspects different new situation to already known ones, and the learning of the implicative statistics lets the system learn new ways to achieve or predict certain outcomes,
+as to become more capable to reach its goals over time.
+
 Closing the loop
 ----------------
 Especially since the great successes of DL (Deep Learning), albeit mostly used to build passive sensory stimuli classifiers, symbolic systems suffer from bad reputation. Also justified, as many of them are rule based systems without any learning capacity whatsoever, mostly only following deductive ways of reasoning. But there are exceptions, systems like NARS or OpenCog that can learn novel knowledge from their experience, by a combination of inference and other data mining processes:
