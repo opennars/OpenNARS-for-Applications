@@ -28,6 +28,16 @@ void ANSNA_AddInput(SDR sdr, char type, Truth truth)
     IN_OUTPUT( printf("INPUT EVENT"); Event_Print(&ev); )
 }
 
+void ANSNA_AddInputBelief(SDR sdr)
+{
+    ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+}
+
+void ANSNA_AddInputGoal(SDR sdr)
+{
+    ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH);
+}
+
 void ANSNA_AddOperation(SDR sdr, Action procedure)
 {
     Memory_addOperation((Operation) {.sdr = sdr, .action = procedure});

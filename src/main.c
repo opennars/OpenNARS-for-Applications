@@ -151,14 +151,14 @@ void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
     printf(">>ANSNA Alphabet test start\n");
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
         }
         ANSNA_Cycles(1);
         printf("TICK\n");
@@ -177,19 +177,93 @@ void ANSNA_Procedure_Test()
     ANSNA_INIT();
     printf(">>ANSNA Procedure test start\n");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInputBelief(Encode_Term("a"));
     ANSNA_Cycles(10);
-    ANSNA_AddInput(Encode_Term("op"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInputBelief(Encode_Term("op"));
     ANSNA_Cycles(10);
-    ANSNA_AddInput(Encode_Term("result"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInputBelief(Encode_Term("result"));
     ANSNA_Cycles(30);
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, (Truth) { .frequency = 1.0, .confidence = 0.9 });
-    ANSNA_AddInput(Encode_Term("result"), EVENT_TYPE_GOAL, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputGoal(Encode_Term("result"));
     ANSNA_Cycles(50);
     assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
     printf("<<ANSNA Procedure test successful\n");
 }
 
+bool ANSNA_Follow_Test_Left_executed = false;
+void ANSNA_Follow_Test_Left()
+{
+    printf("left executed by ANSNA\n");
+    ANSNA_Follow_Test_Left_executed = true;
+}
+bool ANSNA_Follow_Test_Right_executed = false;
+void ANSNA_Follow_Test_Right()
+{
+    printf("right executed by ANSNA\n");
+    ANSNA_Follow_Test_Right_executed = true;
+}
+void ANSNA_Follow_Test()
+{
+    OUTPUT = 0;
+    ANSNA_INIT();
+    printf(">>ANSNA Follow test start\n");
+    ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Follow_Test_Left); 
+    ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Follow_Test_Right); 
+    int simsteps = 1000000;
+    int LEFT = 0;
+    int RIGHT = 1;
+    int BALL = RIGHT;
+    int score = 0;
+    for(int i=0;i<simsteps; i++)
+    {
+        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"));
+        if(ANSNA_Follow_Test_Right_executed)
+        {
+            ANSNA_Follow_Test_Right_executed = false;
+            if(BALL == RIGHT)
+            {
+                ANSNA_Cycles(10);
+                ANSNA_AddInputBelief(Encode_Term("good_boy"));
+                printf("good\n");
+                score++;
+                
+            }
+            else
+            {
+                printf("bad\n");
+                score--;
+            }
+        }
+        if(ANSNA_Follow_Test_Left_executed)
+        {        
+            ANSNA_Follow_Test_Left_executed = false;
+            if(BALL == LEFT)
+            {
+                ANSNA_Cycles(10);
+                ANSNA_AddInputBelief(Encode_Term("good_boy"));
+                printf("good\n");
+                score++;
+            }
+            else
+            {
+                printf("bad\n");
+                score--;
+            }
+        }
+        if(i%50 == 0)
+        {
+            BALL = rand() % 2;
+        }
+        ANSNA_Cycles(10);
+        ANSNA_AddInputGoal(Encode_Term("good_boy"));
+        ANSNA_Cycles(10);
+        printf("Score %i\n", score);
+        assert(score > -5, "too bad");
+        if(score >= 10)
+            break;
+    }
+    printf("<<ANSNA Follow test successful\n");
+}
 
 int main() 
 {
@@ -202,34 +276,7 @@ int main()
     Table_Test();
     ANSNA_Alphabet_Test();
     ANSNA_Procedure_Test();
-    /*
-    // memory
-    Memory memory;
-    memory_RESET(&memory);
-    
-    // first test for concept
-    // TODO< calloc concept dynamically >
-    Concept conceptA;
-    SDR conceptAName = Encode_Term(2);
-    Concept_RESET(&conceptA, conceptAName);
-    memory_appendConcept(&memory, &conceptA);
-
-    printf("conceptA.ptr=%d\n", &conceptA);
-
-    Concept *closest = memory_getClosestConceptByName(&memory, &conceptAName);
-
-    printf("closest.ptr=%d\n", closest);    
-
-    //numeric encoder test
-    int w = 40;
-    SDR sdrForNumber = Encode_Scalar(w, 0, 64, 30);
-
-    printf("SDR for number 30:\n");
-    SDR_PrintWhereTrue(&sdrForNumber);
-    */
-
-
-
+    ANSNA_Follow_Test();
     return 0;
 }
 

@@ -28,7 +28,7 @@ typedef struct {
 //to allow useful concepts to survive in the memory priority queue even though
 //they might not be useful in the current moment 
 #define USEFULNESS_MAX_PRIORITY_BARRIER 0.1
-#define EVENT_DURABILITY 0.5
+#define EVENT_DURABILITY 0.0
 #define CONCEPT_DURABILITY 0.5
 
 //Methods//

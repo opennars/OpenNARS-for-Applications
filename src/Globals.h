@@ -1,5 +1,5 @@
 #define DEBUG 0
-#define OUTPUT 1
+extern int OUTPUT;
 #define DEBUG_INFO(x) {if(DEBUG == 1){}}
 
 #ifdef DEBUG
