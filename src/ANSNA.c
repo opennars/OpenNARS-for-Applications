@@ -1,13 +1,13 @@
 #include "ANSNA.h"
 
 
-long currentTime = CONCEPT_WAIT_TIME+1;
+long currentTime = CONCEPT_LATENCY_PERIOD+1;
 void ANSNA_INIT()
 {
     SDR_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
-    currentTime = CONCEPT_WAIT_TIME+1; //reset time
+    currentTime = CONCEPT_LATENCY_PERIOD+1; //reset time
     event_inspector = NULL;
 }
 

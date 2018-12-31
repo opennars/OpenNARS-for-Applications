@@ -214,6 +214,4 @@ bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
     trickleDown(queue, i, true); //enforce minmax heap property
     *returnItemAddress = item.address; 
     return true;
-    
-    
 }

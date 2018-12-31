@@ -1,9 +1,9 @@
 #include "Cycle.h"
 
 int eventsSelected = 0, eventsDerived = 0;
-Event derivations[MAX_DERIVATIONS];
 Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
+Event derivations[MAX_DERIVATIONS];
 
 #include "RuleTable.h" //TODO make a module
 #include "Decision.h" //TODO make a module
@@ -134,7 +134,7 @@ void cycle(long currentTime)
             {
                 Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
                 //apply decomposition-based inference: prediction/explanation
-                //if(currentTime - c->usage.lastUsed > CONCEPT_WAIT_TIME)
+                //if(currentTime - c->usage.lastUsed > CONCEPT_LATENCY_PERIOD)
                 {
                     RuleTable_Decomposition(c, &eMatch, currentTime);
                 }
