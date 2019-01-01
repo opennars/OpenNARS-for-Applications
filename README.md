@@ -46,7 +46,7 @@ Adaptive - ALANN control model for resource allocation under AIKR.
 
 Neuro-Symbolic - "Sub-symbolic" SDR encodings, while utilizing cognitive logic (NAL).
 
-Network -  Learning conceptual representations while having several neural network properties, such as inference/spike based activation spreading.
+Network -  Learning conceptual representations while having several neural network properties, such as inference/spike based activation spreading and predictive links between concepts.
 
 Agent - Goal to "close the loop", to learn conceptual knowledge from sensor data and to act according to own motivations.
 
