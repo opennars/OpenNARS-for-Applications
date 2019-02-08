@@ -45,7 +45,7 @@ ANSNA the name
 --------------
 Adaptive - ALANN control model for resource allocation under AIKR.
 
-Neuro-Symbolic - "Sub-symbolic" SDR encodings, while utilizing cognitive logic (NAL).
+Neuro-Symbolic - "Sub-symbolic" SDR encodings, while utilizing cognitive logic (NAL), and taking neural network mechanisms into account, wherever they make sense.
 
 Network -  Learning conceptual representations while having several neural network properties, such as inference/spike based activation spreading and predictive links between concepts.
 
