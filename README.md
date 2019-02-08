@@ -1,4 +1,4 @@
-![ANSNA Logo](https://user-images.githubusercontent.com/8284677/52483755-93781300-2bac-11e9-983e-7a3c5daa2aab.png)
+![ANSNA Logo](https://user-images.githubusercontent.com/8284677/52512328-28562d00-2bfc-11e9-8330-d71797463e7f.png)
 
 Adaptive Neuro-Symbolic Network Agent
 
