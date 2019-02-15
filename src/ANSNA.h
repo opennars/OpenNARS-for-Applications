@@ -28,9 +28,9 @@ void ANSNA_INIT();
 //Run the system for a certain amount of cycles
 void ANSNA_Cycles(int cycles);
 //Add input
-void ANSNA_AddInput(SDR sdr, char type, Truth truth);
-void ANSNA_AddInputBelief(SDR sdr);
-void ANSNA_AddInputGoal(SDR sdr);
+Event ANSNA_AddInput(SDR sdr, char type, Truth truth);
+Event ANSNA_AddInputBelief(SDR sdr);
+Event ANSNA_AddInputGoal(SDR sdr);
 //Add an operation
 void ANSNA_AddOperation(SDR sdr, Action procedure);
 //Add an operation

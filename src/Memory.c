@@ -72,7 +72,6 @@ Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
     if(feedback.added)
     {
-        
         addedConcept = feedback.addedItem.address;
         *addedConcept = (Concept) {0};
         Concept_SetSDR(addedConcept, *sdr);

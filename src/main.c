@@ -147,6 +147,53 @@ void Table_Test()
     printf("<<Table test successful\n");
 }
 
+void Memory_Test()
+{
+    ANSNA_INIT();
+    printf(">>Memory test start\n");
+    Event e = Event_InputEvent(Encode_Term("a"), 
+                               EVENT_TYPE_BELIEF, 
+                               (Truth) {.frequency = 1, .confidence = 0.9}, 
+                               1337);
+    e.attention.priority = 0.9;
+    Memory_addEvent(&e);
+    assert(((Event*)events.items[0].address)->truth.confidence == 0.9,"event has to be there"); //identify
+    int returnIndex;
+    assert(!Memory_getClosestConcept(&e, &returnIndex), "a concept doesn't exist yet!");
+    Concept *c = Memory_Conceptualize(&e.sdr, e.attention);
+    bool conceptWasCreated = false;
+    for(int i=0; i<CONCEPTS_MAX; i++)
+    {
+        if(c == concepts.items[i].address)
+        {
+            conceptWasCreated = true;
+        }
+    }
+    assert(conceptWasCreated, "Concept should have been created!");
+    assert(Memory_FindConceptBySDR(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(c == concepts.items[returnIndex].address, "e should match to c!");
+    assert(Memory_getClosestConcept(&e, &returnIndex), "Concept should be found!");
+    assert(c == concepts.items[returnIndex].address, "e should match to c!");
+
+    Event e2 = Event_InputEvent(Encode_Term("b"), 
+                               EVENT_TYPE_BELIEF, 
+                               (Truth) {.frequency = 1, .confidence = 0.9}, 
+                               1337);
+    e2.attention.priority = 0.3;
+    Memory_addEvent(&e2);
+    Concept *c2 = Memory_Conceptualize(&e2.sdr, e2.attention);
+    assert(Memory_FindConceptBySDR(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(c2 == concepts.items[returnIndex].address, "e2 should match to c2!");
+    assert(Memory_getClosestConcept(&e2, &returnIndex), "Concept should be found!");
+    assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
+    assert(Memory_FindConceptBySDR(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(c == concepts.items[returnIndex].address, "e should match to c!");
+    assert(Memory_getClosestConcept(&e, &returnIndex), "Concept should be found!");
+    assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
+    printf("<<Memory test successful\n");
+}
+
+
 void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
@@ -265,8 +312,141 @@ void ANSNA_Follow_Test()
     printf("<<ANSNA Follow test successful\n");
 }
 
-int main() 
+bool ANSNA_Pong_Left_executed = false;
+void ANSNA_Pong_Left()
 {
+    ANSNA_Pong_Left_executed = true;
+}
+bool ANSNA_Pong_Right_executed = false;
+void ANSNA_Pong_Right()
+{
+    ANSNA_Pong_Right_executed = true;
+}
+
+void ANSNA_Pong()
+{
+    OUTPUT = 0;
+    ANSNA_INIT();
+    printf(">>ANSNA Pong start\n");
+    ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
+    ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
+    int szX = 40;
+    int szY = 20;
+    int ballX = szX/2;
+    int ballY = szY/5;
+    int batX = 20;
+    int batVX = 0;
+    int batWidth = 4; //"radius", batWidth from middle to the left and right
+    int vX = 1;
+    int vY = 1;
+    ANSNA_AddInputBelief(Encode_Term("good_boy"));
+    ANSNA_AddInputBelief(Encode_Term("ball_right"));
+    ANSNA_AddInputBelief(Encode_Term("ball_left"));
+    while(1)
+    {
+        printf("\e[1;1H\e[2J"); //POSIX clear screen
+        ANSNA_Cycles(10);
+        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_boy")));
+        ANSNA_Cycles(10);
+        if(batX < ballX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right")));
+        }
+        if(ballX < batX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left")));
+        }
+        printf("\n");
+        if(ballX <= 0)
+        {
+            vX = 1;
+        }
+        if(ballX >= szX-1)
+        {
+            vX = -1;
+        }
+        if(ballY <= 0)
+        {
+            vY = 1;
+        }
+        if(ballY >= szY-1)
+        {
+            vY = -1;
+        }
+        ballX += vX;
+        ballY += vY;
+        for(int i=0; i<batX-batWidth+1; i++)
+        {
+            printf(" ");
+        }
+        for(int i=0; i<batWidth*2-1 ;i++)
+        {
+            printf("@");
+        }
+        printf("\n");
+        for(int i=0; i<ballY; i++)
+        {
+            for(int k=0; k<szX; k++)
+            {
+                printf(" ");
+            }
+            printf("|\n");
+        }
+        for(int i=0; i<ballX; i++)
+        {
+            printf(" ");
+        }
+        printf("#");
+        for(int i=ballX+1; i<szX; i++)
+        {
+            printf(" ");
+        }
+        printf("|\n");
+        for(int i=ballY+1; i<szY; i++)
+        {
+            for(int k=0; k<szX; k++)
+            {
+                printf(" ");
+            }
+            printf("|\n");
+        }
+        if(ballY == 0)
+        {
+            if(abs(ballX-batX) <= batWidth)
+            {
+                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_boy")));
+                printf("good\n");
+            }
+            else
+            {
+                
+            }
+            ballY = szY/2+random()%(szY/2);
+            ballX = random()%szX;
+        }
+        if(ANSNA_Pong_Left_executed)
+        {
+            ANSNA_Pong_Left_executed = false;
+            printf("Exec: op_left\n");
+            batVX = -1;
+        }
+        if(ANSNA_Pong_Right_executed)
+        {
+            ANSNA_Pong_Right_executed = false;
+            printf("Exec: op_right\n");
+            batVX = 1;
+        }
+        batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
+        usleep(100000); //POSIX sleep
+    }
+}
+
+int main(int argc, char *argv[]) 
+{
+    if(argc == 2) //pong
+    {
+        ANSNA_Pong();
+    }
     srand(1337);
     ANSNA_INIT();
     SDR_Test();
@@ -277,6 +457,9 @@ int main()
     ANSNA_Alphabet_Test();
     ANSNA_Procedure_Test();
     ANSNA_Follow_Test();
+    Memory_Test();
+    printf("done, if wish to run examples, just pass the corresponding parameter:/n");
+    printf("ANSNA pong (starts Pong example)");
     return 0;
 }
 

@@ -1,7 +1,5 @@
 #include "Table.h"
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 void Table_Add(Table *table, Implication *imp)
 {
     double impTruthExp = Truth_Expectation(imp->truth);

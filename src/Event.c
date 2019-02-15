@@ -12,6 +12,7 @@ Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime)
 {
     return (Event) { .attention = Attention_inputEvent(&truth, currentTime),
                      .sdr = sdr,
+                     .sdr_hash = SDR_Hash(&sdr),
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
