@@ -306,7 +306,7 @@ void ANSNA_Follow_Test()
         ANSNA_Cycles(10);
         printf("Score %i\n", score);
         assert(score > -5, "too bad");
-        if(score >= 10)
+        if(score >= 40)
             break;
     }
     printf("<<ANSNA Follow test successful\n");

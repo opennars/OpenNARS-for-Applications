@@ -19,6 +19,7 @@ Decision Decision_PotentiallyExecute(Concept *c, Event *goal, long currentTime)
         if(Truth_Expectation(Truth_Deduction(G.truth, b.truth)) > DECISION_THRESHOLD)
         {
             result.executed = true;
+            printf("!!!!!!!!!!!!!!!ANSNA TAKING ACTIVE CONTROL!!!!!!!!!!!!!!!!!!!!\n");
             (*op.action)();
             result.operationID = goal->operationID;
         }

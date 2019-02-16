@@ -51,6 +51,10 @@ void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
             if(!Stamp_checkOverlap(&e->stamp, &postcon.stamp))
             {
                 Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefDeduction(e, &postcon) : Inference_GoalAbduction(e, &postcon);
+                if(res.type == EVENT_TYPE_GOAL && !ALLOW_ABDUCTION)
+                {
+                    continue;
+                }
                 res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
                 if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
                 {
@@ -79,6 +83,10 @@ void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
             if(!Stamp_checkOverlap(&e->stamp, &precon.stamp))
             {
                 Event res = e->type == EVENT_TYPE_BELIEF ? Inference_BeliefAbduction(e, &precon) : Inference_GoalDeduction(e, &precon);
+                if(res.type == EVENT_TYPE_BELIEF && !ALLOW_ABDUCTION)
+                {
+                    continue;
+                }
                 res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
                 if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
                 {

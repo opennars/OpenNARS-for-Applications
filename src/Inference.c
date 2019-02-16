@@ -76,7 +76,8 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .operationID = compound->operationID };
 }
 
 //{Event b., Implication <a =/> b>.} |- Event a.
@@ -87,8 +88,7 @@ Event Inference_BeliefAbduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
-                     .operationID = compound->operationID };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
 }
 
 //{Event task a!, Implication <a =/> b>.} |- Event b!
