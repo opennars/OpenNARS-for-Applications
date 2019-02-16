@@ -458,8 +458,8 @@ int main(int argc, char *argv[])
     ANSNA_Procedure_Test();
     ANSNA_Follow_Test();
     Memory_Test();
-    printf("done, if wish to run examples, just pass the corresponding parameter:/n");
-    printf("ANSNA pong (starts Pong example)");
+    printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
+    printf("ANSNA pong (starts Pong example)\n");
     return 0;
 }
 
