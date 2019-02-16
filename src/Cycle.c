@@ -161,7 +161,7 @@ void cycle(long currentTime)
                     }
                     if(decision.executed)
                     {
-                        Decision_MotorTagging(c, decision.op);
+                        Decision_MotorTagging(c, decision.operationID);
                     }
                 }
                 //activate concepts attention with the event's attention, but penalize for mismatch to concept
@@ -177,7 +177,8 @@ void cycle(long currentTime)
             assert(concepts.itemsAmount == 0, "No matching concept is only allowed to happen if memory is empty.");
         }
         if(!decision.matched && !Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL)) //not conceptualizing (&/,a,op())
-        {   //add a new concept for e too at the end, as it does not exist already
+        {   
+            //add a new concept for e too at the end, as it does not exist already
             Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
             if(eNativeConcept != NULL)
             {

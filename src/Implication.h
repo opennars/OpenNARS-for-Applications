@@ -14,6 +14,7 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long occurrenceTimeOffset;
+    int operationID;
 } Implication;
 
 //Methods//

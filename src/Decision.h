@@ -20,6 +20,7 @@ typedef struct
 {
     bool matched;
     bool executed;
+    int operationID;
     Operation op;
 }Decision;
 
@@ -30,6 +31,6 @@ Decision Decision_PotentiallyExecute(Concept *c, Event *goal, long currentTime);
 //"reflexes" to try different operations, especially important in the beginning
 Decision Decision_MotorBabbling();
 //Motor tagging, so that an operation gets attached to the precondition events
-void Decision_MotorTagging(Concept *c, Operation op);
+void Decision_MotorTagging(Concept *c, int opID);
 
 #endif

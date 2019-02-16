@@ -25,7 +25,8 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
     return  (Implication) { .sdr = postcondition ? b->sdr : a->sdr, 
                             .truth = Truth_Induction(truthA, truthB),
                             .stamp = conclusionStamp,
-                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
+                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
+                            .operationID = a->operationID };
 }
 
 //{Event a., Event a.} |- Event a.
@@ -86,7 +87,8 @@ Event Inference_BeliefAbduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Abduction(compound->truth, component->truth), 
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .operationID = compound->operationID };
 }
 
 //{Event task a!, Implication <a =/> b>.} |- Event b!

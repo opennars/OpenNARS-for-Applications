@@ -15,7 +15,7 @@ FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenc
     Event closest = {0};
     for(int i=0; i<FIFO_SIZE; i++)
     {
-        if(fifo->array[i].type != EVENT_TYPE_DELETED)
+        if(fifo->array[i].type != EVENT_TYPE_DELETED && fifo->array[i].operationID == 0)
         {
             if(closest.type == EVENT_TYPE_DELETED)
             {
@@ -52,6 +52,12 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
     FIFO_Query_Result closest = FIFO_GetHighestConfidentProjectedTo(fifo, event->occurrenceTime, &event->sdr);    
     //overlap happened, we can't revise, so just add the event to FIFO
     if(Stamp_checkOverlap(&event->stamp, &closest.projectedEvent.stamp))
+    {
+        FIFO_Add(event, fifo);
+        return (Event) {0};
+    }
+    //one is (&/,a,op1) the other (&/,a,op2), they are not compatible
+    if(event->operationID != closest.projectedEvent.operationID)
     {
         FIFO_Add(event, fifo);
         return (Event) {0};
