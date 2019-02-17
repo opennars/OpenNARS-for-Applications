@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include "Usage.h"
 #include "Truth.h"
+#include "Globals.h"
 
 //Data structure//
 //--------------//

@@ -1,3 +1,5 @@
+#include <time.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "SDR.h"
@@ -344,7 +346,7 @@ void ANSNA_Pong()
     ANSNA_AddInputBelief(Encode_Term("ball_left"));
     while(1)
     {
-        printf("\e[1;1H\e[2J"); //POSIX clear screen
+        printf("\033[1;1H\033[2J"); //POSIX clear screen
         ANSNA_Cycles(10);
         ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_boy")));
         ANSNA_Cycles(10);
@@ -421,8 +423,8 @@ void ANSNA_Pong()
             {
                 
             }
-            ballY = szY/2+random()%(szY/2);
-            ballX = random()%szX;
+            ballY = szY/2+rand()%(szY/2);
+            ballX = rand()%szX;
         }
         if(ANSNA_Pong_Left_executed)
         {
@@ -437,7 +439,7 @@ void ANSNA_Pong()
             batVX = 1;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
-        usleep(100000); //POSIX sleep
+        nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep
     }
 }
 

@@ -8,7 +8,6 @@ Attention Attention_forgetEvent(Attention *eventAttention, long currentTime)
                          .lastForgotten = currentTime };
 }
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsage, long currentTime)
 {
     long dt = currentTime - conceptAttention->lastForgotten;

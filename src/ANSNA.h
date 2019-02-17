@@ -35,5 +35,7 @@ Event ANSNA_AddInputGoal(SDR sdr);
 void ANSNA_AddOperation(SDR sdr, Action procedure);
 //Add an operation
 void ANSNA_AddEventInspector(SDR sdr, EventInspector procedure);
+//Print event as Narsese
+void ANSNA_Util_PrintExistingEventNarsese(Event e);
 
 #endif
