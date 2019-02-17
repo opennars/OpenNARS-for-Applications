@@ -1,7 +1,5 @@
 #include "FIFO.h"
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 void FIFO_Add(Event *event, FIFO *fifo)
 {
     fifo->array[fifo->currentIndex] = *event;
