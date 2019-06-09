@@ -87,6 +87,7 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
     if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
     {
         *returnIndex = foundSameConcept_i;
+        return true;
     }
     int best_i = -1;
     double bestValSoFar = -1;
