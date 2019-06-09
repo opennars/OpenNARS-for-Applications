@@ -5,9 +5,6 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
 Event derivations[MAX_DERIVATIONS];
 
-#include "RuleTable.h" //TODO make a module
-#include "Decision.h" //TODO make a module
-
 bool popAndForgetConcept(long currentTime, Concept **returnConcept)
 {
     Concept *popped = NULL;
