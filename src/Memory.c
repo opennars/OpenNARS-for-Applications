@@ -76,11 +76,6 @@ Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
     return addedConcept;
 }
 
-typedef struct
-{
-    Concept *concept;
-    int count;
-} Vote;
 bool Memory_getClosestConcept(Event *event, int *returnIndex)
 {
     SDR *eventSDR = &(event->sdr);
