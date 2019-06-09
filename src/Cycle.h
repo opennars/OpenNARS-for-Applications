@@ -18,8 +18,6 @@
 #define EVENT_SELECTIONS 5
 //for temporal induction:
 #define CONCEPT_SELECTIONS 5
-//latency period
-#define CONCEPT_LATENCY_PERIOD 10
 
 //Methods//
 //-------//

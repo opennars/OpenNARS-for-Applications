@@ -18,7 +18,7 @@
 
 //Callback function types//
 //-----------------------//
-//typedef void (*Action)(void);             //already defined in Memory, just listed here to make
+//typedef void (*Action)(void);             //already defined in Memory, just listed here again to make
 //typedef void (*EventInspector)(Event *);  //it clear what it is
 
 //Methods//

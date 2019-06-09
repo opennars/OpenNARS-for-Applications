@@ -32,10 +32,8 @@ bool popAndForgetConcept(long currentTime, Concept **returnConcept)
     return false;
 }
 
-//by doing inference with the highest priority concepts
-void temporalInference(Concept *B, Event *b, long currentTime)
+int popConcepts(long currentTime, int B_id, Concept** B) 
 {
-    int B_id = B->id;
     int conceptsSelected = 0;
     for(int j=0; j<CONCEPT_SELECTIONS; j++)
     {
@@ -49,16 +47,15 @@ void temporalInference(Concept *B, Event *b, long currentTime)
         //in case that we took the matched concept out, validate B pointer again:
         if(A->id == B_id)
         {
-            B = &selectedConcepts[conceptsSelected];
+            *B = &selectedConcepts[conceptsSelected];
         }
         conceptsSelected++;
     }
-    for(int j=0; j<conceptsSelected; j++)
-    {   
-        Concept *A = &selectedConcepts[j];
-        IN_DEBUG( printf("Concept was chosen as temporal inference partner (equals matched? %d):\n", A->id == B->id); Concept_Print(A); )
-        RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
-    }
+    return conceptsSelected;
+}
+
+void pushConcepts(int conceptsSelected, Concept *B)
+{
     for(int j=0; j<conceptsSelected; j++)
     {   //push again what we popped
         if(!Memory_addConcept(&selectedConcepts[j]))
@@ -68,8 +65,25 @@ void temporalInference(Concept *B, Event *b, long currentTime)
     }
 }
 
+//doing inference with the highest priority concepts
+void temporalInference(Concept *B, Event *b, long currentTime)
+{
+    //1. pop concepts
+    int B_id = B->id;
+    int conceptsSelected = popConcepts(currentTime, B_id, &B);
+    //2. apply composition rules
+    for(int j=0; j<conceptsSelected; j++)
+    {   
+        Concept *A = &selectedConcepts[j];
+        IN_DEBUG( printf("Concept was chosen as temporal inference partner (equals matched? %d):\n", A->id == B->id); Concept_Print(A); )
+        RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
+    }
+    //3. push concepts again
+    pushConcepts(conceptsSelected, B);
+}
+
 //retrieve k events from event queue (attention buffer)
-void popEvents()
+void popEvents(long currentTime)
 {
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
@@ -111,7 +125,7 @@ void pushEvents(long currentTime)
 void cycle(long currentTime)
 {
     eventsSelected = eventsDerived = 0;
-    popEvents();
+    popEvents(currentTime);
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
@@ -131,10 +145,7 @@ void cycle(long currentTime)
             {
                 Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
                 //apply decomposition-based inference: prediction/explanation
-                //if(currentTime - c->usage.lastUsed > CONCEPT_LATENCY_PERIOD)
-                {
-                    RuleTable_Decomposition(c, &eMatch, currentTime);
-                }
+                RuleTable_Decomposition(c, &eMatch, currentTime);
                 c->usage = Usage_use(&c->usage, currentTime);
                 //add event to the FIFO of the concept
                 FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
