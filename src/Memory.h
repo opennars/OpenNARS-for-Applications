@@ -17,10 +17,8 @@
 //----------//
 #define CONCEPTS_MAX 1000 //TODO statically alloc once on INIT, as can lead in value too large for the compiler to handle
 #define EVENTS_MAX 64
-#define VOTING 1
-#define EXHAUSTIVE 2
 #define USE_HASHING true
-#define MATCH_STRATEGY EXHAUSTIVE
+#define MATCH_STRATEGY VOTING
 #define OPERATIONS_MAX 1000
 
 //Data structure//
