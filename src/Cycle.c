@@ -5,6 +5,8 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
 Event derivations[MAX_DERIVATIONS];
 
+//Popping strategy that only pops the item if it is still the highest-priority after pushing it
+//maintaining sorting order more aggressively
 bool popAndForgetConcept(long currentTime, Concept **returnConcept)
 {
     Concept *popped = NULL;
@@ -32,6 +34,7 @@ bool popAndForgetConcept(long currentTime, Concept **returnConcept)
     return false;
 }
 
+//Retrieve highest-priority concepts from memory
 int popConcepts(long currentTime, int B_id, Concept** B) 
 {
     int conceptsSelected = 0;
@@ -54,6 +57,7 @@ int popConcepts(long currentTime, int B_id, Concept** B)
     return conceptsSelected;
 }
 
+//Push retrieved concepts back to memory
 void pushConcepts(int conceptsSelected, Concept *B)
 {
     for(int j=0; j<conceptsSelected; j++)
@@ -122,7 +126,7 @@ void pushEvents(long currentTime)
     }    
 }
 
-void cycle(long currentTime)
+void Cycle_Perform(long currentTime)
 {
     eventsSelected = eventsDerived = 0;
     popEvents(currentTime);

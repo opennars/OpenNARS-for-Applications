@@ -15,7 +15,7 @@ void ANSNA_Cycles(int cycles)
     for(int i=0; i<cycles; i++)
     {
         IN_DEBUG( printf("\nNew inference cycle:\n----------\n"); )
-        cycle(currentTime);
+        Cycle_Perform(currentTime);
         currentTime++;
     }
 }

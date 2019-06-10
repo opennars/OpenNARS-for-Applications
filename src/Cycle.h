@@ -21,7 +21,7 @@
 
 //Methods//
 //-------//
-//Apply one inference cyle
-void cycle(long currentTime);
+//Apply one operating cyle
+void Cycle_Perform(long currentTime);
 
 #endif
