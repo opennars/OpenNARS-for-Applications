@@ -1,6 +1,5 @@
 #include "Encode.h"
 
-// https://www.youtube.com/watch?v=V3Yqtpytif0&list=PL3yXMgtrZmDqhsFQzwUC9V8MeeVOQ7eZ9&index=6
 SDR Encode_Scalar(int w, int min, int max, int value)
 {
     int n = SDR_SIZE;

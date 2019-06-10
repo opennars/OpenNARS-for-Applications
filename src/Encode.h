@@ -33,6 +33,7 @@ bool input_terms_used[TERMS_MAX];
  * /param max maximum of encoded range
  * /param value encoded value
  */
+//https://www.youtube.com/watch?v=V3Yqtpytif0&list=PL3yXMgtrZmDqhsFQzwUC9V8MeeVOQ7eZ9&index=6
 SDR Encode_Scalar(int w, int min, int max, int value);
 //Encodes a term 
 SDR Encode_Term(char *name);
