@@ -126,6 +126,38 @@ void pushEvents(long currentTime)
     }    
 }
 
+//doing inference within the matched concept, returning whether e is a context operation (a,op)
+bool localInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
+{
+    //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
+    Event eMatch = *e;
+    eMatch.sdr = c->sdr;
+    eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
+    if(eMatch.truth.confidence > MIN_CONFIDENCE)
+    {
+        Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
+        //apply decomposition-based inference: prediction/explanation
+        RuleTable_Decomposition(c, &eMatch, currentTime);
+        c->usage = Usage_use(&c->usage, currentTime);
+        //add event to the FIFO of the concept
+        FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
+        Event revised = FIFO_AddAndRevise(&eMatch, fifo);
+        Event *goal = e->type == EVENT_TYPE_GOAL ? &eMatch : NULL;
+        if(revised.type != EVENT_TYPE_DELETED && revised.truth.confidence >= MIN_CONFIDENCE && revised.attention.priority >= MIN_PRIORITY)
+        {
+            goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
+            IN_OUTPUT( printf("REVISED EVENT: "); Event_Print(&revised); )
+        }
+        bool isContextOperation = Decision_Making(c, goal, currentTime);
+        //activate concepts attention with the event's attention, but penalize for mismatch to concept
+        //eMatch.attention.priority *= Truth_Expectation(eMatch.truth);
+        c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
+        PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
+        return isContextOperation;
+    }
+    return false;
+}
+
 void Cycle_Perform(long currentTime)
 {
     eventsSelected = eventsDerived = 0;
@@ -141,33 +173,10 @@ void Cycle_Perform(long currentTime)
         if(Memory_getClosestConcept(e, &closest_concept_i))
         {
             Concept *c = concepts.items[closest_concept_i].address;
-            //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
-            Event eMatch = *e;
-            eMatch.sdr = c->sdr;
-            eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
-            if(eMatch.truth.confidence > MIN_CONFIDENCE)
-            {
-                Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
-                //apply decomposition-based inference: prediction/explanation
-                RuleTable_Decomposition(c, &eMatch, currentTime);
-                c->usage = Usage_use(&c->usage, currentTime);
-                //add event to the FIFO of the concept
-                FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
-                Event revised = FIFO_AddAndRevise(&eMatch, fifo);
-                Event *goal = e->type == EVENT_TYPE_GOAL ? &eMatch : NULL;
-                if(revised.type != EVENT_TYPE_DELETED && revised.truth.confidence >= MIN_CONFIDENCE && revised.attention.priority >= MIN_PRIORITY)
-                {
-                    goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
-                    IN_OUTPUT( printf("REVISED EVENT: "); Event_Print(&revised); )
-                }
-                isContextOperation = Decision_Making(c, goal, currentTime);
-                //activate concepts attention with the event's attention, but penalize for mismatch to concept
-                //eMatch.attention.priority *= Truth_Expectation(eMatch.truth);
-                c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
-                PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
-            }
+            //perform concept-related inference
+            isContextOperation = localInference(c, closest_concept_i, e, currentTime);
             //send event to the highest prioriry concepts
-            temporalInference(c, e, currentTime); //c pointer should not be used after this position, as it involves push operation to concepts
+            temporalInference(c, e, currentTime);
         }
         else
         {
