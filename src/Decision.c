@@ -1,6 +1,7 @@
 #include "Decision.h"
 
-Decision Decision_PotentiallyExecute(Concept *c, Event *goal, long currentTime)
+//it returns which operation matched and whether it was executed
+Decision PotentiallyExecute(Concept *c, Event *goal, long currentTime)
 {
     Decision result = (Decision) {0};
     Event G = *goal;
@@ -27,7 +28,8 @@ Decision Decision_PotentiallyExecute(Concept *c, Event *goal, long currentTime)
     return result;
 }
 
-Decision Decision_MotorBabbling()
+//"reflexes" to try different operations, especially important in the beginning
+Decision MotorBabbling()
 {
     Decision result = (Decision) {0};
     int n_ops = OPERATIONS_MAX;
@@ -51,9 +53,32 @@ Decision Decision_MotorBabbling()
     return result;
 }
 
-void Decision_MotorTagging(Concept *c, int opID)
+//Motor tagging, so that an operation gets attached to the precondition events: a -> (a,op())
+void MotorTagging(Concept *c, int opID)
 {
     Event ev = FIFO_GetNewestElement(&c->event_beliefs);
     ev.operationID = opID;
     FIFO_AddAndRevise(&ev, &c->event_beliefs);
+}
+
+bool Decision_Making(Concept *c, Event *goal, long currentTime)
+{
+    Decision decision = {0};
+    if(goal != NULL)
+    {
+        decision = PotentiallyExecute(c, goal, currentTime);
+        //if no operation matched, try motor babbling with a certain chance
+        if(!decision.matched && !decision.executed)
+        {
+            if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+            {
+                decision = MotorBabbling();
+            } 
+        }
+        if(decision.executed)
+        {
+            MotorTagging(c, decision.operationID);
+        }
+    }
+    return decision.matched;
 }

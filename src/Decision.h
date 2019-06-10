@@ -26,11 +26,7 @@ typedef struct
 
 //Methods//
 //-------//
-//it returns whether and which operation matched and whether it was executed
-Decision Decision_PotentiallyExecute(Concept *c, Event *goal, long currentTime);
-//"reflexes" to try different operations, especially important in the beginning
-Decision Decision_MotorBabbling();
-//Motor tagging, so that an operation gets attached to the precondition events
-void Decision_MotorTagging(Concept *c, int opID);
+//ANSNA decision making rule applying when goal is an operation
+bool Decision_Making(Concept *c, Event *goal, long currentTime);
 
 #endif

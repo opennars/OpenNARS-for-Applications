@@ -133,7 +133,7 @@ void cycle(long currentTime)
         IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
         //determine the concept it is related to
         int closest_concept_i;
-        Decision decision = (Decision) {0};
+        bool isContextOperation = false;
         if(Memory_getClosestConcept(e, &closest_concept_i))
         {
             Concept *c = concepts.items[closest_concept_i].address;
@@ -156,22 +156,7 @@ void cycle(long currentTime)
                     goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
                     IN_OUTPUT( printf("REVISED EVENT: "); Event_Print(&revised); )
                 }
-                if(goal != NULL)
-                {
-                    decision = Decision_PotentiallyExecute(c, goal, currentTime);
-                    //if no operation matched, try motor babbling with a certain chance
-                    if(!decision.matched && !decision.executed)
-                    {
-                        if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
-                        {
-                            decision = Decision_MotorBabbling();
-                        } 
-                    }
-                    if(decision.executed)
-                    {
-                        Decision_MotorTagging(c, decision.operationID);
-                    }
-                }
+                isContextOperation = Decision_Making(c, goal, currentTime);
                 //activate concepts attention with the event's attention, but penalize for mismatch to concept
                 //eMatch.attention.priority *= Truth_Expectation(eMatch.truth);
                 c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
@@ -184,7 +169,7 @@ void cycle(long currentTime)
         {
             assert(concepts.itemsAmount == 0, "No matching concept is only allowed to happen if memory is empty.");
         }
-        if(!decision.matched && !Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL)) //not conceptualizing (&/,a,op())
+        if(!isContextOperation && !Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL)) //not conceptualizing (&/,a,op())
         {   
             //add a new concept for e too at the end, as it does not exist already
             Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
