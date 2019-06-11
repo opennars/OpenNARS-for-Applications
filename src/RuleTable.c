@@ -1,45 +1,35 @@
 #include "RuleTable.h"
 
-void RuleTable_Composition(Concept *A, Concept *B, Event *b, long currentTime)
+void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int operationID, long currentTime)
 {
     //temporal induction and intersection
-    if(b->type == EVENT_TYPE_BELIEF && A->event_beliefs.itemsAmount > 0)
+    if(a->type == EVENT_TYPE_BELIEF && b->type == EVENT_TYPE_BELIEF)
     {
-        int k=0;
-        for(int i=0;i<A->event_beliefs.itemsAmount; i++)
+        if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
-            Event *a = &A->event_beliefs.array[i];
-            if(!Stamp_checkOverlap(&a->stamp, &b->stamp)) //TODO temporal overlap
+            Implication precondition_implication =   b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, false) : Inference_BeliefInduction(b, a, false);
+            Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
+            if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
             {
-                Implication precondition_implication =   b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, false) : Inference_BeliefInduction(b, a, false);
-                Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
-                if(k>MAX_INDUCTIONS)
-                {
-                    break;
-                }
-                k++;
-                if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
-                {
-                    IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
-                    Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs, &precondition_implication);
-                    IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
-                    Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs, &postcondition_implication);
-                    IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
-                }
-                Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
-                sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);
-                if(sequence.truth.confidence < MIN_CONFIDENCE || sequence.attention.priority < MIN_PRIORITY)
-                {
-                    continue;
-                }
-                derivations[eventsDerived++] = sequence;
-                IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
+                IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
+                Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
+                IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
+                Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication);
+                IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
             }
+            Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
+            sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);
+            if(sequence.truth.confidence < MIN_CONFIDENCE || sequence.attention.priority < MIN_PRIORITY)
+            {
+                return;
+            }
+            //derivations[eventsDerived++] = sequence; //not yet
+            IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
         }
     }
 }
 
-void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
+/*void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
 {
     //detachment
     if(c->postcondition_beliefs.itemsAmount>0)
@@ -102,4 +92,4 @@ void RuleTable_Decomposition(Concept *c, Event *e, long currentTime)
             }
         }
     }
-}
+}*/

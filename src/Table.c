@@ -61,3 +61,12 @@ Implication Table_PopHighestTruthExpectationElement(Table *table)
     table->itemsAmount--;
     return result;
 }
+
+void Table_COPY(Table *src, Table *target)
+{
+    target->itemsAmount = src->itemsAmount;
+    for(int i=0; i<src->itemsAmount; i++)
+    {
+        target->array[i] = src->array[i];
+    }
+}

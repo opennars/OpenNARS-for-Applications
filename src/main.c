@@ -61,7 +61,7 @@ void FIFO_Test()
         assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     //now see whether a new item is revised with the correct one:
-    int i=10; //revise with item 10, which has occurrence time 10
+    int i=3; //revise with item 10, which has occurrence time 10
     int newbase = FIFO_SIZE*2+1;
     Event event2 = (Event) { .sdr = Encode_Term("test"), 
                              .type = EVENT_TYPE_BELIEF, 
@@ -71,9 +71,7 @@ void FIFO_Test()
     Event ret = FIFO_AddAndRevise(&event2, &fifo);
     assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3, "occurrence time has to be within");
     assert(ret.stamp.evidentalBase[0] == i && ret.stamp.evidentalBase[1] == newbase, "it has to be the new event");
-    assert(fifo.array[FIFO_SIZE-i].type == EVENT_TYPE_DELETED, "FIFO should have deleted the entry"); //as it was replaced
-    Event addedRet = FIFO_GetNewestElement(&fifo); //it is at the "first" position of the FIFO now
-    assert(addedRet.stamp.evidentalBase[0] == i && addedRet.stamp.evidentalBase[1] == newbase, "it has to be the new event");
+    assert(fifo.array[FIFO_SIZE-i].stamp.evidentalBase[0] == i && fifo.array[FIFO_SIZE-i].stamp.evidentalBase[1] == newbase, "FIFO should have deleted the entry");
     printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
     assert(ret.truth.confidence > 0.9, "confidence of revision result should be higher than premise's");
     printf("<<FIFO Test successful\n");
@@ -159,7 +157,7 @@ void Memory_Test()
                                1337);
     e.attention.priority = 0.9;
     Memory_addEvent(&e);
-    assert(((Event*)events.items[0].address)->truth.confidence == 0.9,"event has to be there"); //identify
+    assert(belief_events.array[0].truth.confidence == 0.9,"event has to be there"); //identify
     int returnIndex;
     assert(!Memory_getClosestConcept(&e, &returnIndex), "a concept doesn't exist yet!");
     Concept *c = Memory_Conceptualize(&e.sdr, e.attention);
@@ -445,6 +443,8 @@ void ANSNA_Pong()
 
 int main(int argc, char *argv[]) 
 {
+    //printf("sizeof concept %d\n",(int) sizeof(Concept));
+    //exit(0);
     if(argc == 2) //pong
     {
         ANSNA_Pong();

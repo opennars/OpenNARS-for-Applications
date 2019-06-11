@@ -1,5 +1,15 @@
 #include "FIFO.h"
 
+void FIFO_RESET(FIFO *fifo)
+{
+    fifo->itemsAmount = 0;
+    fifo->currentIndex = 0;
+    for(int i=0; i<FIFO_SIZE; i++)
+    {
+        fifo->array[i] = (Event) {0};
+    }
+}
+
 void FIFO_Add(Event *event, FIFO *fifo)
 {
     fifo->array[fifo->currentIndex] = *event;
@@ -67,17 +77,26 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
         FIFO_Add(event, fifo);
         return (Event) {0};
     }
-    //Else we add the revised one and set the closest one to be deleted/0
-    *(closest.originalEvent) = (Event) {0};
-    FIFO_Add(&revised, fifo);
+    //Else we set the revised one instead of the closest one
+    *(closest.originalEvent) = revised;
     return revised;
 }
 
-Event FIFO_GetNewestElement(FIFO *fifo)
+Event FIFO_GetKthNewestElement(FIFO *fifo, int k)
 {
     if(fifo->itemsAmount == 0)
     {
         return (Event) {0};
     }
-    return fifo->array[fifo->currentIndex == 0 ? FIFO_SIZE-1 : fifo->currentIndex-1];
+    int index = fifo->currentIndex - 1 - k;
+    if(index < 0)
+    {
+        index = FIFO_SIZE+index;
+    }
+    return fifo->array[index];
+}
+
+Event FIFO_GetNewestElement(FIFO *fifo)
+{
+    return FIFO_GetKthNewestElement(fifo, 0);
 }

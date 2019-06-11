@@ -13,7 +13,7 @@
 
 //Parameters//
 //----------//
-#define FIFO_SIZE 1000
+#define FIFO_SIZE 5
 
 //Data structure//
 //--------------//
@@ -31,6 +31,8 @@ typedef struct
 
 //Methods//
 //-------//
+//Resets the FIFO
+void FIFO_RESET(FIFO *fifo);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Add an event to the FIFO with potential revision, 
@@ -42,5 +44,7 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo);
 FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime, SDR *referenceSdr);
 //Get the newest element
 Event FIFO_GetNewestElement(FIFO *fifo);
+//Get the k-th newest FIFO element
+Event FIFO_GetKthNewestElement(FIFO *fifo, int k);
 
 #endif

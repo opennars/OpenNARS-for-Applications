@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "Memory.h"
+#include "ANSNA.h"
 
 //Parameters//
 //----------//
@@ -27,6 +28,6 @@ typedef struct
 //Methods//
 //-------//
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(Concept *c, Event *goal, long currentTime);
+bool Decision_Making(Event *goal, long currentTime);
 
 #endif

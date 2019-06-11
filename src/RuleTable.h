@@ -29,8 +29,8 @@ extern int eventsDerived;
 //Methods//
 //-------//
 //Event b getting processed in foreign concept A (B is only used as ref for adding pre-conditions)
-void RuleTable_Composition(Concept *A, Concept *B, Event *b, long currentTime);
+void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int operationID, long currentTime);
 //Concept e getting processed in its native concept c
-void RuleTable_Decomposition(Concept *c, Event *e, long currentTime);
+//void RuleTable_Decomposition(Concept *c, Event *e, long currentTime);
 
 #endif

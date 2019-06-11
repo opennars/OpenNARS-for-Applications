@@ -1,84 +1,57 @@
 #include "Decision.h"
 
-//it returns which operation matched and whether it was executed
-Decision PotentiallyExecute(Concept *c, Event *goal, long currentTime)
+//Inject action event after execution or babbling
+void InjectActionEvent(int opID)
 {
-    Decision result = (Decision) {0};
-    Event G = *goal;
-    if(goal->operationID > 0)
-    {
-        Operation op = operations[goal->operationID-1];
-        if(op.action == 0)
-        {
-            return result;
-        }
-        result.matched = true;
-        result.op = op;
-        G.truth = Truth_Projection(G.truth, G.occurrenceTime, currentTime);
-        G.occurrenceTime = currentTime;
-        Event b = FIFO_GetHighestConfidentProjectedTo(&c->event_beliefs, currentTime, &goal->sdr).projectedEvent;
-        if(Truth_Expectation(Truth_Deduction(G.truth, b.truth)) > DECISION_THRESHOLD)
-        {
-            result.executed = true;
-            printf("!!!!!!!!!!!!!!!ANSNA TAKING ACTIVE CONTROL!!!!!!!!!!!!!!!!!!!!\n");
-            (*op.action)();
-            result.operationID = goal->operationID;
-        }
-    }
-    return result;
+    assert(opID != 0, "Operation 0 is reserved for no action");
+    Operation op = operations[opID];
+    ANSNA_AddInputBelief(op.sdr);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
 Decision MotorBabbling()
 {
     Decision result = (Decision) {0};
-    int n_ops = OPERATIONS_MAX;
-    for(int i=0; i<OPERATIONS_MAX; i++)
+    int n_ops = 0;
+    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
     {
-        if(operations[i].action == 0)
-        {
-            n_ops = i;
-            break;
-        }
+        n_ops = i;
     }
-    if(n_ops > 0)
+    if(n_ops++ > 0)
     {
-        int chosen = rand() % n_ops;
+        int chosen = (rand() % n_ops);
         result.op = operations[chosen];
         (*result.op.action)();
         result.executed = true;
         result.matched = true;
         result.operationID = chosen+1;
+        InjectActionEvent(chosen+1);
     }
     return result;
 }
 
-//Motor tagging, so that an operation gets attached to the precondition events: a -> (a,op())
-void MotorTagging(Concept *c, int opID)
+Decision RealizeGoal(Event *goal, long currentTime)
 {
-    Event ev = FIFO_GetNewestElement(&c->event_beliefs);
-    ev.operationID = opID;
-    FIFO_AddAndRevise(&ev, &c->event_beliefs);
+    Decision result = (Decision) {0};
+    //TODO goal realization
+    //Plan through knowledge
+    //Select an action realizing goal
+    //invoke InjectActionEvent
+    return result;
 }
 
-bool Decision_Making(Concept *c, Event *goal, long currentTime)
+bool Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
-    if(goal != NULL)
+    decision = RealizeGoal(goal, currentTime);
+    //if no operation matched, try motor babbling with a certain chance
+    if(!decision.matched && !decision.executed && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
     {
-        decision = PotentiallyExecute(c, goal, currentTime);
-        //if no operation matched, try motor babbling with a certain chance
-        if(!decision.matched && !decision.executed)
-        {
-            if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
-            {
-                decision = MotorBabbling();
-            } 
-        }
-        if(decision.executed)
-        {
-            MotorTagging(c, decision.operationID);
-        }
+        decision = MotorBabbling();
+    }
+    if(decision.executed)
+    {
+        InjectActionEvent(decision.operationID);
     }
     return decision.matched;
 }

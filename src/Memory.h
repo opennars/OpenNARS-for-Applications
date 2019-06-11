@@ -19,13 +19,13 @@
 #define EVENTS_MAX 64
 #define USE_HASHING true
 #define MATCH_STRATEGY VOTING
-#define OPERATIONS_MAX 1000
 
 //Data structure//
 //--------------//
 //Data structures
 PriorityQueue concepts;
-PriorityQueue events;
+FIFO belief_events;
+FIFO goal_events;
 typedef void (*Action)(void);
 typedef void (*EventInspector)(Event *);
 typedef struct

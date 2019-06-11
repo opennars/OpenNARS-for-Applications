@@ -1,20 +1,14 @@
 #include "Memory.h"
 
 Concept concept_storage[CONCEPTS_MAX];
-Event event_storage[EVENTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Item event_items_storage[EVENTS_MAX];
-
 int operations_index = 0;
+long concept_id = 1;
 
 void Memory_ResetEvents()
 {
-    PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
-    for(int i=0; i<EVENTS_MAX; i++)
-    {
-        event_storage[i] = (Event) {0};
-        events.items[i] = (Item) { .address = &(event_storage[i]) };
-    }
+    FIFO_RESET(&belief_events);
+    FIFO_RESET(&goal_events);
 }
 
 void Memory_ResetConcepts()
@@ -27,7 +21,7 @@ void Memory_ResetConcepts()
     }   
 }
 
-long concept_id = 1;
+
 void Memory_INIT()
 {
     Memory_ResetConcepts();
@@ -110,14 +104,15 @@ bool Memory_addEvent(Event *event)
     {
         (*event_inspector)(event);
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, event->attention.priority);
-    if(feedback.added)
+    if(event->type == EVENT_TYPE_BELIEF)
     {
-        Event *toRecyle = feedback.addedItem.address;
-        *toRecyle = *event;
-        return true;
+        FIFO_AddAndRevise(event, &belief_events);
     }
-    return false;
+    if(event->type == EVENT_TYPE_GOAL)
+    {
+        FIFO_AddAndRevise(event, &goal_events);
+    }
+    return true;
 }
 
 bool Memory_addConcept(Concept *concept)

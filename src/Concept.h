@@ -15,6 +15,7 @@
 //----------//
 #define CONCEPT_INTERPOLATION_STRENGTH 1.0
 #define CONCEPT_INTERPOLATION_INIT_STRENGTH 1.0
+#define OPERATIONS_MAX 10
 
 //Data structure//
 //--------------//
@@ -25,10 +26,8 @@ typedef struct {
     long id; //ID assigned to the concept on conceptualization, cleaner than using its address
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
-    FIFO event_beliefs;
-    FIFO event_goals;
-    Table precondition_beliefs;
-    Table postcondition_beliefs;
+    Table precondition_beliefs[OPERATIONS_MAX];
+    Table postcondition_beliefs[OPERATIONS_MAX];
     //For concept interpolation:
     double sdr_bit_counter[SDR_SIZE];
 } Concept;

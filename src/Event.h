@@ -26,6 +26,7 @@ typedef struct {
     Stamp stamp;
     long occurrenceTime;
     int operationID;
+    bool processed;
 } Event;
 
 //Methods//
