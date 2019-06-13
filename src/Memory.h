@@ -45,7 +45,7 @@ bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 //Create a new concept
 Concept* Memory_Conceptualize(SDR *sdr, Attention attention);
 //Return closest concept
-bool Memory_getClosestConcept(Event *event, int *returnIndex);
+bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
 //Add an already existing concept to memory that was taken out from the concept priority queue
 bool Memory_addConcept(Concept *concept);
 //Add event to memory

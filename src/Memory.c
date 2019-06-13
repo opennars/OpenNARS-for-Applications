@@ -70,15 +70,14 @@ Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
     return addedConcept;
 }
 
-bool Memory_getClosestConcept(Event *event, int *returnIndex)
+bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-    SDR *eventSDR = &(event->sdr);
     if(concepts.itemsAmount == 0)
     {
         return false;   
     }
     int foundSameConcept_i;
-    if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
+    if(Memory_FindConceptBySDR(sdr, sdr_hash, &foundSameConcept_i))
     {
         *returnIndex = foundSameConcept_i;
         return true;
@@ -87,31 +86,41 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
     double bestValSoFar = -1;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        double curVal = Truth_Expectation(SDR_Inheritance(eventSDR, &(((Concept*)concepts.items[i].address)->sdr)));
+        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*)concepts.items[i].address)->sdr)));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
             best_i = i;
         }
     }
+    if(best_i == -1) //TODO how?
+    {
+        return false;
+    }
+    printf("WAT %d\n",best_i); //++
     *returnIndex = best_i;
     return true;
 }
 
 bool Memory_addEvent(Event *event)
 {
+    printf("add attempt\n"); //++
     if(event_inspector != NULL)
     {
         (*event_inspector)(event);
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        FIFO_AddAndRevise(event, &belief_events);
+        printf("ADDED\n"); //++
+        FIFO_Add(event, &belief_events); //not revised yet
+        return true;
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
-        FIFO_AddAndRevise(event, &goal_events);
+        FIFO_Add(event, &goal_events);
+        return true;
     }
+    assert(false, "errornous event type");
     return true;
 }
 

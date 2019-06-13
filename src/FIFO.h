@@ -33,6 +33,8 @@ typedef struct
 //-------//
 //Resets the FIFO
 void FIFO_RESET(FIFO *fifo);
+//Copy a FIFO
+void FIFO_COPY(FIFO *src, FIFO *target);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Add an event to the FIFO with potential revision, 
@@ -43,8 +45,8 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo);
 //plus the information where it was
 FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime, SDR *referenceSdr);
 //Get the newest element
-Event FIFO_GetNewestElement(FIFO *fifo);
+Event* FIFO_GetNewestElement(FIFO *fifo);
 //Get the k-th newest FIFO element
-Event FIFO_GetKthNewestElement(FIFO *fifo, int k);
+Event* FIFO_GetKthNewestElement(FIFO *fifo, int k);
 
 #endif

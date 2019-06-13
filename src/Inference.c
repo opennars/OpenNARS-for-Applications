@@ -21,12 +21,14 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 //{Event a., Event b.} |- Implication <a =/> c>.
 Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
 {
+    if(b->operationID != 0) {
+        printf("WWW");exit(0); }
     DERIVATION_STAMP_AND_TIME(a,b)
     return  (Implication) { .sdr = postcondition ? b->sdr : a->sdr, 
                             .truth = Truth_Induction(truthA, truthB),
                             .stamp = conclusionStamp,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
-                            .operationID = a->operationID };
+                            .operationID = b->operationID };
 }
 
 //{Event a., Event a.} |- Event a.

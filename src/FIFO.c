@@ -10,6 +10,16 @@ void FIFO_RESET(FIFO *fifo)
     }
 }
 
+void FIFO_COPY(FIFO *src, FIFO *target)
+{
+    target->itemsAmount = src->itemsAmount;
+    target->currentIndex = src->currentIndex;
+    for(int i=0; i<FIFO_SIZE; i++)
+    {
+        target->array[i] = src->array[i];
+    }
+}
+
 void FIFO_Add(Event *event, FIFO *fifo)
 {
     fifo->array[fifo->currentIndex] = *event;
@@ -82,21 +92,21 @@ Event FIFO_AddAndRevise(Event *event, FIFO *fifo)
     return revised;
 }
 
-Event FIFO_GetKthNewestElement(FIFO *fifo, int k)
+Event* FIFO_GetKthNewestElement(FIFO *fifo, int k)
 {
     if(fifo->itemsAmount == 0)
     {
-        return (Event) {0};
+        return NULL;
     }
     int index = fifo->currentIndex - 1 - k;
     if(index < 0)
     {
         index = FIFO_SIZE+index;
     }
-    return fifo->array[index];
+    return &fifo->array[index];
 }
 
-Event FIFO_GetNewestElement(FIFO *fifo)
+Event* FIFO_GetNewestElement(FIFO *fifo)
 {
     return FIFO_GetKthNewestElement(fifo, 0);
 }

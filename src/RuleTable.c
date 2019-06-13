@@ -3,10 +3,12 @@
 void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int operationID, long currentTime)
 {
     //temporal induction and intersection
+    //printf("BREAKP\n");exit(0); //++
     if(a->type == EVENT_TYPE_BELIEF && b->type == EVENT_TYPE_BELIEF)
     {
         if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
+            //printf("BREAKPP %d\n", operationID); exit(0); //++
             Implication precondition_implication =   b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, false) : Inference_BeliefInduction(b, a, false);
             Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
             if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
