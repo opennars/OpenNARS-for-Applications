@@ -97,21 +97,18 @@ bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex
     {
         return false;
     }
-    printf("WAT %d\n",best_i); //++
     *returnIndex = best_i;
     return true;
 }
 
 bool Memory_addEvent(Event *event)
 {
-    printf("add attempt\n"); //++
     if(event_inspector != NULL)
     {
         (*event_inspector)(event);
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        printf("ADDED\n"); //++
         FIFO_Add(event, &belief_events); //not revised yet
         return true;
     }

@@ -8,25 +8,17 @@ Event derivations[MAX_DERIVATIONS];
 //doing inference within the matched concept, returning the matched event
 Event localInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
-    printf("PROCESSING _EVENT1 %ld\n",e->stamp.evidentalBase[0]); //++
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     Event eMatch = *e;
-    if(c == NULL)
-    {
-        exit(0);
-    }
     eMatch.sdr = c->sdr;
-    printf("PROCESSING _EVENT1 %ld\n",e->stamp.evidentalBase[0]); //++
     eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
-        printf("PROCESSING _EVENT2 %ld\n",e->stamp.evidentalBase[0]); //++
         Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
         //apply decomposition-based inference: prediction/explanation
         //RuleTable_Decomposition(c, &eMatch, currentTime); <- TODO, how to deal with derived events? I guess FIFO will need to support it
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
         //add event to the FIFO of the concept
-        printf("PROCESSING _EVENT3 %ld\n",e->stamp.evidentalBase[0]); //++
         FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
         FIFO_AddAndRevise(&eMatch, fifo);
         //activate concepts attention with the event's attention
@@ -36,12 +28,8 @@ Event localInference(Concept *c, int closest_concept_i, Event *e, long currentTi
     return eMatch;
 }
 
-int u=0; //++
 void ProcessEvent(Event *e, long currentTime)
 {
-    u++; //++
-    printf("PROCESSING EVENT %ld\n",e->stamp.evidentalBase[0]); //++
-    
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
@@ -50,15 +38,12 @@ void ProcessEvent(Event *e, long currentTime)
     Concept *c = NULL;
     if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
-        printf("PROCESSING EVENT1 %ld\n",e->stamp.evidentalBase[0]); //++
         c = concepts.items[closest_concept_i].address;
         //perform concept-related inference
         localInference(c, closest_concept_i, e, currentTime);
     }
-    printf("PROCESSING EVENT_ %ld\n",e->stamp.evidentalBase[0]); //++
     if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
     {   
-        printf("PROCESSING EVENT2 %ld\n",e->stamp.evidentalBase[0]); //++
         //add a new concept for e too at the end, as it does not exist already
         Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
         if(eNativeConcept != NULL && c != NULL)
@@ -77,22 +62,17 @@ void ProcessEvent(Event *e, long currentTime)
 
 void Cycle_Perform(long currentTime)
 {
-    //printf("CYCLE\n"); //++
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
-        //printf("has beliefs\n"); //++
         Event *e = FIFO_GetNewestElement(&belief_events);
         if(!e->processed)
         {
-            printf("has not processed\n"); //++
             ProcessEvent(e, currentTime);
-            printf("processed belief\n"); //++
             //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
             for(int k=0; k<belief_events.itemsAmount; k++)
             {
                 Event *postcondition = FIFO_GetKthNewestElement(&belief_events, k);     //todo: get something better involving derived events           
-                printf("FIRST EVENT %ld\n",postcondition->stamp.evidentalBase[0]); //++
                 int k2 = k+1;                                                         //to fill in gaps in observations with abduction and also
                 if(k2 >= belief_events.itemsAmount || postcondition->operationID != 0) //to support sequences, use "standard ANSNA approach"
                 {
@@ -103,7 +83,6 @@ void Cycle_Perform(long currentTime)
                 //if it's an operation find the real precondition and use the current one as action
                 if(precondition->operationID != 0)
                 {
-                    //printf("BREAKP op\n"); //++
                     int k3 = k+2;
                     if(k3>=belief_events.itemsAmount)
                     {

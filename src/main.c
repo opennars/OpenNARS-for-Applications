@@ -275,7 +275,7 @@ void ANSNA_Follow_Test()
             ANSNA_Follow_Test_Right_executed = false;
             if(BALL == RIGHT)
             {
-                ANSNA_Cycles(10);
+                ANSNA_Cycles(100);
                 ANSNA_AddInputBelief(Encode_Term("good_boy"));
                 printf("good\n");
                 score++;
@@ -292,7 +292,7 @@ void ANSNA_Follow_Test()
             ANSNA_Follow_Test_Left_executed = false;
             if(BALL == LEFT)
             {
-                ANSNA_Cycles(10);
+                ANSNA_Cycles(100);
                 ANSNA_AddInputBelief(Encode_Term("good_boy"));
                 printf("good\n");
                 score++;
@@ -307,12 +307,12 @@ void ANSNA_Follow_Test()
         {
             BALL = rand() % 2;
         }
-        ANSNA_Cycles(10);
+        ANSNA_Cycles(100);
         ANSNA_AddInputGoal(Encode_Term("good_boy"));
-        ANSNA_Cycles(10);
+        ANSNA_Cycles(100);
         printf("Score %i\n", score);
         assert(score > -20, "too bad");
-        if(score >= 40)
+        if(score >= 400)
             break;
     }
     printf("<<ANSNA Follow test successful\n");
@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
     PriorityQueue_Test();
     Table_Test();
     //ANSNA_Alphabet_Test();
-    ANSNA_Procedure_Test();
+    //ANSNA_Procedure_Test();
     ANSNA_Follow_Test();
     Memory_Test();
     printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
