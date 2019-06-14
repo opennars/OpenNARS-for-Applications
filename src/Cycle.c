@@ -61,7 +61,7 @@ void ProcessEvent(Event *e, long currentTime)
 }
 
 void Cycle_Perform(long currentTime)
-{
+{    
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -72,6 +72,7 @@ void Cycle_Perform(long currentTime)
             //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
             for(int k=0; k<belief_events.itemsAmount; k++)
             {
+                
                 Event *postcondition = FIFO_GetKthNewestElement(&belief_events, k);     //todo: get something better involving derived events           
                 int k2 = k+1;                                                         //to fill in gaps in observations with abduction and also
                 if(k2 >= belief_events.itemsAmount || postcondition->operationID != 0) //to support sequences, use "standard ANSNA approach"
@@ -95,6 +96,10 @@ void Cycle_Perform(long currentTime)
                         break;
                     }
                 }
+                if(operationID == 0)
+                {
+                    break; //mining only (&/,a,op()) =/> b for now!
+                }
                 int preconditionConceptIndex;
                 int postconditionConceptIndex;
                 if(Memory_getClosestConcept(&precondition->sdr,  precondition->sdr_hash,  &preconditionConceptIndex) &&
@@ -102,10 +107,6 @@ void Cycle_Perform(long currentTime)
                 {
                     Concept *preconditionConcept = concepts.items[preconditionConceptIndex].address;
                     Concept *postConditionConcept = concepts.items[postconditionConceptIndex].address;
-                    if(operationID == 0)
-                    {
-                        break; //mining only (&/,a,op()) =/> b for now!
-                    }
                     RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime);
                 }
                 break; //not yet generalized, we just mine consequent ones so far not overlapping etc. ones

@@ -11,7 +11,7 @@
 //Parameters//
 //----------//
 //confidence needed for executions
-#define DECISION_THRESHOLD 0.5
+#define DECISION_THRESHOLD 0.8
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE 0.1
 
@@ -19,8 +19,7 @@
 //--------------//
 typedef struct
 {
-    bool matched;
-    bool executed;
+    bool execute;
     int operationID;
     Operation op;
 }Decision;
@@ -28,6 +27,6 @@ typedef struct
 //Methods//
 //-------//
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(Event *goal, long currentTime);
-
+void Decision_Making(Event *goal, long currentTime);
+Decision MotorBabbling();
 #endif

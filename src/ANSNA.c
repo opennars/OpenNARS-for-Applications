@@ -37,12 +37,14 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
     }
     Memory_addEvent(&ev);
     IN_OUTPUT( printf("INPUT EVENT"); Event_Print(&ev); )
+    ANSNA_Cycles(1);
     return ev;
 }
 
 Event ANSNA_AddInputBelief(SDR sdr)
 {
-    return ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    return ret;
 }
 
 Event ANSNA_AddInputGoal(SDR sdr)

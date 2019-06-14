@@ -8,8 +8,10 @@ void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int opera
     {
         if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
         {
+            //exit(0);
             //printf("BREAKPP %d\n", operationID); exit(0); //++
             Implication precondition_implication =   b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, false) : Inference_BeliefInduction(b, a, false);
+            printf("induction conf: %f\n",precondition_implication.truth.confidence);
             Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
             if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
             {
@@ -18,6 +20,7 @@ void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int opera
                 IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
                 Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication);
                 IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
+                //exit(0); //++
             }
             Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
             sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);

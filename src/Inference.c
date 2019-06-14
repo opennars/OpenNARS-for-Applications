@@ -23,7 +23,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
     return  (Implication) { .sdr = postcondition ? b->sdr : a->sdr, 
-                            .truth = Truth_Induction(truthA, truthB),
+                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                             .stamp = conclusionStamp,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }

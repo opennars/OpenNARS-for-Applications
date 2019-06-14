@@ -6,10 +6,7 @@ void InjectActionEvent(Decision *decision)
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1]; //TODO put into InjectActionEvent
     (*decision->op.action)();
-    decision->executed = true;
-    decision->matched = true;
-    Operation op = operations[decision->operationID];
-    ANSNA_AddInputBelief(op.sdr);
+    ANSNA_AddInputBelief(decision->op.sdr);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -19,12 +16,12 @@ Decision MotorBabbling()
     int n_ops = 0;
     for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
     {
-        n_ops = i;
+        n_ops = i+1;
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(rand() % (n_ops+1));
-        InjectActionEvent(&decision); //end TODO
+        decision.operationID = 1+(rand() % (n_ops));
+        decision.execute = true;
     }
     return decision;
 }
@@ -69,22 +66,21 @@ Decision RealizeGoal(Event *goal, long currentTime)
         printf("ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         InjectActionEvent(&decision); //end TODO */
     }
+    decision.execute = true;
     return decision;
 }
 
-bool Decision_Making(Event *goal, long currentTime)
+void Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
     decision = RealizeGoal(goal, currentTime);
     //if no operation matched, try motor babbling with a certain chance
-    if(!decision.matched && !decision.executed && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(!decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
     {
         decision = MotorBabbling();
-        printf("ANSNA motor babbling\n");
     }
-    if(decision.executed)
+    if(decision.execute)
     {
         InjectActionEvent(&decision);
     }
-    return decision.matched;
 }
