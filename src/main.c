@@ -198,14 +198,14 @@ void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
     printf(">>ANSNA Alphabet test start\n");
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, "a");
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, c);
         }
         ANSNA_Cycles(1);
         printf("TICK\n");
@@ -224,19 +224,19 @@ void ANSNA_Procedure_Test()
     ANSNA_INIT();
     printf(">>ANSNA Procedure test start\n");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), "a");
     ANSNA_Cycles(10);
     printf("---------------\n"); //++
-    ANSNA_AddInputBelief(Encode_Term("op"));
+    ANSNA_AddInputBelief(Encode_Term("op"), "op");
     ANSNA_Cycles(10);
     printf("---------------\n"); //++
-    ANSNA_AddInputBelief(Encode_Term("result"));
+    ANSNA_AddInputBelief(Encode_Term("result"), "result");
     ANSNA_Cycles(10);
     printf("---------------\n"); //++
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), "a");
     ANSNA_Cycles(10);
     printf("---------------\n"); //++
-    ANSNA_AddInputGoal(Encode_Term("result"));
+    ANSNA_AddInputGoal(Encode_Term("result"), "result");
     ANSNA_Cycles(10);
     printf("---------------\n"); //++
     assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
@@ -269,43 +269,43 @@ void ANSNA_Follow_Test()
     int score = 0;
     for(int i=0;i<simsteps; i++)
     {
-        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"));
-        ANSNA_AddInputGoal(Encode_Term("good_ansna"));
+        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), BALL == LEFT ? "ball_left" : "ball_right");
+        ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna");
         if(ANSNA_Follow_Test_Right_executed)
         {
-            ANSNA_Follow_Test_Right_executed = false;
             if(BALL == RIGHT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
                 printf("(ball=%d) good\n",BALL);
                 score++;
             }
             else
             {
-                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
             }
+            ANSNA_Follow_Test_Right_executed = false;
         }
         if(ANSNA_Follow_Test_Left_executed)
         {        
-            ANSNA_Follow_Test_Left_executed = false;
             if(BALL == LEFT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
                 printf("(ball=%d) good\n",BALL);
                 score++;
             }
             else
             {
-                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
             }
+            ANSNA_Follow_Test_Left_executed = false;
         }
         if(i%5 == 0)
         {
-            BALL = rand() % 50;
+            BALL = rand() % 2;
         }
         printf("Score %i step%d=\n", score,i);
         ANSNA_Cycles(1000);
@@ -343,21 +343,21 @@ void ANSNA_Pong()
     int batWidth = 4; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
-    ANSNA_AddInputBelief(Encode_Term("good_boy"));
-    ANSNA_AddInputBelief(Encode_Term("ball_right"));
-    ANSNA_AddInputBelief(Encode_Term("ball_left"));
+    ANSNA_AddInputBelief(Encode_Term("good_boy"),"good_boy");
+    ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right");
+    ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left");
     while(1)
     {
         printf("\033[1;1H\033[2J"); //POSIX clear screen
         if(batX < ballX)
         {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right")));
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
         }
         if(ballX < batX)
         {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left")));
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
         }
-        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna")));
+        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
         printf("\n");
         if(ballX <= 0)
         {
@@ -416,12 +416,12 @@ void ANSNA_Pong()
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_ansna")));
+                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna"));
                 printf("good\n");
             }
             else
             {
-                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("bad\n");
             }
             ballY = szY/2+rand()%(szY/2);

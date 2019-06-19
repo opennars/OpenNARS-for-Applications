@@ -26,7 +26,7 @@ void Event_INIT()
 
 void Event_Print(Event *event)
 {
-    printf("Event:\n");
+    printf("Event: %s\n", event->debug);
     Attention_Print(&event->attention);
     SDR_PrintWhereTrue(&event->sdr);
     //printf("SDR hash=%d", event->sdr_hash);

@@ -20,9 +20,10 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
+Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);
+    ev.debug = debug;
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         if(operations[i].action == 0)
@@ -41,15 +42,15 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
     return ev;
 }
 
-Event ANSNA_AddInputBelief(SDR sdr)
+Event ANSNA_AddInputBelief(SDR sdr, char *debug)
 {
-    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, debug);
     return ret;
 }
 
-Event ANSNA_AddInputGoal(SDR sdr)
+Event ANSNA_AddInputGoal(SDR sdr, char *debug)
 {
-    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH);
+    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH, debug);
 }
 
 void ANSNA_AddOperation(SDR sdr, Action procedure)

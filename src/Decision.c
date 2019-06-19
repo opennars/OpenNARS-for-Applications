@@ -6,7 +6,7 @@ void InjectActionEvent(Decision *decision)
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1]; //TODO put into InjectActionEvent
     (*decision->op.action)();
-    ANSNA_AddInputBelief(decision->op.sdr);
+    ANSNA_AddInputBelief(decision->op.sdr, "SomeOpID");
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -64,9 +64,8 @@ Decision RealizeGoal(Event *goal, long currentTime)
             return decision;
         }
         printf("ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
-        InjectActionEvent(&decision); //end TODO */
+        decision.execute = true;
     }
-    decision.execute = true;
     return decision;
 }
 

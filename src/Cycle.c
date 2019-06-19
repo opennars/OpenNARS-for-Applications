@@ -95,7 +95,7 @@ void Cycle_Perform(long currentTime)
                     {
                         break;
                     }
-                }
+                }                
                 if(operationID == 0)
                 {
                     break; //mining only (&/,a,op()) =/> b for now!
@@ -107,7 +107,13 @@ void Cycle_Perform(long currentTime)
                 {
                     Concept *preconditionConcept = concepts.items[preconditionConceptIndex].address;
                     Concept *postConditionConcept = concepts.items[postconditionConceptIndex].address;
-                    RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime);
+                    if(preconditionConcept != postConditionConcept)
+                    {
+                        if(RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime))
+                        {
+                            printf(" mined: <(&/,%s,%d) =/> %s>.\n", precondition->debug, operationID, postcondition->debug);
+                        }
+                    }
                 }
                 break; //not yet generalized, we just mine consequent ones so far not overlapping etc. ones
             }
