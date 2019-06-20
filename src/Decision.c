@@ -71,8 +71,8 @@ Decision RealizeGoal(Event *goal, long currentTime)
         }
         printf("%s %f,%f",debugImp.debug, debugImp.truth.frequency, debugImp.truth.confidence); //++
         printf("\n"); //++
-        printf("SELECTED PRECON: %s\n", precon_c->debug);
-        printf(debugImp.debug);
+        printf("SELECTED PRECON: %s\n", precon_c->debug); //++
+        printf(debugImp.debug); //++
         printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         decision.execute = true;
     }
