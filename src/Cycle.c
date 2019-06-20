@@ -109,10 +109,7 @@ void Cycle_Perform(long currentTime)
                     Concept *postConditionConcept = concepts.items[postconditionConceptIndex].address;
                     if(preconditionConcept != postConditionConcept)
                     {
-                        if(RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime))
-                        {
-                            printf(" mined: <(&/,%s,%d) =/> %s>.\n", precondition->debug, operationID, postcondition->debug);
-                        }
+                        RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime);
                     }
                 }
                 break; //not yet generalized, we just mine consequent ones so far not overlapping etc. ones

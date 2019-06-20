@@ -13,7 +13,7 @@
 //confidence needed for executions
 #define DECISION_THRESHOLD 0.8
 //motor babbling chance
-#define MOTOR_BABBLING_CHANCE 0.1
+#define MOTOR_BABBLING_CHANCE 0.3
 
 //Data structure//
 //--------------//

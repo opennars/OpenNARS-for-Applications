@@ -50,10 +50,15 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     Implication B = *b;
     //symmetric case of https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     B.truth = Truth_Analogy(SDR_Similarity(&b->sdr, &a->sdr), b->truth);
-    return (Implication) { .sdr = a->sdr,
+    Implication ret = (Implication) { .sdr = a->sdr,
                            .truth = Truth_Projection(Truth_Revision(a->truth, B.truth), a->occurrenceTimeOffset, B.occurrenceTimeOffset),
                            .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + B.occurrenceTimeOffset)/2.0 };
+                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + B.occurrenceTimeOffset)/2.0};
+    for(int i=0;i<50;i++) //++ DEBUG
+    { //++ DEBUG
+        ret.debug[i]=a->debug[i]; //++ DEBUG
+    } //++ DEBUG
+    return ret;
 }
 
 //{Event a., Implication <a =/> b>.} |- Event b.

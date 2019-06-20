@@ -303,12 +303,15 @@ void ANSNA_Follow_Test()
             }
             ANSNA_Follow_Test_Left_executed = false;
         }
-        if(i%5 == 0)
+        ANSNA_Cycles(1000);
+        
+        //if(i%1 == 0)
         {
             BALL = rand() % 2;
+            printf("%d\n\n",BALL);
         }
         printf("Score %i step%d=\n", score,i);
-        ANSNA_Cycles(1000);
+        
         assert(score > -2000, "too bad");
         if(score >= 10000)
             break;

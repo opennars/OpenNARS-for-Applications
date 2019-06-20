@@ -34,6 +34,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
     {
         Concept *postcon_c = concepts.items[closest_postcon_concept_i].address;
         double bestTruthExpectation = 0;
+        Implication debugImp = {0};
         for(int i=1; i<OPERATIONS_MAX; i++)
         {
             if(operations[i-1].action == 0)
@@ -53,6 +54,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                     double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, result.projectedEvent.truth)); //op()!
                     if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
+                        debugImp = imp;
                         decision.operationID = i;
                         bestTruthExpectation = operationGoalTruthExpectation;
                     }
@@ -63,7 +65,8 @@ Decision RealizeGoal(Event *goal, long currentTime)
         {
             return decision;
         }
-        printf("ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
+        printf(debugImp.debug);
+        printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         decision.execute = true;
     }
     return decision;
