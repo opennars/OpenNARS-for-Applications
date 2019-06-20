@@ -5,7 +5,7 @@ void Table_Add(Table *table, Implication *imp)
     double impTruthExp = Truth_Expectation(imp->truth);
     for(int i=0; i<TABLE_SIZE; i++)
     {
-        if(i==table->itemsAmount || impTruthExp > Truth_Expectation(table->array[i].truth))
+        if(i==table->itemsAmount || impTruthExp > Truth_Expectation(table->array[i].truth) || table->array[i].deleted)
         {
             //ok here it has to go, move down the rest, evicting the last element if we hit TABLE_SIZE-1.
             for(int j=MIN(table->itemsAmount, TABLE_SIZE-1); j>i; j--)
@@ -19,7 +19,7 @@ void Table_Add(Table *table, Implication *imp)
     }
 }
 
-Implication Table_AddAndRevise(Table *table, Implication *imp)
+Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
 {
     Implication RetRevised = (Implication) {0};
     //1. get closest item in the table
@@ -38,16 +38,24 @@ Implication Table_AddAndRevise(Table *table, Implication *imp)
     if(best_i != -1)
     {
         Implication* closest = &table->array[best_i];
+        //closest->deleted = true; //will be able to be overwridden 
         Implication revised = Inference_ImplicationRevision(closest, imp);
+        strcpy(revised.debug, debug);
         Implication_SetSDR(&revised, imp->sdr); //update sdr hash
         if(revised.truth.confidence > closest->truth.confidence)
         {
+            //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence); //++
+            //exit(0); //++
             Table_Add(table, &revised);
             RetRevised = revised;
         }
     }
-    //3. add imp too:
-    Table_Add(table, imp);
+    else //only if not revised for now
+    {
+        //3. add imp too:
+        strcpy(imp->debug, debug); //not anymore
+        Table_Add(table, imp);     //for now
+    }
     return RetRevised;
 }
 

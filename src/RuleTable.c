@@ -14,16 +14,19 @@ void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int opera
             Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
             if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
             {
+                char debug[50];
+                sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
+                sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
+                //printf(debug); //++
+                //printf("\n"); //++
+                
                 IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
-                Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
+                Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
                 IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
-                Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication);
+                Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
                 IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
                 
-                sprintf(revised_precon.debug, "mined: <(&/,%s,%d) =/> %s>. %.2f,%.2f\n",a->debug, operationID, b->debug, precondition_implication.truth.frequency, precondition_implication.truth.confidence); //++
-                sprintf(revised_postcon.debug, "mined: <(&/,%s,%d) =/> %s>. truth: %.2f,%.2f\n",a->debug, operationID, b->debug, precondition_implication.truth.frequency, precondition_implication.truth.confidence); //++
-                printf(revised_precon.debug); //++
-                printf("\n"); //++
+                
                 //exit(0); //++
             }
             Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);

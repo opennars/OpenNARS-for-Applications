@@ -32,7 +32,7 @@ typedef struct {
     Table postcondition_beliefs[OPERATIONS_MAX];
     //For concept interpolation:
     double sdr_bit_counter[SDR_SIZE];
-    char *debug;
+    char debug[50];
 } Concept;
 
 //Methods//

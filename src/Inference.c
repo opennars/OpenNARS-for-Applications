@@ -54,10 +54,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .truth = Truth_Projection(Truth_Revision(a->truth, B.truth), a->occurrenceTimeOffset, B.occurrenceTimeOffset),
                            .stamp = conclusionStamp, 
                            .occurrenceTimeOffset = (a->occurrenceTimeOffset + B.occurrenceTimeOffset)/2.0};
-    for(int i=0;i<50;i++) //++ DEBUG
-    { //++ DEBUG
-        ret.debug[i]=a->debug[i]; //++ DEBUG
-    } //++ DEBUG
+    strcpy(ret.debug, a->debug);
     return ret;
 }
 

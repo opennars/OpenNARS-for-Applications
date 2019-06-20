@@ -9,6 +9,7 @@ Event derivations[MAX_DERIVATIONS];
 Event localInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
+    strcpy(c->debug, e->debug);
     Event eMatch = *e;
     eMatch.sdr = c->sdr;
     eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);

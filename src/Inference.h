@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "Event.h"
 #include "Implication.h"
+#include <string.h>
 
 //Parameters//
 //----------//

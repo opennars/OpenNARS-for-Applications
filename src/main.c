@@ -142,7 +142,7 @@ void Table_Test()
                                       .stamp = (Stamp) { .evidentalBase = {TABLE_SIZE*2+1} },
                                       .occurrenceTimeOffset = 10 };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
-    Table_AddAndRevise(&table, &imp);
+    Table_AddAndRevise(&table, &imp, "");
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
     printf("<<Table test successful\n");
 }
@@ -269,6 +269,7 @@ void ANSNA_Follow_Test()
     int score = 0;
     for(int i=0;i<simsteps; i++)
     {
+        printf(BALL == LEFT ? "LEFT\n" : "RIGHT\n");
         ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), BALL == LEFT ? "ball_left" : "ball_right");
         ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna");
         if(ANSNA_Follow_Test_Right_executed)
@@ -308,7 +309,7 @@ void ANSNA_Follow_Test()
         //if(i%1 == 0)
         {
             BALL = rand() % 2;
-            printf("%d\n\n",BALL);
+            //printf(BALL == 0 ? "LEFT\n" : "RIGHT\n");
         }
         printf("Score %i step%d=\n", score,i);
         
@@ -461,9 +462,9 @@ int main(int argc, char *argv[])
     Stamp_Test();
     FIFO_Test();
     PriorityQueue_Test();
-    Table_Test();
-    ANSNA_Alphabet_Test();
-    ANSNA_Procedure_Test();
+    //Table_Test();
+    //ANSNA_Alphabet_Test();
+    //ANSNA_Procedure_Test();
     ANSNA_Follow_Test();
     Memory_Test();
     printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
