@@ -21,7 +21,7 @@ Event localInference(Concept *c, int closest_concept_i, Event *e, long currentTi
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
         //add event to the FIFO of the concept
         FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
-        FIFO_AddAndRevise(&eMatch, fifo);
+        FIFO_Add(&eMatch, fifo); //TODO: Add and revise
         //activate concepts attention with the event's attention
         c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
         PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
@@ -78,7 +78,7 @@ void Cycle_Perform(long currentTime)
                 int k2 = k+1;                                                         //to fill in gaps in observations with abduction and also
                 if(k2 >= belief_events.itemsAmount || postcondition->operationID != 0) //to support sequences, use "standard ANSNA approach"
                 {
-                    break;
+                    continue;
                 }
                 Event *precondition = FIFO_GetKthNewestElement(&belief_events, k2);
                 int operationID = 0;
@@ -86,7 +86,7 @@ void Cycle_Perform(long currentTime)
                 if(precondition->operationID != 0)
                 {
                     int k3 = k+2;
-                    if(k3>=belief_events.itemsAmount)
+                    if(k3 >= belief_events.itemsAmount)
                     {
                         break;
                     }

@@ -267,6 +267,8 @@ void ANSNA_Follow_Test()
     int RIGHT = 1;
     int BALL = RIGHT;
     int score = 0;
+    int goods = 0;
+    int bads = 0;
     for(int i=0;i<simsteps; i++)
     {
         printf(BALL == LEFT ? "LEFT\n" : "RIGHT\n");
@@ -295,12 +297,14 @@ void ANSNA_Follow_Test()
                 ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
                 printf("(ball=%d) good\n",BALL);
                 score++;
+                goods++;
             }
             else
             {
                 //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
+                bads++;
             }
             ANSNA_Follow_Test_Left_executed = false;
         }
@@ -317,7 +321,7 @@ void ANSNA_Follow_Test()
         if(score >= 10000)
             break;
     }
-    printf("<<ANSNA Follow test successful\n");
+    printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);
 }
 
 bool ANSNA_Pong_Left_executed = false;

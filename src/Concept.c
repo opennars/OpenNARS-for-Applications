@@ -25,7 +25,7 @@ void Concept_Print(Concept *concept)
 
 void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth)
 {
-    double u = Truth_Expectation(matchTruth);
+    /*double u = Truth_Expectation(matchTruth);
     int k = 0;
     ITERATE_SDR_BITS(i,j,
         double oldValue = concept->sdr_bit_counter[k];
@@ -42,5 +42,5 @@ void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth)
             SDR_WriteBit(&concept->sdr,k,0);
         }
         k++;
-    )
+    )*/
 }
