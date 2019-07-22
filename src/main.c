@@ -439,13 +439,13 @@ void ANSNA_Pong()
         {
             ANSNA_Pong_Left_executed = false;
             printf("Exec: op_left\n");
-            batVX = -1;
+            batVX = -2;
         }
         if(ANSNA_Pong_Right_executed)
         {
             ANSNA_Pong_Right_executed = false;
             printf("Exec: op_right\n");
-            batVX = 1;
+            batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
         nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep

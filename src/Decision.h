@@ -11,7 +11,7 @@
 //Parameters//
 //----------//
 //confidence needed for executions
-#define DECISION_THRESHOLD 0.6
+#define DECISION_THRESHOLD 0.51
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE 0.1
 
