@@ -1,4 +1,4 @@
-#ifndef RULETABLE_H
+ #ifndef RULETABLE_H
 #define RULETABLE_H
 
 //References//
@@ -29,7 +29,7 @@ extern int eventsDerived;
 //Methods//
 //-------//
 //Event b getting processed in foreign concept A (B is only used as ref for adding pre-conditions)
-void RuleTable_Composition(Concept *A, Concept *B, Event *a, Event *b, int operationID, long currentTime);
+void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID);
 //Concept e getting processed in its native concept c
 //void RuleTable_Decomposition(Concept *c, Event *e, long currentTime);
 

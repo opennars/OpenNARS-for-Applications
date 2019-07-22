@@ -61,22 +61,6 @@ void ProcessEvent(Event *e, long currentTime)
     }
 }
 
-void Induce(long currentTime, Event *precondition, Event *postcondition, int operationID)
-{
-    int preconditionConceptIndex;
-    int postconditionConceptIndex;
-    if(Memory_getClosestConcept(&precondition->sdr,  precondition->sdr_hash,  &preconditionConceptIndex) &&
-       Memory_getClosestConcept(&postcondition->sdr, postcondition->sdr_hash, &postconditionConceptIndex))
-    {
-        Concept *preconditionConcept = concepts.items[preconditionConceptIndex].address;
-        Concept *postConditionConcept = concepts.items[postconditionConceptIndex].address;
-        if(preconditionConcept != postConditionConcept)
-        {
-            RuleTable_Composition(preconditionConcept, postConditionConcept, precondition, postcondition, operationID, currentTime);
-        }
-    }
-}
-
 void Cycle_Perform(long currentTime)
 {    
     //1. process newest event
@@ -103,13 +87,13 @@ void Cycle_Perform(long currentTime)
                         precondition = FIFO_GetKthNewestElement(&belief_events, j);
                         if(precondition->operationID == 0)
                         {
-                            Induce(currentTime, precondition, postcondition, operationID);
+                            RuleTable_Composition(currentTime, precondition, postcondition, operationID);
                         }
                     }
                 }
                 else
                 {
-                    Induce(currentTime, precondition, postcondition, operationID);
+                    RuleTable_Composition(currentTime, precondition, postcondition, operationID);
                 }
             }
         }
