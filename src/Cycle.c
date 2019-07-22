@@ -63,6 +63,17 @@ void ProcessEvent(Event *e, long currentTime)
 
 void Cycle_Perform(long currentTime)
 {    
+    IN_DEBUG
+    (
+        for(int i=0; i<belief_events.itemsAmount; i++)
+        {
+            Event *ev = FIFO_GetKthNewestElement(&belief_events, i);
+            printf(ev->debug);
+            printf("\n");
+        }
+        printf("items amount: %d",belief_events.itemsAmount);
+        getchar();
+    )
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {

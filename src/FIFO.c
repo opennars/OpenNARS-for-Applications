@@ -24,7 +24,7 @@ void FIFO_Add(Event *event, FIFO *fifo)
 {
     fifo->array[fifo->currentIndex] = *event;
     fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
-    fifo->itemsAmount = MIN(fifo->currentIndex + 1, FIFO_SIZE);
+    fifo->itemsAmount = MIN(fifo->itemsAmount + 1, FIFO_SIZE);
 }
 
 FIFO_Query_Result FIFO_GetHighestConfidentProjectedTo(FIFO *fifo, long occurrenceTime, SDR *referenceSdr)

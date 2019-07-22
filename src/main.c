@@ -74,6 +74,12 @@ void FIFO_Test()
     assert(fifo.array[FIFO_SIZE-i].stamp.evidentalBase[0] == i && fifo.array[FIFO_SIZE-i].stamp.evidentalBase[1] == newbase, "FIFO should have deleted the entry");
     printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
     assert(ret.truth.confidence > 0.9, "confidence of revision result should be higher than premise's");
+    FIFO fifo2 = {0};
+    for(int i=0; i<FIFO_SIZE*2; i++)
+    {
+        FIFO_Add(&event2, &fifo2);
+    }
+    assert(fifo2.itemsAmount == FIFO_SIZE, "FIFO size differs");
     printf("<<FIFO Test successful\n");
 }
 
@@ -157,7 +163,7 @@ void Memory_Test()
                                1337);
     e.attention.priority = 0.9;
     Memory_addEvent(&e);
-    assert(belief_events.array[0].truth.confidence == 0.9,"event has to be there"); //identify
+    assert(belief_events.array[0].truth.confidence == 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Concept *c = Memory_Conceptualize(&e.sdr, e.attention);
@@ -281,12 +287,14 @@ void ANSNA_Follow_Test()
                 ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
                 printf("(ball=%d) good\n",BALL);
                 score++;
+                goods++;
             }
             else
             {
                 //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
+                bads++;
             }
             ANSNA_Follow_Test_Right_executed = false;
         }
@@ -308,17 +316,10 @@ void ANSNA_Follow_Test()
             }
             ANSNA_Follow_Test_Left_executed = false;
         }
-        ANSNA_Cycles(1000);
-        
-        //if(i%1 == 0)
-        {
-            BALL = rand() % 2;
-            //printf(BALL == 0 ? "LEFT\n" : "RIGHT\n");
-        }
+        BALL = rand() % 2;
         printf("Score %i step%d=\n", score,i);
-        
-        assert(score > -2000, "too bad");
-        if(score >= 10000)
+        assert(score > -100, "too bad");
+        if(score >= 500)
             break;
     }
     printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);

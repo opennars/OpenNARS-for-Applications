@@ -59,28 +59,31 @@ Decision RealizeGoal(Event *goal, long currentTime)
                 {
                     Concept * current_precon_c = concepts.items[closest_precon_concept_i].address;
                     Event * precondition = FIFO_GetNewestElement(&current_precon_c->event_beliefs); //a. :|:
-                    Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
-                    double operationGoalTruthExpectation = precondition->truth.confidence * ContextualOperation.truth.confidence; //Truth_Expectation(Truth_Deduction(ContextualOperation.truth, precondition->truth)); //op()! //TODO project to now
-                    //if(operationGoalTruthExpectation > bestTruthExpectation)
-                    if(precondition->occurrenceTime > newestOccurrenceTime)
+                    if(precondition != NULL)
                     {
-                        IN_DEBUG (
-                            printf("CONSIDERED PRECON: %s\n", current_precon_c->debug);
-                            printf("CONSIDERED PRECON truth ");
-                            Truth_Print(&precondition->truth);
-                            printf("CONSIDERED goal truth ");
-                            Truth_Print(&goal->truth);
-                            printf("CONSIDERED imp truth ");
-                            Truth_Print(&imp.truth);
-                            printf("CONSIDERED time %d\n", (int)precondition->occurrenceTime);
-                            SDR_PrintWhereTrue(&current_precon_c->sdr);
-                            SDR_PrintWhereTrue(&precondition->sdr);
-                        )
-                        newestOccurrenceTime = precondition->occurrenceTime;
-                        precon_concept = current_precon_c;
-                        debugImp = imp;
-                        decision.operationID = i;
-                        bestTruthExpectation = operationGoalTruthExpectation;
+                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
+                        double operationGoalTruthExpectation = precondition->truth.confidence * ContextualOperation.truth.confidence; //Truth_Expectation(Truth_Deduction(ContextualOperation.truth, precondition->truth)); //op()! //TODO project to now
+                        //if(operationGoalTruthExpectation > bestTruthExpectation)
+                        if(precondition->occurrenceTime > newestOccurrenceTime)
+                        {
+                            IN_DEBUG (
+                                printf("CONSIDERED PRECON: %s\n", current_precon_c->debug);
+                                printf("CONSIDERED PRECON truth ");
+                                Truth_Print(&precondition->truth);
+                                printf("CONSIDERED goal truth ");
+                                Truth_Print(&goal->truth);
+                                printf("CONSIDERED imp truth ");
+                                Truth_Print(&imp.truth);
+                                printf("CONSIDERED time %d\n", (int)precondition->occurrenceTime);
+                                SDR_PrintWhereTrue(&current_precon_c->sdr);
+                                SDR_PrintWhereTrue(&precondition->sdr);
+                            )
+                            newestOccurrenceTime = precondition->occurrenceTime;
+                            precon_concept = current_precon_c;
+                            debugImp = imp;
+                            decision.operationID = i;
+                            bestTruthExpectation = operationGoalTruthExpectation;
+                        }
                     }
                 }
             }

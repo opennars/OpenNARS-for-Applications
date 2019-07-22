@@ -13,7 +13,7 @@
 
 //Parameters//
 //----------//
-#define FIFO_SIZE 5
+#define FIFO_SIZE 20
 
 //Data structure//
 //--------------//
