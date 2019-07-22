@@ -18,7 +18,7 @@
 
 //Parameters//
 //----------//
-#define ASSUMPTION_OF_FAILURE_CONFIDENCE 0.05
+#define ASSUMPTION_OF_FAILURE_CONFIDENCE 0.01
 
 //Methods//
 //-------//
@@ -39,7 +39,5 @@ Event Inference_GoalDeduction(Event *component, Implication *compound);
 Event Inference_BeliefAbduction(Event *component, Implication *compound);
 //{Event task a!, Implication <a =/> b>.} |- Event b!
 Event Inference_GoalAbduction(Event *component, Implication *compound);
-//When an implication is used for Inference_BeliefDeduction, it receives a little bit of negative evidence
-Implication Inference_AssumptionOfFailure(Implication *compound);
 
 #endif

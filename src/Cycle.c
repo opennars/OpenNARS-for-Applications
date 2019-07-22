@@ -8,6 +8,18 @@ Event derivations[MAX_DERIVATIONS];
 //doing inference within the matched concept, returning the matched event
 Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
+    if(c->deadline > 0)
+    {
+        if(currentTime > c->deadline)
+        {
+            Table_AddAndRevise(c->precondition_beliefs, &c->negConfirmation, c->negConfirmation.debug);
+            c->deadline = 0;
+        } 
+        else
+        {
+            c->deadline = 0;
+        }
+    }
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     strcpy(c->debug, e->debug);
     Event eMatch = *e;
@@ -29,7 +41,7 @@ Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTi
     return eMatch;
 }
 
-void ProcessEvent(Event *e, long currentTime)
+Event ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
@@ -37,11 +49,12 @@ void ProcessEvent(Event *e, long currentTime)
     //determine the concept it is related to
     int closest_concept_i;
     Concept *c = NULL;
+    Event eMatch = {0};
     if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
         //perform concept-related inference
-        LocalInference(c, closest_concept_i, e, currentTime);
+        eMatch = LocalInference(c, closest_concept_i, e, currentTime);
     }
     if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
     {   
@@ -59,6 +72,7 @@ void ProcessEvent(Event *e, long currentTime)
             FIFO_COPY(&c->event_goals, &eNativeConcept->event_goals);
         }
     }
+    return eMatch;
 }
 
 void Cycle_Perform(long currentTime)
@@ -77,12 +91,13 @@ void Cycle_Perform(long currentTime)
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
-        Event *postcondition = FIFO_GetNewestElement(&belief_events);
-        if(!postcondition->processed)
+        Event *toProcess = FIFO_GetNewestElement(&belief_events);
+        if(!toProcess->processed)
         {
-            ProcessEvent(postcondition, currentTime);
+            //the matched event becomes the postcondition
+            Event postcondition = ProcessEvent(toProcess, currentTime);
             //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:     
-            if(postcondition->operationID != 0)
+            if(postcondition.operationID != 0)
             {
                 return;
             }
@@ -98,13 +113,13 @@ void Cycle_Perform(long currentTime)
                         precondition = FIFO_GetKthNewestElement(&belief_events, j);
                         if(precondition->operationID == 0)
                         {
-                            RuleTable_Composition(currentTime, precondition, postcondition, operationID);
+                            RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
                         }
                     }
                 }
                 else
                 {
-                    RuleTable_Composition(currentTime, precondition, postcondition, operationID);
+                    RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
                 }
             }
         }

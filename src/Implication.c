@@ -15,3 +15,10 @@ void Implication_Print(Implication *implication)
     Stamp_print(&implication->stamp);
     printf("occurrenceTimeOffset=%ld\n\n", implication->occurrenceTimeOffset);
 }
+
+double Implication_Reliance(Implication *implication)
+{
+    double distance = (implication->occurrenceTimeOffset / (1.0f + implication->occurrenceTimeOffset));
+    double soonness = 1.0 - distance;
+    return soonness * Truth_Expectation(implication->truth);
+}

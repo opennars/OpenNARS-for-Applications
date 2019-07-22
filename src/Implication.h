@@ -14,7 +14,7 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long occurrenceTimeOffset;
-    bool deleted;
+    long variance;
     char debug[50]; //++ DEBUG
 } Implication;
 
@@ -23,6 +23,7 @@ typedef struct {
 //Assign a new name to an implication
 void Implication_SetSDR(Implication *implication, SDR sdr);
 void Implication_Print(Implication *implication);
+double Implication_Reliance(Implication *implication);
 
 #endif
 

@@ -11,9 +11,10 @@
 //Parameters//
 //----------//
 //confidence needed for executions
-#define DECISION_THRESHOLD 0.51
+#define DECISION_THRESHOLD 0.62
 //motor babbling chance
-#define MOTOR_BABBLING_CHANCE 0.1
+#define MOTOR_BABBLING_CHANCE 0.2
+#define ANTICIPATION_WINDOW 1.0
 
 //Data structure//
 //--------------//

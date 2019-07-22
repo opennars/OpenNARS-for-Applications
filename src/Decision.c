@@ -29,6 +29,7 @@ Decision MotorBabbling()
     return decision;
 }
 
+int stampID = -1;
 Decision RealizeGoal(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
@@ -37,9 +38,11 @@ Decision RealizeGoal(Event *goal, long currentTime)
     {
         Concept *postcon_c = concepts.items[closest_postcon_concept_i].address;
         double bestTruthExpectation = 0;
-        int newestOccurrenceTime = 0; //TODO remove
-        Implication debugImp = {0};
+        long newestOccurrenceTime = 0; //TODO remove
+        Implication bestImp = {0};
         Concept *precon_concept;
+        //int best_i;
+        //int best_j;
         for(int i=1; i<OPERATIONS_MAX; i++)
         {
             if(operations[i-1].action == 0)
@@ -49,7 +52,8 @@ Decision RealizeGoal(Event *goal, long currentTime)
             for(int j=0; j<postcon_c->precondition_beliefs[i].itemsAmount; j++)
             {
                 Implication imp = postcon_c->precondition_beliefs[i].array[j];
-                IN_DEBUG (
+                IN_DEBUG
+                (
                     printf("CONSIDERED IMPLICATION: %s\n", imp.debug);
                     SDR_PrintWhereTrue(&imp.sdr);
                 )
@@ -62,11 +66,12 @@ Decision RealizeGoal(Event *goal, long currentTime)
                     if(precondition != NULL)
                     {
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
-                        double operationGoalTruthExpectation = precondition->truth.confidence * ContextualOperation.truth.confidence; //Truth_Expectation(Truth_Deduction(ContextualOperation.truth, precondition->truth)); //op()! //TODO project to now
+                        double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, precondition->truth)); //op()! //TODO project to now
                         //if(operationGoalTruthExpectation > bestTruthExpectation)
                         if(precondition->occurrenceTime > newestOccurrenceTime)
                         {
-                            IN_DEBUG (
+                            IN_DEBUG
+                            (
                                 printf("CONSIDERED PRECON: %s\n", current_precon_c->debug);
                                 printf("CONSIDERED PRECON truth ");
                                 Truth_Print(&precondition->truth);
@@ -78,9 +83,11 @@ Decision RealizeGoal(Event *goal, long currentTime)
                                 SDR_PrintWhereTrue(&current_precon_c->sdr);
                                 SDR_PrintWhereTrue(&precondition->sdr);
                             )
+                            //best_i = i;
+                            //best_j = j;
                             newestOccurrenceTime = precondition->occurrenceTime;
                             precon_concept = current_precon_c;
-                            debugImp = imp;
+                            bestImp = imp;
                             decision.operationID = i;
                             bestTruthExpectation = operationGoalTruthExpectation;
                         }
@@ -88,16 +95,27 @@ Decision RealizeGoal(Event *goal, long currentTime)
                 }
             }
         }
+        printf("decision expectation %f\n", bestTruthExpectation);
         if(decision.operationID == 0 || bestTruthExpectation < DECISION_THRESHOLD)
         {
-            IN_OUTPUT( printf("below decision thres %f\n", bestTruthExpectation); )
             return decision;
         }
-        IN_DEBUG (
-            printf("%s %f,%f",debugImp.debug, debugImp.truth.frequency, debugImp.truth.confidence); //++
+        
+        //ANTICIPATON (neg. evidence numbers for now)
+        postcon_c->deadline = currentTime + bestImp.occurrenceTimeOffset + bestImp.variance * ANTICIPATION_WINDOW;
+        postcon_c->negConfirmation = bestImp;
+        postcon_c->negConfirmation.truth = (Truth) { .frequency = 0.0, .confidence = 0.9 };
+        postcon_c->negConfirmation.stamp = (Stamp) { .evidentalBase = {-stampID} };
+        stampID--;
+        //EMD anticipation
+        
+        //postcon_c->precondition_beliefs[best_i].array[best_j] = Inference_AssumptionOfFailure(&bestImp);
+        IN_DEBUG
+        (
+            printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence); //++
             printf("\n"); //++
             printf("SELECTED PRECON: %s\n", precon_concept->debug); //++
-            printf(debugImp.debug); //++
+            printf(bestImp.debug); //++
             printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;

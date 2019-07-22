@@ -22,6 +22,8 @@ typedef struct {
 //-------//
 //Add implication to table
 void Table_Add(Table *table, Implication *imp);
+//Remove implication from the table
+void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
 Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug);
 //Remove the highest truth expectation element, returning it

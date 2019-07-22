@@ -349,10 +349,10 @@ void ANSNA_Pong()
     int ballY = szY/5;
     int batX = 20;
     int batVX = 0;
-    int batWidth = 4; //"radius", batWidth from middle to the left and right
+    int batWidth = 3; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
-    ANSNA_AddInputBelief(Encode_Term("good_boy"),"good_boy");
+    ANSNA_AddInputBelief(Encode_Term("good_ansna"),"good_ansna");
     ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right");
     ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left");
     while(1)
