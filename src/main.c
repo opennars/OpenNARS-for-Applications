@@ -343,13 +343,13 @@ void ANSNA_Pong()
     printf(">>ANSNA Pong start\n");
     ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
     ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
-    int szX = 40;
+    int szX = 60;
     int szY = 20;
     int ballX = szX/2;
     int ballY = szY/5;
     int batX = 20;
     int batVX = 0;
-    int batWidth = 3; //"radius", batWidth from middle to the left and right
+    int batWidth = 2; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
     ANSNA_AddInputBelief(Encode_Term("good_ansna"),"good_ansna");
@@ -433,6 +433,9 @@ void ANSNA_Pong()
                 //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("bad\n");
             }
+        }
+        if(ballY == 0 || ballX == 0 || ballX >= szX-1)
+        {
             ballY = szY/2+rand()%(szY/2);
             ballX = rand()%szX;
         }

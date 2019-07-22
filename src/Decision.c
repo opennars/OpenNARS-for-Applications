@@ -66,8 +66,8 @@ Decision RealizeGoal(Event *goal, long currentTime)
                     if(precondition != NULL)
                     {
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
-                        double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, precondition->truth)); //op()! //TODO project to now
-                        //if(operationGoalTruthExpectation > bestTruthExpectation)
+                        ContextualOperation.truth = Truth_Projection(ContextualOperation.truth, ContextualOperation.occurrenceTime, currentTime);
+                        double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime))); //op()! //TODO project to now
                         if(precondition->occurrenceTime > newestOccurrenceTime)
                         {
                             IN_DEBUG
@@ -95,7 +95,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                 }
             }
         }
-        printf("decision expectation %f\n", bestTruthExpectation);
+        printf("decision expectation %f impTruth=(%f, %f)\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence);
         if(decision.operationID == 0 || bestTruthExpectation < DECISION_THRESHOLD)
         {
             return decision;

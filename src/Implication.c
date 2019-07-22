@@ -16,9 +16,8 @@ void Implication_Print(Implication *implication)
     printf("occurrenceTimeOffset=%ld\n\n", implication->occurrenceTimeOffset);
 }
 
-double Implication_Reliance(Implication *implication)
+double Implication_Currentness(Implication *implication)
 {
     double distance = (implication->occurrenceTimeOffset / (1.0f + implication->occurrenceTimeOffset));
-    double soonness = 1.0 - distance;
-    return soonness * Truth_Expectation(implication->truth);
+    return 1.0 - distance;
 }

@@ -12,12 +12,23 @@ Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTi
     {
         if(currentTime > c->deadline)
         {
+            //disappointed
             Table_AddAndRevise(c->precondition_beliefs, &c->negConfirmation, c->negConfirmation.debug);
             c->deadline = 0;
+            IN_DEBUG(
+                printf("DISAPPOINTED %s\n", c->debug);
+                getchar();
+            )
         } 
         else
+        if(e->type == EVENT_TYPE_BELIEF)
         {
+            //confirmed
             c->deadline = 0;
+            IN_DEBUG(
+                printf("CONFIRMED %s\n", c->debug);
+                getchar();
+            )
         }
     }
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value

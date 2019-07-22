@@ -23,7 +23,7 @@ typedef struct {
 //Assign a new name to an implication
 void Implication_SetSDR(Implication *implication, SDR sdr);
 void Implication_Print(Implication *implication);
-double Implication_Reliance(Implication *implication);
+double Implication_Currentness(Implication *implication);
 
 #endif
 
