@@ -29,8 +29,8 @@ void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID
                     IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
                     Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
                     IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
-                    Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
-                    IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
+                    //Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
+                    //IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
                 }
                 Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
                 sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);

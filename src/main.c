@@ -291,7 +291,7 @@ void ANSNA_Follow_Test()
             }
             else
             {
-                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
@@ -309,7 +309,7 @@ void ANSNA_Follow_Test()
             }
             else
             {
-                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;

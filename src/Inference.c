@@ -49,7 +49,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
                            .stamp = conclusionStamp, 
                            .occurrenceTimeOffset = (a->occurrenceTimeOffset + b->occurrenceTimeOffset)/2,
-                           .variance = MAX(a->variance, b->variance) };
+                           .variance = (a->variance + b->variance)/2 };
     strcpy(ret.debug, a->debug);
     return ret;
 }

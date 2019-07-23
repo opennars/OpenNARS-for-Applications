@@ -8,7 +8,7 @@ Event derivations[MAX_DERIVATIONS];
 //doing inference within the matched concept, returning the matched event
 Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
-    if(c->deadline > 0)
+    /*if(c->deadline > 0)
     {
         if(currentTime > c->deadline)
         {
@@ -30,7 +30,7 @@ Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTi
                 getchar();
             )
         }
-    }
+    }*/
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     strcpy(c->debug, e->debug);
     Event eMatch = *e;
