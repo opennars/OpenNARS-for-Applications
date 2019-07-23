@@ -157,7 +157,7 @@ Truth SDR_Match(SDR *part,SDR *full)
     )
     double E_total = countOneInBoth + generalCaseMisses1Bit;
     double f_total = ((double) countOneInBoth)/E_total; 
-    Truth truth = { .frequency = f_total, .confidence = w2c(E_total)};
+    Truth truth = { .frequency = f_total, .confidence = Truth_w2c(E_total)};
     return truth;
 }
 

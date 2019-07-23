@@ -21,7 +21,6 @@ void Memory_ResetConcepts()
     }   
 }
 
-
 void Memory_INIT()
 {
     Memory_ResetConcepts();

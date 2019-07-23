@@ -20,7 +20,7 @@ Attention Attention_forgetConcept(Attention *conceptAttention, Usage *conceptUsa
 
 Attention Attention_activateConcept(Attention *conceptAttention, Attention *eventAttention)
 {
-    return (Attention) { .priority = or(conceptAttention->priority, eventAttention->priority),
+    return (Attention) { .priority = Truth_or(conceptAttention->priority, eventAttention->priority),
                          .durability = CONCEPT_DURABILITY,
                          .lastForgotten = conceptAttention->lastForgotten };
 }

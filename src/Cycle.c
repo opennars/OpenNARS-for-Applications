@@ -8,29 +8,7 @@ Event derivations[MAX_DERIVATIONS];
 //doing inference within the matched concept, returning the matched event
 Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
-    /*if(c->deadline > 0)
-    {
-        if(currentTime > c->deadline)
-        {
-            //disappointed
-            Table_AddAndRevise(c->precondition_beliefs, &c->negConfirmation, c->negConfirmation.debug);
-            c->deadline = 0;
-            IN_DEBUG(
-                printf("DISAPPOINTED %s\n", c->debug);
-                getchar();
-            )
-        } 
-        else
-        if(e->type == EVENT_TYPE_BELIEF)
-        {
-            //confirmed
-            c->deadline = 0;
-            IN_DEBUG(
-                printf("CONFIRMED %s\n", c->debug);
-                getchar();
-            )
-        }
-    }*/
+    ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     strcpy(c->debug, e->debug);
     Event eMatch = *e;
@@ -99,6 +77,11 @@ void Cycle_Perform(long currentTime)
         printf("items amount: %d",belief_events.itemsAmount);
         getchar();
     )
+    //process anticipation
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
+    }
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {

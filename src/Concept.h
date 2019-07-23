@@ -16,6 +16,7 @@
 #define CONCEPT_INTERPOLATION_STRENGTH 1.0
 #define CONCEPT_INTERPOLATION_INIT_STRENGTH 1.0
 #define OPERATIONS_MAX 10
+#define ANTICIPATIONS_MAX 100
 
 //Data structure//
 //--------------//
@@ -34,8 +35,9 @@ typedef struct {
     double sdr_bit_counter[SDR_SIZE];
     char debug[50];
     //Anticipation:
-    Implication negConfirmation;
-    long deadline;
+    Implication anticipation_negative_confirmation[ANTICIPATIONS_MAX];
+    long anticipation_deadline[ANTICIPATIONS_MAX];
+    int anticipation_operation_id[ANTICIPATIONS_MAX]; //the operation ID that was used
 } Concept;
 
 //Methods//
@@ -46,5 +48,9 @@ void Concept_SetSDR(Concept *concept, SDR sdr);
 void Concept_Print(Concept *concept);
 //Interpolate concepts, see https://github.com/patham9/ANSNA/wiki/Concept:-Conceptual-Interpolation
 void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth);
+//Check anticipation disappointment
+void CheckAnticipationDisappointment(Concept *c, long currentTime);
+//Confirm anticipation
+void ConfirmAnticipation(Concept *c, Event *e);
 
 #endif

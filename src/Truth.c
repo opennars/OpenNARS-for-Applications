@@ -1,21 +1,21 @@
 #include "Truth.h"
 
-double and(double a, double b)
+double Truth_and(double a, double b)
 {        
     return a*b;
 }
 
-double or(double a, double b) 
+double Truth_or(double a, double b) 
 {
     return 1 - ((1 - a) * (1 - b));
 }
 
-double w2c(double w)
+double Truth_w2c(double w)
 {
     return w / (w + TRUTH_EVIDENTAL_HORIZON);
 }
 
-double c2w(double c)
+double Truth_c2w(double c)
 {
     return TRUTH_EVIDENTAL_HORIZON * c / (1 - c);
 }
@@ -29,11 +29,11 @@ Truth Truth_Revision(Truth v1, Truth v2)
 {
     double f1 = v1.frequency;
     double f2 = v2.frequency;
-    double w1 = c2w(v1.confidence);
-    double w2 = c2w(v2.confidence);
+    double w1 = Truth_c2w(v1.confidence);
+    double w2 = Truth_c2w(v2.confidence);
     double w = w1 + w2;
     double f = (w1 * f1 + w2 * f2) / w;
-    double c = w2c(w);
+    double c = Truth_w2c(w);
     return (Truth) {.frequency = f, .confidence = c};
 }
 
@@ -43,15 +43,15 @@ Truth Truth_Deduction(Truth v1, Truth v2)
     double f2 = v2.frequency;
     double c1 = v1.confidence;
     double c2 = v2.confidence;
-    double f = and(f1, f2);
-    double c = and(and(c1, c2), f);
+    double f = Truth_and(f1, f2);
+    double c = Truth_and(Truth_and(c1, c2), f);
     return (Truth) {.frequency = f, .confidence = c};
 }
 
 Truth Truth_Analogy(Truth v1, Truth v2)
 {
-    double f = and(v1.frequency, v2.frequency);
-    double c = and(and(v1.confidence, v2.confidence), v2.frequency);
+    double f = Truth_and(v1.frequency, v2.frequency);
+    double c = Truth_and(Truth_and(v1.confidence, v2.confidence), v2.frequency);
     return (Truth) { .frequency = f, .confidence = c };
 }
 
@@ -66,8 +66,8 @@ Truth Truth_Abduction(Truth v1, Truth v2)
     double f2 = v2.frequency;
     double c1 = v1.confidence;
     double c2 = v2.confidence;
-    double w = and(f2, and(c1, c2));
-    double c = w2c(w);
+    double w = Truth_and(f2, Truth_and(c1, c2));
+    double c = Truth_w2c(w);
     return (Truth) {.frequency = f1, .confidence = c};;
 }
 
@@ -77,8 +77,8 @@ Truth Truth_Intersection(Truth v1, Truth v2)
     double f2 = v2.frequency;
     double c1 = v1.confidence;
     double c2 = v2.confidence;
-    double f = and(f1, f2);
-    double c = and(c1, c2);
+    double f = Truth_and(f1, f2);
+    double c = Truth_and(c1, c2);
     return (Truth) {.frequency = f, .confidence = c};
 }
 
@@ -86,7 +86,7 @@ Truth Truth_Eternalize(Truth v)
 {
     float f = v.frequency;
     float c = v.confidence;
-    return (Truth) {.frequency = f, .confidence = w2c(c)};
+    return (Truth) {.frequency = f, .confidence = Truth_w2c(c)};
 }
 
 Truth Truth_Projection(Truth v, long originalTime, long targetTime)

@@ -7,6 +7,11 @@
                 Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
                 Truth truthB = Truth_Projection(b->truth, b->occurrenceTime, conclusionTime);
                 
+double weighted_average(double a1, double a2, double w1, double w2)
+{
+    return (a1*w1+a2*w2)/(w1+w2);
+}
+                
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b)
 {
@@ -48,8 +53,8 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     Implication ret = (Implication) { .sdr = a->sdr,
                            .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
                            .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = (a->occurrenceTimeOffset + b->occurrenceTimeOffset)/2,
-                           .variance = (a->variance + b->variance)/2 };
+                           .occurrenceTimeOffset = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, a->truth.confidence, b->truth.confidence),
+                           .variance = weighted_average(a->variance, b->variance, a->truth.confidence, b->truth.confidence) };
     strcpy(ret.debug, a->debug);
     return ret;
 }

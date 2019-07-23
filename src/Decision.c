@@ -102,11 +102,19 @@ Decision RealizeGoal(Event *goal, long currentTime)
         }
         
         //ANTICIPATON (neg. evidence numbers for now)
-        postcon_c->deadline = currentTime + bestImp.occurrenceTimeOffset + bestImp.variance * ANTICIPATION_WINDOW;
-        postcon_c->negConfirmation = bestImp;
-        postcon_c->negConfirmation.truth = (Truth) { .frequency = 0.0, .confidence = 0.9 };
-        postcon_c->negConfirmation.stamp = (Stamp) { .evidentalBase = {-stampID} };
-        stampID--;
+        for(int i=0; i<ANTICIPATIONS_MAX; i++)
+        {
+            if(postcon_c->anticipation_deadline[i] == 0)
+            {
+                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset + bestImp.variance * ANTICIPATION_WINDOW;
+                postcon_c->anticipation_negative_confirmation[i] = bestImp;
+                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
+                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = {-stampID} };
+                postcon_c->anticipation_operation_id[i] = decision.operationID;
+                IN_DEBUG ( printf("ANTICIPATE future=%ld\n variance=%ld\n",bestImp.occurrenceTimeOffset,bestImp.variance); )
+                stampID--;
+            }
+        }
         //EMD anticipation
         
         //postcon_c->precondition_beliefs[best_i].array[best_j] = Inference_AssumptionOfFailure(&bestImp);

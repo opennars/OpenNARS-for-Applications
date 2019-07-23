@@ -345,13 +345,13 @@ void ANSNA_Pong()
     printf(">>ANSNA Pong start\n");
     ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
     ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
-    int szX = 60;
+    int szX = 50;
     int szY = 20;
     int ballX = szX/2;
     int ballY = szY/5;
     int batX = 20;
     int batVX = 0;
-    int batWidth = 2; //"radius", batWidth from middle to the left and right
+    int batWidth = 4; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
     ANSNA_AddInputBelief(Encode_Term("good_ansna"),"good_ansna");
@@ -360,34 +360,6 @@ void ANSNA_Pong()
     while(1)
     {
         printf("\033[1;1H\033[2J"); //POSIX clear screen
-        if(batX < ballX)
-        {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
-        }
-        if(ballX < batX)
-        {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
-        }
-        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
-        printf("\n");
-        if(ballX <= 0)
-        {
-            vX = 1;
-        }
-        if(ballX >= szX-1)
-        {
-            vX = -1;
-        }
-        if(ballY <= 0)
-        {
-            vY = 1;
-        }
-        if(ballY >= szY-1)
-        {
-            vY = -1;
-        }
-        ballX += vX;
-        ballY += vY;
         for(int i=0; i<batX-batWidth+1; i++)
         {
             printf(" ");
@@ -423,6 +395,34 @@ void ANSNA_Pong()
             }
             printf("|\n");
         }
+        
+        if(batX < ballX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
+        }
+        if(ballX < batX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
+        }
+        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
+        if(ballX <= 0)
+        {
+            vX = 1;
+        }
+        if(ballX >= szX-1)
+        {
+            vX = -1;
+        }
+        if(ballY <= 0)
+        {
+            vY = 1;
+        }
+        if(ballY >= szY-1)
+        {
+            vY = -1;
+        }
+        ballX += vX;
+        ballY += vY;
         if(ballY == 0)
         {
             if(abs(ballX-batX) <= batWidth)
@@ -440,6 +440,7 @@ void ANSNA_Pong()
         {
             ballY = szY/2+rand()%(szY/2);
             ballX = rand()%szX;
+            vX = rand()%2 == 0 ? 1 : -1;
         }
         if(ANSNA_Pong_Left_executed)
         {
@@ -455,6 +456,7 @@ void ANSNA_Pong()
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
         nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep
+        ANSNA_Cycles(10);
     }
 }
 
