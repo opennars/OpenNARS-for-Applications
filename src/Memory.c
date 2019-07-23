@@ -1,20 +1,14 @@
 #include "Memory.h"
 
 Concept concept_storage[CONCEPTS_MAX];
-Event event_storage[EVENTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Item event_items_storage[EVENTS_MAX];
-
 int operations_index = 0;
+long concept_id = 1;
 
 void Memory_ResetEvents()
 {
-    PriorityQueue_RESET(&events, event_items_storage, EVENTS_MAX);
-    for(int i=0; i<EVENTS_MAX; i++)
-    {
-        event_storage[i] = (Event) {0};
-        events.items[i] = (Item) { .address = &(event_storage[i]) };
-    }
+    FIFO_RESET(&belief_events);
+    FIFO_RESET(&goal_events);
 }
 
 void Memory_ResetConcepts()
@@ -27,7 +21,6 @@ void Memory_ResetConcepts()
     }   
 }
 
-long concept_id = 1;
 void Memory_INIT()
 {
     Memory_ResetConcepts();
@@ -76,15 +69,14 @@ Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
     return addedConcept;
 }
 
-bool Memory_getClosestConcept(Event *event, int *returnIndex)
+bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-    SDR *eventSDR = &(event->sdr);
     if(concepts.itemsAmount == 0)
     {
         return false;   
     }
     int foundSameConcept_i;
-    if(Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, &foundSameConcept_i))
+    if(Memory_FindConceptBySDR(sdr, sdr_hash, &foundSameConcept_i))
     {
         *returnIndex = foundSameConcept_i;
         return true;
@@ -93,12 +85,16 @@ bool Memory_getClosestConcept(Event *event, int *returnIndex)
     double bestValSoFar = -1;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        double curVal = Truth_Expectation(SDR_Inheritance(eventSDR, &(((Concept*)concepts.items[i].address)->sdr)));
+        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*)concepts.items[i].address)->sdr)));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
             best_i = i;
         }
+    }
+    if(best_i == -1) //TODO how?
+    {
+        return false;
     }
     *returnIndex = best_i;
     return true;
@@ -110,14 +106,18 @@ bool Memory_addEvent(Event *event)
     {
         (*event_inspector)(event);
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&events, event->attention.priority);
-    if(feedback.added)
+    if(event->type == EVENT_TYPE_BELIEF)
     {
-        Event *toRecyle = feedback.addedItem.address;
-        *toRecyle = *event;
+        FIFO_Add(event, &belief_events); //not revised yet
         return true;
     }
-    return false;
+    if(event->type == EVENT_TYPE_GOAL)
+    {
+        FIFO_Add(event, &goal_events);
+        return true;
+    }
+    assert(false, "errornous event type");
+    return true;
 }
 
 bool Memory_addConcept(Concept *concept)

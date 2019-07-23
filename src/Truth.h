@@ -23,14 +23,14 @@ typedef struct {
 //Parameters//
 //----------//
 #define TRUTH_EVIDENTAL_HORIZON 1.0
-#define TRUTH_PROJECTION_DECAY 0.99
+#define TRUTH_PROJECTION_DECAY 0.95 //0.99
 
 //Methods//
 //-------//
-double and(double a, double b);
-double or(double a, double b);
-double w2c(double w);
-double c2w(double c);
+double Truth_and(double a, double b);
+double Truth_or(double a, double b);
+double Truth_w2c(double w);
+double Truth_c2w(double c);
 double Truth_Expectation(Truth v);
 Truth Truth_Revision(Truth v1, Truth v2);
 Truth Truth_Deduction(Truth v1, Truth v2);

@@ -25,7 +25,10 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long occurrenceTime;
-    int operationID;
+    int operationID; //automatically obtained from SDR on input
+    bool processed;
+    bool deleted;
+    char *debug;
 } Event;
 
 //Methods//

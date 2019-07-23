@@ -61,7 +61,7 @@ void FIFO_Test()
         assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     //now see whether a new item is revised with the correct one:
-    int i=10; //revise with item 10, which has occurrence time 10
+    int i=3; //revise with item 10, which has occurrence time 10
     int newbase = FIFO_SIZE*2+1;
     Event event2 = (Event) { .sdr = Encode_Term("test"), 
                              .type = EVENT_TYPE_BELIEF, 
@@ -71,11 +71,15 @@ void FIFO_Test()
     Event ret = FIFO_AddAndRevise(&event2, &fifo);
     assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3, "occurrence time has to be within");
     assert(ret.stamp.evidentalBase[0] == i && ret.stamp.evidentalBase[1] == newbase, "it has to be the new event");
-    assert(fifo.array[FIFO_SIZE-i].type == EVENT_TYPE_DELETED, "FIFO should have deleted the entry"); //as it was replaced
-    Event addedRet = FIFO_GetNewestElement(&fifo); //it is at the "first" position of the FIFO now
-    assert(addedRet.stamp.evidentalBase[0] == i && addedRet.stamp.evidentalBase[1] == newbase, "it has to be the new event");
+    assert(fifo.array[FIFO_SIZE-i].stamp.evidentalBase[0] == i && fifo.array[FIFO_SIZE-i].stamp.evidentalBase[1] == newbase, "FIFO should have deleted the entry");
     printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
     assert(ret.truth.confidence > 0.9, "confidence of revision result should be higher than premise's");
+    FIFO fifo2 = {0};
+    for(int i=0; i<FIFO_SIZE*2; i++)
+    {
+        FIFO_Add(&event2, &fifo2);
+    }
+    assert(fifo2.itemsAmount == FIFO_SIZE, "FIFO size differs");
     printf("<<FIFO Test successful\n");
 }
 
@@ -144,7 +148,7 @@ void Table_Test()
                                       .stamp = (Stamp) { .evidentalBase = {TABLE_SIZE*2+1} },
                                       .occurrenceTimeOffset = 10 };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
-    Table_AddAndRevise(&table, &imp);
+    Table_AddAndRevise(&table, &imp, "");
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
     printf("<<Table test successful\n");
 }
@@ -159,9 +163,9 @@ void Memory_Test()
                                1337);
     e.attention.priority = 0.9;
     Memory_addEvent(&e);
-    assert(((Event*)events.items[0].address)->truth.confidence == 0.9,"event has to be there"); //identify
+    assert(belief_events.array[0].truth.confidence == 0.9, "event has to be there"); //identify
     int returnIndex;
-    assert(!Memory_getClosestConcept(&e, &returnIndex), "a concept doesn't exist yet!");
+    assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Concept *c = Memory_Conceptualize(&e.sdr, e.attention);
     bool conceptWasCreated = false;
     for(int i=0; i<CONCEPTS_MAX; i++)
@@ -174,7 +178,7 @@ void Memory_Test()
     assert(conceptWasCreated, "Concept should have been created!");
     assert(Memory_FindConceptBySDR(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_getClosestConcept(&e, &returnIndex), "Concept should be found!");
+    assert(Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
 
     Event e2 = Event_InputEvent(Encode_Term("b"), 
@@ -186,11 +190,11 @@ void Memory_Test()
     Concept *c2 = Memory_Conceptualize(&e2.sdr, e2.attention);
     assert(Memory_FindConceptBySDR(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should match to c2!");
-    assert(Memory_getClosestConcept(&e2, &returnIndex), "Concept should be found!");
+    assert(Memory_getClosestConcept(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
     assert(Memory_FindConceptBySDR(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_getClosestConcept(&e, &returnIndex), "Concept should be found!");
+    assert(Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     printf("<<Memory test successful\n");
 }
@@ -200,14 +204,14 @@ void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
     printf(">>ANSNA Alphabet test start\n");
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, "a");
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, c);
         }
         ANSNA_Cycles(1);
         printf("TICK\n");
@@ -226,15 +230,21 @@ void ANSNA_Procedure_Test()
     ANSNA_INIT();
     printf(">>ANSNA Procedure test start\n");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), "a");
     ANSNA_Cycles(10);
-    ANSNA_AddInputBelief(Encode_Term("op"));
+    printf("---------------\n"); //++
+    ANSNA_AddInputBelief(Encode_Term("op"), "op");
     ANSNA_Cycles(10);
-    ANSNA_AddInputBelief(Encode_Term("result"));
-    ANSNA_Cycles(30);
-    ANSNA_AddInputBelief(Encode_Term("a"));
-    ANSNA_AddInputGoal(Encode_Term("result"));
-    ANSNA_Cycles(50);
+    printf("---------------\n"); //++
+    ANSNA_AddInputBelief(Encode_Term("result"), "result");
+    ANSNA_Cycles(10);
+    printf("---------------\n"); //++
+    ANSNA_AddInputBelief(Encode_Term("a"), "a");
+    ANSNA_Cycles(10);
+    printf("---------------\n"); //++
+    ANSNA_AddInputGoal(Encode_Term("result"), "result");
+    ANSNA_Cycles(10);
+    printf("---------------\n"); //++
     assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
     printf("<<ANSNA Procedure test successful\n");
 }
@@ -263,55 +273,58 @@ void ANSNA_Follow_Test()
     int RIGHT = 1;
     int BALL = RIGHT;
     int score = 0;
+    int goods = 0;
+    int bads = 0;
     for(int i=0;i<simsteps; i++)
     {
-        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"));
+        printf(BALL == LEFT ? "LEFT\n" : "RIGHT\n");
+        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), BALL == LEFT ? "ball_left" : "ball_right");
+        ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna");
         if(ANSNA_Follow_Test_Right_executed)
         {
-            ANSNA_Follow_Test_Right_executed = false;
             if(BALL == RIGHT)
             {
-                ANSNA_Cycles(10);
-                ANSNA_AddInputBelief(Encode_Term("good_boy"));
-                printf("good\n");
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
+                printf("(ball=%d) good\n",BALL);
                 score++;
-                
+                goods++;
             }
             else
             {
-                printf("bad\n");
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                printf("(ball=%d) bad\n",BALL);
                 score--;
+                bads++;
             }
+            ANSNA_Follow_Test_Right_executed = false;
         }
         if(ANSNA_Follow_Test_Left_executed)
         {        
-            ANSNA_Follow_Test_Left_executed = false;
             if(BALL == LEFT)
             {
-                ANSNA_Cycles(10);
-                ANSNA_AddInputBelief(Encode_Term("good_boy"));
-                printf("good\n");
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
+                printf("(ball=%d) good\n",BALL);
                 score++;
+                goods++;
             }
             else
             {
-                printf("bad\n");
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                printf("(ball=%d) bad\n",BALL);
                 score--;
+                bads++;
             }
+            ANSNA_Follow_Test_Left_executed = false;
         }
-        if(i%50 == 0)
-        {
-            BALL = rand() % 2;
-        }
-        ANSNA_Cycles(10);
-        ANSNA_AddInputGoal(Encode_Term("good_boy"));
-        ANSNA_Cycles(10);
-        printf("Score %i\n", score);
-        assert(score > -5, "too bad");
-        if(score >= 40)
+        BALL = rand() % 2;
+        printf("Score %i step%d=\n", score,i);
+        assert(score > -100, "too bad score");
+        assert(bads < 500, "too many wrong trials");
+        if(score >= 500)
             break;
+        //ANSNA_Cycles(1000);
     }
-    printf("<<ANSNA Follow test successful\n");
+    printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);
 }
 
 bool ANSNA_Pong_Left_executed = false;
@@ -332,7 +345,7 @@ void ANSNA_Pong()
     printf(">>ANSNA Pong start\n");
     ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
     ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
-    int szX = 40;
+    int szX = 50;
     int szY = 20;
     int ballX = szX/2;
     int ballY = szY/5;
@@ -341,42 +354,11 @@ void ANSNA_Pong()
     int batWidth = 4; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
-    ANSNA_AddInputBelief(Encode_Term("good_boy"));
-    ANSNA_AddInputBelief(Encode_Term("ball_right"));
-    ANSNA_AddInputBelief(Encode_Term("ball_left"));
+    int hits = 0;
+    int misses = 0;
     while(1)
     {
         printf("\033[1;1H\033[2J"); //POSIX clear screen
-        ANSNA_Cycles(10);
-        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_boy")));
-        ANSNA_Cycles(10);
-        if(batX < ballX)
-        {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right")));
-        }
-        if(ballX < batX)
-        {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left")));
-        }
-        printf("\n");
-        if(ballX <= 0)
-        {
-            vX = 1;
-        }
-        if(ballX >= szX-1)
-        {
-            vX = -1;
-        }
-        if(ballY <= 0)
-        {
-            vY = 1;
-        }
-        if(ballY >= szY-1)
-        {
-            vY = -1;
-        }
-        ballX += vX;
-        ballY += vY;
         for(int i=0; i<batX-batWidth+1; i++)
         {
             printf(" ");
@@ -412,39 +394,78 @@ void ANSNA_Pong()
             }
             printf("|\n");
         }
+        
+        if(batX < ballX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
+        }
+        if(ballX < batX)
+        {
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
+        }
+        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
+        if(ballX <= 0)
+        {
+            vX = 1;
+        }
+        if(ballX >= szX-1)
+        {
+            vX = -1;
+        }
+        if(ballY <= 0)
+        {
+            vY = 1;
+        }
+        if(ballY >= szY-1)
+        {
+            vY = -1;
+        }
+        ballX += vX;
+        ballY += vY;
         if(ballY == 0)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_boy")));
+                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna"));
                 printf("good\n");
+                hits++;
             }
             else
             {
-                
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                printf("bad\n");
+                misses++;
             }
+        }
+        if(ballY == 0 || ballX == 0 || ballX >= szX-1)
+        {
             ballY = szY/2+rand()%(szY/2);
             ballX = rand()%szX;
+            vX = rand()%2 == 0 ? 1 : -1;
         }
         if(ANSNA_Pong_Left_executed)
         {
             ANSNA_Pong_Left_executed = false;
             printf("Exec: op_left\n");
-            batVX = -1;
+            batVX = -2;
         }
         if(ANSNA_Pong_Right_executed)
         {
             ANSNA_Pong_Right_executed = false;
             printf("Exec: op_right\n");
-            batVX = 1;
+            batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
+        printf("Hits=%d misses=%d ratio=%f\n", hits, misses, (float) (((float) hits) / ((float) misses)));
         nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep
+        //ANSNA_Cycles(10);
     }
 }
 
 int main(int argc, char *argv[]) 
 {
+    //printf("sizeof concept %d\n",(int) sizeof(Concept));
+    //exit(0);
     if(argc == 2) //pong
     {
         ANSNA_Pong();
@@ -458,8 +479,8 @@ int main(int argc, char *argv[])
     Table_Test();
     ANSNA_Alphabet_Test();
     ANSNA_Procedure_Test();
-    ANSNA_Follow_Test();
     Memory_Test();
+    ANSNA_Follow_Test();
     printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
     printf("ANSNA pong (starts Pong example)\n");
     return 0;

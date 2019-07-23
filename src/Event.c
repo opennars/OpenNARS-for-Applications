@@ -26,11 +26,12 @@ void Event_INIT()
 
 void Event_Print(Event *event)
 {
-    printf("Event:\n");
+    printf("Event: %s\n", event->debug);
     Attention_Print(&event->attention);
     SDR_PrintWhereTrue(&event->sdr);
     //printf("SDR hash=%d", event->sdr_hash);
     printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));
+    printf("operationID=%d\n", event->operationID);
     Truth_Print(&event->truth);
     Stamp_print(&event->stamp);
     printf("occurrenceTime=%ld\n\n", event->occurrenceTime);

@@ -5,10 +5,11 @@
 //----------//
 #include "Inference.h"
 #include "Globals.h"
+#include <string.h>
 
 //Parameters//
 //----------//
-#define TABLE_SIZE 1000
+#define TABLE_SIZE 50
 
 /** A truth-expectation-ranked table for Implications, similar as pre- and post-condition table in OpenNARS,
  * except that this table supports revision by itself (as in ANSNA implications don't form concepts). */
@@ -19,8 +20,15 @@ typedef struct {
 
 //Methods//
 //-------//
+//Add implication to table
 void Table_Add(Table *table, Implication *imp);
-Implication Table_AddAndRevise(Table *table, Implication *imp);
+//Remove implication from the table
+void Table_Remove(Table *table, int index);
+//Add implication to table while allowing revision
+Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug);
+//Remove the highest truth expectation element, returning it
 Implication Table_PopHighestTruthExpectationElement(Table *table);
+//Copy all table entries
+void Table_COPY(Table *src, Table *target);
 
 #endif

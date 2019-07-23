@@ -5,131 +5,12 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
 Event derivations[MAX_DERIVATIONS];
 
-//Popping strategy that only pops the item if it is still the highest-priority after pushing it
-//maintaining sorting order more aggressively
-bool popAndForgetConcept(long currentTime, Concept **returnConcept)
+//doing inference within the matched concept, returning the matched event
+Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
 {
-    Concept *popped = NULL;
-    if(PriorityQueue_PopMax(&concepts, (void*) &popped))
-    {
-        popped->attention = Attention_forgetConcept(&popped->attention, &popped->usage, currentTime);
-        long popped_id = popped->id; //because popped ptr will be invalid to use after adding another concept
-        if(Memory_addConcept(popped))
-        {
-            Concept *popped2 = NULL;
-            if(PriorityQueue_PopMax(&concepts, (void*) &popped2))
-            {
-                if(popped_id == popped2->id)
-                {
-                    *returnConcept = popped2;
-                    return true;
-                }
-                else
-                {
-                    Memory_addConcept(popped2);
-                }
-            }
-        }
-    }
-    return false;
-}
-
-//Retrieve highest-priority concepts from memory
-int popConcepts(long currentTime, int B_id, Concept** B) 
-{
-    int conceptsSelected = 0;
-    for(int j=0; j<CONCEPT_SELECTIONS; j++)
-    {
-        Concept *A = NULL;
-        if(!popAndForgetConcept(currentTime, &A))
-        {
-            IN_DEBUG( printf("Selecting concept failed, maybe item order changed.\n"); )
-            continue;
-        }
-        selectedConcepts[conceptsSelected] = *A;
-        //in case that we took the matched concept out, validate B pointer again:
-        if(A->id == B_id)
-        {
-            *B = &selectedConcepts[conceptsSelected];
-        }
-        conceptsSelected++;
-    }
-    return conceptsSelected;
-}
-
-//Push retrieved concepts back to memory
-void pushConcepts(int conceptsSelected, Concept *B)
-{
-    for(int j=0; j<conceptsSelected; j++)
-    {   //push again what we popped
-        if(!Memory_addConcept(&selectedConcepts[j]))
-        {
-            IN_DEBUG( printf("Selected concept was not added anymore:\n"); Concept_Print(B); )
-        }
-    }
-}
-
-//doing inference with the highest priority concepts
-void temporalInference(Concept *B, Event *b, long currentTime)
-{
-    //1. pop concepts
-    int B_id = B->id;
-    int conceptsSelected = popConcepts(currentTime, B_id, &B);
-    //2. apply composition rules
-    for(int j=0; j<conceptsSelected; j++)
-    {   
-        Concept *A = &selectedConcepts[j];
-        IN_DEBUG( printf("Concept was chosen as temporal inference partner (equals matched? %d):\n", A->id == B->id); Concept_Print(A); )
-        RuleTable_Composition(A, B, b, currentTime); // deriving a =/> b
-    }
-    //3. push concepts again
-    pushConcepts(conceptsSelected, B);
-}
-
-//retrieve k events from event queue (attention buffer)
-void popEvents(long currentTime)
-{
-    for(int i=0; i<EVENT_SELECTIONS; i++)
-    {
-        Event *e;
-        if(!PriorityQueue_PopMax(&events, (void**) &e))
-        {
-            assert(events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-            IN_DEBUG( printf("Selecting event failed, maybe there is no event left.\n"); )
-            break;
-        }
-        selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
-        eventsSelected++; //that while processing, would make recycled pointers invalid to use
-    }
-}
-
-//put the processed ones back but events that have lost the resource competition die
-void pushEvents(long currentTime)
-{
-    Memory_ResetEvents();
-    for(int i=0; i<eventsSelected; i++)
-    {
-        Event *e = &selectedEvents[i];
-        e->attention = Attention_forgetEvent(&e->attention, currentTime);
-        if(e->attention.priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
-        {
-            Memory_addEvent(e);
-        }
-    }
-    for(int i=0; i<eventsDerived; i++)
-    {
-        Event *e = &derivations[i];
-        if(e->attention.priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
-        {
-            Memory_addEvent(e);
-        }
-    }    
-}
-
-//doing inference within the matched concept, returning whether e is a context operation (a,op)
-bool localInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
-{
+    ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
+    strcpy(c->debug, e->debug);
     Event eMatch = *e;
     eMatch.sdr = c->sdr;
     eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
@@ -137,61 +18,122 @@ bool localInference(Concept *c, int closest_concept_i, Event *e, long currentTim
     {
         Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
         //apply decomposition-based inference: prediction/explanation
-        RuleTable_Decomposition(c, &eMatch, currentTime);
-        c->usage = Usage_use(&c->usage, currentTime);
+        //RuleTable_Decomposition(c, &eMatch, currentTime); <- TODO, how to deal with derived events? I guess FIFO will need to support it
+        c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
         //add event to the FIFO of the concept
         FIFO *fifo =  e->type == EVENT_TYPE_BELIEF ? &c->event_beliefs : &c->event_goals;
-        Event revised = FIFO_AddAndRevise(&eMatch, fifo);
-        Event *goal = e->type == EVENT_TYPE_GOAL ? &eMatch : NULL;
-        if(revised.type != EVENT_TYPE_DELETED && revised.truth.confidence >= MIN_CONFIDENCE && revised.attention.priority >= MIN_PRIORITY)
-        {
-            goal = revised.type == EVENT_TYPE_GOAL ? &revised : NULL;
-            IN_OUTPUT( printf("REVISED EVENT: "); Event_Print(&revised); )
-        }
-        bool isContextOperation = Decision_Making(c, goal, currentTime);
-        //activate concepts attention with the event's attention, but penalize for mismatch to concept
-        //eMatch.attention.priority *= Truth_Expectation(eMatch.truth);
+        FIFO_Add(&eMatch, fifo); //TODO: Add and revise
+        //activate concepts attention with the event's attention
         c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
         PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
-        return isContextOperation;
     }
-    return false;
+    return eMatch;
+}
+
+Event ProcessEvent(Event *e, long currentTime)
+{
+    e->processed = true;
+    Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
+    IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
+    //determine the concept it is related to
+    int closest_concept_i;
+    Concept *c = NULL;
+    Event eMatch = {0};
+    if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
+    {
+        c = concepts.items[closest_concept_i].address;
+        //perform concept-related inference
+        eMatch = LocalInference(c, closest_concept_i, e, currentTime);
+    }
+    if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
+    {   
+        //add a new concept for e too at the end, as it does not exist already
+        Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
+        if(eNativeConcept != NULL && c != NULL)
+        {
+            //copy over all knowledge
+            for(int i=0; i<OPERATIONS_MAX; i++)
+            {
+                Table_COPY(&c->precondition_beliefs[i],  &eNativeConcept->precondition_beliefs[i]);
+                Table_COPY(&c->postcondition_beliefs[i], &eNativeConcept->postcondition_beliefs[i]);
+            }
+            FIFO_COPY(&c->event_beliefs, &eNativeConcept->event_beliefs);
+            FIFO_COPY(&c->event_goals, &eNativeConcept->event_goals);
+        }
+    }
+    return eMatch;
 }
 
 void Cycle_Perform(long currentTime)
-{
-    eventsSelected = eventsDerived = 0;
-    popEvents(currentTime);
-    for(int i=0; i<eventsSelected; i++)
+{    
+    IN_DEBUG
+    (
+        for(int i=0; i<belief_events.itemsAmount; i++)
+        {
+            Event *ev = FIFO_GetKthNewestElement(&belief_events, i);
+            printf(ev->debug);
+            printf("\n");
+        }
+        printf("items amount: %d",belief_events.itemsAmount);
+        getchar();
+    )
+    //process anticipation
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Event *e = &selectedEvents[i];
-        Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
-        IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
-        //determine the concept it is related to
-        int closest_concept_i;
-        bool isContextOperation = false;
-        if(Memory_getClosestConcept(e, &closest_concept_i))
+        CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
+    }
+    //1. process newest event
+    if(belief_events.itemsAmount > 0)
+    {
+        Event *toProcess = FIFO_GetNewestElement(&belief_events);
+        if(!toProcess->processed && !toProcess->deleted)
         {
-            Concept *c = concepts.items[closest_concept_i].address;
-            //perform concept-related inference
-            isContextOperation = localInference(c, closest_concept_i, e, currentTime);
-            //send event to the highest prioriry concepts
-            temporalInference(c, e, currentTime);
-        }
-        else
-        {
-            assert(concepts.itemsAmount == 0, "No matching concept is only allowed to happen if memory is empty.");
-        }
-        if(!isContextOperation && !Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL)) //not conceptualizing (&/,a,op())
-        {   
-            //add a new concept for e too at the end, as it does not exist already
-            Concept *eNativeConcept = Memory_Conceptualize(&e->sdr, e->attention);
-            if(eNativeConcept != NULL)
+            //the matched event becomes the postcondition
+            Event postcondition = ProcessEvent(toProcess, currentTime);
+            //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:     
+            if(postcondition.operationID != 0)
             {
-                IN_DEBUG( printf("ADDED CONCEPT \n"); )
-                FIFO_Add(e, (e->type == EVENT_TYPE_BELIEF ? &eNativeConcept->event_beliefs : &eNativeConcept->event_goals));
+                return;
+            }
+            for(int k=1; k<belief_events.itemsAmount; k++)
+            {
+                Event *precondition = FIFO_GetKthNewestElement(&belief_events, k);
+                if(precondition->deleted)
+                {
+                    continue;
+                }
+                //if it's an operation find the real precondition and use the current one as action
+                int operationID = precondition->operationID;
+                if(operationID != 0)
+                {
+                    for(int j=k+1; j<belief_events.itemsAmount; j++)
+                    {
+                        precondition = FIFO_GetKthNewestElement(&belief_events, j);
+                        if(precondition->deleted)
+                        {
+                            continue;
+                        }
+                        if(precondition->operationID == 0)
+                        {
+                            RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
+                        }
+                    }
+                }
+                else
+                {
+                    //RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
+                }
             }
         }
     }
-    pushEvents(currentTime);
+    //invoke decision making for goals
+    if(goal_events.itemsAmount > 0)
+    {
+        Event *goal = FIFO_GetNewestElement(&goal_events);
+        if(!goal->processed)
+        {
+            ProcessEvent(goal, currentTime);
+            Decision_Making(goal, currentTime);
+        }
+    }
 }

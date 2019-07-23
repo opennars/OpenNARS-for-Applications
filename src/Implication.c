@@ -15,3 +15,9 @@ void Implication_Print(Implication *implication)
     Stamp_print(&implication->stamp);
     printf("occurrenceTimeOffset=%ld\n\n", implication->occurrenceTimeOffset);
 }
+
+double Implication_Currentness(Implication *implication)
+{
+    double distance = (implication->occurrenceTimeOffset / (1.0f + implication->occurrenceTimeOffset));
+    return 1.0 - distance;
+}
