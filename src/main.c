@@ -318,9 +318,11 @@ void ANSNA_Follow_Test()
         }
         BALL = rand() % 2;
         printf("Score %i step%d=\n", score,i);
-        assert(score > -100, "too bad");
+        assert(score > -100, "too bad score");
+        assert(bads < 500, "too many wrong trials");
         if(score >= 500)
             break;
+        ANSNA_Cycles(1000);
     }
     printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);
 }
@@ -470,11 +472,11 @@ int main(int argc, char *argv[])
     Stamp_Test();
     FIFO_Test();
     PriorityQueue_Test();
-    //Table_Test();
-    //ANSNA_Alphabet_Test();
-    //ANSNA_Procedure_Test();
-    ANSNA_Follow_Test();
+    Table_Test();
+    ANSNA_Alphabet_Test();
+    ANSNA_Procedure_Test();
     Memory_Test();
+    ANSNA_Follow_Test();
     printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
     printf("ANSNA pong (starts Pong example)\n");
     return 0;
