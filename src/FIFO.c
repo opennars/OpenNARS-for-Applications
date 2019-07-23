@@ -22,6 +22,13 @@ void FIFO_COPY(FIFO *src, FIFO *target)
 
 void FIFO_Add(Event *event, FIFO *fifo)
 {
+    /*for(int i=0; i<fifo->itemsAmount; i++)
+    {
+        if(SDR_Equal(&fifo->array[i].sdr, &event->sdr))
+        {
+            fifo->array[i].deleted = true;
+        }
+    }*/
     fifo->array[fifo->currentIndex] = *event;
     fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
     fifo->itemsAmount = MIN(fifo->itemsAmount + 1, FIFO_SIZE);

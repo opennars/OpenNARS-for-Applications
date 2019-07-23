@@ -38,7 +38,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
     {
         Concept *postcon_c = concepts.items[closest_postcon_concept_i].address;
         double bestTruthExpectation = 0;
-        long newestOccurrenceTime = 0; //TODO remove
+        //long newestOccurrenceTime = 0; //TODO remove
         Implication bestImp = {0};
         Concept *precon_concept;
         //int best_i;
@@ -68,7 +68,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
                         ContextualOperation.truth = Truth_Projection(ContextualOperation.truth, ContextualOperation.occurrenceTime, currentTime);
                         double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime))); //op()! //TODO project to now
-                        if(precondition->occurrenceTime > newestOccurrenceTime)
+                        if(operationGoalTruthExpectation > bestTruthExpectation)
                         {
                             IN_DEBUG
                             (
@@ -85,7 +85,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                             )
                             //best_i = i;
                             //best_j = j;
-                            newestOccurrenceTime = precondition->occurrenceTime;
+                            //newestOccurrenceTime = precondition->occurrenceTime;
                             precon_concept = current_precon_c;
                             bestImp = imp;
                             decision.operationID = i;
@@ -95,7 +95,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                 }
             }
         }
-        printf("decision expectation %f impTruth=(%f, %f)\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence);
+        printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
         if(decision.operationID == 0 || bestTruthExpectation < DECISION_THRESHOLD)
         {
             return decision;
@@ -106,7 +106,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
         {
             if(postcon_c->anticipation_deadline[i] == 0)
             {
-                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset + bestImp.variance * ANTICIPATION_WINDOW;
+                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset * ANTICIPATION_FORWARD + bestImp.variance * ANTICIPATION_WINDOW;
                 postcon_c->anticipation_negative_confirmation[i] = bestImp;
                 postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
                 postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = {-stampID} };

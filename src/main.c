@@ -291,7 +291,7 @@ void ANSNA_Follow_Test()
             }
             else
             {
-                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
@@ -309,7 +309,7 @@ void ANSNA_Follow_Test()
             }
             else
             {
-                ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
@@ -322,7 +322,7 @@ void ANSNA_Follow_Test()
         assert(bads < 500, "too many wrong trials");
         if(score >= 500)
             break;
-        ANSNA_Cycles(1000);
+        //ANSNA_Cycles(1000);
     }
     printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);
 }
@@ -354,9 +354,8 @@ void ANSNA_Pong()
     int batWidth = 4; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
-    ANSNA_AddInputBelief(Encode_Term("good_ansna"),"good_ansna");
-    ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right");
-    ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left");
+    int hits = 0;
+    int misses = 0;
     while(1)
     {
         printf("\033[1;1H\033[2J"); //POSIX clear screen
@@ -429,11 +428,13 @@ void ANSNA_Pong()
             {
                 ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna"));
                 printf("good\n");
+                hits++;
             }
             else
             {
                 //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
                 printf("bad\n");
+                misses++;
             }
         }
         if(ballY == 0 || ballX == 0 || ballX >= szX-1)
@@ -455,8 +456,9 @@ void ANSNA_Pong()
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
+        printf("Hits=%d misses=%d ratio=%f\n", hits, misses, (float) (((float) hits) / ((float) misses)));
         nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep
-        ANSNA_Cycles(10);
+        //ANSNA_Cycles(10);
     }
 }
 

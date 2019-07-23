@@ -86,7 +86,7 @@ void Cycle_Perform(long currentTime)
     if(belief_events.itemsAmount > 0)
     {
         Event *toProcess = FIFO_GetNewestElement(&belief_events);
-        if(!toProcess->processed)
+        if(!toProcess->processed && !toProcess->deleted)
         {
             //the matched event becomes the postcondition
             Event postcondition = ProcessEvent(toProcess, currentTime);
@@ -98,6 +98,10 @@ void Cycle_Perform(long currentTime)
             for(int k=1; k<belief_events.itemsAmount; k++)
             {
                 Event *precondition = FIFO_GetKthNewestElement(&belief_events, k);
+                if(precondition->deleted)
+                {
+                    continue;
+                }
                 //if it's an operation find the real precondition and use the current one as action
                 int operationID = precondition->operationID;
                 if(operationID != 0)
@@ -105,6 +109,10 @@ void Cycle_Perform(long currentTime)
                     for(int j=k+1; j<belief_events.itemsAmount; j++)
                     {
                         precondition = FIFO_GetKthNewestElement(&belief_events, j);
+                        if(precondition->deleted)
+                        {
+                            continue;
+                        }
                         if(precondition->operationID == 0)
                         {
                             RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
@@ -113,7 +121,7 @@ void Cycle_Perform(long currentTime)
                 }
                 else
                 {
-                    RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
+                    //RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
                 }
             }
         }

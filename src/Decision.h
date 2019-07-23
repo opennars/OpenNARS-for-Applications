@@ -11,11 +11,15 @@
 //Parameters//
 //----------//
 //confidence needed for executions
-#define DECISION_THRESHOLD 0.5
+#define DECISION_THRESHOLD 0.55
 //motor babbling chance
-#define MOTOR_BABBLING_CHANCE 0.4
-#define ANTICIPATION_WINDOW 100.0
-#define ANTICIPATION_CONFIDENCE 0.01
+#define MOTOR_BABBLING_CHANCE 0.2
+//deadline = predictionTime*ANTICIPATION_FORWARD
+#define ANTICIPATION_FORWARD 100.0 
+//deadline += ANTICIPATION_WINDOW*variance
+#define ANTICIPATION_WINDOW 10.0
+//confidence of anticipation
+#define ANTICIPATION_CONFIDENCE 0.1
 
 //Data structure//
 //--------------//
