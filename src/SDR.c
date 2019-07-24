@@ -1,6 +1,5 @@
 #include "SDR.h"
 
-
 int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
 {
     return (sdr->blocks[block_i] >> block_bit_j) & 1;
@@ -96,7 +95,7 @@ SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
     int shiftToLeftmost = SDR_BLOCK_SIZE-1;
     if(forward)
     {
-        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        for(unsigned int i=0; i<SDR_NUM_BLOCKS; i++)
         {
             SDR_BLOCK_TYPE left_bit = c.blocks[i] & ((SDR_BLOCK_TYPE)1 << shiftToLeftmost);
             c.blocks[i] = (c.blocks[i]<<1) | (left_bit > 0);
@@ -104,7 +103,7 @@ SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
     }
     else
     {
-        for(int i=0; i<SDR_NUM_BLOCKS; i++)
+        for(unsigned int i=0; i<SDR_NUM_BLOCKS; i++)
         {
             SDR_BLOCK_TYPE right_bit = c.blocks[i] & 1;
             c.blocks[i] = (c.blocks[i]>>1) | (right_bit << shiftToLeftmost);

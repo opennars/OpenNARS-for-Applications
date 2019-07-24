@@ -9,14 +9,14 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
 
 #define at(i) (queue->items[i])
 
-void swap(PriorityQueue *queue, int index1, int index2)
+static void swap(PriorityQueue *queue, int index1, int index2)
 {
     Item temp = at(index1);
     at(index1) = at(index2);
     at(index2) = temp;
 }
 
-bool isOnMaxLevel(int i)
+static bool isOnMaxLevel(int i)
 { 
     int level=-1;
     int n = i+1;
@@ -28,27 +28,27 @@ bool isOnMaxLevel(int i)
     return level & 1; /*% 2*/;
 }
 
-int parent(int i) 
+static int parent(int i) 
 { 
     return ((i+1)/2)-1;
 }
 
-int grandparent(int i) 
+static int grandparent(int i) 
 { 
     return ((i+1)/4)-1;
 }
 
-int leftChild(int i) 
+static int leftChild(int i) 
 { 
     return 2*i + 1;
 }
 
-int leftGrandChild(int i)
+static int leftGrandChild(int i)
 { 
     return 4*i + 3;
 }
 
-int smallestChild(PriorityQueue *queue, int i, bool invert) 
+static int smallestChild(PriorityQueue *queue, int i, bool invert) 
 { //return smallest of children or self if no children
     int l = leftChild(i);
     if(l >= queue->itemsAmount)
@@ -68,7 +68,7 @@ int smallestChild(PriorityQueue *queue, int i, bool invert)
     return l;
 }
 
-int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
+static int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
 {//return smallest of grandchildren or self if no children
     int l = leftGrandChild(i);
     if(l >= queue->itemsAmount)
@@ -212,6 +212,9 @@ bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
     swap(queue, i, queue->itemsAmount-1); 
     queue->itemsAmount--;
     trickleDown(queue, i, true); //enforce minmax heap property
-    *returnItemAddress = item.address; 
+    if(returnItemAddress != NULL)
+    {
+        *returnItemAddress = item.address; 
+    }
     return true;
 }

@@ -10,6 +10,7 @@
 //References//
 //-----------//
 #include "Inference.h"
+#include "Globals.h"
 
 //Parameters//
 //----------//

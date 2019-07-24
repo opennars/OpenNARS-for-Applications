@@ -10,8 +10,7 @@ void Event_SetSDR(Event *event, SDR sdr)
 long base = 1;
 Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime)
 {
-    return (Event) { .attention = Attention_inputEvent(&truth, currentTime),
-                     .sdr = sdr,
+    return (Event) { .sdr = sdr,
                      .sdr_hash = SDR_Hash(&sdr),
                      .type = type, 
                      .truth = truth, 
@@ -27,7 +26,6 @@ void Event_INIT()
 void Event_Print(Event *event)
 {
     printf("Event: %s\n", event->debug);
-    Attention_Print(&event->attention);
     SDR_PrintWhereTrue(&event->sdr);
     //printf("SDR hash=%d", event->sdr_hash);
     printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));

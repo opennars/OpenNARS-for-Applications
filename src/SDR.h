@@ -40,15 +40,15 @@ typedef struct
 //-------//
 //Iterate all the blocks of an SDR
 #define ITERATE_SDR_BLOCKS(I,CODE) {\
-    for(int I=0; I<SDR_NUM_BLOCKS; I++)\
+    for(unsigned int I=0; I<SDR_NUM_BLOCKS; I++)\
     {\
         CODE\
     }}
 //Iterate all the bits of an SDR
 #define ITERATE_SDR_BITS(I,J,CODE) {\
-    for(int I=0; I<SDR_NUM_BLOCKS; I++)\
+    for(unsigned int I=0; I<SDR_NUM_BLOCKS; I++)\
     {\
-        for(int J=0; J<SDR_BLOCK_SIZE; J++)\
+        for(unsigned int J=0; J<SDR_BLOCK_SIZE; J++)\
         {\
             CODE\
         }\

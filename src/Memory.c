@@ -5,13 +5,13 @@ Item concept_items_storage[CONCEPTS_MAX];
 int operations_index = 0;
 long concept_id = 1;
 
-void Memory_ResetEvents()
+static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
 }
 
-void Memory_ResetConcepts()
+static void Memory_ResetConcepts()
 {
     PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
     for(int i=0; i<CONCEPTS_MAX; i++)
@@ -53,17 +53,16 @@ bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
     return false;
 }
 
-Concept* Memory_Conceptualize(SDR *sdr, Attention attention)
+Concept* Memory_Conceptualize(SDR *sdr)
 {
     Concept *addedConcept = NULL;
     //try to add it, and if successful add to voting structure
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, attention.priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 0.0);
     if(feedback.added)
     {
         addedConcept = feedback.addedItem.address;
         *addedConcept = (Concept) {0};
         Concept_SetSDR(addedConcept, *sdr);
-        addedConcept->attention = attention;
         addedConcept->id = concept_id++;
     }
     return addedConcept;
@@ -120,9 +119,9 @@ bool Memory_addEvent(Event *event)
     return true;
 }
 
-bool Memory_addConcept(Concept *concept)
+bool Memory_addConcept(Concept *concept, long currentTime)
 {
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, concept->attention.priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, Usage_usefulness(&concept->usage, currentTime));
     if(feedback.added)
     {
         Concept *toRecyle = feedback.addedItem.address;

@@ -1,6 +1,6 @@
 #include "RuleTable.h"
 
-void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID)
+void RuleTable_Composition(Event *a, Event *b, int operationID)
 {   
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
@@ -25,21 +25,13 @@ void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID
                     char debug[50];
                     sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
                     sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
-                    IN_DEBUG ( if(operationID != 0) { printf(debug); Truth_Print(&precondition_implication.truth); printf("\n"); getchar(); } )
+                    IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
                     Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
                     IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
-                    //Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
-                    //IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
+                    Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
+                    IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
                 }
-                Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
-                sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);
-                if(sequence.truth.confidence < MIN_CONFIDENCE || sequence.attention.priority < MIN_PRIORITY)
-                {
-                    return;
-                }
-                //derivations[eventsDerived++] = sequence; //not yet
-                IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
             }
         }
     }
@@ -62,7 +54,7 @@ void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID
                     continue;
                 }
                 res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
-                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                if(res.truth.confidence < MIN_CONFIDENCE)
                 {
                     continue;
                 }
@@ -94,7 +86,7 @@ void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID
                     continue;
                 }
                 res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
-                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                if(res.truth.confidence < MIN_CONFIDENCE)
                 {
                     continue;
                 }

@@ -7,7 +7,7 @@
                 Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
                 Truth truthB = Truth_Projection(b->truth, b->occurrenceTime, conclusionTime);
                 
-double weighted_average(double a1, double a2, double w1, double w2)
+static double weighted_average(double a1, double a2, double w1, double w2)
 {
     return (a1*w1+a2*w2)/(w1+w2);
 }
