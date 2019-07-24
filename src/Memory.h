@@ -52,8 +52,4 @@ bool Memory_addConcept(Concept *concept);
 bool Memory_addEvent(Event *event);
 //Add operation to memory
 void Memory_addOperation(Operation op);
-//Reset events
-void Memory_ResetEvents();
-//Reset concepts
-void Memory_ResetConcepts();
 #endif
