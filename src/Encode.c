@@ -1,6 +1,6 @@
 #include "Encode.h"
 
-SDR Encode_Scalar(int w, int min, int max, int value)
+/*SDR Encode_Scalar(int w, int min, int max, int value)
 {
     int n = SDR_SIZE;
     int numberOfBuckets = n - w + 1;
@@ -14,6 +14,27 @@ SDR Encode_Scalar(int w, int min, int max, int value)
     for (int bitIdx=selectedBucket; bitIdx<selectedBucket+w; bitIdx++)
     {
         SDR_WriteBit(&result, bitIdx, 1);
+    }
+    return result;
+}*/
+
+//inspired by https://arxiv.org/pdf/1602.05925.pdf
+//but the bucket always being half of the SDR size +min_overlap
+//as needed for continuous perception purposes
+SDR Encode_Scalar(int min, int max, int value)
+{
+    //min_overlap>0 guarantees continuous perception!
+    int min_overlap = TERM_ONES; //Allow at least an overlap of the amount of 1-bits used for term encoding
+    int range = max - min;
+    int relative = value - min;
+    int bucketsize = (SDR_SIZE/2 + min_overlap);
+    int available_places = MAX(0, SDR_SIZE - bucketsize);
+    double reached = ((double)relative) / ((double)range); //in [0,1]
+    int max_index = (int) (reached * ((double) available_places));
+    SDR result = {0};
+    for(int i=max_index; i<max_index+bucketsize; i++)
+    {
+        SDR_WriteBit(&result, i, 1);
     }
     return result;
 }

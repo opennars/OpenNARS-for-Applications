@@ -394,15 +394,18 @@ void ANSNA_Pong()
             }
             printf("|\n");
         }
-        
-        if(batX < ballX)
+        SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
+        //SDR sdrX = Encode_Scalar(2000, 0, 2*szX, szX+ballX-batX);
+        //SDR_PrintWhereTrue(&sdrX);
+        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(sdrX, "someXValue"));
+        /*if(batX < ballX)
         {
             ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
         }
         if(ballX < batX)
         {
             ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
-        }
+        }*/
         ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
         if(ballX <= 0)
         {
