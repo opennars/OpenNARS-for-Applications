@@ -54,7 +54,7 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                     continue;
                 }
                 res.attention = Attention_deriveEvent(&c->attention, &postcon.truth, currentTime);
-                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                if(res.truth.confidence < MIN_CONFIDENCE)
                 {
                     continue;
                 }
@@ -86,7 +86,7 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                     continue;
                 }
                 res.attention = Attention_deriveEvent(&c->attention, &precon.truth, currentTime);
-                if(res.truth.confidence < MIN_CONFIDENCE || res.attention.priority < MIN_PRIORITY)
+                if(res.truth.confidence < MIN_CONFIDENCE)
                 {
                     continue;
                 }

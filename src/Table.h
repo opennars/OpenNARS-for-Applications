@@ -11,8 +11,10 @@
 //----------//
 #define TABLE_SIZE 50
 
-/** A truth-expectation-ranked table for Implications, similar as pre- and post-condition table in OpenNARS,
- * except that this table supports revision by itself (as in ANSNA implications don't form concepts). */
+//Data structure//
+//--------------//
+//A truth-expectation-ranked table for Implications, similar as pre- and post-condition table in OpenNARS,
+//except that this table supports revision by itself (as in ANSNA implications don't form concepts).
 typedef struct {
     Implication array[TABLE_SIZE];
     int itemsAmount;

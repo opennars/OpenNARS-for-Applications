@@ -10,20 +10,11 @@
 
 //Parameters//
 //----------//
-//concept wait time to be used when it was used
-
 //min confidence
 #define MIN_CONFIDENCE 0.01
-#define MIN_PRIORITY 0.01
-#define MAX_FORWARD 5
-#define MAX_BACKWARD 5
-#define MAX_INDUCTIONS 5
-#define ALLOW_ABDUCTION false
-
-//Cycle dependency//
-//----------------//
-extern Event derivations[];
-extern int eventsDerived;
+//#define MAX_FORWARD 5
+//#define MAX_BACKWARD 5
+//#define ALLOW_ABDUCTION false
 
 //Methods//
 //-------//

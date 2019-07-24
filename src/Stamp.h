@@ -11,9 +11,11 @@
 #define STAMP_SIZE 20
 #define STAMP_FREE 0
 
-/** Stamp as implemented by all NARS implementations */
+//Data structure//
+//--------------//
+//Stamp as implemented by all NARS implementations 
 typedef struct {
-    /** evidentalBase of stamp */
+    //EvidentalBase of stamp
     long evidentalBase[STAMP_SIZE];
 } Stamp;
 

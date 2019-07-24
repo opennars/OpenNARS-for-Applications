@@ -5,13 +5,6 @@ void Concept_SetSDR(Concept *concept, SDR sdr)
     concept->sdr = sdr;
     //Generate hash too:
     concept->sdr_hash = SDR_Hash(&sdr);
-    //Initialize counter to what the sdr has:
-    int k = 0;
-    ITERATE_SDR_BITS(i,j,
-        concept->sdr_bit_counter[k] = SDR_ReadBitInBlock(&sdr, i, j) ? 1.0 : -1.0;
-        concept->sdr_bit_counter[k] *= CONCEPT_INTERPOLATION_INIT_STRENGTH;
-        k++;
-    )
 }
 
 void Concept_Print(Concept *concept)

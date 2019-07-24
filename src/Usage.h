@@ -12,9 +12,9 @@
 //Data structure//
 //--------------//
 typedef struct {
-    /** use_count, how often it was used in total */
+    //use_count, how often it was used in total
     int useCount;
-    /** age, how many cycles ago it was last used */
+    //age, how many cycles ago it was last used
     int lastUsed;
 } Usage;
 
@@ -26,4 +26,5 @@ double Usage_usefulness(Usage *usage, long currentTime);
 Usage Usage_use(Usage *usage, long currentTime);
 //print it
 void Usage_Print(Usage *usage);
+
 #endif

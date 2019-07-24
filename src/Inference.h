@@ -16,10 +16,6 @@
 #include "Implication.h"
 #include <string.h>
 
-//Parameters//
-//----------//
-#define ASSUMPTION_OF_FAILURE_CONFIDENCE 0.01
-
 //Methods//
 //-------//
 //{Event a., Event b.} |- Event (&/,a,b).

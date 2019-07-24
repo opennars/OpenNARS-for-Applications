@@ -15,10 +15,8 @@
 
 //Parameters//
 //----------//
-#define CONCEPTS_MAX 1000 //TODO statically alloc once on INIT, as can lead in value too large for the compiler to handle
-#define EVENTS_MAX 64
+#define CONCEPTS_MAX 1000
 #define USE_HASHING true
-#define MATCH_STRATEGY VOTING
 
 //Data structure//
 //--------------//
