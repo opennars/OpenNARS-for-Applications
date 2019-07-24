@@ -338,7 +338,7 @@ void ANSNA_Pong_Right()
     ANSNA_Pong_Right_executed = true;
 }
 
-void ANSNA_Pong()
+void ANSNA_Pong(bool useNumericEncoding)
 {
     OUTPUT = 0;
     ANSNA_INIT();
@@ -394,18 +394,24 @@ void ANSNA_Pong()
             }
             printf("|\n");
         }
-        SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
-        //SDR sdrX = Encode_Scalar(2000, 0, 2*szX, szX+ballX-batX);
-        //SDR_PrintWhereTrue(&sdrX);
-        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(sdrX, "someXValue"));
-        /*if(batX < ballX)
+        if(useNumericEncoding)
         {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
+            SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
+            //SDR sdrX = Encode_Scalar(2000, 0, 2*szX, szX+ballX-batX);
+            //SDR_PrintWhereTrue(&sdrX);
+            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(sdrX, "someXValue"));
         }
-        if(ballX < batX)
+        else
         {
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
-        }*/
+            if(batX < ballX)
+            {
+                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
+            }
+            if(ballX < batX)
+            {
+                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
+            }
+        }
         ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
         if(ballX <= 0)
         {
@@ -471,7 +477,14 @@ int main(int argc, char *argv[])
     //exit(0);
     if(argc == 2) //pong
     {
-        ANSNA_Pong();
+        if(!strcmp(argv[1],"pong"))
+        {
+            ANSNA_Pong(false);
+        }
+        if(!strcmp(argv[1],"pong-numeric"))
+        {
+            ANSNA_Pong(true);
+        }
     }
     srand(1337);
     ANSNA_INIT();
@@ -486,6 +499,7 @@ int main(int argc, char *argv[])
     ANSNA_Follow_Test();
     printf("All tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:\n");
     printf("ANSNA pong (starts Pong example)\n");
+    printf("ANSNA numeric-pong (starts Pong example with numeric input)\n");
     return 0;
 }
 

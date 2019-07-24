@@ -16,7 +16,7 @@ Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTi
     eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
-        Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
+        //Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
         //apply decomposition-based inference: prediction/explanation
         //RuleTable_Decomposition(c, &eMatch, currentTime); <- TODO, how to deal with derived events? I guess FIFO will need to support it
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it

@@ -38,8 +38,9 @@ typedef struct {
     Implication anticipation_negative_confirmation[ANTICIPATIONS_MAX];
     long anticipation_deadline[ANTICIPATIONS_MAX];
     int anticipation_operation_id[ANTICIPATIONS_MAX]; //the operation ID that was used
-    //Inheritance link to parent concept it was branched off from
-    
+    //Inheritance link to parent concept it was branched off from:
+    SDR parentSDR;
+    SDR_HASH_TYPE parent_sdr_hash;
 } Concept;
 
 //Methods//
