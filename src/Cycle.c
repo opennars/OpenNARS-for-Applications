@@ -58,21 +58,6 @@ Event ProcessEvent(Event *e, long currentTime)
         c = concepts.items[closest_concept_i].address;
         //perform concept-related inference
         eMatch = LocalInference(c, closest_concept_i, e, currentTime);
-        //generalize SDR:
-        SDR generalized = SDR_Intersection(&c->sdr, &e->sdr);
-        SDR_HASH_TYPE generalized_hash = SDR_Hash(&generalized);
-        if(!Memory_FindConceptBySDR(&generalized, generalized_hash, NULL))
-        {
-            Concept *generalConcept = Memory_Conceptualize(&generalized, e->attention); //general concept
-            c->inherited_sdr = generalized;
-            c->inherited_sdr_hash = generalized_hash;
-            //copy over all knowledge
-            for(int i=0; i<OPERATIONS_MAX; i++)
-            {
-                Table_COPY(&c->precondition_beliefs[i],  &generalConcept->precondition_beliefs[i]);
-                Table_COPY(&c->postcondition_beliefs[i], &generalConcept->postcondition_beliefs[i]);
-            }
-        }
     }
     if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
     {   
@@ -80,8 +65,6 @@ Event ProcessEvent(Event *e, long currentTime)
         Concept *specialConcept = Memory_Conceptualize(&e->sdr, e->attention);
         if(specialConcept != NULL && c != NULL)
         {
-            specialConcept->inherited_sdr = c->sdr;
-            specialConcept->inherited_sdr_hash = c->sdr_hash;
             //copy over all knowledge
             for(int i=0; i<OPERATIONS_MAX; i++)
             {
@@ -155,36 +138,6 @@ void Cycle_Perform(long currentTime)
         {
             ProcessEvent(goal, currentTime);
             Decision_Making(goal, currentTime);
-        }
-    }
-    //propagate spikes
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *c = concepts.items[i].address;
-        if(c->incoming_belief_spike.type != EVENT_TYPE_DELETED)
-        {
-            int closest_concept_i;
-            if(c->inherited_sdr_hash != 0 && Memory_getClosestConcept(&c->inherited_sdr, c->inherited_sdr_hash, &closest_concept_i))
-            {
-                Concept *parent = concepts.items[closest_concept_i].address;
-                parent->incoming_belief_spike = MatchEventToConcept(parent, &c->incoming_belief_spike);
-            }
-        }
-    }
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *c = concepts.items[i].address;
-        
-        if(c->incoming_belief_spike.type != EVENT_TYPE_DELETED)
-        {
-            c->belief_spike = c->incoming_belief_spike;
-            c->incoming_belief_spike = (Event) {0};
-            
-        }
-        if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
-        {
-            c->goal_spike = c->incoming_goal_spike;
-            c->incoming_goal_spike = (Event) {0};
         }
     }
 }

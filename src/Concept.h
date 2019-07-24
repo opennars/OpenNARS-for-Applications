@@ -40,9 +40,6 @@ typedef struct {
     Implication anticipation_negative_confirmation[ANTICIPATIONS_MAX];
     long anticipation_deadline[ANTICIPATIONS_MAX];
     int anticipation_operation_id[ANTICIPATIONS_MAX]; //the operation ID that was used
-    //"Inheritance link" to parent concept it was branched off from:
-    SDR inherited_sdr;
-    SDR_HASH_TYPE inherited_sdr_hash;
 } Concept;
 
 //Methods//
@@ -51,8 +48,6 @@ typedef struct {
 void Concept_SetSDR(Concept *concept, SDR sdr);
 //print a concept
 void Concept_Print(Concept *concept);
-//Interpolate concepts, see https://github.com/patham9/ANSNA/wiki/Concept:-Conceptual-Interpolation
-void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth);
 //Check anticipation disappointment
 void CheckAnticipationDisappointment(Concept *c, long currentTime);
 //Confirm anticipation
