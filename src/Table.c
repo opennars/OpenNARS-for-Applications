@@ -73,14 +73,14 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
                 RetRevised = revised;
                 IN_DEBUG
                 (
-                    printf("START\n\n");
+                    puts("START\n\n");
                     for(int i=0; i<table->itemsAmount; i++)
                     {
-                        printf(table->array[i].debug);
-                        printf("\n");
+                        puts(table->array[i].debug);
+                        puts("\n");
                         Implication_Print(&table->array[i]);
                     }
-                    printf("REVISION END\n");
+                    puts("REVISION END\n");
                     getchar();
                 )
             }
@@ -97,8 +97,8 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
             printf("START\n");
             for(int i=0; i<table->itemsAmount; i++)
             {
-                printf(table->array[i].debug);
-                printf("\n");
+                puts(table->array[i].debug);
+                puts("\n");
                 Implication_Print(&table->array[i]);
             }
             printf("ADDITION END\n");

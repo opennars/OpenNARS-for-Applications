@@ -27,8 +27,10 @@ typedef struct {
     long id; //ID assigned to the concept on conceptualization, cleaner than using its address
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
-    FIFO event_beliefs;
-    FIFO event_goals;
+    Event incoming_belief_spike;
+    Event incoming_goal_spike;
+    Event belief_spike;
+    Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
     Table postcondition_beliefs[OPERATIONS_MAX];
     //For concept interpolation:
@@ -38,9 +40,9 @@ typedef struct {
     Implication anticipation_negative_confirmation[ANTICIPATIONS_MAX];
     long anticipation_deadline[ANTICIPATIONS_MAX];
     int anticipation_operation_id[ANTICIPATIONS_MAX]; //the operation ID that was used
-    //Inheritance link to parent concept it was branched off from:
-    SDR parentSDR;
-    SDR_HASH_TYPE parent_sdr_hash;
+    //"Inheritance link" to parent concept it was branched off from:
+    SDR inherited_sdr;
+    SDR_HASH_TYPE inherited_sdr_hash;
 } Concept;
 
 //Methods//

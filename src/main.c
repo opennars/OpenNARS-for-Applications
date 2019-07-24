@@ -481,7 +481,7 @@ int main(int argc, char *argv[])
         {
             ANSNA_Pong(false);
         }
-        if(!strcmp(argv[1],"pong-numeric"))
+        if(!strcmp(argv[1],"numeric-pong"))
         {
             ANSNA_Pong(true);
         }

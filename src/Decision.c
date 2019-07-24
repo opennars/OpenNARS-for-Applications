@@ -62,7 +62,7 @@ Decision RealizeGoal(Event *goal, long currentTime)
                 if(Memory_getClosestConcept(&imp.sdr, imp.sdr_hash, &closest_precon_concept_i))
                 {
                     Concept * current_precon_c = concepts.items[closest_precon_concept_i].address;
-                    Event * precondition = FIFO_GetNewestElement(&current_precon_c->event_beliefs); //a. :|:
+                    Event * precondition = &current_precon_c->belief_spike; //a. :|:
                     if(precondition != NULL)
                     {
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
@@ -121,9 +121,9 @@ Decision RealizeGoal(Event *goal, long currentTime)
         IN_DEBUG
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence); //++
-            printf("\n"); //++
+            puts("\n"); //++
             printf("SELECTED PRECON: %s\n", precon_concept->debug); //++
-            printf(bestImp.debug); //++
+            puts(bestImp.debug); //++
             printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;

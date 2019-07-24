@@ -45,7 +45,6 @@ void Concept_Print(Concept *concept)
     )
 }*/
 
-
 void CheckAnticipationDisappointment(Concept *c, long currentTime)
 {
     for(int j=0; j<ANTICIPATIONS_MAX; j++)
@@ -62,11 +61,11 @@ void CheckAnticipationDisappointment(Concept *c, long currentTime)
                 (
                     printf("DISAPPOINTED %s\n", c->anticipation_negative_confirmation[j].debug);
                     getchar();
-                    printf("START\n");
+                    puts("START\n");
                     for(int i=0; i<c->precondition_beliefs[c->anticipation_operation_id[j]].itemsAmount; i++)
                     {
-                        printf(c->precondition_beliefs[c->anticipation_operation_id[j]].array[i].debug);
-                        printf("\n");
+                        puts(c->precondition_beliefs[c->anticipation_operation_id[j]].array[i].debug);
+                        puts("\n");
                         Implication_Print(&c->precondition_beliefs[c->anticipation_operation_id[j]].array[i]);
                     }
                     printf("ADDITION END\n");
