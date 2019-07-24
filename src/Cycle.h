@@ -13,12 +13,6 @@
 #include "RuleTable.h"
 #include "Decision.h"
 
-//Parameters//
-//----------//
-#define EVENT_SELECTIONS 5
-//for temporal induction:
-#define CONCEPT_SELECTIONS 5
-
 //Methods//
 //-------//
 //Apply one operating cyle

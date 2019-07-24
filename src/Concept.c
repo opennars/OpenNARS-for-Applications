@@ -16,14 +16,13 @@ void Concept_SetSDR(Concept *concept, SDR sdr)
 
 void Concept_Print(Concept *concept)
 {
-    printf("Concept:\n");
-    Attention_Print(&concept->attention);
+    puts("Concept:");
     SDR_PrintWhereTrue(&concept->sdr);
     Usage_Print(&concept->usage);
-    printf("\n");
+    puts("");
 }
 
-void CheckAnticipationDisappointment(Concept *c, long currentTime)
+void Concept_CheckAnticipationDisappointment(Concept *c, long currentTime)
 {
     for(int j=0; j<ANTICIPATIONS_MAX; j++)
     {
@@ -39,21 +38,21 @@ void CheckAnticipationDisappointment(Concept *c, long currentTime)
                 (
                     printf("DISAPPOINTED %s\n", c->anticipation_negative_confirmation[j].debug);
                     getchar();
-                    puts("START\n");
+                    puts("START");
                     for(int i=0; i<c->precondition_beliefs[c->anticipation_operation_id[j]].itemsAmount; i++)
                     {
                         puts(c->precondition_beliefs[c->anticipation_operation_id[j]].array[i].debug);
-                        puts("\n");
+                        puts("");
                         Implication_Print(&c->precondition_beliefs[c->anticipation_operation_id[j]].array[i]);
                     }
-                    printf("ADDITION END\n");
+                    puts("ADDITION END");
                  )
             }   
         }
     }
 }
 
-void ConfirmAnticipation(Concept *c, Event *e)
+void Concept_ConfirmAnticipation(Concept *c, Event *e)
 {
     for(int i=0; i<ANTICIPATIONS_MAX; i++)
     {

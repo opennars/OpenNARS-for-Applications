@@ -34,5 +34,5 @@ typedef struct
 //-------//
 //ANSNA decision making rule applying when goal is an operation
 void Decision_Making(Event *goal, long currentTime);
-Decision MotorBabbling();
+
 #endif

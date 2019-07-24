@@ -47,6 +47,7 @@ bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress);
 bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress);
 //make sure that the new priority is really higher!
 void PriorityQueue_IncreasePriority(PriorityQueue *queue, int i, double newPriority);
+//use this function and add again if maybe lower!
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress);
 
 #endif

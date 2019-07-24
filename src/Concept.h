@@ -10,6 +10,7 @@
 //-----------//
 #include "FIFO.h"
 #include "Table.h"
+#include "Usage.h"
 
 //Parameters//
 //----------//
@@ -21,14 +22,11 @@
 //Data structure//
 //--------------//
 typedef struct {
-    Attention attention;
     Usage usage;
     /** name of the concept like in OpenNARS */
     long id; //ID assigned to the concept on conceptualization, cleaner than using its address
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
-    Event incoming_belief_spike;
-    Event incoming_goal_spike;
     Event belief_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
@@ -49,8 +47,8 @@ void Concept_SetSDR(Concept *concept, SDR sdr);
 //print a concept
 void Concept_Print(Concept *concept);
 //Check anticipation disappointment
-void CheckAnticipationDisappointment(Concept *c, long currentTime);
+void Concept_CheckAnticipationDisappointment(Concept *c, long currentTime);
 //Confirm anticipation
-void ConfirmAnticipation(Concept *c, Event *e);
+void Concept_ConfirmAnticipation(Concept *c, Event *e);
 
 #endif

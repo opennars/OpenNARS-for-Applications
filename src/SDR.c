@@ -1,6 +1,5 @@
 #include "SDR.h"
 
-
 int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
 {
     return (sdr->blocks[block_i] >> block_bit_j) & 1;

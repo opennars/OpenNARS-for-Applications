@@ -26,8 +26,6 @@ void Table_Add(Table *table, Implication *imp);
 void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
 Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug);
-//Remove the highest truth expectation element, returning it
-Implication Table_PopHighestTruthExpectationElement(Table *table);
 //Copy all table entries
 void Table_COPY(Table *src, Table *target);
 

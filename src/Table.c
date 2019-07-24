@@ -108,17 +108,6 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     return RetRevised;
 }
 
-Implication Table_PopHighestTruthExpectationElement(Table *table)
-{
-    Implication result = table->array[0];
-    for(int i=1; i<table->itemsAmount; i++)
-    {
-        table->array[i-1] = table->array[i];
-    }
-    table->itemsAmount--;
-    return result;
-}
-
 void Table_COPY(Table *src, Table *target)
 {
     target->itemsAmount = src->itemsAmount;

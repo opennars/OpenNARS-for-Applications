@@ -10,7 +10,6 @@
 //-----------//
 #include "SDR.h"
 #include "Stamp.h"
-#include "Attention.h"
 
 //Data structure//
 //--------------//
@@ -18,7 +17,6 @@
 #define EVENT_TYPE_BELIEF 2
 #define EVENT_TYPE_DELETED 0
 typedef struct {
-    Attention attention;
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
     char type; //either JUDGMENT or GOAL

@@ -18,7 +18,6 @@
 #define MAX_FORWARD 5
 #define MAX_BACKWARD 5
 #define MAX_INDUCTIONS 5
-#define MAX_DERIVATIONS EVENT_SELECTIONS*CONCEPT_SELECTIONS*(MAX_FORWARD+MAX_BACKWARD+MAX_INDUCTIONS)
 #define ALLOW_ABDUCTION false
 
 //Cycle dependency//
@@ -29,7 +28,7 @@ extern int eventsDerived;
 //Methods//
 //-------//
 //Event b getting processed in foreign concept A (B is only used as ref for adding pre-conditions)
-void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID);
+void RuleTable_Composition(Event *a, Event *b, int operationID);
 //Concept e getting processed in its native concept c
 //void RuleTable_Decomposition(Concept *c, Event *e, long currentTime);
 

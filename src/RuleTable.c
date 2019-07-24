@@ -1,6 +1,6 @@
 #include "RuleTable.h"
 
-void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID)
+void RuleTable_Composition(Event *a, Event *b, int operationID)
 {   
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
@@ -32,14 +32,6 @@ void RuleTable_Composition(long currentTime, Event *a, Event *b, int operationID
                     Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
                     IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
                 }
-                Event sequence = b->occurrenceTime > a->occurrenceTime ? Inference_BeliefIntersection(a, b) : Inference_BeliefIntersection(b, a);
-                sequence.attention = Attention_deriveEvent(&B->attention, &a->truth, currentTime);
-                if(sequence.truth.confidence < MIN_CONFIDENCE || sequence.attention.priority < MIN_PRIORITY)
-                {
-                    return;
-                }
-                //derivations[eventsDerived++] = sequence; //not yet
-                IN_OUTPUT( printf("COMPOSED SEQUENCE EVENT: "); Event_Print(&sequence); )
             }
         }
     }

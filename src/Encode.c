@@ -1,23 +1,5 @@
 #include "Encode.h"
 
-/*SDR Encode_Scalar(int w, int min, int max, int value)
-{
-    int n = SDR_SIZE;
-    int numberOfBuckets = n - w + 1;
-    int range = max - min;
-    int relative = value - min;
-    // determine bucket into which the number falls into
-    // see https://arxiv.org/pdf/1602.05925.pdf
-    int selectedBucket = (int)floor((double)numberOfBuckets * relative / range);
-    SDR result = {0};
-    // active bits as described in the paper
-    for (int bitIdx=selectedBucket; bitIdx<selectedBucket+w; bitIdx++)
-    {
-        SDR_WriteBit(&result, bitIdx, 1);
-    }
-    return result;
-}*/
-
 //inspired by https://arxiv.org/pdf/1602.05925.pdf
 //but the bucket always being half of the SDR size +min_overlap
 //as needed for continuous perception purposes

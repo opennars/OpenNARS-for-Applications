@@ -1,11 +1,6 @@
 #include "Cycle.h"
 
-int eventsSelected = 0, eventsDerived = 0;
-Event selectedEvents[EVENT_SELECTIONS]; //better to be global
-Concept selectedConcepts[CONCEPT_SELECTIONS]; //too large to be a local array
-Event derivations[MAX_DERIVATIONS];
-
-Event MatchEventToConcept(Concept *c, Event *e)
+static Event MatchEventToConcept(Concept *c, Event *e)
 {
     Event eMatch = *e;
     eMatch.sdr = c->sdr;
@@ -14,37 +9,29 @@ Event MatchEventToConcept(Concept *c, Event *e)
 }
 
 //doing inference within the matched concept, returning the matched event
-Event LocalInference(Concept *c, int closest_concept_i, Event *e, long currentTime)
+static Event LocalInference(Concept *c, Event *e, long currentTime)
 {
-    ConfirmAnticipation(c, e);
+    Concept_ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     strcpy(c->debug, e->debug);
     Event eMatch = MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
-        //Concept_SDRInterpolation(c, &e->sdr, eMatch.truth); 
-        //apply decomposition-based inference: prediction/explanation
-        //RuleTable_Decomposition(c, &eMatch, currentTime); <- TODO, how to deal with derived events? I guess FIFO will need to support it
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
         //add event as spike to the concept:
         if(eMatch.type == EVENT_TYPE_BELIEF)
         {
             c->belief_spike = eMatch;
-            c->incoming_belief_spike = eMatch;
         }
         else
         {
             c->goal_spike = eMatch;
-            c->incoming_goal_spike = eMatch;
         }
-        //activate concepts attention with the event's attention
-        c->attention = Attention_activateConcept(&c->attention, &eMatch.attention); 
-        PriorityQueue_IncreasePriority(&concepts, closest_concept_i, c->attention.priority); //priority was increased
     }
     return eMatch;
 }
 
-Event ProcessEvent(Event *e, long currentTime)
+static Event ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
@@ -57,12 +44,12 @@ Event ProcessEvent(Event *e, long currentTime)
     {
         c = concepts.items[closest_concept_i].address;
         //perform concept-related inference
-        eMatch = LocalInference(c, closest_concept_i, e, currentTime);
+        eMatch = LocalInference(c, e, currentTime);
     }
     if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
     {   
         //add a new concept for e too at the end, as it does not exist already
-        Concept *specialConcept = Memory_Conceptualize(&e->sdr, e->attention);
+        Concept *specialConcept = Memory_Conceptualize(&e->sdr);
         if(specialConcept != NULL && c != NULL)
         {
             //copy over all knowledge
@@ -92,7 +79,7 @@ void Cycle_Perform(long currentTime)
     //process anticipation
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
+        Concept_CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
     }
     //1. process newest event
     if(belief_events.itemsAmount > 0)
@@ -119,7 +106,7 @@ void Cycle_Perform(long currentTime)
                         precondition = FIFO_GetKthNewestElement(&belief_events, j);
                         if(precondition->operationID == 0)
                         {
-                            RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
+                            RuleTable_Composition(precondition, &postcondition, operationID);
                         }
                     }
                 }
@@ -139,5 +126,13 @@ void Cycle_Perform(long currentTime)
             ProcessEvent(goal, currentTime);
             Decision_Making(goal, currentTime);
         }
+    }
+    //Re-sort queue
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *concept = concepts.items[i].address;
+        //usefulness was changed, 
+        PriorityQueue_PopAt(&concepts, i, NULL);
+        Memory_addConcept(concept, currentTime);
     }
 }
