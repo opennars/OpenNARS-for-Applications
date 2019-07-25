@@ -9,7 +9,7 @@ void Implication_SetSDR(Implication *implication, SDR sdr)
 
 void Implication_Print(Implication *implication)
 {
-    printf("Implication:\n");
+    puts("Implication:");
     SDR_PrintWhereTrue(&implication->sdr);
     Truth_Print(&implication->truth);
     Stamp_print(&implication->stamp);

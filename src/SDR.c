@@ -27,7 +27,7 @@ void SDR_PrintFull(SDR *sdr)
     ITERATE_SDR_BITS(i,j,
         printf("%d,",(int) SDR_ReadBitInBlock(sdr,i,j));
     )
-    printf("\n");
+    puts("");
 }
 
 void SDR_PrintWhereTrue(SDR *sdr)
@@ -38,7 +38,7 @@ void SDR_PrintWhereTrue(SDR *sdr)
             printf("[%lu](%d,%d)\n", i*SDR_BLOCK_SIZE+j, i, j);
         }
     )
-    printf("===\n");
+    puts("===");
 }
 
 int SDR_CountTrue(SDR *sdr)

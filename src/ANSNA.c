@@ -14,7 +14,7 @@ void ANSNA_Cycles(int cycles)
 {
     for(int i=0; i<cycles; i++)
     {
-        IN_DEBUG( printf("\nNew inference cycle:\n----------\n"); )
+        IN_DEBUG( puts("\nNew inference cycle:\n----------"); )
         Cycle_Perform(currentTime);
         currentTime++;
     }
@@ -37,7 +37,7 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug)
         }
     }
     Memory_addEvent(&ev);
-    IN_OUTPUT( printf("INPUT EVENT"); Event_Print(&ev); )
+    IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     ANSNA_Cycles(1);
     return ev;
 }

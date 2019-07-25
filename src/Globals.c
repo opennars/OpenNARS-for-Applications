@@ -7,8 +7,8 @@ void assert(bool b, char* message)
 {
     if(!b)
     {
-        printf("%s", message);
-        printf("\nTest failed.\n");
+        puts(message);
+        puts("Test failed.");
         exit(1);
     }
 }

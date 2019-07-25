@@ -94,14 +94,14 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         Table_Add(table, imp);
         IN_DEBUG
         (
-            printf("START\n");
+            puts("START");
             for(int i=0; i<table->itemsAmount; i++)
             {
                 puts(table->array[i].debug);
-                puts("\n");
+                puts("");
                 Implication_Print(&table->array[i]);
             }
-            printf("ADDITION END\n");
+            puts("ADDITION END");
             getchar();
         )
     }
