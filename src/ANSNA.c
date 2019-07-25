@@ -37,7 +37,7 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug)
         }
     }
     Memory_addEvent(&ev);
-    IN_OUTPUT( fputs("INPUT EVENT", stdout); Event_Print(&ev); )
+    IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     ANSNA_Cycles(1);
     return ev;
 }
