@@ -68,12 +68,6 @@ void FIFO_Test()
                              .truth = {.frequency = 1.0, .confidence = 0.9},
                              .stamp = (Stamp) { .evidentalBase = {newbase} }, 
                              .occurrenceTime = i*10+3 };
-    Event ret = FIFO_AddAndRevise(&event2, &fifo);
-    assert(ret.occurrenceTime > i*10 && ret.occurrenceTime < i*10+3, "occurrence time has to be within");
-    assert(ret.stamp.evidentalBase[0] == i && ret.stamp.evidentalBase[1] == newbase, "it has to be the new event");
-    assert(fifo.array[FIFO_SIZE-i].stamp.evidentalBase[0] == i && fifo.array[FIFO_SIZE-i].stamp.evidentalBase[1] == newbase, "FIFO should have deleted the entry");
-    printf("%f %f \n", ret.truth.frequency, ret.truth.confidence);
-    assert(ret.truth.confidence > 0.9, "confidence of revision result should be higher than premise's");
     FIFO fifo2 = {0};
     for(int i=0; i<FIFO_SIZE*2; i++)
     {
@@ -202,14 +196,14 @@ void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
     puts(">>ANSNA Alphabet test start");
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, "a");
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, c);
+            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
         }
         ANSNA_Cycles(1);
         puts("TICK");
@@ -228,19 +222,19 @@ void ANSNA_Procedure_Test()
     ANSNA_INIT();
     puts(">>ANSNA Procedure test start");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
-    ANSNA_AddInputBelief(Encode_Term("a"), "a");
+    ANSNA_AddInputBelief(Encode_Term("a"));
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("op"), "op");
+    ANSNA_AddInputBelief(Encode_Term("op"));
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("result"), "result");
+    ANSNA_AddInputBelief(Encode_Term("result"));
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("a"), "a");
+    ANSNA_AddInputBelief(Encode_Term("a"));
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputGoal(Encode_Term("result"), "result");
+    ANSNA_AddInputGoal(Encode_Term("result"));
     ANSNA_Cycles(10);
     puts("---------------");
     assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
@@ -276,13 +270,13 @@ void ANSNA_Follow_Test()
     for(int i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
-        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), BALL == LEFT ? "ball_left" : "ball_right");
-        ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna");
+        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"));
+        ANSNA_AddInputGoal(Encode_Term("good_ansna"));
         if(ANSNA_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -300,7 +294,7 @@ void ANSNA_Follow_Test()
         {        
             if(BALL == LEFT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna");
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -396,20 +390,20 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
             //SDR_PrintWhereTrue(&sdrX);
-            ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(sdrX, "someXValue"));
+            ANSNA_AddInputBelief(sdrX);
         }
         else
         {
             if(batX < ballX)
             {
-                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_right"), "ball_right"));
+                ANSNA_AddInputBelief(Encode_Term("ball_right"));
             }
             if(ballX < batX)
             {
-                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("ball_left"), "ball_left"));
+                ANSNA_AddInputBelief(Encode_Term("ball_left"));
             }
         }
-        ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputGoal(Encode_Term("good_ansna"), "good_ansna"));
+        ANSNA_AddInputGoal(Encode_Term("good_ansna"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -432,7 +426,7 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                ANSNA_Util_PrintExistingEventNarsese(ANSNA_AddInputBelief(Encode_Term("good_ansna"), "good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
                 puts("good");
                 hits++;
             }

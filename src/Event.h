@@ -25,7 +25,7 @@ typedef struct {
     long occurrenceTime;
     int operationID; //automatically obtained from SDR on input
     bool processed;
-    char *debug;
+    char debug[30];
 } Event;
 
 //Methods//

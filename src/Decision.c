@@ -6,7 +6,7 @@ static void Decision_InjectActionEvent(Decision *decision)
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1]; //TODO put into InjectActionEvent
     (*decision->op.action)();
-    ANSNA_AddInputBelief(decision->op.sdr, "SomeOpID");
+    ANSNA_AddInputBelief(decision->op.sdr);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
