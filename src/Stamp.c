@@ -72,7 +72,7 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 
 void Stamp_print(Stamp *stamp)
 {
-    printf("stamp=");
+    fputs("stamp=", stdout);
     for(int i=0; i<STAMP_SIZE; i++)
     {
         if(stamp->evidentalBase[i] == STAMP_FREE)
@@ -81,5 +81,5 @@ void Stamp_print(Stamp *stamp)
         }
         printf("%ld,", stamp->evidentalBase[i]);
     }
-    printf("\n");
+    puts("");
 }

@@ -35,7 +35,7 @@ static Event ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
-    IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
+    IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     int closest_concept_i;
     Concept *c = NULL;
@@ -71,7 +71,7 @@ void Cycle_Perform(long currentTime)
         {
             Event *ev = FIFO_GetKthNewestElement(&belief_events, i);
             puts(ev->debug);
-            puts("\n");
+            puts("");
         }
         printf("items amount: %d",belief_events.itemsAmount);
         getchar();
@@ -112,7 +112,7 @@ void Cycle_Perform(long currentTime)
                 }
                 else
                 {
-                    //RuleTable_Composition(currentTime, precondition, &postcondition, operationID);
+                    RuleTable_Composition(precondition, &postcondition, operationID);
                 }
             }
         }

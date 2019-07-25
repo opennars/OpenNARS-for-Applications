@@ -495,8 +495,8 @@ int main(int argc, char *argv[])
     Memory_Test();
     ANSNA_Follow_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
-    puts("ANSNA pong (starts Pong example)\n");
-    puts("ANSNA numeric-pong (starts Pong example with numeric input)\n");
+    puts("ANSNA pong (starts Pong example)");
+    puts("ANSNA numeric-pong (starts Pong example with numeric input)");
     return 0;
 }
 

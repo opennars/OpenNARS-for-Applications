@@ -70,11 +70,11 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                             IN_DEBUG
                             (
                                 printf("CONSIDERED PRECON: %s\n", current_precon_c->debug);
-                                printf("CONSIDERED PRECON truth ");
+                                fputs("CONSIDERED PRECON truth ", stdout);
                                 Truth_Print(&precondition->truth);
-                                printf("CONSIDERED goal truth ");
+                                fputs("CONSIDERED goal truth ", stdout);
                                 Truth_Print(&goal->truth);
-                                printf("CONSIDERED imp truth ");
+                                fputs("CONSIDERED imp truth ", stdout);
                                 Truth_Print(&imp.truth);
                                 printf("CONSIDERED time %d\n", (int)precondition->occurrenceTime);
                                 SDR_PrintWhereTrue(&current_precon_c->sdr);
@@ -109,7 +109,6 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
             }
         }
         //EMD anticipation
-        //postcon_c->precondition_beliefs[best_i].array[best_j] = Inference_AssumptionOfFailure(&bestImp);
         IN_DEBUG
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence); //++

@@ -26,11 +26,11 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                     sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
                     sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
                     IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
-                    IN_OUTPUT( printf("Formed (pre- and post-condition) implication: "); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
+                    IN_OUTPUT( fputs("Formed (pre- and post-condition) implication: ", stdout); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
                     Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
-                    IN_OUTPUT( if(revised_precon.sdr_hash != 0) { printf("REVISED pre-condition implication: "); Implication_Print(&revised_precon); } )
+                    IN_OUTPUT( if(revised_precon.sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(&revised_precon); } )
                     Implication revised_postcon = Table_AddAndRevise(&A->postcondition_beliefs[operationID], &postcondition_implication, debug);
-                    IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { printf("REVISED post-condition implication: "); Implication_Print(&revised_postcon); } )
+                    IN_OUTPUT( if(revised_postcon.sdr_hash != 0) { fputs("REVISED post-condition implication: ", stdout); Implication_Print(&revised_postcon); } )
                 }
             }
         }
@@ -64,7 +64,7 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                 Implication updated = Inference_AssumptionOfFailure(&postcon);
                 Table_Add(&c->postcondition_beliefs, &updated);
                 k++;
-                IN_OUTPUT( printf("DETACHED FORWARD EVENT: "); Event_Print(&res); )
+                IN_OUTPUT( fputs("DETACHED FORWARD EVENT: ", stdout); Event_Print(&res); )
                 if(k>MAX_FORWARD)
                 {
                     break;
@@ -92,7 +92,7 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                 }
                 derivations[eventsDerived++] = res;
                 k++;
-                IN_OUTPUT( printf("DETACHED BACKWARD EVENT: "); Event_Print(&res); )
+                IN_OUTPUT( fputs("DETACHED BACKWARD EVENT: ", stdout); Event_Print(&res); )
                 if(k>MAX_BACKWARD)
                 {
                     break;
