@@ -24,6 +24,7 @@ static Event LocalInference(Concept *c, Event *e, long currentTime)
         }
         else
         {
+            c->incoming_goal_spike = eMatch;
             c->goal_spike = eMatch;
         }
     }
@@ -137,8 +138,76 @@ void Cycle_Perform(long currentTime)
         {
             ProcessEvent(goal, currentTime);
             Decision_Making(goal, currentTime);
+            goal->processed = true;
         }
     }
+    //process incoming goal spikes:
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
+        {
+            bool processGoalSpike = false;
+            if(c->goal_spike.type == EVENT_TYPE_DELETED)
+            {
+                c->goal_spike = c->incoming_goal_spike;
+                processGoalSpike = true;
+            }
+            else
+            {
+                double expExisting = Truth_Expectation(Truth_Projection(c->goal_spike.truth, c->goal_spike.occurrenceTime, currentTime));
+                double expIncoming = Truth_Expectation(Truth_Projection(c->incoming_goal_spike.truth, c->incoming_goal_spike.occurrenceTime, currentTime));
+                //check if there is evidental overlap
+                bool overlap = Stamp_checkOverlap(&c->incoming_goal_spike.stamp, &c->goal_spike.stamp);
+                //if there is, apply choice, keeping the stronger one:
+                if(overlap)
+                {
+                    if(expIncoming > expExisting)
+                    {
+                        c->goal_spike = c->incoming_goal_spike;
+                        processGoalSpike = true;
+                    }
+                }
+                else
+                //and else revise, increasing the "activation potential"
+                {
+                    c->goal_spike = Inference_EventRevision(&c->goal_spike, &c->incoming_goal_spike);
+                    processGoalSpike = true;
+                }
+            }
+            if(processGoalSpike)
+            {
+                Decision_Making(&c->goal_spike, currentTime);
+                //c->goal_spike = (Event) {0};
+            }
+        }
+        c->incoming_goal_spike = (Event) {0};
+    }
+    //pass goal spikes on to the next
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->goal_spike.type != EVENT_TYPE_DELETED)
+        {
+            for(int opi=0; opi<OPERATIONS_MAX; opi++)
+            {
+                for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                {
+                    //todo better handling as spikes could arrive at the same time, overriding each other, maybe same handling as before?
+                    SDR *preSDR = &c->precondition_beliefs[opi].array[j].sdr;
+                    int closest_concept_i;
+                    if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
+                    {
+                       Concept *pre = concepts.items[closest_concept_i].address;
+                       pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
+                    }
+                }
+            }
+        }
+    }
+    //TODO same for belief spikes, but no triggering of decision making, just updating beliefSpike with same policy
+    //This will allow it to be better prepared for the future (for instance when observations are missing), though for simple experiments it might not make much difference,
+    //but without goal spikes, multistep procedure learning is difficult
     //Re-sort queue
     for(int i=0; i<concepts.itemsAmount; i++)
     {

@@ -491,6 +491,7 @@ void ANSNA_Multistep_Test()
         ANSNA_AddInputBelief(Encode_Term("light_active"));
         ANSNA_Cycles(100);
     }
+    ANSNA_Cycles(1000);
     ANSNA_AddInputBelief(Encode_Term("start_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(100);
@@ -509,7 +510,7 @@ void ANSNA_Multistep2_Test()
     ANSNA_INIT();
     ANSNA_AddOperation(Encode_Term("op_goto_switch"), ANSNA_Lightswitch_GotoSwitch); 
     ANSNA_AddOperation(Encode_Term("op_activate_switch"), ANSNA_Lightswitch_ActivateSwitch); 
-    for(int i=0; i<5; i++)
+    for(int i=0; i<50; i++)
     {
         ANSNA_AddInputBelief(Encode_Term("start_at"));
         ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
@@ -518,7 +519,7 @@ void ANSNA_Multistep2_Test()
         ANSNA_Cycles(100);
     }
     ANSNA_Cycles(1000);
-    for(int i=0; i<5; i++)
+    for(int i=0; i<50; i++)
     {
         ANSNA_AddInputBelief(Encode_Term("switch_at"));
         ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
@@ -527,15 +528,16 @@ void ANSNA_Multistep2_Test()
         ANSNA_AddInputBelief(Encode_Term("light_active"));
         ANSNA_Cycles(100);
     }
+    ANSNA_Cycles(1000);
     ANSNA_AddInputBelief(Encode_Term("start_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(100);
-    assert(ANSNA_Lightswitch_GotoSwitch_executed && !ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to go to the switch first");
+    assert(ANSNA_Lightswitch_GotoSwitch_executed && !ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to go to the switch first (2)");
     ANSNA_Lightswitch_GotoSwitch_executed = false;
     puts("ANSNA arrived at the switch");
     ANSNA_AddInputBelief(Encode_Term("switch_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
-    assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch");
+    assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch (2)");
     puts("<<ANSNA Multistep2 test successful");
 }
 

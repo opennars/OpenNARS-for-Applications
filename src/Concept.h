@@ -24,6 +24,7 @@ typedef struct {
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;
     Event belief_spike;
+    Event incoming_goal_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
     Table postcondition_beliefs[OPERATIONS_MAX];
