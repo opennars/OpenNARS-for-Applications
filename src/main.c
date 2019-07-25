@@ -474,9 +474,9 @@ void ANSNA_Lightswitch_ActivateSwitch()
     ANSNA_Lightswitch_ActivateSwitch_executed = true;
     puts("ANSNA invoked activate switch");
 }
-void ANSNA_MultiStepBehavior()
+void ANSNA_Multistep_Test()
 {
-    puts(">>ANSNA MultistepBehavior start");
+    puts(">>ANSNA Multistep test start");
     OUTPUT = 0;
     ANSNA_INIT();
     ANSNA_AddOperation(Encode_Term("op_goto_switch"), ANSNA_Lightswitch_GotoSwitch); 
@@ -502,7 +502,7 @@ void ANSNA_MultiStepBehavior()
     ANSNA_AddInputBelief(Encode_Term("switch_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch");
-    puts("<<ANSNA MultistepBehavior successful");
+    puts("<<ANSNA Multistep test successful");
 }
 
 int main(int argc, char *argv[]) 
@@ -531,7 +531,7 @@ int main(int argc, char *argv[])
     ANSNA_Procedure_Test();
     Memory_Test();
     ANSNA_Follow_Test();
-    ANSNA_MultiStepBehavior();
+    ANSNA_Multistep_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("ANSNA pong (starts Pong example)");
     puts("ANSNA numeric-pong (starts Pong example with numeric input)");
