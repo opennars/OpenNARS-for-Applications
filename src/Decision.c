@@ -111,9 +111,9 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         //EMD anticipation
         IN_DEBUG
         (
-            printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence); //++
-            puts("\n"); //++
-            printf("SELECTED PRECON: %s\n", precon_concept->debug); //++
+            printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
+            puts("");
+            printf("SELECTED PRECON: %s\n", precon_concept->debug);
             puts(bestImp.debug); //++
             printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
