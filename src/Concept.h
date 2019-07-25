@@ -32,7 +32,6 @@ typedef struct {
     long anticipation_deadline[ANTICIPATIONS_MAX];
     int anticipation_operation_id[ANTICIPATIONS_MAX];
     //For ebugging:
-    long id; 
     char debug[50];
 } Concept;
 

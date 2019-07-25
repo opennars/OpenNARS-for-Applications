@@ -28,14 +28,12 @@ void ANSNA_INIT();
 //Run the system for a certain amount of cycles
 void ANSNA_Cycles(int cycles);
 //Add input
-Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug);
-Event ANSNA_AddInputBelief(SDR sdr, char *debug);
-Event ANSNA_AddInputGoal(SDR sdr, char *debug);
+Event ANSNA_AddInput(SDR sdr, char type, Truth truth);
+Event ANSNA_AddInputBelief(SDR sdr);
+Event ANSNA_AddInputGoal(SDR sdr);
 //Add an operation
 void ANSNA_AddOperation(SDR sdr, Action procedure);
 //Add an operation
 void ANSNA_AddEventInspector(SDR sdr, EventInspector procedure);
-//Print event as Narsese
-void ANSNA_Util_PrintExistingEventNarsese(Event e);
 
 #endif

@@ -13,6 +13,10 @@
 #include "RuleTable.h"
 #include "Decision.h"
 
+//Parameters//
+//----------//
+#define CONCEPT_FORMATION_NOVELTY 0.2
+
 //Methods//
 //-------//
 //Apply one operating cyle

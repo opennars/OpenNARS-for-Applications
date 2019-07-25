@@ -1,6 +1,7 @@
 #include "ANSNA.h"
 
 long currentTime = 1;
+int concept_id = 1;
 void ANSNA_INIT()
 {
     SDR_INIT();
@@ -8,6 +9,7 @@ void ANSNA_INIT()
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
     event_inspector = NULL;
+    concept_id = 0;
 }
 
 void ANSNA_Cycles(int cycles)
@@ -20,10 +22,30 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug)
+
+Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);
-    ev.debug = debug;
+    int closest_concept_i=0;
+    if(Memory_getClosestConcept(&sdr, SDR_Hash(&sdr), &closest_concept_i))
+    {
+        Concept *c = concepts.items[closest_concept_i].address;
+        if(strlen(c->debug) == 0)
+        {
+            char debug[20];
+            //assign index as name to event and concept since concept has no name yet
+            sprintf(debug, "%d", concept_id++);
+            strcpy(ev.debug, debug);
+            strcpy(c->debug, debug);
+        }
+        else
+        {
+            //name event according to concept
+            strcpy(ev.debug, c->debug);
+        }
+        char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
+        printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
+    }
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         if(operations[i].action == 0)
@@ -42,15 +64,15 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth, char *debug)
     return ev;
 }
 
-Event ANSNA_AddInputBelief(SDR sdr, char *debug)
+Event ANSNA_AddInputBelief(SDR sdr)
 {
-    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, debug);
+    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
     return ret;
 }
 
-Event ANSNA_AddInputGoal(SDR sdr, char *debug)
+Event ANSNA_AddInputGoal(SDR sdr)
 {
-    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH, debug);
+    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH);
 }
 
 void ANSNA_AddOperation(SDR sdr, Action procedure)
@@ -58,13 +80,3 @@ void ANSNA_AddOperation(SDR sdr, Action procedure)
     Memory_addOperation((Operation) {.sdr = sdr, .action = procedure});
 }
 
-void ANSNA_Util_PrintExistingEventNarsese(Event e)
-{
-    int closest_concept_i=0;
-    if(Memory_getClosestConcept(&e.sdr, e.sdr_hash, &closest_concept_i))
-    {
-        Concept *c = concepts.items[closest_concept_i].address;
-        char* st = e.type == EVENT_TYPE_BELIEF ? "." : "!";
-        printf("Input: %ld%s :|: %%%f;%f%%\n", c->id, st, e.truth.frequency, e.truth.confidence);
-    }
-}

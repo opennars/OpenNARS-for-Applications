@@ -3,7 +3,6 @@
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 int operations_index = 0;
-long concept_id = 1;
 
 static void Memory_ResetEvents()
 {
@@ -30,7 +29,6 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     operations_index = 0;
-    concept_id = 1;
 }
 
 bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
@@ -63,7 +61,6 @@ Concept* Memory_Conceptualize(SDR *sdr)
         addedConcept = feedback.addedItem.address;
         *addedConcept = (Concept) {0};
         Concept_SetSDR(addedConcept, *sdr);
-        addedConcept->id = concept_id++;
     }
     return addedConcept;
 }

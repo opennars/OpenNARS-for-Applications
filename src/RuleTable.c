@@ -22,9 +22,9 @@ void RuleTable_Composition(Event *a, Event *b, int operationID)
                 Implication postcondition_implication =  b->occurrenceTime > a->occurrenceTime ? Inference_BeliefInduction(a, b, true)  : Inference_BeliefInduction(b, a, true);
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE) //has same truth as postcon, just different SDR
                 {
-                    char debug[50];
-                    sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
-                    sprintf(debug, "<(&/,%s,%d) =/> %s>.",a->debug, operationID, b->debug); //++
+                    char debug[100];
+                    sprintf(debug, "<(&/,%s,^op%d()) =/> %s>.",a->debug, operationID, b->debug); //++
+                    sprintf(debug, "<(&/,%s,^op%d()) =/> %s>.",a->debug, operationID, b->debug); //++
                     IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( fputs("Formed (pre- and post-condition) implication: ", stdout); Implication_Print(&postcondition_implication); Implication_Print(&precondition_implication); )
                     Implication revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);

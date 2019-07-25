@@ -13,7 +13,6 @@ static Event LocalInference(Concept *c, Event *e, long currentTime)
 {
     Concept_ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
-    strcpy(c->debug, e->debug);
     Event eMatch = MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
@@ -48,15 +47,28 @@ static Event ProcessEvent(Event *e, long currentTime)
     }
     if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
     {   
-        //add a new concept for e too at the end, as it does not exist already
-        Concept *specialConcept = Memory_Conceptualize(&e->sdr);
-        if(specialConcept != NULL && c != NULL)
+        //if different enough
+        bool different_enough = true;
+        if(c != NULL)
         {
-            //copy over all knowledge
-            for(int i=0; i<OPERATIONS_MAX; i++)
+            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&e->sdr, &eMatch.sdr));
+            if(novelty < CONCEPT_FORMATION_NOVELTY)
             {
-                Table_COPY(&c->precondition_beliefs[i],  &specialConcept->precondition_beliefs[i]);
-                Table_COPY(&c->postcondition_beliefs[i], &specialConcept->postcondition_beliefs[i]);
+                different_enough = false;
+            }
+        }
+        if(different_enough)
+        {
+            //add a new concept for e too at the end, as it does not exist already
+            Concept *specialConcept = Memory_Conceptualize(&e->sdr);
+            if(specialConcept != NULL && c != NULL)
+            {
+                //copy over all knowledge
+                for(int i=0; i<OPERATIONS_MAX; i++)
+                {
+                    Table_COPY(&c->precondition_beliefs[i],  &specialConcept->precondition_beliefs[i]);
+                    Table_COPY(&c->postcondition_beliefs[i], &specialConcept->postcondition_beliefs[i]);
+                }
             }
         }
     }
