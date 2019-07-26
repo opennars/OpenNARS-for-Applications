@@ -18,7 +18,7 @@
 #define FIFO_SIZE 10
 #define MAX_SEQUENCE_LEN 5
 #define SDR_MAX_SATURATION TERM_ONES*2
-#define FIFO_PERFORM_SEQUENCING false
+#define FIFO_PERFORM_SEQUENCING true
 
 //Data structure//
 //--------------//
