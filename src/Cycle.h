@@ -16,7 +16,7 @@
 //Parameters//
 //----------//
 #define CONCEPT_FORMATION_NOVELTY 0.2
-#define PROPAGATE_GOAL_SPIKES false
+#define PROPAGATE_GOAL_SPIKES true
 
 //Methods//
 //-------//

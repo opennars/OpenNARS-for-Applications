@@ -58,7 +58,7 @@ void FIFO_Test()
     }
     for(int i=0; i<FIFO_SIZE; i++)
     {
-        assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
+        assert(FIFO_SIZE-i == fifo.array[0][i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     //now see whether a new item is revised with the correct one:
     int i=3; //revise with item 10, which has occurrence time 10
@@ -156,7 +156,7 @@ void Memory_Test()
                                (Truth) {.frequency = 1, .confidence = 0.9}, 
                                1337);
     Memory_addEvent(&e);
-    assert(belief_events.array[0].truth.confidence == 0.9, "event has to be there"); //identify
+    assert(belief_events.array[0][0].truth.confidence == 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Concept *c = Memory_Conceptualize(&e.sdr);
