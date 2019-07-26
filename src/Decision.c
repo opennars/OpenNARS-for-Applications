@@ -1,5 +1,6 @@
 #include "Decision.h"
 
+double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
 static void Decision_InjectActionEvent(Decision *decision)
 {
@@ -90,7 +91,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
             }
         }
         printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
-        if(decision.operationID == 0 || bestTruthExpectation < DECISION_THRESHOLD)
+        if(bestTruthExpectation < DECISION_THRESHOLD)
         {
             return decision;
         }
@@ -104,7 +105,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
                 postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = {-stampID} };
                 postcon_c->anticipation_operation_id[i] = decision.operationID;
-                IN_DEBUG ( printf("ANTICIPATE future=%ld\n variance=%ld\n",bestImp.occurrenceTimeOffset,bestImp.variance); )
+                IN_DEBUG( printf("ANTICIPATE future=%ld variance=%ld\n", bestImp.occurrenceTimeOffset,bestImp.variance); )
                 stampID--;
             }
         }
@@ -122,7 +123,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
     return decision;
 }
 
-void Decision_Making(Event *goal, long currentTime)
+bool Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
     //try motor babbling with a certain chance
@@ -135,8 +136,9 @@ void Decision_Making(Event *goal, long currentTime)
     {
         decision = Decision_RealizeGoal(goal, currentTime);
     }
-    if(decision.execute)
+    if(decision.execute && decision.operationID)
     {
         Decision_InjectActionEvent(&decision);
     }
+    return decision.execute;
 }

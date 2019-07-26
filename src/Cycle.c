@@ -25,7 +25,6 @@ static Event LocalInference(Concept *c, Event *e, long currentTime)
         else
         {
             c->incoming_goal_spike = eMatch;
-            c->goal_spike = eMatch;
         }
     }
     return eMatch;
@@ -130,7 +129,7 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
-    //invoke decision making for goals
+    //process goals
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestElement(&goal_events);
@@ -141,7 +140,29 @@ void Cycle_Perform(long currentTime)
             goal->processed = true;
         }
     }
-    //process incoming goal spikes:
+    //pass goal spikes on to the next
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->goal_spike.type != EVENT_TYPE_DELETED)
+        {
+            for(int opi=0; opi<OPERATIONS_MAX; opi++)
+            {
+                for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                {
+                    //todo better handling as spikes could arrive at the same time, overriding each other, maybe same handling as before?
+                    SDR *preSDR = &c->precondition_beliefs[opi].array[j].sdr;
+                    int closest_concept_i;
+                    if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
+                    {
+                       Concept *pre = concepts.items[closest_concept_i].address;
+                       pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
+                    }
+                }
+            }
+        }
+    }
+    //process incoming goal spikes, invoking potential operations
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
@@ -175,36 +196,18 @@ void Cycle_Perform(long currentTime)
                     processGoalSpike = true;
                 }
             }
-            if(processGoalSpike)
+            if(processGoalSpike && !c->goal_spike.processed)
             {
-                Decision_Making(&c->goal_spike, currentTime);
-                //c->goal_spike = (Event) {0};
+                c->goal_spike.processed = true;
+                if(Decision_Making(&c->goal_spike, currentTime))
+                {
+                    c->goal_spike = (Event) {0}; //don't propagate further
+                }
             }
         }
         c->incoming_goal_spike = (Event) {0};
     }
-    //pass goal spikes on to the next
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *c = concepts.items[i].address;
-        if(c->goal_spike.type != EVENT_TYPE_DELETED)
-        {
-            for(int opi=0; opi<OPERATIONS_MAX; opi++)
-            {
-                for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
-                {
-                    //todo better handling as spikes could arrive at the same time, overriding each other, maybe same handling as before?
-                    SDR *preSDR = &c->precondition_beliefs[opi].array[j].sdr;
-                    int closest_concept_i;
-                    if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
-                    {
-                       Concept *pre = concepts.items[closest_concept_i].address;
-                       pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
-                    }
-                }
-            }
-        }
-    }
+
     //TODO same for belief spikes, but no triggering of decision making, just updating beliefSpike with same policy
     //This will allow it to be better prepared for the future (for instance when observations are missing), though for simple experiments it might not make much difference,
     //but without goal spikes, multistep procedure learning is difficult

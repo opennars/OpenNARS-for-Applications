@@ -13,7 +13,8 @@
 //truth expectation needed for executions
 #define DECISION_THRESHOLD 0.55
 //motor babbling chance
-#define MOTOR_BABBLING_CHANCE 0.2
+#define MOTOR_BABBLING_CHANCE_INITIAL 0.2
+extern double MOTOR_BABBLING_CHANCE;
 //deadline = predictionTime*ANTICIPATION_FORWARD
 #define ANTICIPATION_FORWARD 100.0 
 //deadline += ANTICIPATION_WINDOW*variance
@@ -33,6 +34,6 @@ typedef struct
 //Methods//
 //-------//
 //ANSNA decision making rule applying when goal is an operation
-void Decision_Making(Event *goal, long currentTime);
+bool Decision_Making(Event *goal, long currentTime);
 
 #endif

@@ -474,6 +474,7 @@ void ANSNA_Lightswitch_ActivateSwitch()
 }
 void ANSNA_Multistep_Test()
 {
+    MOTOR_BABBLING_CHANCE = 0;
     puts(">>ANSNA Multistep test start");
     OUTPUT = 0;
     ANSNA_INIT();
@@ -501,10 +502,12 @@ void ANSNA_Multistep_Test()
     ANSNA_AddInputBelief(Encode_Term("switch_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch");
+    ANSNA_Lightswitch_ActivateSwitch_executed = false;
     puts("<<ANSNA Multistep test successful");
 }
 void ANSNA_Multistep2_Test()
 {
+    MOTOR_BABBLING_CHANCE = 0;
     puts(">>ANSNA Multistep2 test start");
     OUTPUT = 0;
     ANSNA_INIT();
@@ -538,6 +541,7 @@ void ANSNA_Multistep2_Test()
     ANSNA_AddInputBelief(Encode_Term("switch_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch (2)");
+    ANSNA_Lightswitch_ActivateSwitch_executed = false;
     puts("<<ANSNA Multistep2 test successful");
 }
 
