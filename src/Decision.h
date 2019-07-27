@@ -15,7 +15,7 @@
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 extern double MOTOR_BABBLING_CHANCE;
-//deadline = predictionTime*ANTICIPATION_FORWARD
+//deadline = (predictionTime-currentTime)*ANTICIPATION_FORWARD
 #define ANTICIPATION_FORWARD 100.0 
 //deadline += ANTICIPATION_WINDOW*variance
 #define ANTICIPATION_WINDOW 10.0
