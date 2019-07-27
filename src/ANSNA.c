@@ -22,7 +22,6 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-
 Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);

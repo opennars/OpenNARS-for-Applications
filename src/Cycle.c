@@ -1,5 +1,43 @@
 #include "Cycle.h"
 
+static Event Increased_Action_Potential(Event *existing_potential, Event *incoming_spike, long currentTime)
+{
+    if(existing_potential->type == EVENT_TYPE_DELETED)
+    {
+        return *incoming_spike;
+    }
+    else
+    {
+        double expExisting = Truth_Expectation(Inference_EventUpdate(existing_potential, currentTime).truth);
+        double expIncoming = Truth_Expectation(Inference_EventUpdate(incoming_spike, currentTime).truth);
+        //check if there is evidental overlap
+        bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
+        //if there is, apply choice, keeping the stronger one:
+        if(overlap)
+        {
+            if(expIncoming > expExisting)
+            {
+                return *incoming_spike;
+            }
+        }
+        else
+        //and else revise, increasing the "activation potential"
+        {
+            Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
+            if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
+            {
+                return revised_spike;
+            }
+            //lower, also use choice
+            if(expIncoming > expExisting)
+            {
+                return *incoming_spike;
+            }
+        }
+    }
+    return *existing_potential;
+}
+
 static Event MatchEventToConcept(Concept *c, Event *e)
 {
     Event eMatch = *e;
@@ -73,36 +111,6 @@ static Event ProcessEvent(Event *e, long currentTime)
         }
     }
     return eMatch;
-}
-
-Event Increased_Action_Potential(Event *existing_potential, Event *incoming_spike, long currentTime)
-{
-    Event ret_spike = *existing_potential;
-    if(existing_potential->type == EVENT_TYPE_DELETED)
-    {
-        ret_spike = *incoming_spike;
-    }
-    else
-    {
-        double expExisting = Truth_Expectation(Truth_Projection(existing_potential->truth, existing_potential->occurrenceTime, currentTime));
-        double expIncoming = Truth_Expectation(Truth_Projection(incoming_spike->truth, incoming_spike->occurrenceTime, currentTime));
-        //check if there is evidental overlap
-        bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
-        //if there is, apply choice, keeping the stronger one:
-        if(overlap)
-        {
-            if(expIncoming > expExisting)
-            {
-                ret_spike = *incoming_spike;
-            }
-        }
-        else
-        //and else revise, increasing the "activation potential"
-        {
-            ret_spike = Inference_EventRevision(existing_potential, incoming_spike);
-        }
-    }
-    return ret_spike;
 }
 
 void Cycle_Perform(long currentTime)

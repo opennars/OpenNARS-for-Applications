@@ -180,6 +180,7 @@ void Memory_Test()
                                1337);
     Memory_addEvent(&e2);
     Concept *c2 = Memory_Conceptualize(&e2.sdr);
+    Concept_Print(c2);
     assert(Memory_FindConceptBySDR(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should match to c2!");
     assert(Memory_getClosestConcept(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");

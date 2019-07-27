@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "Event.h"
 #include "Implication.h"
+#include "Globals.h"
 #include <string.h>
 
 //Methods//
@@ -35,5 +36,9 @@ Event Inference_GoalDeduction(Event *component, Implication *compound);
 Event Inference_BeliefAbduction(Event *component, Implication *compound);
 //{Event task a!, Implication <a =/> b>.} |- Event b!
 Event Inference_GoalAbduction(Event *component, Implication *compound);
+//{Event a.} |- Event a. updated to currentTime
+Event Inference_EventUpdate(Event *ev, long currentTime);
+//{Event (&/,a,op())!, Event a.} |- Event op()!
+Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime);
 
 #endif

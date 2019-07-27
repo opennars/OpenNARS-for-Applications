@@ -31,7 +31,8 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
                             .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                             .stamp = conclusionStamp,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
-                            .variance = b->occurrenceTime - a->occurrenceTime };
+                            .variance = b->occurrenceTime - a->occurrenceTime,
+                            .revisions = 1 };
 }
 
 //{Event a., Event a.} |- Event a.
@@ -51,10 +52,11 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
     Implication ret = (Implication) { .sdr = a->sdr,
-                           .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
-                           .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, a->truth.confidence, b->truth.confidence),
-                           .variance = weighted_average(a->variance, b->variance, a->truth.confidence, b->truth.confidence) };
+                                      .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
+                                      .stamp = conclusionStamp, 
+                                      .occurrenceTimeOffset = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, a->truth.confidence, b->truth.confidence),
+                                      .variance = weighted_average(a->variance, b->variance, a->truth.confidence, b->truth.confidence),
+                                      .revisions = MAX(a->revisions+1, b->revisions+1) };
     strcpy(ret.debug, a->debug);
     return ret;
 }
@@ -79,6 +81,27 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
+}
+
+//{Event a.} |- Event a. updated to currentTime
+Event Inference_EventUpdate(Event *ev, long currentTime)
+{
+    Event ret = *ev;
+    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
+    return ret;
+}
+
+//{Event (&/,a,op())!, Event a.} |- Event op()!
+Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime)
+{
+    DERIVATION_STAMP(component,compound)
+    Event compoundUpdated = Inference_EventUpdate(compound, currentTime);
+    Event componentUpdated = Inference_EventUpdate(component, currentTime);
+    return (Event) { .sdr = compound->sdr, 
+                     .type = EVENT_TYPE_GOAL, 
+                     .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = compound->occurrenceTime };
 }
 
 //{Event b., Implication <a =/> b>.} |- Event a.

@@ -59,13 +59,13 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 int closest_precon_concept_i;
                 if(Memory_getClosestConcept(&imp.sdr, imp.sdr_hash, &closest_precon_concept_i))
                 {
-                    Concept * current_precon_c = concepts.items[closest_precon_concept_i].address;
-                    Event * precondition = &current_precon_c->belief_spike; //a. :|:
+                    Concept *current_precon_c = concepts.items[closest_precon_concept_i].address;
+                    Event *precondition = &current_precon_c->belief_spike; //a. :|:
                     if(precondition != NULL)
                     {
-                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
-                        ContextualOperation.truth = Truth_Projection(ContextualOperation.truth, ContextualOperation.occurrenceTime, currentTime);
-                        double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime))); //op()! //TODO project to now
+                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
+                        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+                        Inference_OperationDeduction(&ContextualOperation, precondition, currentTime);
                         if(operationGoalTruthExpectation > bestTruthExpectation)
                         {
                             IN_DEBUG
@@ -77,7 +77,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                                 Truth_Print(&goal->truth);
                                 fputs("CONSIDERED imp truth ", stdout);
                                 Truth_Print(&imp.truth);
-                                printf("CONSIDERED time %d\n", (int)precondition->occurrenceTime);
+                                printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
                                 SDR_PrintWhereTrue(&current_precon_c->sdr);
                                 SDR_PrintWhereTrue(&precondition->sdr);
                             )
