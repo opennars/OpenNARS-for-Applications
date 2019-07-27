@@ -23,7 +23,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
                      .occurrenceTime = conclusionTime };
 }
 
-//{Event a., Event b.} |- Implication <a =/> c>.
+//{Event a., Event b.} |- Implication <a =/> b>.
 Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
