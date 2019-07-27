@@ -100,10 +100,17 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         {
             if(postcon_c->anticipation_deadline[i] == 0)
             {
+                //"compute amount of negative evidence based on current evidence" (Robert's estimation)
+                //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
+                long countWithNegativeEvidence = bestImp.revisions;
+                double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
+                //compute confidence by negative evidence
+                double w = Truth_c2w(bestImp.truth.confidence) * negativeEvidenceRatio;
+                double c = Truth_w2c(w);
                 postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset * ANTICIPATION_FORWARD + bestImp.variance * ANTICIPATION_WINDOW;
                 postcon_c->anticipation_negative_confirmation[i] = bestImp;
-                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = {-stampID} };
+                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
+                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
                 postcon_c->anticipation_operation_id[i] = decision.operationID;
                 IN_DEBUG( printf("ANTICIPATE future=%ld variance=%ld\n", bestImp.occurrenceTimeOffset,bestImp.variance); )
                 stampID--;

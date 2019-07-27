@@ -19,8 +19,6 @@ extern double MOTOR_BABBLING_CHANCE;
 #define ANTICIPATION_FORWARD 100.0 
 //deadline += ANTICIPATION_WINDOW*variance
 #define ANTICIPATION_WINDOW 10.0
-//confidence of anticipation
-#define ANTICIPATION_CONFIDENCE 0.1
 
 //Data structure//
 //--------------//
