@@ -9,7 +9,7 @@
 
 //Parameters//
 //----------//
-#define TABLE_SIZE 50
+#define TABLE_SIZE 10
 
 //Data structure//
 //--------------//
