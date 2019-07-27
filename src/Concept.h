@@ -27,12 +27,11 @@ typedef struct {
     Event incoming_goal_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
-    Table postcondition_beliefs[OPERATIONS_MAX];
     //Anticipation:
     Implication anticipation_negative_confirmation[ANTICIPATIONS_MAX];
     long anticipation_deadline[ANTICIPATIONS_MAX];
     int anticipation_operation_id[ANTICIPATIONS_MAX];
-    //For ebugging:
+    //For debugging:
     char debug[50];
 } Concept;
 

@@ -105,7 +105,6 @@ static Event ProcessEvent(Event *e, long currentTime)
                 for(int i=0; i<OPERATIONS_MAX; i++)
                 {
                     Table_COPY(&c->precondition_beliefs[i],  &specialConcept->precondition_beliefs[i]);
-                    Table_COPY(&c->postcondition_beliefs[i], &specialConcept->postcondition_beliefs[i]);
                 }
             }
         }
