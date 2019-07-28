@@ -187,7 +187,6 @@ void Cycle_Perform(long currentTime)
         {
             ProcessEvent(goal, currentTime);
             Decision_Making(goal, currentTime);
-            goal->processed = true;
         }
     }
     //process spikes
