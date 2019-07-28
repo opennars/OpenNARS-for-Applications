@@ -215,7 +215,7 @@ void Cycle_Perform(long currentTime)
                         //if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
                         {
                             Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
-                            if((pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed) /*&& SDR_Equal(&pre->sdr, &imp->sourceConceptSDR)*/)
+                            if((pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed) && SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
                             {
                                 pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
                             }
@@ -240,10 +240,6 @@ void Cycle_Perform(long currentTime)
             c->incoming_goal_spike = (Event) {0};
         }
     }
-
-    //TODO same for belief spikes, but no triggering of decision making, just updating beliefSpike with same policy
-    //This will allow it to be better prepared for the future (for instance when observations are missing), though for simple experiments it might not make much difference,
-    //but without goal spikes, multistep procedure learning is difficult
     //Re-sort queue
     for(int i=0; i<concepts.itemsAmount; i++)
     {
