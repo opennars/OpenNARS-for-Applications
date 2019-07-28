@@ -114,6 +114,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 postcon_c->anticipation_operation_id[i] = decision.operationID;
                 IN_DEBUG( printf("ANTICIPATE future=%ld variance=%ld\n", bestImp.occurrenceTimeOffset,bestImp.variance); )
                 stampID--;
+                break;
             }
         }
         //EMD anticipation
