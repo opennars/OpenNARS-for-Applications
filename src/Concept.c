@@ -25,7 +25,12 @@ void Concept_CheckAnticipationDisappointment(Concept *c, long currentTime)
             if(currentTime > c->anticipation_deadline[j])
             {
                 //disappointed
-                Table_AddAndRevise(&c->precondition_beliefs[c->anticipation_operation_id[j]], &c->anticipation_negative_confirmation[j], c->anticipation_negative_confirmation[j].debug);
+                Implication *added = Table_AddAndRevise(&c->precondition_beliefs[c->anticipation_operation_id[j]], &c->anticipation_negative_confirmation[j], c->anticipation_negative_confirmation[j].debug);
+                if(added != NULL)
+                {
+                    added->sourceConcept = c->anticipation_negative_confirmation[j].sourceConcept;
+                    added->sourceConceptSDR = c->anticipation_negative_confirmation[j].sourceConceptSDR;
+                }
                 c->anticipation_deadline[j] = 0;
                 IN_DEBUG
                 (
