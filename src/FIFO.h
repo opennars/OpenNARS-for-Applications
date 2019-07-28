@@ -11,10 +11,12 @@
 //-----------//
 #include "Inference.h"
 #include "Globals.h"
+#include "Encode.h"
 
 //Parameters//
 //----------//
 #define FIFO_SIZE 10
+#define MAX_SEQUENCE_LEN 5
 
 //Data structure//
 //--------------//
@@ -22,7 +24,7 @@ typedef struct
 {
     int itemsAmount;
     int currentIndex;
-    Event array[FIFO_SIZE];
+    Event array[MAX_SEQUENCE_LEN][FIFO_SIZE];
 } FIFO;
 typedef struct
 {
@@ -34,13 +36,11 @@ typedef struct
 //-------//
 //Resets the FIFO
 void FIFO_RESET(FIFO *fifo);
-//Copy a FIFO
-void FIFO_COPY(FIFO *src, FIFO *target);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Get the newest element
-Event* FIFO_GetNewestElement(FIFO *fifo);
+Event* FIFO_GetNewestSequence(FIFO *fifo, int len);
 //Get the k-th newest FIFO element
-Event* FIFO_GetKthNewestElement(FIFO *fifo, int k);
+Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int len);
 
 #endif

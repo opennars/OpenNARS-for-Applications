@@ -48,13 +48,6 @@ Truth Truth_Deduction(Truth v1, Truth v2)
     return (Truth) {.frequency = f, .confidence = c};
 }
 
-Truth Truth_Analogy(Truth v1, Truth v2)
-{
-    double f = Truth_and(v1.frequency, v2.frequency);
-    double c = Truth_and(Truth_and(v1.confidence, v2.confidence), v2.frequency);
-    return (Truth) { .frequency = f, .confidence = c };
-}
-
 Truth Truth_Induction(Truth v1, Truth v2)
 {
     return Truth_Abduction(v2, v1);

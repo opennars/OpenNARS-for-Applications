@@ -24,7 +24,7 @@ SDR Encode_Scalar(int min, int max, int value)
 //A fast hash function for strings
 //https://stackoverflow.com/questions/7666509/hash-function-for-string
 //answer by cnicutar:
-unsigned long hash(unsigned char *str)
+static unsigned long hash(unsigned char *str)
 {
     unsigned long hash = 5381;
     int c;

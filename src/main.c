@@ -58,7 +58,7 @@ void FIFO_Test()
     }
     for(int i=0; i<FIFO_SIZE; i++)
     {
-        assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
+        assert(FIFO_SIZE-i == fifo.array[0][i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     //now see whether a new item is revised with the correct one:
     int i=3; //revise with item 10, which has occurrence time 10
@@ -156,7 +156,7 @@ void Memory_Test()
                                (Truth) {.frequency = 1, .confidence = 0.9}, 
                                1337);
     Memory_addEvent(&e);
-    assert(belief_events.array[0].truth.confidence == 0.9, "event has to be there"); //identify
+    assert(belief_events.array[0][0].truth.confidence == 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Concept *c = Memory_Conceptualize(&e.sdr);
@@ -180,6 +180,7 @@ void Memory_Test()
                                1337);
     Memory_addEvent(&e2);
     Concept *c2 = Memory_Conceptualize(&e2.sdr);
+    Concept_Print(c2);
     assert(Memory_FindConceptBySDR(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should match to c2!");
     assert(Memory_getClosestConcept(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
@@ -190,7 +191,6 @@ void Memory_Test()
     assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     puts("<<Memory test successful");
 }
-
 
 void ANSNA_Alphabet_Test()
 {
@@ -329,7 +329,6 @@ void ANSNA_Pong_Right()
 {
     ANSNA_Pong_Right_executed = true;
 }
-
 void ANSNA_Pong(bool useNumericEncoding)
 {
     OUTPUT = 0;
@@ -476,6 +475,7 @@ void ANSNA_Lightswitch_ActivateSwitch()
 }
 void ANSNA_Multistep_Test()
 {
+    MOTOR_BABBLING_CHANCE = 0;
     puts(">>ANSNA Multistep test start");
     OUTPUT = 0;
     ANSNA_INIT();
@@ -493,6 +493,7 @@ void ANSNA_Multistep_Test()
         ANSNA_AddInputBelief(Encode_Term("light_active"));
         ANSNA_Cycles(100);
     }
+    ANSNA_Cycles(1000);
     ANSNA_AddInputBelief(Encode_Term("start_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(100);
@@ -502,7 +503,47 @@ void ANSNA_Multistep_Test()
     ANSNA_AddInputBelief(Encode_Term("switch_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch");
+    ANSNA_Lightswitch_ActivateSwitch_executed = false;
     puts("<<ANSNA Multistep test successful");
+}
+void ANSNA_Multistep2_Test()
+{
+    MOTOR_BABBLING_CHANCE = 0;
+    puts(">>ANSNA Multistep2 test start");
+    OUTPUT = 0;
+    ANSNA_INIT();
+    ANSNA_AddOperation(Encode_Term("op_goto_switch"), ANSNA_Lightswitch_GotoSwitch); 
+    ANSNA_AddOperation(Encode_Term("op_activate_switch"), ANSNA_Lightswitch_ActivateSwitch); 
+    for(int i=0; i<50; i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("start_at"));
+        ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
+        ANSNA_Cycles(10);
+        ANSNA_AddInputBelief(Encode_Term("switch_at"));
+        ANSNA_Cycles(100);
+    }
+    ANSNA_Cycles(1000);
+    for(int i=0; i<50; i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("switch_at"));
+        ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
+        ANSNA_AddInputBelief(Encode_Term("switch_active"));
+        ANSNA_Cycles(5);
+        ANSNA_AddInputBelief(Encode_Term("light_active"));
+        ANSNA_Cycles(100);
+    }
+    ANSNA_Cycles(1000);
+    ANSNA_AddInputBelief(Encode_Term("start_at"));
+    ANSNA_AddInputGoal(Encode_Term("light_active"));
+    ANSNA_Cycles(100);
+    assert(ANSNA_Lightswitch_GotoSwitch_executed && !ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to go to the switch first (2)");
+    ANSNA_Lightswitch_GotoSwitch_executed = false;
+    puts("ANSNA arrived at the switch");
+    ANSNA_AddInputBelief(Encode_Term("switch_at"));
+    ANSNA_AddInputGoal(Encode_Term("light_active"));
+    assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch (2)");
+    ANSNA_Lightswitch_ActivateSwitch_executed = false;
+    puts("<<ANSNA Multistep2 test successful");
 }
 
 int main(int argc, char *argv[]) 
@@ -532,6 +573,7 @@ int main(int argc, char *argv[])
     Memory_Test();
     ANSNA_Follow_Test();
     ANSNA_Multistep_Test();
+    ANSNA_Multistep2_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("ANSNA pong (starts Pong example)");
     puts("ANSNA numeric-pong (starts Pong example with numeric input)");

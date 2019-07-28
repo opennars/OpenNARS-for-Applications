@@ -4,32 +4,39 @@ void FIFO_RESET(FIFO *fifo)
 {
     fifo->itemsAmount = 0;
     fifo->currentIndex = 0;
-    for(int i=0; i<FIFO_SIZE; i++)
+    for(int len=0; len<MAX_SEQUENCE_LEN; len++)
     {
-        fifo->array[i] = (Event) {0};
-    }
-}
-
-void FIFO_COPY(FIFO *src, FIFO *target)
-{
-    target->itemsAmount = src->itemsAmount;
-    target->currentIndex = src->currentIndex;
-    for(int i=0; i<FIFO_SIZE; i++)
-    {
-        target->array[i] = src->array[i];
+        for(int i=0; i<FIFO_SIZE; i++)
+        {
+            fifo->array[len][i] = (Event) {0};
+        }
     }
 }
 
 void FIFO_Add(Event *event, FIFO *fifo)
 {
-    fifo->array[fifo->currentIndex] = *event;
+    //build sequence elements:
+    for(int len=0; len<MAX_SEQUENCE_LEN; len++)
+    {
+        Event sequence = *event;
+        if(len>0)
+        {
+            Event *ev = FIFO_GetNewestSequence(fifo, len);
+            if(ev == NULL || ev->type == EVENT_TYPE_DELETED)
+            {
+                break;
+            }
+            sequence = Inference_BeliefIntersection(&sequence, ev);
+        }
+        fifo->array[len][fifo->currentIndex] = sequence;
+    }
     fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
     fifo->itemsAmount = MIN(fifo->itemsAmount + 1, FIFO_SIZE);
 }
 
-Event* FIFO_GetKthNewestElement(FIFO *fifo, int k)
+Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int len)
 {
-    if(fifo->itemsAmount == 0)
+    if(fifo->itemsAmount == 0 || k >= FIFO_SIZE)
     {
         return NULL;
     }
@@ -38,10 +45,10 @@ Event* FIFO_GetKthNewestElement(FIFO *fifo, int k)
     {
         index = FIFO_SIZE+index;
     }
-    return &fifo->array[index];
+    return &fifo->array[len][index];
 }
 
-Event* FIFO_GetNewestElement(FIFO *fifo)
+Event* FIFO_GetNewestSequence(FIFO *fifo, int len)
 {
-    return FIFO_GetKthNewestElement(fifo, 0);
+    return FIFO_GetKthNewestSequence(fifo, 0, len);
 }

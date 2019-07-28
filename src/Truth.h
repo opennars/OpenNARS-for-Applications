@@ -34,7 +34,6 @@ double Truth_c2w(double c);
 double Truth_Expectation(Truth v);
 Truth Truth_Revision(Truth v1, Truth v2);
 Truth Truth_Deduction(Truth v1, Truth v2);
-Truth Truth_Analogy(Truth v1, Truth v2);
 Truth Truth_Induction(Truth v1, Truth v2);
 Truth Truth_Abduction(Truth v1, Truth v2);
 Truth Truth_Intersection(Truth v1, Truth v2);

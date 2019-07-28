@@ -9,7 +9,7 @@
 
 //Parameters//
 //----------//
-#define TABLE_SIZE 50
+#define TABLE_SIZE 10
 
 //Data structure//
 //--------------//
@@ -24,8 +24,6 @@ typedef struct {
 //-------//
 //Add implication to table
 void Table_Add(Table *table, Implication *imp);
-//Remove implication from the table
-void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
 Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug);
 //Copy all table entries

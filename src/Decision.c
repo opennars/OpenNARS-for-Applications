@@ -1,5 +1,6 @@
 #include "Decision.h"
 
+double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
 static void Decision_InjectActionEvent(Decision *decision)
 {
@@ -58,13 +59,13 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 int closest_precon_concept_i;
                 if(Memory_getClosestConcept(&imp.sdr, imp.sdr_hash, &closest_precon_concept_i))
                 {
-                    Concept * current_precon_c = concepts.items[closest_precon_concept_i].address;
-                    Event * precondition = &current_precon_c->belief_spike; //a. :|:
+                    Concept *current_precon_c = concepts.items[closest_precon_concept_i].address;
+                    Event *precondition = &current_precon_c->belief_spike; //a. :|:
                     if(precondition != NULL)
                     {
-                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())!
-                        ContextualOperation.truth = Truth_Projection(ContextualOperation.truth, ContextualOperation.occurrenceTime, currentTime);
-                        double operationGoalTruthExpectation = Truth_Expectation(Truth_Deduction(ContextualOperation.truth, Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime))); //op()! //TODO project to now
+                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
+                        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+                        Inference_OperationDeduction(&ContextualOperation, precondition, currentTime);
                         if(operationGoalTruthExpectation > bestTruthExpectation)
                         {
                             IN_DEBUG
@@ -76,7 +77,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                                 Truth_Print(&goal->truth);
                                 fputs("CONSIDERED imp truth ", stdout);
                                 Truth_Print(&imp.truth);
-                                printf("CONSIDERED time %d\n", (int)precondition->occurrenceTime);
+                                printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
                                 SDR_PrintWhereTrue(&current_precon_c->sdr);
                                 SDR_PrintWhereTrue(&precondition->sdr);
                             )
@@ -90,7 +91,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
             }
         }
         printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
-        if(decision.operationID == 0 || bestTruthExpectation < DECISION_THRESHOLD)
+        if(bestTruthExpectation < DECISION_THRESHOLD)
         {
             return decision;
         }
@@ -99,12 +100,19 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         {
             if(postcon_c->anticipation_deadline[i] == 0)
             {
+                //"compute amount of negative evidence based on current evidence" (Robert's estimation)
+                //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
+                long countWithNegativeEvidence = bestImp.revisions;
+                double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
+                //compute confidence by negative evidence
+                double w = Truth_c2w(bestImp.truth.confidence) * negativeEvidenceRatio;
+                double c = Truth_w2c(w);
                 postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset * ANTICIPATION_FORWARD + bestImp.variance * ANTICIPATION_WINDOW;
                 postcon_c->anticipation_negative_confirmation[i] = bestImp;
-                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = {-stampID} };
+                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
+                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
                 postcon_c->anticipation_operation_id[i] = decision.operationID;
-                IN_DEBUG ( printf("ANTICIPATE future=%ld\n variance=%ld\n",bestImp.occurrenceTimeOffset,bestImp.variance); )
+                IN_DEBUG( printf("ANTICIPATE future=%ld variance=%ld\n", bestImp.occurrenceTimeOffset,bestImp.variance); )
                 stampID--;
             }
         }
@@ -122,7 +130,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
     return decision;
 }
 
-void Decision_Making(Event *goal, long currentTime)
+bool Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
     //try motor babbling with a certain chance
@@ -135,8 +143,9 @@ void Decision_Making(Event *goal, long currentTime)
     {
         decision = Decision_RealizeGoal(goal, currentTime);
     }
-    if(decision.execute)
+    if(decision.execute && decision.operationID)
     {
         Decision_InjectActionEvent(&decision);
     }
+    return decision.execute;
 }
