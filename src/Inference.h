@@ -22,7 +22,7 @@
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b);
 //{Event a., Event b.} |- Implication <a =/> c>.
-Implication Inference_BeliefInduction(Event *a, Event *b, bool postcondition);
+Implication Inference_BeliefInduction(Event *a, Event *b);
 //{Event a., Event a.} |- Event a.
 //{Event a!, Event a!} |- Event a!
 Event Inference_EventRevision(Event *a, Event *b);
