@@ -1,6 +1,6 @@
 #include "Table.h"
 
-void Table_Add(Table *table, Implication *imp)
+Implication *Table_Add(Table *table, Implication *imp)
 {
     double impTruthExp = Truth_Expectation(imp->truth);
     for(int i=0; i<TABLE_SIZE; i++)
@@ -18,9 +18,10 @@ void Table_Add(Table *table, Implication *imp)
             }
             table->array[i] = *imp;
             table->itemsAmount = MIN(table->itemsAmount+1, TABLE_SIZE);
-            return;
+            return &table->array[i];
         }
     }
+    return NULL;
 }
 
 void Table_Remove(Table *table, int index)
@@ -33,9 +34,8 @@ void Table_Remove(Table *table, int index)
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
 
-Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
+Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
 {
-    Implication RetRevised = (Implication) {0};
     //1. find element with same SDR
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
@@ -55,7 +55,7 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
             if(imp->truth.confidence > table->array[same_i].truth.confidence)
             {
                 Table_Remove(table, same_i);
-                Table_Add(table, imp);
+                return Table_Add(table, imp);
             }
         }
         //revision adds the revised element, removing the old implication from the table if it results in higher confidence than premises
@@ -69,8 +69,8 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
                 Implication_SetSDR(&revised, imp->sdr);
                 //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
                 Table_Remove(table, same_i);
-                Table_Add(table, &revised);
-                RetRevised = revised;
+                return Table_Add(table, &revised);
+                /*RetRevised = revised;
                 IN_DEBUG
                 (
                     puts("START\n\n");
@@ -82,7 +82,7 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
                     }
                     puts("REVISION END\n");
                     getchar();
-                )
+                )*/
             }
         }
     }
@@ -91,8 +91,8 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     {
         //3. add imp too:
         strcpy(imp->debug, debug);
-        Table_Add(table, imp);
-        IN_DEBUG
+        return Table_Add(table, imp);
+        /*IN_DEBUG
         (
             puts("START");
             for(int i=0; i<table->itemsAmount; i++)
@@ -103,9 +103,9 @@ Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug)
             }
             puts("ADDITION END");
             getchar();
-        )
+        )*/
     }
-    return RetRevised;
+    return NULL;
 }
 
 void Table_COPY(Table *src, Table *target)

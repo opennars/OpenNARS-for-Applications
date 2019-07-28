@@ -23,9 +23,9 @@ typedef struct {
 //Methods//
 //-------//
 //Add implication to table
-void Table_Add(Table *table, Implication *imp);
+Implication *Table_Add(Table *table, Implication *imp);
 //Add implication to table while allowing revision
-Implication Table_AddAndRevise(Table *table, Implication *imp, char *debug);
+Implication* Table_AddAndRevise(Table *table, Implication *imp, char *debug);
 //Copy all table entries
 void Table_COPY(Table *src, Table *target);
 

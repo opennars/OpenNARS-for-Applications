@@ -62,7 +62,15 @@ static Event LocalInference(Concept *c, Event *e, long currentTime)
         }
         else
         {
-            c->incoming_goal_spike = eMatch;
+            //pass spike if the concept doesn't have a satisfying motor command
+            if(!Decision_Making(&eMatch, currentTime))
+            {
+                c->incoming_goal_spike = eMatch;
+            }
+            else
+            {
+                e->propagated = true;
+            }
         }
     }
     return eMatch;
@@ -186,8 +194,6 @@ void Cycle_Perform(long currentTime)
         if(!goal->processed)
         {
             ProcessEvent(goal, currentTime);
-            Decision_Making(goal, currentTime);
-            goal->processed = true;
         }
     }
     //process spikes
@@ -197,18 +203,19 @@ void Cycle_Perform(long currentTime)
         for(int i=0; i<concepts.itemsAmount; i++)
         {
             Concept *c = concepts.items[i].address;
-            if(c->goal_spike.type != EVENT_TYPE_DELETED)
+            if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.propagated && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
             {
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
-                        SDR *preSDR = &c->precondition_beliefs[opi].array[j].sdr;
-                        int closest_concept_i;
-                        if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
+                        Implication *imp = &c->precondition_beliefs[opi].array[j];
+                        //SDR *preSDR = &imp->sdr;
+                        //int closest_concept_i;
+                        //if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
                         {
-                            Concept *pre = concepts.items[closest_concept_i].address;
-                            if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                            Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
+                            if((pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed) && SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
                             {
                                 pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
                             }
@@ -216,6 +223,7 @@ void Cycle_Perform(long currentTime)
                     }
                 }
             }
+            c->goal_spike.propagated = true;
         }
         //process incoming goal spikes, invoking potential operations
         for(int i=0; i<concepts.itemsAmount; i++)
@@ -224,22 +232,14 @@ void Cycle_Perform(long currentTime)
             if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
             {
                 c->goal_spike = Increased_Action_Potential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
-                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed)
+                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
                 {
-                    c->goal_spike.processed = true;
-                    if(Decision_Making(&c->goal_spike, currentTime))
-                    {
-                        c->goal_spike = (Event) {0}; //don't propagate further
-                    }
+                    ProcessEvent(&c->goal_spike, currentTime);
                 }
             }
             c->incoming_goal_spike = (Event) {0};
         }
     }
-
-    //TODO same for belief spikes, but no triggering of decision making, just updating beliefSpike with same policy
-    //This will allow it to be better prepared for the future (for instance when observations are missing), though for simple experiments it might not make much difference,
-    //but without goal spikes, multistep procedure learning is difficult
     //Re-sort queue
     for(int i=0; i<concepts.itemsAmount; i++)
     {

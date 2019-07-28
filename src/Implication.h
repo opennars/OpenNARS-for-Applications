@@ -16,6 +16,9 @@ typedef struct {
     long occurrenceTimeOffset;
     long variance;
     long revisions;
+    //for efficient spike propagation:
+    void *sourceConcept;
+    SDR sourceConceptSDR; //to check whether it's still the same
     char debug[100]; //++ DEBUG
 } Implication;
 
