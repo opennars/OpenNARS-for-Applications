@@ -13,9 +13,11 @@ typedef struct {
     SDR_HASH_TYPE sdr_hash;
     Truth truth;
     Stamp stamp;
-    long occurrenceTimeOffset;
-    long variance;
     long revisions;
+    //for anticipation window:
+    long occurrenceTimeOffset;
+    long minOccurrenceTimeOffset;
+    long maxOccurrenceTimeOffset;
     //for efficient spike propagation:
     void *sourceConcept;
     SDR sourceConceptSDR; //to check whether it's still the same

@@ -107,12 +107,14 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 //compute confidence by negative evidence
                 double w = Truth_c2w(bestImp.truth.confidence) * negativeEvidenceRatio;
                 double c = Truth_w2c(w);
-                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset * ANTICIPATION_FORWARD + bestImp.variance * ANTICIPATION_WINDOW;
+                //deadline: predicted time + tolerance
+                long pessimistic_stddev_estimate = bestImp.maxOccurrenceTimeOffset - bestImp.minOccurrenceTimeOffset;
+                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset + MAX(ANTICIPATION_MIN_WINDOW, pessimistic_stddev_estimate * ANTICIPATION_WINDOW_K);
                 postcon_c->anticipation_negative_confirmation[i] = bestImp;
                 postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
                 postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
                 postcon_c->anticipation_operation_id[i] = decision.operationID;
-                IN_DEBUG( printf("ANTICIPATE future=%ld variance=%ld\n", bestImp.occurrenceTimeOffset,bestImp.variance); )
+                IN_DEBUG( printf("ANTICIPATE future=%ld tolerance=%ld\n", bestImp.occurrenceTimeOffset, pessimistic_stddev_estimate); )
                 stampID--;
                 break;
             }

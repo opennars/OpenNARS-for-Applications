@@ -31,9 +31,10 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
     return  (Implication) { .sdr = a->sdr, 
                             .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                             .stamp = conclusionStamp,
+                            .revisions = 1,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
-                            .variance = b->occurrenceTime - a->occurrenceTime,
-                            .revisions = 1 };
+                            .minOccurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
+                            .maxOccurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }
 
 //{Event a., Event a.} |- Event a.
@@ -52,12 +53,14 @@ Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
+    double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     Implication ret = (Implication) { .sdr = a->sdr,
                                       .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
                                       .stamp = conclusionStamp, 
-                                      .occurrenceTimeOffset = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, a->truth.confidence, b->truth.confidence),
-                                      .variance = weighted_average(a->variance, b->variance, a->truth.confidence, b->truth.confidence),
-                                      .revisions = MAX(a->revisions+1, b->revisions+1) };
+                                      .revisions = a->revisions + b->revisions,
+                                      .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
+                                      .minOccurrenceTimeOffset = MIN(a->minOccurrenceTimeOffset, b->minOccurrenceTimeOffset),
+                                      .maxOccurrenceTimeOffset = MAX(a->maxOccurrenceTimeOffset, b->maxOccurrenceTimeOffset) };
     strcpy(ret.debug, a->debug);
     return ret;
 }
@@ -81,7 +84,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime /*"to be realized ASAP, so not - compound->occurrenceTimeOffset*/ };
 }
 
 //{Event a.} |- Event a. updated to currentTime

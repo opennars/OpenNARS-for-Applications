@@ -15,7 +15,7 @@
 
 //Parameters//
 //----------//
-#define FIFO_SIZE 10
+#define FIFO_SIZE 20
 #define MAX_SEQUENCE_LEN 5
 
 //Data structure//
