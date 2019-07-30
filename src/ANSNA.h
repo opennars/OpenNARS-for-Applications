@@ -14,6 +14,7 @@
 #define ANSNA_DEFAULT_FREQUENCY  1.0
 #define ANSNA_DEFAULT_CONFIDENCE 0.9
 #define ANSNA_DEFAULT_TRUTH ((Truth) { .frequency = ANSNA_DEFAULT_FREQUENCY, .confidence = ANSNA_DEFAULT_CONFIDENCE })
+extern long currentTime;
 
 //Callback function types//
 //-----------------------//

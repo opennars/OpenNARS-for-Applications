@@ -23,7 +23,7 @@ typedef struct {
 //Parameters//
 //----------//
 #define TRUTH_EVIDENTAL_HORIZON 1.0
-#define TRUTH_PROJECTION_DECAY 0.95
+#define TRUTH_PROJECTION_DECAY 0.9
 
 //Methods//
 //-------//

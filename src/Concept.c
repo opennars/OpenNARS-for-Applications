@@ -54,7 +54,7 @@ void Concept_ConfirmAnticipation(Concept *c, Event *e)
 {
     for(int i=0; i<ANTICIPATIONS_MAX; i++)
     {
-        if(c->anticipation_deadline[i]> 0 && e->type == EVENT_TYPE_BELIEF)
+        if(c->anticipation_deadline[i] > 0 && e->type == EVENT_TYPE_BELIEF)
         {
             //confirmed
             c->anticipation_deadline[i] = 0;

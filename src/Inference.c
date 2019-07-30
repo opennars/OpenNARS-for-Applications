@@ -73,7 +73,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime /*"to be realized ASAP, so not - compound->occurrenceTimeOffset*/ };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
 }
 
 //{Event a.} |- Event a. updated to currentTime

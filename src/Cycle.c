@@ -30,6 +30,7 @@ static Event Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
     return eMatch;
 }
 
+//Process an event, by crearting a concept, or activating an existing
 static Event Cycle_ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
@@ -42,14 +43,13 @@ static Event Cycle_ProcessEvent(Event *e, long currentTime)
     if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
-        //perform concept-related inference
         eMatch = Cycle_ActivateConcept(c, e, currentTime);
     }
     if(Memory_EventIsNovel(e, c))
     {
         //add a new concept for e too at the end, as it does not exist already
         Concept *specialConcept = Memory_Conceptualize(&e->sdr);
-        if(c != NULL && specialConcept != NULL && c != NULL)
+        if(c != NULL && specialConcept != NULL)
         {
             //copy over all knowledge
             for(int i=0; i<OPERATIONS_MAX; i++)
@@ -61,6 +61,7 @@ static Event Cycle_ProcessEvent(Event *e, long currentTime)
     return eMatch;
 }
 
+//Propagate spikes for subgoal processing, generating anticipations and decisions
 static void Cycle_PropagateSpikes(long currentTime)
 {
     //process spikes
@@ -69,23 +70,31 @@ static void Cycle_PropagateSpikes(long currentTime)
         //pass goal spikes on to the next
         for(int i=0; i<concepts.itemsAmount; i++)
         {
-            Concept *c = concepts.items[i].address;
-            if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.propagated && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
+            Concept *postc = concepts.items[i].address;
+            if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
             {
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
-                    for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                    for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
                     {
-                        Implication *imp = &c->precondition_beliefs[opi].array[j];
+                        Implication *imp = &postc->precondition_beliefs[opi].array[j];
                         Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
-                        if((pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed) && SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
+                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                         {
-                            pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
+                            if(SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
+                            {
+                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
+                            }
+                            else
+                            {
+                                Table_Remove(&postc->precondition_beliefs[opi], j);
+                                j--; //repeat iteration, with re-checking loop condition
+                            }
                         }
                     }
                 }
             }
-            c->goal_spike.propagated = true;
+            postc->goal_spike.propagated = true;
         }
         //process incoming goal spikes, invoking potential operations
         for(int i=0; i<concepts.itemsAmount; i++)
