@@ -2,6 +2,7 @@
 
 long currentTime = 1;
 int concept_id = 1;
+
 void ANSNA_INIT()
 {
     SDR_INIT();

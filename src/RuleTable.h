@@ -8,14 +8,6 @@
 #include "Globals.h"
 #include "Memory.h"
 
-//Parameters//
-//----------//
-//min confidence
-#define MIN_CONFIDENCE 0.01
-//#define MAX_FORWARD 5
-//#define MAX_BACKWARD 5
-//#define ALLOW_ABDUCTION false
-
 //Methods//
 //-------//
 //Event b getting processed in foreign concept A (B is only used as ref for adding pre-conditions)

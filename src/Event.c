@@ -34,3 +34,4 @@ void Event_Print(Event *event)
     Stamp_print(&event->stamp);
     printf("occurrenceTime=%ld\n\n", event->occurrenceTime);
 }
+

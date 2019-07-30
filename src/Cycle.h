@@ -12,6 +12,7 @@
 #include "Globals.h"
 #include "RuleTable.h"
 #include "Decision.h"
+#include "Inference.h"
 
 //Parameters//
 //----------//

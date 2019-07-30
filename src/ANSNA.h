@@ -9,7 +9,6 @@
 //-----------//
 #include "Cycle.h"
 
-
 //Parameters//
 //----------//
 #define ANSNA_DEFAULT_FREQUENCY  1.0
