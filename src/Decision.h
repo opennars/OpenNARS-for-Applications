@@ -11,12 +11,13 @@
 //Parameters//
 //----------//
 //truth expectation needed for executions
-#define DECISION_THRESHOLD 0.53
+#define DECISION_THRESHOLD 0.501
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 extern double MOTOR_BABBLING_CHANCE;
-#define ANTICIPATION_WINDOW_K 2.0
-#define ANTICIPATION_MIN_WINDOW 250
+#define ANTICIPATION_FORWARD_MUL 1.0
+#define ANTICIPATION_VARIANCE_MUL 2.0
+#define ANTICIPATION_MIN_WINDOW 500
 
 //Data structure//
 //--------------//

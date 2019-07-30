@@ -39,7 +39,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 
 //{Event a., Event a.} |- Event a.
 //{Event a!, Event a!} |- Event a!
-Event Inference_EventRevision(Event *a, Event *b)
+static Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .sdr = a->sdr, 
@@ -65,17 +65,6 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     return ret;
 }
 
-//{Event a., Implication <a =/> b>.} |- Event b.
-Event Inference_BeliefDeduction(Event *component, Implication *compound)
-{
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_BELIEF, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
-}
-
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
@@ -84,11 +73,11 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime /*"to be realized ASAP, so not - compound->occurrenceTimeOffset*/ };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
 }
 
 //{Event a.} |- Event a. updated to currentTime
-Event Inference_EventUpdate(Event *ev, long currentTime)
+static Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
@@ -108,24 +97,41 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
                      .occurrenceTime = compound->occurrenceTime };
 }
 
-//{Event b., Implication <a =/> b>.} |- Event a.
-Event Inference_BeliefAbduction(Event *component, Implication *compound)
+//{Event a!, Event a!} |- Event a! (revision and choice)
+Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime)
 {
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_BELIEF, 
-                     .truth = Truth_Abduction(compound->truth, component->truth), 
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
-}
-
-//{Event task a!, Implication <a =/> b>.} |- Event b!
-Event Inference_GoalAbduction(Event *component, Implication *compound)
-{
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_GOAL,
-                     .truth = Truth_Abduction(compound->truth, component->truth), 
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
+    if(existing_potential->type == EVENT_TYPE_DELETED)
+    {
+        return *incoming_spike;
+    }
+    else
+    {
+        double expExisting = Truth_Expectation(Inference_EventUpdate(existing_potential, currentTime).truth);
+        double expIncoming = Truth_Expectation(Inference_EventUpdate(incoming_spike, currentTime).truth);
+        //check if there is evidental overlap
+        bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
+        //if there is, apply choice, keeping the stronger one:
+        if(overlap)
+        {
+            if(expIncoming > expExisting)
+            {
+                return *incoming_spike;
+            }
+        }
+        else
+        //and else revise, increasing the "activation potential"
+        {
+            Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
+            if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
+            {
+                return revised_spike;
+            }
+            //lower, also use choice
+            if(expIncoming > expExisting)
+            {
+                return *incoming_spike;
+            }
+        }
+    }
+    return *existing_potential;
 }

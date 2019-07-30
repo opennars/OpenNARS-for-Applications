@@ -329,6 +329,8 @@ void ANSNA_Pong_Right()
 {
     ANSNA_Pong_Right_executed = true;
 }
+
+//int t=0;
 void ANSNA_Pong(bool useNumericEncoding)
 {
     OUTPUT = 0;
@@ -349,6 +351,9 @@ void ANSNA_Pong(bool useNumericEncoding)
     int misses = 0;
     while(1)
     {
+        //t++;
+        //if(t%10000 == 0)
+        //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         for(int i=0; i<batX-batWidth+1; i++)
         {
@@ -455,8 +460,8 @@ void ANSNA_Pong(bool useNumericEncoding)
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f\n", hits, misses, (float) (((float) hits) / ((float) misses)));
-        nanosleep((struct timespec[]){{0, 100000000L}}, NULL); //POSIX sleep
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
+        nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         //ANSNA_Cycles(10);
     }
 }

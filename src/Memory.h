@@ -17,6 +17,10 @@
 //----------//
 #define CONCEPTS_MAX 1000
 #define USE_HASHING true
+#define CONCEPT_FORMATION_NOVELTY 0.2
+#define PROPAGATE_GOAL_SPIKES true
+//only propagate promising spikes:
+#define PROPAGATION_TRUTH_EXPECTATION_THRESHOLD 0.5
 
 //Data structure//
 //--------------//
@@ -50,4 +54,11 @@ bool Memory_addConcept(Concept *concept, long currentTime);
 bool Memory_addEvent(Event *event);
 //Add operation to memory
 void Memory_addOperation(Operation op);
+//Whether an event is novel in respect to a concept
+bool Memory_EventIsNovel(Event *event, Concept *c_matched_to);
+//Propagate spikes
+void Memory_SpikePropagation(long currentTime);
+//Match event to concept
+Event Memory_MatchEventToConcept(Concept *c, Event *e);
+
 #endif

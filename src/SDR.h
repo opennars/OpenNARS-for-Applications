@@ -61,46 +61,28 @@ typedef struct
 //Methods//
 //-------//
 //Read the jth bit in the ith block of the SDR
-int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j);
+//static int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j);
 //Write the jth bit in the ith block of the SDR with value
 void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value);
-//Read the ith bit in the SDR:
-int SDR_ReadBit(SDR *sdr, int bit_i);
 //Write the ith bit in the SDR with value:
 void SDR_WriteBit(SDR *sdr, int bit_i, int value);
-//Print a SDR including zero bits
-void SDR_PrintFull(SDR *sdr);
 // count amount of true bits
 int SDR_CountTrue(SDR *sdr);
 // print indices of true bits
-void SDR_PrintWhereTrue(SDR *sdr);
-//One SDR minus the other
-SDR SDR_Minus(SDR *a, SDR *b);
-//Union of both SDR's
-SDR SDR_Union(SDR *a, SDR *b);
-//Intersection of both SDR's
-SDR SDR_Intersection(SDR *a, SDR *b);
-//Xor of both SDR's
-SDR SDR_Xor(SDR *a, SDR *b);
+void SDR_Print(SDR *sdr);
 //Generate a random permutation and its inverse
 void SDR_GeneratePermutation(int *perm, int *perm_inverse);
 //Apply the seq_permutation to the SDR
 SDR SDR_Permute(SDR *sdr, int *permutation);
 //Two faster permutations
 SDR SDR_PermuteByRotation(SDR *sdr, bool forward);
-//Set can be made by simply using the SDRUnion
-SDR SDR_Set(SDR *a, SDR *b);
 //Tuple on the other hand:
 SDR SDR_Tuple(SDR *a, SDR *b);
 //Get the other element of the tuple
 SDR SDR_TupleGetFirstElement(SDR *compound, SDR *secondElement);
 SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement);
-//Match confidence when matching the part SDR to the full
-Truth SDR_Match(SDR *part, SDR *full);
-//Whether two SDR's are equal completely, only used for testing!
+//Whether two SDR's are equal completely
 bool SDR_Equal(SDR *a, SDR *b);
-//Whether the 1-bits of a are a subset of the 1-bits of b
-bool SDR_Subset(SDR *a, SDR *b);
 //The confidence measuring to what degree a SDR is a special case of another
 //also see https://github.com/patham9/ANSNA/wiki/SDRInheritance-for-matching,-and-its-truth-value
 Truth SDR_Inheritance(SDR *full, SDR *part);

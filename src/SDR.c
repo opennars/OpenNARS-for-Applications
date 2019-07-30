@@ -1,6 +1,6 @@
 #include "SDR.h"
 
-int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
+static int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j)
 {
     return (sdr->blocks[block_i] >> block_bit_j) & 1;
 }
@@ -10,7 +10,7 @@ void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value)
     sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(((SDR_BLOCK_TYPE)1) << block_bit_j))) | (((SDR_BLOCK_TYPE)value) << block_bit_j);
 }
 
-int SDR_ReadBit(SDR *sdr, int bit_i)
+static int SDR_ReadBit(SDR *sdr, int bit_i)
 {
     SDR_INDEX_TO_BLOCK_AND_BIT(bit_i, block_i,block_bit_i)
     return SDR_ReadBitInBlock(sdr, block_i, block_bit_i);
@@ -22,15 +22,7 @@ void SDR_WriteBit(SDR *sdr, int bit_i, int value)
     SDR_WriteBitInBlock(sdr, block_i, block_bit_i, value);
 }
 
-void SDR_PrintFull(SDR *sdr)
-{
-    ITERATE_SDR_BITS(i,j,
-        printf("%d,",(int) SDR_ReadBitInBlock(sdr,i,j));
-    )
-    puts("");
-}
-
-void SDR_PrintWhereTrue(SDR *sdr)
+void SDR_Print(SDR *sdr)
 {
     ITERATE_SDR_BITS(i,j,
         if (SDR_ReadBitInBlock(sdr,i,j)) 
@@ -53,34 +45,8 @@ int SDR_CountTrue(SDR *sdr)
     return cnt;
 }
 
-SDR SDR_Minus(SDR *a, SDR *b)
-{
-    SDR c;
-    ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a->blocks[i] & (~b->blocks[i]);
-    )
-    return c;
-}
-
-SDR SDR_Union(SDR *a, SDR *b)
-{
-    SDR c;
-    ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a->blocks[i] | b->blocks[i];
-    )
-    return c;
-}
-
-SDR SDR_Intersection(SDR *a, SDR *b)
-{
-    SDR c;
-    ITERATE_SDR_BLOCKS(i,
-        c.blocks[i] = a->blocks[i] & b->blocks[i];
-    )
-    return c;
-}
-
-SDR SDR_Xor(SDR *a, SDR *b)
+//Xor of both SDR's
+static SDR SDR_Xor(SDR *a, SDR *b)
 {
     SDR c;
     ITERATE_SDR_BLOCKS(i,
@@ -112,11 +78,6 @@ SDR SDR_PermuteByRotation(SDR *sdr, bool forward)
     return c;
 }
 
-SDR SDR_Set(SDR *a, SDR *b)
-{
-    return SDR_Union(a, b);
-}
-
 //permutation for tuple encoding
 int SDR_permS[SDR_SIZE];
 int SDR_permS_inv[SDR_SIZE];
@@ -146,7 +107,18 @@ SDR SDR_TupleGetSecondElement(SDR *compound, SDR *firstElement)
     return b;
 }
 
-Truth SDR_Match(SDR *part,SDR *full)
+bool SDR_Equal(SDR *a, SDR *b)
+{
+    ITERATE_SDR_BLOCKS(i,
+        if(a->blocks[i] != b->blocks[i])
+        {
+            return false;
+        }
+    )
+    return true;
+}
+
+Truth SDR_Inheritance(SDR *full, SDR *part)
 {
     int countOneInBoth = 0;
     int generalCaseMisses1Bit = 0;
@@ -160,36 +132,9 @@ Truth SDR_Match(SDR *part,SDR *full)
     return truth;
 }
 
-bool SDR_Equal(SDR *a, SDR *b)
-{
-    ITERATE_SDR_BLOCKS(i,
-        if(a->blocks[i] != b->blocks[i])
-        {
-            return false;
-        }
-    )
-    return true;
-}
-
-bool SDR_Subset(SDR *a, SDR *b)
-{
-    ITERATE_SDR_BITS(i,j,
-        if(SDR_ReadBitInBlock(a,i,j) && !SDR_ReadBitInBlock(b,i,j))
-        {
-            return false;
-        }
-    )
-    return true;
-}
-
-Truth SDR_Inheritance(SDR *full, SDR *part)
-{
-    return SDR_Match(part, full);
-}
-
 Truth SDR_Similarity(SDR *a, SDR *b)
 {
-    return Truth_Intersection(SDR_Match(a,b), SDR_Match(b,a));
+    return Truth_Intersection(SDR_Inheritance(a,b), SDR_Inheritance(b,a));
 }
 
 SDR_HASH_TYPE SDR_Hash(SDR *sdr)

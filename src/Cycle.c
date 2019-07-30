@@ -1,57 +1,11 @@
 #include "Cycle.h"
 
-static Event Increased_Action_Potential(Event *existing_potential, Event *incoming_spike, long currentTime)
-{
-    if(existing_potential->type == EVENT_TYPE_DELETED)
-    {
-        return *incoming_spike;
-    }
-    else
-    {
-        double expExisting = Truth_Expectation(Inference_EventUpdate(existing_potential, currentTime).truth);
-        double expIncoming = Truth_Expectation(Inference_EventUpdate(incoming_spike, currentTime).truth);
-        //check if there is evidental overlap
-        bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
-        //if there is, apply choice, keeping the stronger one:
-        if(overlap)
-        {
-            if(expIncoming > expExisting)
-            {
-                return *incoming_spike;
-            }
-        }
-        else
-        //and else revise, increasing the "activation potential"
-        {
-            Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
-            if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
-            {
-                return revised_spike;
-            }
-            //lower, also use choice
-            if(expIncoming > expExisting)
-            {
-                return *incoming_spike;
-            }
-        }
-    }
-    return *existing_potential;
-}
-
-static Event MatchEventToConcept(Concept *c, Event *e)
-{
-    Event eMatch = *e;
-    eMatch.sdr = c->sdr;
-    eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
-    return eMatch;
-}
-
 //doing inference within the matched concept, returning the matched event
-static Event LocalInference(Concept *c, Event *e, long currentTime)
+static Event Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
     Concept_ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
-    Event eMatch = MatchEventToConcept(c, e);
+    Event eMatch = Memory_MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
@@ -76,7 +30,8 @@ static Event LocalInference(Concept *c, Event *e, long currentTime)
     return eMatch;
 }
 
-static Event ProcessEvent(Event *e, long currentTime)
+//Process an event, by crearting a concept, or activating an existing
+static Event Cycle_ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
@@ -88,51 +43,120 @@ static Event ProcessEvent(Event *e, long currentTime)
     if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
-        //perform concept-related inference
-        eMatch = LocalInference(c, e, currentTime);
+        eMatch = Cycle_ActivateConcept(c, e, currentTime);
     }
-    if(!Memory_FindConceptBySDR(&e->sdr, e->sdr_hash, NULL))
-    {   
-        //if different enough
-        bool different_enough = true;
-        if(c != NULL)
+    if(Memory_EventIsNovel(e, c))
+    {
+        //add a new concept for e too at the end, as it does not exist already
+        Concept *specialConcept = Memory_Conceptualize(&e->sdr);
+        if(c != NULL && specialConcept != NULL)
         {
-            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&e->sdr, &eMatch.sdr));
-            if(novelty < CONCEPT_FORMATION_NOVELTY)
+            //copy over all knowledge
+            for(int i=0; i<OPERATIONS_MAX; i++)
             {
-                different_enough = false;
-            }
-        }
-        if(different_enough)
-        {
-            //add a new concept for e too at the end, as it does not exist already
-            Concept *specialConcept = Memory_Conceptualize(&e->sdr);
-            if(specialConcept != NULL && c != NULL)
-            {
-                //copy over all knowledge
-                for(int i=0; i<OPERATIONS_MAX; i++)
-                {
-                    Table_COPY(&c->precondition_beliefs[i],  &specialConcept->precondition_beliefs[i]);
-                }
+                Table_COPY(&c->precondition_beliefs[i],  &specialConcept->precondition_beliefs[i]);
             }
         }
     }
     return eMatch;
 }
 
+//Propagate spikes for subgoal processing, generating anticipations and decisions
+static void Cycle_PropagateSpikes(long currentTime)
+{
+    //process spikes
+    if(PROPAGATE_GOAL_SPIKES)
+    {
+        //pass goal spikes on to the next
+        for(int i=0; i<concepts.itemsAmount; i++)
+        {
+            Concept *postc = concepts.items[i].address;
+            if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
+            {
+                for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                {
+                    for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
+                    {
+                        Implication *imp = &postc->precondition_beliefs[opi].array[j];
+                        Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
+                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                        {
+                            if(SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
+                            {
+                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
+                            }
+                            else
+                            {
+                                Table_Remove(&postc->precondition_beliefs[opi], j);
+                                j--; //repeat iteration, with re-checking loop condition
+                            }
+                        }
+                    }
+                }
+            }
+            postc->goal_spike.propagated = true;
+        }
+        //process incoming goal spikes, invoking potential operations
+        for(int i=0; i<concepts.itemsAmount; i++)
+        {
+            Concept *c = concepts.items[i].address;
+            if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
+            {
+                c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
+                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
+                {
+                    Cycle_ProcessEvent(&c->goal_spike, currentTime);
+                }
+            }
+            c->incoming_goal_spike = (Event) {0};
+        }
+    }
+}
+
+//Reinforce link between concept a and b (creating it if non-existent)
+static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
+{   
+    if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
+    {
+        return;
+    }
+    int AConceptIndex;
+    int BConceptIndex;
+    if(Memory_getClosestConcept(&a->sdr, a->sdr_hash, &AConceptIndex) &&
+       Memory_getClosestConcept(&b->sdr, b->sdr_hash, &BConceptIndex))
+    {
+        Concept *A = concepts.items[AConceptIndex].address;
+        Concept *B = concepts.items[BConceptIndex].address;
+        if(A != B)
+        {
+            //temporal induction
+            if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
+            {
+                
+                Implication precondition_implication = Inference_BeliefInduction(a, b);
+                precondition_implication.sourceConcept = A;
+                precondition_implication.sourceConceptSDR = A->sdr;
+                if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
+                {
+                    char debug[100];
+                    sprintf(debug, "<(&/,%s,^op%d()) =/> %s>.",a->debug, operationID, b->debug);
+                    IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
+                    IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
+                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
+                    if(revised_precon != NULL)
+                    {
+                        revised_precon->sourceConcept = A;
+                        revised_precon->sourceConceptSDR = A->sdr;
+                        IN_OUTPUT( if(revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } )
+                    }
+                }
+            }
+        }
+    }
+}
+
 void Cycle_Perform(long currentTime)
 {    
-    IN_DEBUG
-    (
-        for(int i=0; i<belief_events.itemsAmount; i++)
-        {
-            Event *ev = FIFO_GetKthNewestSequence(&belief_events, i, 0);
-            puts(ev->debug);
-            puts("");
-        }
-        printf("items amount: %d",belief_events.itemsAmount);
-        getchar();
-    )
     //process anticipation
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -148,7 +172,7 @@ void Cycle_Perform(long currentTime)
             if(!toProcess->processed)
             {
                 //the matched event becomes the postcondition
-                Event postcondition = ProcessEvent(toProcess, currentTime);
+                Event postcondition = Cycle_ProcessEvent(toProcess, currentTime);
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {  
@@ -172,14 +196,14 @@ void Cycle_Perform(long currentTime)
                                         precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
                                         if(precondition->operationID == 0)
                                         {
-                                            RuleTable_Composition(precondition, &postcondition, operationID);
+                                            Cycle_ReinforceLink(precondition, &postcondition, operationID);
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                RuleTable_Composition(precondition, &postcondition, operationID);
+                                Cycle_ReinforceLink(precondition, &postcondition, operationID);
                             }
                         }
                     }
@@ -193,53 +217,10 @@ void Cycle_Perform(long currentTime)
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed)
         {
-            ProcessEvent(goal, currentTime);
+            Cycle_ProcessEvent(goal, currentTime);
         }
     }
-    //process spikes
-    if(PROPAGATE_GOAL_SPIKES)
-    {
-        //pass goal spikes on to the next
-        for(int i=0; i<concepts.itemsAmount; i++)
-        {
-            Concept *c = concepts.items[i].address;
-            if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.propagated && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
-            {
-                for(int opi=0; opi<OPERATIONS_MAX; opi++)
-                {
-                    for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
-                    {
-                        Implication *imp = &c->precondition_beliefs[opi].array[j];
-                        //SDR *preSDR = &imp->sdr;
-                        //int closest_concept_i;
-                        //if(Memory_getClosestConcept(preSDR, SDR_Hash(preSDR), &closest_concept_i)) //todo cache it, maybe in the function
-                        {
-                            Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
-                            if((pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed) && SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
-                            {
-                                pre->incoming_goal_spike = Inference_GoalDeduction(&c->goal_spike, &c->precondition_beliefs[opi].array[j]);
-                            }
-                        }
-                    }
-                }
-            }
-            c->goal_spike.propagated = true;
-        }
-        //process incoming goal spikes, invoking potential operations
-        for(int i=0; i<concepts.itemsAmount; i++)
-        {
-            Concept *c = concepts.items[i].address;
-            if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
-            {
-                c->goal_spike = Increased_Action_Potential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
-                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
-                {
-                    ProcessEvent(&c->goal_spike, currentTime);
-                }
-            }
-            c->incoming_goal_spike = (Event) {0};
-        }
-    }
+    Cycle_PropagateSpikes(currentTime);
     //Re-sort queue
     for(int i=0; i<concepts.itemsAmount; i++)
     {

@@ -10,7 +10,7 @@ void Concept_SetSDR(Concept *concept, SDR sdr)
 void Concept_Print(Concept *concept)
 {
     puts("Concept:");
-    SDR_PrintWhereTrue(&concept->sdr);
+    SDR_Print(&concept->sdr);
     Usage_Print(&concept->usage);
     puts("");
 }
@@ -54,7 +54,7 @@ void Concept_ConfirmAnticipation(Concept *c, Event *e)
 {
     for(int i=0; i<ANTICIPATIONS_MAX; i++)
     {
-        if(c->anticipation_deadline[i]> 0 && e->type == EVENT_TYPE_BELIEF)
+        if(c->anticipation_deadline[i] > 0 && e->type == EVENT_TYPE_BELIEF)
         {
             //confirmed
             c->anticipation_deadline[i] = 0;
@@ -66,3 +66,5 @@ void Concept_ConfirmAnticipation(Concept *c, Event *e)
         }
     }
 }
+
+

@@ -16,6 +16,7 @@
 //----------//
 #define OPERATIONS_MAX 10
 #define ANTICIPATIONS_MAX 10
+#define MIN_CONFIDENCE 0.01
 
 //Data structure//
 //--------------//
@@ -45,5 +46,7 @@ void Concept_Print(Concept *concept);
 void Concept_CheckAnticipationDisappointment(Concept *c, long currentTime);
 //Confirm anticipation
 void Concept_ConfirmAnticipation(Concept *c, Event *e);
+//Local inference: confirming anticipations, firing spikes, matching event, adjusting Usage
+Event Concept_LocalInference(Concept *c, Event *e, long currentTime);
 
 #endif

@@ -34,33 +34,32 @@ int stampID = -1;
 Decision Decision_RealizeGoal(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
-    int closest_postcon_concept_i;
-    if(Memory_getClosestConcept(&goal->sdr, goal->sdr_hash, &closest_postcon_concept_i))
+    int closest_postc_i;
+    if(Memory_getClosestConcept(&goal->sdr, goal->sdr_hash, &closest_postc_i))
     {
-        Concept *postcon_c = concepts.items[closest_postcon_concept_i].address;
+        Concept *postc = concepts.items[closest_postc_i].address;
         double bestTruthExpectation = 0;
         Implication bestImp = {0};
-        Concept *precon_concept;
-        for(int i=1; i<OPERATIONS_MAX; i++)
+        Concept *prec;
+        for(int opi=1; opi<OPERATIONS_MAX; opi++)
         {
-            if(operations[i-1].action == 0)
+            if(operations[opi-1].action == 0)
             {
                 break;
             }
-            for(int j=0; j<postcon_c->precondition_beliefs[i].itemsAmount; j++)
+            for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
             {
-                Implication imp = postcon_c->precondition_beliefs[i].array[j];
+                Implication imp = postc->precondition_beliefs[opi].array[j];
                 IN_DEBUG
                 (
                     printf("CONSIDERED IMPLICATION: %s\n", imp.debug);
-                    SDR_PrintWhereTrue(&imp.sdr);
+                    SDR_Print(&imp.sdr);
                 )
                 //now look at how much the precondition is fulfilled
-                int closest_precon_concept_i;
-                if(Memory_getClosestConcept(&imp.sdr, imp.sdr_hash, &closest_precon_concept_i))
+                Concept *current_prec = imp.sourceConcept;
+                if(SDR_Equal(&current_prec->sdr, &imp.sourceConceptSDR))
                 {
-                    Concept *current_precon_c = concepts.items[closest_precon_concept_i].address;
-                    Event *precondition = &current_precon_c->belief_spike; //a. :|:
+                    Event *precondition = &current_prec->belief_spike; //a. :|:
                     if(precondition != NULL)
                     {
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
@@ -70,7 +69,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                         {
                             IN_DEBUG
                             (
-                                printf("CONSIDERED PRECON: %s\n", current_precon_c->debug);
+                                printf("CONSIDERED PRECON: %s\n", current_prec->debug);
                                 fputs("CONSIDERED PRECON truth ", stdout);
                                 Truth_Print(&precondition->truth);
                                 fputs("CONSIDERED goal truth ", stdout);
@@ -78,15 +77,20 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                                 fputs("CONSIDERED imp truth ", stdout);
                                 Truth_Print(&imp.truth);
                                 printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                                SDR_PrintWhereTrue(&current_precon_c->sdr);
-                                SDR_PrintWhereTrue(&precondition->sdr);
+                                SDR_Print(&current_prec->sdr);
+                                SDR_Print(&precondition->sdr);
                             )
-                            precon_concept = current_precon_c;
+                            prec = current_prec;
                             bestImp = imp;
-                            decision.operationID = i;
+                            decision.operationID = opi;
                             bestTruthExpectation = operationGoalTruthExpectation;
                         }
                     }
+                }
+                else
+                {
+                    Table_Remove(&postc->precondition_beliefs[opi], j);
+                    j--; //repeat iteration, with re-checking loop condition
                 }
             }
         }
@@ -98,7 +102,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         //ANTICIPATON (neg. evidence numbers for now)
         for(int i=0; i<ANTICIPATIONS_MAX; i++)
         {
-            if(postcon_c->anticipation_deadline[i] == 0)
+            if(postc->anticipation_deadline[i] == 0)
             {
                 //"compute amount of negative evidence based on current evidence" (Robert's estimation)
                 //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
@@ -109,11 +113,11 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 double c = Truth_w2c(w);
                 //deadline: predicted time + tolerance
                 long pessimistic_stddev_estimate = bestImp.maxOccurrenceTimeOffset - bestImp.minOccurrenceTimeOffset;
-                postcon_c->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset + MAX(ANTICIPATION_MIN_WINDOW, pessimistic_stddev_estimate * ANTICIPATION_WINDOW_K);
-                postcon_c->anticipation_negative_confirmation[i] = bestImp;
-                postcon_c->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
-                postcon_c->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
-                postcon_c->anticipation_operation_id[i] = decision.operationID;
+                postc->anticipation_deadline[i] = currentTime + MAX(ANTICIPATION_MIN_WINDOW, ANTICIPATION_FORWARD_MUL * bestImp.occurrenceTimeOffset + pessimistic_stddev_estimate * ANTICIPATION_VARIANCE_MUL);
+                postc->anticipation_negative_confirmation[i] = bestImp;
+                postc->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
+                postc->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
+                postc->anticipation_operation_id[i] = decision.operationID;
                 IN_DEBUG( printf("ANTICIPATE future=%ld tolerance=%ld\n", bestImp.occurrenceTimeOffset, pessimistic_stddev_estimate); )
                 stampID--;
                 break;
@@ -124,7 +128,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
             puts("");
-            printf("SELECTED PRECON: %s\n", precon_concept->debug);
+            printf("SELECTED PRECON: %s\n", prec->debug);
             puts(bestImp.debug); //++
             printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
