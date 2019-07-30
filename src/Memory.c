@@ -51,6 +51,25 @@ bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
     return false;
 }
 
+
+bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
+{
+    if(!Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, NULL))
+    {
+        bool different_enough = true;
+        if(c_matched_to != NULL)
+        {
+            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&event->sdr, &c_matched_to->sdr));
+            if(novelty < CONCEPT_FORMATION_NOVELTY)
+            {
+                different_enough = false;
+            }
+        }
+        return different_enough;
+    }
+    return false;
+}
+
 Concept* Memory_Conceptualize(SDR *sdr)
 {
     Concept *addedConcept = NULL;

@@ -65,17 +65,6 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     return ret;
 }
 
-//{Event a., Implication <a =/> b>.} |- Event b.
-Event Inference_BeliefDeduction(Event *component, Implication *compound)
-{
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_BELIEF, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
-}
-
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
@@ -106,26 +95,4 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
                      .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = compound->occurrenceTime };
-}
-
-//{Event b., Implication <a =/> b>.} |- Event a.
-Event Inference_BeliefAbduction(Event *component, Implication *compound)
-{
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_BELIEF, 
-                     .truth = Truth_Abduction(compound->truth, component->truth), 
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
-}
-
-//{Event task a!, Implication <a =/> b>.} |- Event b!
-Event Inference_GoalAbduction(Event *component, Implication *compound)
-{
-    DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
-                     .type = EVENT_TYPE_GOAL,
-                     .truth = Truth_Abduction(compound->truth, component->truth), 
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
 }

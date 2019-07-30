@@ -17,6 +17,7 @@
 //----------//
 #define CONCEPTS_MAX 1000
 #define USE_HASHING true
+#define CONCEPT_FORMATION_NOVELTY 0.2
 
 //Data structure//
 //--------------//
@@ -40,6 +41,8 @@ EventInspector event_inspector;
 void Memory_INIT();
 //Find a concept
 bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
+//Whether a new event that got matched to a concept is novel
+bool Memory_EventIsNovel(Event *event, Concept *c_matched_to);
 //Create a new concept
 Concept* Memory_Conceptualize(SDR *sdr);
 //Return closest concept

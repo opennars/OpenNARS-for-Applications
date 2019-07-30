@@ -28,14 +28,8 @@ Implication Inference_BeliefInduction(Event *a, Event *b);
 Event Inference_EventRevision(Event *a, Event *b);
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
 Implication Inference_ImplicationRevision(Implication *a, Implication *b);
-//{Event a., Implication <a =/> b>.} |- Event b.
-Event Inference_BeliefDeduction(Event *component, Implication *compound);
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound);
-//{Event b., Implication <a =/> b>.} |- Event a.
-Event Inference_BeliefAbduction(Event *component, Implication *compound);
-//{Event task a!, Implication <a =/> b>.} |- Event b!
-Event Inference_GoalAbduction(Event *component, Implication *compound);
 //{Event a.} |- Event a. updated to currentTime
 Event Inference_EventUpdate(Event *ev, long currentTime);
 //{Event (&/,a,op())!, Event a.} |- Event op()!

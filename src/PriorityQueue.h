@@ -42,11 +42,6 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements);
 //Push element of a certain priority into the queue.
 //If successful, addedItem will point to the item in the data structure, with address of the evicted item, if eviction happened
 PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority);
-//Retrieve first item of the queue
-bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress);
-bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress);
-//make sure that the new priority is really higher!
-void PriorityQueue_IncreasePriority(PriorityQueue *queue, int i, double newPriority);
 //use this function and add again if maybe lower!
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress);
 

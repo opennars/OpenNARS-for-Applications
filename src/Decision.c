@@ -53,7 +53,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 IN_DEBUG
                 (
                     printf("CONSIDERED IMPLICATION: %s\n", imp.debug);
-                    SDR_PrintWhereTrue(&imp.sdr);
+                    SDR_Print(&imp.sdr);
                 )
                 //now look at how much the precondition is fulfilled
                 int closest_precon_concept_i;
@@ -78,8 +78,8 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                                 fputs("CONSIDERED imp truth ", stdout);
                                 Truth_Print(&imp.truth);
                                 printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                                SDR_PrintWhereTrue(&current_precon_c->sdr);
-                                SDR_PrintWhereTrue(&precondition->sdr);
+                                SDR_Print(&current_precon_c->sdr);
+                                SDR_Print(&precondition->sdr);
                             )
                             precon_concept = current_precon_c;
                             bestImp = imp;
