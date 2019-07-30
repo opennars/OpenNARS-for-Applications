@@ -1,19 +1,11 @@
 #include "Cycle.h"
 
-static Event Concept_MatchEventToConcept(Concept *c, Event *e)
-{
-    Event eMatch = *e;
-    eMatch.sdr = c->sdr;
-    eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
-    return eMatch;
-}
-
 //doing inference within the matched concept, returning the matched event
-Event Concept_LocalInference(Concept *c, Event *e, long currentTime)
+static Event Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
     Concept_ConfirmAnticipation(c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
-    Event eMatch = Concept_MatchEventToConcept(c, e);
+    Event eMatch = Memory_MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
@@ -38,8 +30,7 @@ Event Concept_LocalInference(Concept *c, Event *e, long currentTime)
     return eMatch;
 }
 
-
-static Event ProcessEvent(Event *e, long currentTime)
+static Event Cycle_ProcessEvent(Event *e, long currentTime)
 {
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
@@ -52,7 +43,7 @@ static Event ProcessEvent(Event *e, long currentTime)
     {
         c = concepts.items[closest_concept_i].address;
         //perform concept-related inference
-        eMatch = Concept_LocalInference(c, e, currentTime);
+        eMatch = Cycle_ActivateConcept(c, e, currentTime);
     }
     if(Memory_EventIsNovel(e, c))
     {
@@ -70,82 +61,8 @@ static Event ProcessEvent(Event *e, long currentTime)
     return eMatch;
 }
 
-void Cycle_Perform(long currentTime)
-{    
-    IN_DEBUG
-    (
-        for(int i=0; i<belief_events.itemsAmount; i++)
-        {
-            Event *ev = FIFO_GetKthNewestSequence(&belief_events, i, 0);
-            puts(ev->debug);
-            puts("");
-        }
-        printf("items amount: %d",belief_events.itemsAmount);
-        getchar();
-    )
-    //process anticipation
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept_CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
-    }
-    //1. process newest event
-    if(belief_events.itemsAmount > 0)
-    {
-        //form concepts for the sequences of different length
-        for(int len=0; len<MAX_SEQUENCE_LEN; len++)
-        {
-            Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
-            if(!toProcess->processed)
-            {
-                //the matched event becomes the postcondition
-                Event postcondition = ProcessEvent(toProcess, currentTime);
-                //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
-                if(len == 0) //postcondition always len1
-                {  
-                    if(postcondition.operationID != 0)
-                    {
-                        return;
-                    }
-                    for(int k=1; k<belief_events.itemsAmount; k++)
-                    {
-                        for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
-                        {
-                            Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
-                            //if it's an operation find the real precondition and use the current one as action
-                            int operationID = precondition->operationID;
-                            if(operationID != 0) //also meaning len2==0
-                            {
-                                for(int j=k+1; j<belief_events.itemsAmount; j++)
-                                {
-                                    for(int len3=0; len3<MAX_SEQUENCE_LEN; len3++)
-                                    {
-                                        precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
-                                        if(precondition->operationID == 0)
-                                        {
-                                            RuleTable_Composition(precondition, &postcondition, operationID);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                RuleTable_Composition(precondition, &postcondition, operationID);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    //process goals
-    if(goal_events.itemsAmount > 0)
-    {
-        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
-        if(!goal->processed)
-        {
-            ProcessEvent(goal, currentTime);
-        }
-    }
+static void Cycle_PropagateSpikes(long currentTime)
+{
     //process spikes
     if(PROPAGATE_GOAL_SPIKES)
     {
@@ -179,12 +96,122 @@ void Cycle_Perform(long currentTime)
                 c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
                 if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
                 {
-                    ProcessEvent(&c->goal_spike, currentTime);
+                    Cycle_ProcessEvent(&c->goal_spike, currentTime);
                 }
             }
             c->incoming_goal_spike = (Event) {0};
         }
     }
+}
+
+//Reinforce link between concept a and b (creating it if non-existent)
+static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
+{   
+    if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
+    {
+        return;
+    }
+    int AConceptIndex;
+    int BConceptIndex;
+    if(Memory_getClosestConcept(&a->sdr, a->sdr_hash, &AConceptIndex) &&
+       Memory_getClosestConcept(&b->sdr, b->sdr_hash, &BConceptIndex))
+    {
+        Concept *A = concepts.items[AConceptIndex].address;
+        Concept *B = concepts.items[BConceptIndex].address;
+        if(A != B)
+        {
+            //temporal induction
+            if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
+            {
+                
+                Implication precondition_implication = Inference_BeliefInduction(a, b);
+                precondition_implication.sourceConcept = A;
+                precondition_implication.sourceConceptSDR = A->sdr;
+                if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
+                {
+                    char debug[100];
+                    sprintf(debug, "<(&/,%s,^op%d()) =/> %s>.",a->debug, operationID, b->debug);
+                    IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
+                    IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
+                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
+                    if(revised_precon != NULL)
+                    {
+                        revised_precon->sourceConcept = A;
+                        revised_precon->sourceConceptSDR = A->sdr;
+                        IN_OUTPUT( if(revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } )
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Cycle_Perform(long currentTime)
+{    
+    //process anticipation
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept_CheckAnticipationDisappointment(concepts.items[i].address, currentTime);
+    }
+    //1. process newest event
+    if(belief_events.itemsAmount > 0)
+    {
+        //form concepts for the sequences of different length
+        for(int len=0; len<MAX_SEQUENCE_LEN; len++)
+        {
+            Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
+            if(!toProcess->processed)
+            {
+                //the matched event becomes the postcondition
+                Event postcondition = Cycle_ProcessEvent(toProcess, currentTime);
+                //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
+                if(len == 0) //postcondition always len1
+                {  
+                    if(postcondition.operationID != 0)
+                    {
+                        return;
+                    }
+                    for(int k=1; k<belief_events.itemsAmount; k++)
+                    {
+                        for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
+                        {
+                            Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
+                            //if it's an operation find the real precondition and use the current one as action
+                            int operationID = precondition->operationID;
+                            if(operationID != 0) //also meaning len2==0
+                            {
+                                for(int j=k+1; j<belief_events.itemsAmount; j++)
+                                {
+                                    for(int len3=0; len3<MAX_SEQUENCE_LEN; len3++)
+                                    {
+                                        precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
+                                        if(precondition->operationID == 0)
+                                        {
+                                            Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //process goals
+    if(goal_events.itemsAmount > 0)
+    {
+        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
+        if(!goal->processed)
+        {
+            Cycle_ProcessEvent(goal, currentTime);
+        }
+    }
+    Cycle_PropagateSpikes(currentTime);
     //Re-sort queue
     for(int i=0; i<concepts.itemsAmount; i++)
     {

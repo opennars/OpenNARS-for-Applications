@@ -10,15 +10,8 @@
 //References//
 //-----------//
 #include "Globals.h"
-#include "RuleTable.h"
 #include "Decision.h"
 #include "Inference.h"
-
-//Parameters//
-//----------//
-#define PROPAGATE_GOAL_SPIKES true
-//this can be seen as some kind of attention mechanism:
-#define PROPAGATION_TRUTH_EXPECTATION_THRESHOLD 0.8
 
 //Methods//
 //-------//

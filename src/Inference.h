@@ -29,7 +29,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b);
 Event Inference_GoalDeduction(Event *component, Implication *compound);
 //{Event (&/,a,op())!, Event a.} |- Event op()!
 Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime);
-//{Event a!, Event a!} |- Event a! (revision and choice)
+//{Event a!, Event a!} |- Event a! (essentially revision or choice dependent on evidental overlap)
 Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime);
 
 #endif
