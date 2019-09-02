@@ -64,7 +64,6 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                     {
                         Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
                         double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
-                        Inference_OperationDeduction(&ContextualOperation, precondition, currentTime);
                         if(operationGoalTruthExpectation > bestTruthExpectation)
                         {
                             IN_DEBUG
