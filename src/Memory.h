@@ -15,17 +15,17 @@
 
 //Parameters//
 //----------//
-#define CONCEPTS_MAX 1000
+#define CONCEPTS_MAX 1024 //always adjust both
+#define CONCEPT_LAYERS 10 //with 2^10=1024 
 #define USE_HASHING true
-#define CONCEPT_FORMATION_NOVELTY 0.2
 #define PROPAGATE_GOAL_SPIKES true
 //only propagate promising spikes:
-#define PROPAGATION_TRUTH_EXPECTATION_THRESHOLD 0.5
+#define PROPAGATION_TRUTH_EXPECTATION_THRESHOLD DECISION_THRESHOLD
 
 //Data structure//
 //--------------//
 //Data structures
-PriorityQueue concepts;
+PriorityQueue concepts[CONCEPT_LAYERS];
 FIFO belief_events;
 FIFO goal_events;
 typedef void (*Action)(void);
@@ -43,19 +43,17 @@ EventInspector event_inspector;
 //Init memory
 void Memory_INIT();
 //Find a concept
-bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
+bool Memory_FindConceptBySDR(int layer, SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
 //Create a new concept
-Concept* Memory_Conceptualize(SDR *sdr);
+void Memory_Conceptualize(SDR *sdr);
 //Return closest concept
-bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
+bool Memory_getClosestConcept(int layer, SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex);
 //Add an already existing concept to memory that was taken out from the concept priority queue
-bool Memory_addConcept(Concept *concept, long currentTime);
+void Memory_addConcept(int layer, Concept *concept, long currentTime);
 //Add event to memory
 bool Memory_addEvent(Event *event);
 //Add operation to memory
 void Memory_addOperation(Operation op);
-//Whether an event is novel in respect to a concept
-bool Memory_EventIsNovel(Event *event, Concept *c_matched_to);
 //Propagate spikes
 void Memory_SpikePropagation(long currentTime);
 //Match event to concept

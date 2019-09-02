@@ -7,6 +7,17 @@ static void Decision_InjectActionEvent(Decision *decision)
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1]; //TODO put into InjectActionEvent
     (*decision->op.action)();
+    //decision already made, remove spikes
+    for(int l=0; l<CONCEPT_LAYERS; l++)
+    {
+        for(int i=0; i<concepts[l].itemsAmount; l++)
+        {
+            Concept *c = concepts[l].items[i].address;
+            c->incoming_goal_spike = (Event) {0};
+            c->goal_spike = (Event) {0};
+        }
+    }
+    //and add operator feedback
     ANSNA_AddInputBelief(decision->op.sdr);
 }
 
@@ -31,13 +42,13 @@ static Decision Decision_MotorBabbling()
 }
 
 int stampID = -1;
-Decision Decision_RealizeGoal(Event *goal, long currentTime)
+Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     int closest_postc_i;
-    if(Memory_getClosestConcept(&goal->sdr, goal->sdr_hash, &closest_postc_i))
+    if(Memory_getClosestConcept(layer, &goal->sdr, goal->sdr_hash, &closest_postc_i))
     {
-        Concept *postc = concepts.items[closest_postc_i].address;
+        Concept *postc = concepts[layer].items[closest_postc_i].address;
         double bestTruthExpectation = 0;
         Implication bestImp = {0};
         Concept *prec;
@@ -88,16 +99,21 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                 }
                 else
                 {
-                    Table_Remove(&postc->precondition_beliefs[opi], j);
-                    j--; //repeat iteration, with re-checking loop condition
+                    int closest_concept_i;
+                    if(Memory_getClosestConcept(layer, &imp.sourceConceptSDR, SDR_Hash(&imp.sourceConceptSDR), &closest_concept_i))
+                    {
+                        postc->precondition_beliefs[opi].array[j].sourceConcept = concepts[layer].items[closest_concept_i].address;
+                        postc->precondition_beliefs[opi].array[j].sourceConceptSDR = ((Concept *) postc->precondition_beliefs[opi].array[j].sourceConcept)->sdr;
+                        j--; //re-link successul, repeat iteration, with re-checking loop condition
+                    }
                 }
             }
         }
-        printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
         if(bestTruthExpectation < DECISION_THRESHOLD)
         {
             return decision;
         }
+        printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
         //ANTICIPATON (neg. evidence numbers for now)
         for(int i=0; i<ANTICIPATIONS_MAX; i++)
         {
@@ -132,22 +148,23 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
             printf(" ANSNA TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;
+
     }
     return decision;
 }
 
-bool Decision_Making(Event *goal, long currentTime)
+bool Decision_Making(int layer, Event *goal, long currentTime)
 {
     Decision decision = {0};
     //try motor babbling with a certain chance
-    if(!decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(layer==0 && !decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
     {
         decision = Decision_MotorBabbling();
     }
     //try matching op if didn't motor babble
     if(!decision.execute)
     {
-        decision = Decision_RealizeGoal(goal, currentTime);
+        decision = Decision_RealizeGoal(layer, goal, currentTime);
     }
     if(decision.execute && decision.operationID)
     {

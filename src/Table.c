@@ -107,12 +107,3 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     }
     return NULL;
 }
-
-void Table_COPY(Table *src, Table *target)
-{
-    target->itemsAmount = src->itemsAmount;
-    for(int i=0; i<src->itemsAmount; i++)
-    {
-        target->array[i] = src->array[i];
-    }
-}

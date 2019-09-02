@@ -11,7 +11,7 @@
 //Parameters//
 //----------//
 //truth expectation needed for executions
-#define DECISION_THRESHOLD 0.501
+#define DECISION_THRESHOLD 0.55
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 extern double MOTOR_BABBLING_CHANCE;
@@ -31,6 +31,6 @@ typedef struct
 //Methods//
 //-------//
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(Event *goal, long currentTime);
+bool Decision_Making(int layer, Event *goal, long currentTime);
 
 #endif

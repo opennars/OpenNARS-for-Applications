@@ -27,24 +27,30 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);
     int closest_concept_i=0;
-    if(Memory_getClosestConcept(&sdr, SDR_Hash(&sdr), &closest_concept_i))
+    for(int l=0; l<CONCEPT_LAYERS; l++)
     {
-        Concept *c = concepts.items[closest_concept_i].address;
-        if(strlen(c->debug) == 0)
+        if(Memory_getClosestConcept(l, &sdr, SDR_Hash(&sdr), &closest_concept_i))
         {
-            char debug[20];
-            //assign index as name to event and concept since concept has no name yet
-            sprintf(debug, "%d", concept_id++);
-            strcpy(ev.debug, debug);
-            strcpy(c->debug, debug);
+            Concept *c = concepts[l].items[closest_concept_i].address;
+            if(strlen(c->debug) == 0)
+            {
+                char debug[20];
+                //assign index as name to event and concept since concept has no name yet
+                sprintf(debug, "%d", concept_id++);
+                strcpy(ev.debug, debug);
+                strcpy(c->debug, debug);
+            }
+            else
+            {
+                //name event according to concept
+                strcpy(ev.debug, c->debug);
+            }
+            if(l == 0)
+            {
+                char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
+                printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
+            }
         }
-        else
-        {
-            //name event according to concept
-            strcpy(ev.debug, c->debug);
-        }
-        char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
-        printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
     }
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
