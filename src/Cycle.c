@@ -5,7 +5,7 @@ int checksum = 0;
 //doing inference within the matched concept, returning whether decisionMaking should continue
 static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentTime, bool decisionMaking)
 {
-    Concept_ConfirmAnticipation(c, e);
+    Concept_ConfirmAnticipation(layer, c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     Event eMatch = Memory_MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
@@ -142,8 +142,8 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                     precondition_implication.sourceConceptSDR = A->sdr;
                     if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                     {
-                        char debug[100];
-                        sprintf(debug, "<(&/,%s,^op%d()) =/> %s>.",a->debug, operationID, b->debug);
+                        char debug[200];
+                        sprintf(debug, "<(&/,%s,^op%d(),+%ld) =/> %s>.",A->debug, operationID,precondition_implication.occurrenceTimeOffset ,B->debug);
                         IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                         IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
                         Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
@@ -168,7 +168,7 @@ void Cycle_Perform(long currentTime)
     {
         for(int i=0; i<concepts[l].itemsAmount; i++)
         {
-            Concept_CheckAnticipationDisappointment(concepts[l].items[i].address, currentTime);
+            Concept_CheckAnticipationDisappointment(l, concepts[l].items[i].address, currentTime);
         }
     }
     //1. process newest event
@@ -194,6 +194,7 @@ void Cycle_Perform(long currentTime)
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
+                            
                             //if it's an operation find the real precondition and use the current one as action
                             int operationID = precondition->operationID;
                             if(operationID != 0) //also meaning len2==0
@@ -209,6 +210,7 @@ void Cycle_Perform(long currentTime)
                                         }
                                     }
                                 }
+                                goto END;
                             }
                             else
                             {
@@ -220,6 +222,7 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
+    END:
     Cycle_PropagateSpikes(currentTime);
     //process goals
     if(goal_events.itemsAmount > 0)

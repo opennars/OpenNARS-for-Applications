@@ -127,7 +127,7 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = (Implication) { .sdr = Encode_Term("test"), 
+        Implication imp = (Implication) { .sdr = Encode_Scalar(1,TABLE_SIZE*2,i), 
                                           .truth = (Truth) { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                                           .stamp = (Stamp) { .evidentalBase = {i} },
                                           .occurrenceTimeOffset = 10 };

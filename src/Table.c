@@ -27,15 +27,30 @@ Implication *Table_Add(Table *table, Implication *imp)
 void Table_Remove(Table *table, int index)
 {
     //move up the rest beginning at index
-    for(int j=index; j<table->itemsAmount-1; j++)
+    for(int j=index; j<table->itemsAmount; j++)
     {
-        table->array[j] = table->array[j+1];
+        table->array[j] = j == table->itemsAmount ? (Implication) {0} : table->array[j+1];
     }
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
 
+static void Table_SantiyCheck(Table *table)
+{
+    for(int i=0; i<table->itemsAmount; i++)
+    {
+        for(int j=0; j<table->itemsAmount; j++)
+        {
+            if(i != j)
+            {
+                assert(!SDR_Equal(&table->array[i].sdr, &table->array[j].sdr), "THEY CANNOT BE THE SAME\n");
+            }
+        }
+    }
+}
+
 Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
 {
+    IN_DEBUG ( Table_SantiyCheck(table); )
     //1. find element with same SDR
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
@@ -52,24 +67,28 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         //choice replaces the existing with the new if the new has higher confidence
         if(Stamp_checkOverlap(&imp->stamp, &table->array[same_i].stamp))
         {
-            if(imp->truth.confidence > table->array[same_i].truth.confidence)
+            if(imp->truth.confidence >= table->array[same_i].truth.confidence)
             {
                 Table_Remove(table, same_i);
+                //printf("REPLACED\n");
                 return Table_Add(table, imp);
             }
-        }
-        //revision adds the revised element, removing the old implication from the table if it results in higher confidence than premises
+        } 
         else
         {
-            Implication* OldImp = &table->array[same_i];
-            Implication revised = Inference_ImplicationRevision(OldImp, imp);
-            if(revised.truth.confidence > OldImp->truth.confidence && revised.truth.confidence > imp->truth.confidence)
+            //revision adds the revised element, removing the old implication from the table if it results in higher confidence than premises
+            Implication OldImp = table->array[same_i];
+            Implication revised = Inference_ImplicationRevision(&OldImp, imp);
+            if(revised.truth.confidence >= OldImp.truth.confidence && revised.truth.confidence >= imp->truth.confidence)
             {
                 strcpy(revised.debug, debug);
                 Implication_SetSDR(&revised, imp->sdr);
                 //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
                 Table_Remove(table, same_i);
-                return Table_Add(table, &revised);
+                //printf("REVISED\n");
+                Implication *ret = Table_Add(table, &revised);
+                assert(ret != NULL, "WAAAT");
+                return ret;
                 /*RetRevised = revised;
                 IN_DEBUG
                 (
@@ -87,10 +106,10 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         }
     }
     else
-    //else addition adds a new element that had no matching element in the table
     {
         //3. add imp too:
         strcpy(imp->debug, debug);
+        //printf("ADDED\n");
         return Table_Add(table, imp);
         /*IN_DEBUG
         (

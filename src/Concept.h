@@ -15,10 +15,10 @@
 //Parameters//
 //----------//
 #define OPERATIONS_MAX 10
-#define ANTICIPATIONS_MAX 10
+#define ANTICIPATIONS_MAX 100
 #define MIN_CONFIDENCE 0.01
 #define CONCEPT_INTERPOLATION_STRENGTH 1.0
-#define CONCEPT_INTERPOLATION_INIT_STRENGTH 1.0
+#define CONCEPT_INTERPOLATION_INIT_STRENGTH 1000000.0
 
 //Data structure//
 //--------------//
@@ -49,10 +49,10 @@ void Concept_Print(Concept *concept);
 //Interpolate concepts, see https://github.com/patham9/ANSNA/wiki/Concept:-Conceptual-Interpolation
 void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth);
 //Check anticipation disappointment
-void Concept_CheckAnticipationDisappointment(Concept *c, long currentTime);
+void Concept_CheckAnticipationDisappointment(int layer, Concept *c, long currentTime);
 //Confirm anticipation
-void Concept_ConfirmAnticipation(Concept *c, Event *e);
+void Concept_ConfirmAnticipation(int layer, Concept *c, Event *e);
 //Local inference: confirming anticipations, firing spikes, matching event, adjusting Usage
-Event Concept_LocalInference(Concept *c, Event *e, long currentTime);
+Event Concept_LocalInference(int layer, Concept *c, Event *e, long currentTime);
 
 #endif

@@ -16,7 +16,6 @@ typedef struct {
     long revisions;
     //for anticipation window:
     long occurrenceTimeOffset;
-    long minOccurrenceTimeOffset;
     long maxOccurrenceTimeOffset;
     //for efficient spike propagation:
     void *sourceConcept;

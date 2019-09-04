@@ -23,7 +23,7 @@ Truth Truth_Revision(Truth v1, Truth v2)
     double w2 = Truth_c2w(v2.confidence);
     double w = w1 + w2;
     double f = (w1 * f1 + w2 * f2) / w;
-    double c = Truth_w2c(w);
+    double c = MIN(1.0-TRUTH_EPSILON, Truth_w2c(w));
     return (Truth) {.frequency = f, .confidence = c};
 }
 
