@@ -160,36 +160,26 @@ void Memory_Test()
     int returnIndex;
     assert(!Memory_getClosestConcept(0, &e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Memory_Conceptualize(&e.sdr);
-    /*bool conceptWasCreated = false;
-    for(int i=0; i<CONCEPTS_MAX; i++)
-    {
-        if(c == concepts[0].items[i].address)
-        {
-            conceptWasCreated = true;
-        }
-    }
-    assert(conceptWasCreated, "Concept should have been created!");
+    int concept_i;
+    assert(Memory_FindConceptBySDR(0, &e.sdr, SDR_Hash(&e.sdr), &concept_i), "Concept should have been created!");
+    Concept *c = concepts[0].items[concept_i].address;
     assert(Memory_FindConceptBySDR(0, &e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts[0].items[returnIndex].address, "e should match to c!");
     assert(Memory_getClosestConcept(0, &e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
-    assert(c == concepts[0].items[returnIndex].address, "e should match to c!");*/
-
+    assert(c == concepts[0].items[returnIndex].address, "e should match to c!");
     Event e2 = Event_InputEvent(Encode_Term("b"), 
                                EVENT_TYPE_BELIEF, 
                                (Truth) {.frequency = 1, .confidence = 0.9}, 
                                1337);
     Memory_addEvent(&e2);
-    /*Concept *c2 = Memory_Conceptualize(&e2.sdr);
+    Memory_Conceptualize(&e2.sdr);
+    assert(Memory_FindConceptBySDR(0, &e2.sdr, SDR_Hash(&e2.sdr), &concept_i), "Concept should have been created!");
+    Concept *c2 = concepts[0].items[concept_i].address;
     Concept_Print(c2);
-    assert(Memory_FindConceptBySDR(0, &e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
-    assert(c2 == concepts[0].items[returnIndex].address, "e2 should match to c2!");
     assert(Memory_getClosestConcept(0, &e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c2 == concepts[0].items[returnIndex].address, "e2 should closest-match to c2!");
-    assert(Memory_FindConceptBySDR(0, &e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
-    assert(c == concepts[0].items[returnIndex].address, "e should match to c!");
     assert(Memory_getClosestConcept(0, &e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
     assert(c == concepts[0].items[returnIndex].address, "e should closest-match to c!");
-    */
     puts("<<Memory test successful");
 }
 
@@ -448,6 +438,11 @@ void ANSNA_Pong(bool useNumericEncoding)
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
         }
+        if(ANSNA_Pong_Left_executed && ANSNA_Pong_Right_executed)
+        {
+            ANSNA_Pong_Left_executed = false;
+            ANSNA_Pong_Right_executed = false;
+        }
         if(ANSNA_Pong_Left_executed)
         {
             ANSNA_Pong_Left_executed = false;
@@ -491,15 +486,15 @@ void ANSNA_Multistep_Test()
     {
         ANSNA_AddInputBelief(Encode_Term("start_at"));
         ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
-        ANSNA_Cycles(10);
+        ANSNA_Cycles(1);
         ANSNA_AddInputBelief(Encode_Term("switch_at"));
         ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
         ANSNA_AddInputBelief(Encode_Term("switch_active"));
-        ANSNA_Cycles(5);
+        ANSNA_Cycles(1);
         ANSNA_AddInputBelief(Encode_Term("light_active"));
-        ANSNA_Cycles(100);
+        ANSNA_Cycles(10);
     }
-    ANSNA_Cycles(1000);
+    ANSNA_Cycles(100);
     ANSNA_AddInputBelief(Encode_Term("start_at"));
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(100);

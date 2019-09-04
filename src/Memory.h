@@ -18,9 +18,7 @@
 #define CONCEPTS_MAX 1024 //always adjust both
 #define CONCEPT_LAYERS 10 //with 2^10=1024 
 #define USE_HASHING true
-#define PROPAGATE_GOAL_SPIKES true
-//only propagate promising spikes:
-#define PROPAGATION_TRUTH_EXPECTATION_THRESHOLD DECISION_THRESHOLD
+#define PROPAGATE_GOAL_SPIKES false
 
 //Data structure//
 //--------------//

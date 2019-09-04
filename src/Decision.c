@@ -113,7 +113,7 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
         {
             return decision;
         }
-        printf("decision expectation %f impTruth=(%f, %f): %s\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
+        printf("decision layer%d expectation %f impTruth=(%f, %f): %s\n", layer, bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug);
         //ANTICIPATON (neg. evidence numbers for now)
         for(int i=0; i<ANTICIPATIONS_MAX; i++)
         {
@@ -128,7 +128,7 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
                 double c = Truth_w2c(w);
                 //deadline: predicted time + tolerance
                 long pessimistic_stddev_estimate = bestImp.maxOccurrenceTimeOffset - bestImp.minOccurrenceTimeOffset;
-                postc->anticipation_deadline[i] = currentTime + MAX(ANTICIPATION_MIN_WINDOW, ANTICIPATION_FORWARD_MUL * bestImp.occurrenceTimeOffset + pessimistic_stddev_estimate * ANTICIPATION_VARIANCE_MUL);
+                postc->anticipation_deadline[i] = currentTime + bestImp.occurrenceTimeOffset + pessimistic_stddev_estimate;
                 postc->anticipation_negative_confirmation[i] = bestImp;
                 postc->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
                 postc->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };

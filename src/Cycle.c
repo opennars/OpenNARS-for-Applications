@@ -70,7 +70,7 @@ static void Cycle_PropagateSpikes(long currentTime)
             for(int i=0; i<concepts[l].itemsAmount; i++)
             {
                 Concept *postc = concepts[l].items[i].address;
-                if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
+                if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > DECISION_THRESHOLD)
                 {
                     for(int opi=0; opi<OPERATIONS_MAX; opi++)
                     {
@@ -105,7 +105,7 @@ static void Cycle_PropagateSpikes(long currentTime)
                 if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
                 {
                     c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
-                    if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_TRUTH_EXPECTATION_THRESHOLD)
+                    if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > DECISION_THRESHOLD)
                     {
                         Cycle_ProcessEvent(&c->goal_spike, currentTime);
                     }
@@ -171,15 +171,6 @@ void Cycle_Perform(long currentTime)
             Concept_CheckAnticipationDisappointment(concepts[l].items[i].address, currentTime);
         }
     }
-    //process goals
-    if(goal_events.itemsAmount > 0)
-    {
-        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
-        if(!goal->processed)
-        {
-            Cycle_ProcessEvent(goal, currentTime);
-        }
-    }
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -230,6 +221,15 @@ void Cycle_Perform(long currentTime)
         }
     }
     Cycle_PropagateSpikes(currentTime);
+    //process goals
+    if(goal_events.itemsAmount > 0)
+    {
+        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
+        if(!goal->processed)
+        {
+            Cycle_ProcessEvent(goal, currentTime);
+        }
+    }
     //Re-sort queue
     for(int l=0; l<CONCEPT_LAYERS; l++)
     {
