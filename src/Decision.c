@@ -114,62 +114,6 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
             return decision;
         }
         printf("decision layer%d expectation %f impTruth=(%f, %f): %s future=%ld maxFuture=%ld\n", layer, bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset, bestImp.maxOccurrenceTimeOffset);
-        //ANTICIPATON (neg. evidence numbers for now)
-        for(int l=0; l<CONCEPT_LAYERS; l++)
-        {
-            for(int j=0; j<concepts[l].itemsAmount; j++)
-            {
-                Concept *postc = concepts[l].items[j].address;
-                for(int  h=0; h<postc->precondition_beliefs[decision.operationID].itemsAmount; h++)
-                {
-                    Implication imp = postc->precondition_beliefs[decision.operationID].array[h]; //(&/,a,op) =/> b.
-                    Concept *current_prec = imp.sourceConcept;
-                    Event *precondition = &current_prec->belief_spike; //a. :|:
-                    if(precondition != NULL)
-                    {
-                        Event op = (Event) { .sdr = operations[decision.operationID-1].sdr,
-                                             .type = EVENT_TYPE_BELIEF,
-                                             .truth = { .frequency = 1.0, .confidence = 0.9 },
-                                             .occurrenceTime = currentTime,
-                                             .operationID = decision.operationID };
-                        Event seqop = Inference_BeliefIntersection(precondition, &op); //(&/,a,op). :|:
-                        Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                        if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
-                        {
-                            for(int i=0; i<ANTICIPATIONS_MAX; i++)
-                            {
-                                if(postc->anticipation_deadline[i] == 0)
-                                {
-                                    //"compute amount of negative evidence based on current evidence" (Robert's estimation)
-                                    //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
-                                    long countWithNegativeEvidence = bestImp.revisions;
-                                    double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
-                                    //compute confidence by negative evidence
-                                    double w = Truth_c2w(bestImp.truth.confidence) * negativeEvidenceRatio;
-                                    double c = MAX(TRUTH_EPSILON, Truth_w2c(w));
-                                    //deadline: predicted time + tolerance
-                                    postc->anticipation_deadline[i] = currentTime + bestImp.maxOccurrenceTimeOffset;
-                                    postc->anticipation_negative_confirmation[i] = bestImp;
-                                    //assert(c > 0, "hmm conf should be >0");
-                                    postc->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
-                                    postc->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
-                                    postc->anticipation_negative_confirmation[i].occurrenceTimeOffset = imp.occurrenceTimeOffset;
-                                    postc->anticipation_negative_confirmation[i].maxOccurrenceTimeOffset = imp.occurrenceTimeOffset;
-                                    postc->anticipation_operation_id[i] = decision.operationID;
-                                    IN_DEBUG ( printf("ANTICIPATE %s, future=%ld maxfuture=%ld layer=%d\n", imp.debug, bestImp.occurrenceTimeOffset, bestImp.maxOccurrenceTimeOffset, l); )
-                                    //puts(postc->debug);
-                                    //puts("");
-                                    //getchar();
-                                    stampID--;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        //EMD anticipation
         IN_DEBUG
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
@@ -182,6 +126,66 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
 
     }
     return decision;
+}
+
+void Decision_Anticipate(Decision *decision)
+{
+    //ANTICIPATON (neg. evidence numbers for now)
+    for(int l=0; l<CONCEPT_LAYERS; l++)
+    {
+        for(int j=0; j<concepts[l].itemsAmount; j++)
+        {
+            Concept *postc = concepts[l].items[j].address;
+            for(int  h=0; h<postc->precondition_beliefs[decision->operationID].itemsAmount; h++)
+            {
+                Implication imp = postc->precondition_beliefs[decision->operationID].array[h]; //(&/,a,op) =/> b.
+                Concept *current_prec = imp.sourceConcept;
+                Event *precondition = &current_prec->belief_spike; //a. :|:
+                if(precondition != NULL)
+                {
+                    Event op = (Event) { .sdr = operations[decision->operationID-1].sdr,
+                                         .type = EVENT_TYPE_BELIEF,
+                                         .truth = { .frequency = 1.0, .confidence = 0.9 },
+                                         .occurrenceTime = currentTime,
+                                         .operationID = decision->operationID };
+                    Event seqop = Inference_BeliefIntersection(precondition, &op); //(&/,a,op). :|:
+                    Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
+                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
+                    {
+                        for(int i=0; i<ANTICIPATIONS_MAX; i++)
+                        {
+                            if(postc->anticipation_deadline[i] == 0)
+                            {
+                                //"compute amount of negative evidence based on current evidence" (Robert's estimation)
+                                //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
+                                long countWithNegativeEvidence = imp.revisions;
+                                double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
+                                //compute confidence by negative evidence
+                                double w = Truth_c2w(imp.truth.confidence) * negativeEvidenceRatio;
+                                double c = Truth_w2c(w) * ANTICIPATION_NEG_EVIDENCE_MUL;
+                                //deadline: predicted time + tolerance
+                                postc->anticipation_deadline[i] = currentTime + imp.maxOccurrenceTimeOffset;
+                                postc->anticipation_negative_confirmation[i] = imp;
+                                //assert(c > 0, "hmm conf should be >0");
+                                postc->anticipation_negative_confirmation[i].truth = (Truth) { .frequency = 0.0, .confidence = c };
+                                postc->anticipation_negative_confirmation[i].stamp = (Stamp) { .evidentalBase = { -stampID } };
+                                postc->anticipation_negative_confirmation[i].occurrenceTimeOffset = imp.occurrenceTimeOffset;
+                                postc->anticipation_negative_confirmation[i].maxOccurrenceTimeOffset = imp.maxOccurrenceTimeOffset;
+                                postc->anticipation_operation_id[i] = decision->operationID;
+                                IN_DEBUG ( printf("ANTICIPATE %s, future=%ld maxfuture=%ld layer=%d\n", imp.debug, imp.occurrenceTimeOffset, imp.maxOccurrenceTimeOffset, l); )
+                                //puts(postc->debug);
+                                //puts("");
+                                //getchar();
+                                stampID--;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //EMD anticipation
 }
 
 bool Decision_Making(int layer, Event *goal, long currentTime)
@@ -200,6 +204,10 @@ bool Decision_Making(int layer, Event *goal, long currentTime)
     if(decision.execute && decision.operationID)
     {
         Decision_InjectActionEvent(&decision);
+    }
+    if(decision.execute)
+    {
+        Decision_Anticipate(&decision);
     }
     return decision.execute;
 }

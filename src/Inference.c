@@ -27,9 +27,9 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 Implication Inference_BeliefInduction(Event *a, Event *b)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
-    DERIVATION_STAMP(a,b)
+    DERIVATION_STAMP_AND_TIME(a,b)
     return  (Implication) { .sdr = a->sdr, 
-                            .truth = Truth_Eternalize(Truth_Induction(a->truth, Truth_Projection(b->truth, b->occurrenceTime, a->occurrenceTime))),
+                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                             .stamp = conclusionStamp,
                             .revisions = 1,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
@@ -54,7 +54,8 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     Implication ret = (Implication) { .sdr = a->sdr,
-                                      .truth = Truth_Revision(a->truth, b->truth),
+                                      .truth = Truth_Revision(Truth_Projection(a->truth, a->occurrenceTimeOffset, occurrenceTimeOffsetAvg), 
+                                                              Truth_Projection(b->truth, b->occurrenceTimeOffset, occurrenceTimeOffsetAvg)),
                                       .stamp = conclusionStamp, 
                                       .revisions = a->revisions + b->revisions,
                                       .occurrenceTimeOffset = occurrenceTimeOffsetAvg,

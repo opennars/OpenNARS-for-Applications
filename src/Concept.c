@@ -54,22 +54,16 @@ void Concept_CheckAnticipationDisappointment(int layer, Concept *c, long current
             if(currentTime > c->anticipation_deadline[j])
             {
                 //disappointed
-                printf("DISAPPOINTED %s layer=%d (f,c)=(%f,%f)\n", c->anticipation_negative_confirmation[j].debug, layer, c->anticipation_negative_confirmation[j].truth.frequency, c->anticipation_negative_confirmation[j].truth.confidence);
                 Implication *added = Table_AddAndRevise(&c->precondition_beliefs[c->anticipation_operation_id[j]], &c->anticipation_negative_confirmation[j], c->anticipation_negative_confirmation[j].debug);
                 if(added != NULL)
                 {
                     added->sourceConcept = c->anticipation_negative_confirmation[j].sourceConcept;
                     added->sourceConceptSDR = c->anticipation_negative_confirmation[j].sourceConceptSDR;
                 }
-                else
-                {
-                    //puts("NO RETURN");
-                }
                 c->anticipation_deadline[j] = 0;
-                
                 IN_DEBUG
                 (
-                    
+                    printf("DISAPPOINTED %s layer=%d (f,c)=(%f,%f)\n", c->anticipation_negative_confirmation[j].debug, layer, c->anticipation_negative_confirmation[j].truth.frequency, c->anticipation_negative_confirmation[j].truth.confidence);
                     getchar();
                     puts("START");
                     for(int i=0; i<c->precondition_beliefs[c->anticipation_operation_id[j]].itemsAmount; i++)
