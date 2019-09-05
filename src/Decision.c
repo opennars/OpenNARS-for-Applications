@@ -7,16 +7,6 @@ static void Decision_InjectActionEvent(Decision *decision)
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1]; //TODO put into InjectActionEvent
     (*decision->op.action)();
-    //decision already made, remove spikes
-    for(int l=0; l<CONCEPT_LAYERS; l++)
-    {
-        for(int i=0; i<concepts[l].itemsAmount; l++)
-        {
-            Concept *c = concepts[l].items[i].address;
-            c->incoming_goal_spike = (Event) {0};
-            c->goal_spike = (Event) {0};
-        }
-    }
     //and add operator feedback
     ANSNA_AddInputBelief(decision->op.sdr);
 }
@@ -162,7 +152,7 @@ void Decision_Anticipate(Decision *decision)
                                 double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
                                 //compute confidence by negative evidence
                                 double w = Truth_c2w(imp.truth.confidence) * negativeEvidenceRatio;
-                                double c = Truth_w2c(w) * ANTICIPATION_NEG_EVIDENCE_MUL;
+                                double c = Truth_w2c(w);
                                 //deadline: predicted time + tolerance
                                 postc->anticipation_deadline[i] = currentTime + imp.maxOccurrenceTimeOffset;
                                 postc->anticipation_negative_confirmation[i] = imp;

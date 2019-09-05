@@ -210,7 +210,6 @@ void Cycle_Perform(long currentTime)
                                         }
                                     }
                                 }
-                                goto END;
                             }
                             else
                             {
@@ -222,7 +221,6 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
-    END:
     Cycle_PropagateSpikes(currentTime);
     //process goals
     if(goal_events.itemsAmount > 0)

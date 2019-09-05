@@ -519,7 +519,7 @@ void ANSNA_Multistep2_Test()
     {
         ANSNA_AddInputBelief(Encode_Term("start_at"));
         ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
-        ANSNA_Cycles(10);
+        ANSNA_Cycles(1);
         ANSNA_AddInputBelief(Encode_Term("switch_at"));
         ANSNA_Cycles(100);
     }
@@ -529,7 +529,7 @@ void ANSNA_Multistep2_Test()
         ANSNA_AddInputBelief(Encode_Term("switch_at"));
         ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
         ANSNA_AddInputBelief(Encode_Term("switch_active"));
-        ANSNA_Cycles(5);
+        ANSNA_Cycles(1);
         ANSNA_AddInputBelief(Encode_Term("light_active"));
         ANSNA_Cycles(100);
     }
