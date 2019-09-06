@@ -31,7 +31,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static void Relink_Implication(int layer, Implication *imp)
+void Relink_Implication(int layer, Implication *imp)
 {
     if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
     {

@@ -70,25 +70,18 @@ static void Cycle_PropagateSpikes(long currentTime)
             for(int i=0; i<concepts[l].itemsAmount; i++)
             {
                 Concept *postc = concepts[l].items[i].address;
-                if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > DECISION_THRESHOLD)
+                if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
                 {
                     for(int opi=0; opi<OPERATIONS_MAX; opi++)
                     {
                         for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
                         {
                             Implication *imp = &postc->precondition_beliefs[opi].array[j];
-                            Concept *pre = imp->sourceConcept; //concepts.items[closest_concept_i].address; //TODO check if still the same concept!
+                            Relink_Implication(l, imp);
+                            Concept *pre = imp->sourceConcept;
                             if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                             {
-                                if(SDR_Equal(&pre->sdr, &imp->sourceConceptSDR))
-                                {
-                                    pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
-                                }
-                                else
-                                {
-                                    Table_Remove(&postc->precondition_beliefs[opi], j);
-                                    j--; //repeat iteration, with re-checking loop condition
-                                }
+                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
                             }
                         }
                     }
@@ -105,7 +98,7 @@ static void Cycle_PropagateSpikes(long currentTime)
                 if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
                 {
                     c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
-                    if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > DECISION_THRESHOLD)
+                    if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
                     {
                         Cycle_ProcessEvent(&c->goal_spike, currentTime);
                     }
@@ -221,7 +214,6 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
-    Cycle_PropagateSpikes(currentTime);
     //process goals
     if(goal_events.itemsAmount > 0)
     {
@@ -231,6 +223,7 @@ void Cycle_Perform(long currentTime)
             Cycle_ProcessEvent(goal, currentTime);
         }
     }
+    Cycle_PropagateSpikes(currentTime);
     //Re-sort queue
     for(int l=0; l<CONCEPT_LAYERS; l++)
     {
