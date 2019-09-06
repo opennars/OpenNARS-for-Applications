@@ -31,6 +31,23 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
+static void Relink_Implication(int layer, Implication *imp)
+{
+    if(!SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
+    {
+        int closest_concept_i;
+        if(Memory_getClosestConcept(layer, &imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
+        {
+            imp->sourceConcept = concepts[layer].items[closest_concept_i].address;
+            imp->sourceConceptSDR = ((Concept*) imp->sourceConcept)->sdr;
+        }
+        else
+        {
+            assert(false, "No concept to re-link to, call the ghostbusters!\n");
+        }
+    }
+}
+
 int stampID = -1;
 Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
 {
@@ -50,6 +67,7 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
             }
             for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
             {
+                Relink_Implication(layer, &postc->precondition_beliefs[opi].array[j]);
                 Implication imp = postc->precondition_beliefs[opi].array[j];
                 IN_DEBUG
                 (
@@ -58,43 +76,30 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
                 )
                 //now look at how much the precondition is fulfilled
                 Concept *current_prec = imp.sourceConcept;
-                if(SDR_Equal(&current_prec->sdr, &imp.sourceConceptSDR))
+                Event *precondition = &current_prec->belief_spike; //a. :|:
+                if(precondition != NULL)
                 {
-                    Event *precondition = &current_prec->belief_spike; //a. :|:
-                    if(precondition != NULL)
+                    Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
+                    double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+                    if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
-                        Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
-                        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
-                        if(operationGoalTruthExpectation > bestTruthExpectation)
-                        {
-                            IN_DEBUG
-                            (
-                                printf("CONSIDERED PRECON: %s\n", current_prec->debug);
-                                fputs("CONSIDERED PRECON truth ", stdout);
-                                Truth_Print(&precondition->truth);
-                                fputs("CONSIDERED goal truth ", stdout);
-                                Truth_Print(&goal->truth);
-                                fputs("CONSIDERED imp truth ", stdout);
-                                Truth_Print(&imp.truth);
-                                printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                                SDR_Print(&current_prec->sdr);
-                                SDR_Print(&precondition->sdr);
-                            )
-                            prec = current_prec;
-                            bestImp = imp;
-                            decision.operationID = opi;
-                            bestTruthExpectation = operationGoalTruthExpectation;
-                        }
-                    }
-                }
-                else
-                {
-                    int closest_concept_i;
-                    if(Memory_getClosestConcept(layer, &imp.sourceConceptSDR, SDR_Hash(&imp.sourceConceptSDR), &closest_concept_i))
-                    {
-                        postc->precondition_beliefs[opi].array[j].sourceConcept = concepts[layer].items[closest_concept_i].address;
-                        postc->precondition_beliefs[opi].array[j].sourceConceptSDR = ((Concept *) postc->precondition_beliefs[opi].array[j].sourceConcept)->sdr;
-                        j--; //re-link successul, repeat iteration, with re-checking loop condition
+                        IN_DEBUG
+                        (
+                            printf("CONSIDERED PRECON: %s\n", current_prec->debug);
+                            fputs("CONSIDERED PRECON truth ", stdout);
+                            Truth_Print(&precondition->truth);
+                            fputs("CONSIDERED goal truth ", stdout);
+                            Truth_Print(&goal->truth);
+                            fputs("CONSIDERED imp truth ", stdout);
+                            Truth_Print(&imp.truth);
+                            printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
+                            SDR_Print(&current_prec->sdr);
+                            SDR_Print(&precondition->sdr);
+                        )
+                        prec = current_prec;
+                        bestImp = imp;
+                        decision.operationID = opi;
+                        bestTruthExpectation = operationGoalTruthExpectation;
                     }
                 }
             }
@@ -128,6 +133,7 @@ void Decision_Anticipate(Decision *decision)
             Concept *postc = concepts[l].items[j].address;
             for(int  h=0; h<postc->precondition_beliefs[decision->operationID].itemsAmount; h++)
             {
+                Relink_Implication(l, &postc->precondition_beliefs[decision->operationID].array[h]);
                 Implication imp = postc->precondition_beliefs[decision->operationID].array[h]; //(&/,a,op) =/> b.
                 Concept *current_prec = imp.sourceConcept;
                 Event *precondition = &current_prec->belief_spike; //a. :|:

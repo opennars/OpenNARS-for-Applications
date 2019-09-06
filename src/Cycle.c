@@ -237,9 +237,12 @@ void Cycle_Perform(long currentTime)
         for(int i=0; i<concepts[l].itemsAmount; i++)
         {
             Concept *concept = concepts[l].items[i].address;
-            //usefulness was changed, 
+            //usefulness was changed, push back if it didn't get void by interpolation
             PriorityQueue_PopAt(&concepts[l], i, NULL);
-            Memory_addConcept(l, concept, currentTime);
+            if(SDR_CountTrue(&concept->sdr) > 0)
+            {
+                Memory_addConcept(l, concept, currentTime);
+            }
         }
     }
     assert(checksum <= 1, "more than one decision was made in 1 cycle");
