@@ -33,13 +33,14 @@ static Decision Decision_MotorBabbling()
 
 static void Relink_Implication(int layer, Implication *imp)
 {
-    if(!SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
+    if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
     {
         int closest_concept_i;
         if(Memory_getClosestConcept(layer, &imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
         {
             imp->sourceConcept = concepts[layer].items[closest_concept_i].address;
             imp->sourceConceptSDR = ((Concept*) imp->sourceConcept)->sdr;
+            imp->sourceConceptSDRHash = SDR_Hash(&imp->sourceConceptSDR);
         }
         else
         {

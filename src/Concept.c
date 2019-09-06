@@ -26,6 +26,7 @@ void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth)
 {
     double u = Truth_Expectation(matchTruth);
     int k = 0;
+    bool rehash = false;
     ITERATE_SDR_BITS(i,j,
         double oldValue = concept->sdr_bit_counter[k];
         double count = SDR_ReadBitInBlock(eventSDR,i,j) ? 1.0 : -1.0;
@@ -34,14 +35,20 @@ void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth)
         if(oldValue<0.5 && newValue >= 0.5)
         {
             SDR_WriteBit(&concept->sdr,k,1);
+            rehash = true;
         }
         else
         if(oldValue>=0.5 && newValue < 0.5)
         {
             SDR_WriteBit(&concept->sdr,k,0);
+            rehash = true;
         }
         k++;
     )
+    if(rehash)
+    {
+        concept->sdr_hash = SDR_Hash(&concept->sdr);
+    }
 }
 
 void Concept_CheckAnticipationDisappointment(int layer, Concept *c, long currentTime)

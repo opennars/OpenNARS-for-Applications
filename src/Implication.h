@@ -20,6 +20,7 @@ typedef struct {
     //for efficient spike propagation:
     void *sourceConcept;
     SDR sourceConceptSDR; //to check whether it's still the same
+    SDR_HASH_TYPE sourceConceptSDRHash;
     char debug[100]; //++ DEBUG
 } Implication;
 

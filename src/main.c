@@ -305,7 +305,7 @@ void ANSNA_Follow_Test()
         assert(bads < 500, "too many wrong trials");
         if(score >= 500)
             break;
-        ANSNA_Cycles(1000);
+        ANSNA_Cycles(10);
     }
     printf("<<ANSNA Follow test successful goods=%d bads=%d\n",goods,bads);
 }
