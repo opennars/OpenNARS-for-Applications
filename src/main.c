@@ -395,7 +395,7 @@ void ANSNA_Pong(bool useNumericEncoding)
         }
         else
         {
-            if(batX < ballX - batWidth)
+            if(batX <= ballX - batWidth)
             {
                 ANSNA_AddInputBelief(Encode_Term("ball_right"));
             }
