@@ -1,11 +1,8 @@
 #include "Cycle.h"
 
-int checksum = 0;
-
 //doing inference within the matched concept, returning whether decisionMaking should continue
 static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentTime, bool decisionMaking)
 {
-    Concept_ConfirmAnticipation(layer, c, e);
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     Event eMatch = Memory_MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
@@ -27,7 +24,6 @@ static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentT
             }
             else
             {
-                checksum++;
                 e->propagated = true;
                 return false; //already invoked, no need to pass further up the hierarchy
             }
@@ -155,15 +151,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
 
 void Cycle_Perform(long currentTime)
 {   
-    checksum = 0;
-    //process anticipation
-    for(int l=0; l<CONCEPT_LAYERS; l++)
-    {
-        for(int i=0; i<concepts[l].itemsAmount; i++)
-        {
-            Concept_CheckAnticipationDisappointment(l, concepts[l].items[i].address, currentTime);
-        }
-    }
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -238,5 +225,4 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
-    assert(checksum <= 1, "more than one decision was made in 1 cycle");
 }

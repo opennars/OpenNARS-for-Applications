@@ -54,8 +54,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     Implication ret = (Implication) { .sdr = a->sdr,
-                                      .truth = Truth_Revision(Truth_Projection(a->truth, a->occurrenceTimeOffset, occurrenceTimeOffsetAvg), 
-                                                              Truth_Projection(b->truth, b->occurrenceTimeOffset, occurrenceTimeOffsetAvg)),
+                                      .truth = Truth_Revision(a->truth, b->truth),
                                       .stamp = conclusionStamp, 
                                       .revisions = a->revisions + b->revisions,
                                       .occurrenceTimeOffset = occurrenceTimeOffsetAvg,

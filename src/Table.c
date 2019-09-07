@@ -65,7 +65,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     if(same_i != -1)
     {
         //choice replaces the existing with the new if the new has higher confidence
-        if(Stamp_checkOverlap(&imp->stamp, &table->array[same_i].stamp))
+        /*if(Stamp_checkOverlap(&imp->stamp, &table->array[same_i].stamp))
         {
             if(imp->truth.confidence >= table->array[same_i].truth.confidence)
             {
@@ -75,11 +75,11 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
             }
         } 
         else
-        {
+        {*/
             //revision adds the revised element, removing the old implication from the table if it results in higher confidence than premises
             Implication OldImp = table->array[same_i];
             Implication revised = Inference_ImplicationRevision(&OldImp, imp);
-            if(revised.truth.confidence >= OldImp.truth.confidence && revised.truth.confidence >= imp->truth.confidence)
+            //if(revised.truth.confidence >= OldImp.truth.confidence && revised.truth.confidence >= imp->truth.confidence)
             {
                 strcpy(revised.debug, debug);
                 Implication_SetSDR(&revised, imp->sdr);
@@ -103,7 +103,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
                     getchar();
                 )*/
             }
-        }
+        //}
     }
     else
     {

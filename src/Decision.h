@@ -12,7 +12,7 @@
 //----------//
 //truth expectation needed for executions
 #define DECISION_THRESHOLD 0.501
-#define ANTICIPATION_THRESHOLD 0.6
+#define ANTICIPATION_THRESHOLD 0.54
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 extern double MOTOR_BABBLING_CHANCE;

@@ -320,7 +320,11 @@ void ANSNA_Pong_Right()
 {
     ANSNA_Pong_Right_executed = true;
 }
-
+bool ANSNA_Pong_Stop_executed = false;
+void ANSNA_Pong_Stop()
+{
+    ANSNA_Pong_Stop_executed = true;
+}
 //int t=0;
 void ANSNA_Pong(bool useNumericEncoding)
 {
@@ -329,20 +333,22 @@ void ANSNA_Pong(bool useNumericEncoding)
     puts(">>ANSNA Pong start");
     ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
     ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
+    ANSNA_AddOperation(Encode_Term("op_stop"), ANSNA_Pong_Stop); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
     int ballY = szY/5;
     int batX = 20;
     int batVX = 0;
-    int batWidth = 4; //"radius", batWidth from middle to the left and right
+    int batWidth = 6; //"radius", batWidth from middle to the left and right
     int vX = 1;
     int vY = 1;
     int hits = 0;
     int misses = 0;
+    int t=0;
     while(1)
     {
-        //t++;
+        t++;
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
@@ -350,7 +356,7 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             fputs(" ", stdout);
         }
-        for(int i=0; i<batWidth*2-1 ;i++)
+        for(int i=0; i<batWidth*2-1+MIN(0,batX) ;i++)
         {
             fputs("@", stdout);
         }
@@ -383,19 +389,24 @@ void ANSNA_Pong(bool useNumericEncoding)
         }
         if(useNumericEncoding)
         {
-            SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
+            SDR sdrX = Encode_Scalar(0-batWidth*2, 2*szX+batWidth*2, szX+(ballX-batX));
             //SDR_PrintWhereTrue(&sdrX);
             ANSNA_AddInputBelief(sdrX);
         }
         else
         {
-            if(batX < ballX)
+            if(batX < ballX - batWidth)
             {
                 ANSNA_AddInputBelief(Encode_Term("ball_right"));
             }
-            if(ballX < batX)
+            else
+            if(ballX + batWidth < batX)
             {
                 ANSNA_AddInputBelief(Encode_Term("ball_left"));
+            }
+            else
+            {
+                ANSNA_AddInputBelief(Encode_Term("ball_equal"));
             }
         }
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
@@ -415,7 +426,10 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             vY = -1;
         }
-        ballX += vX;
+        if(t%2 == -1)
+        {
+            ballX += vX;
+        }
         ballY += vY;
         if(ballY == 0)
         {
@@ -427,7 +441,7 @@ void ANSNA_Pong(bool useNumericEncoding)
             }
             else
             {
-                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
                 puts("bad");
                 misses++;
             }
@@ -437,11 +451,6 @@ void ANSNA_Pong(bool useNumericEncoding)
             ballY = szY/2+rand()%(szY/2);
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
-        }
-        if(ANSNA_Pong_Left_executed && ANSNA_Pong_Right_executed)
-        {
-            ANSNA_Pong_Left_executed = false;
-            ANSNA_Pong_Right_executed = false;
         }
         if(ANSNA_Pong_Left_executed)
         {
@@ -455,7 +464,13 @@ void ANSNA_Pong(bool useNumericEncoding)
             puts("Exec: op_right");
             batVX = 2;
         }
-        batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
+        if(ANSNA_Pong_Stop_executed)
+        {
+            ANSNA_Pong_Stop_executed = false;
+            puts("Exec: op_stop");
+            batVX = 0;
+        }
+        batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
         printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
         nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         //ANSNA_Cycles(10);
