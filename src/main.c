@@ -456,13 +456,13 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             ANSNA_Pong_Left_executed = false;
             puts("Exec: op_left");
-            batVX = -2;
+            batVX = -3;
         }
         if(ANSNA_Pong_Right_executed)
         {
             ANSNA_Pong_Right_executed = false;
             puts("Exec: op_right");
-            batVX = 2;
+            batVX = 3;
         }
         if(ANSNA_Pong_Stop_executed)
         {
