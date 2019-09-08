@@ -64,46 +64,17 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     //2. if there was one, revise with it or apply choice if overlap
     if(same_i != -1)
     {
-        //choice replaces the existing with the new if the new has higher confidence
-        /*if(Stamp_checkOverlap(&imp->stamp, &table->array[same_i].stamp))
-        {
-            if(imp->truth.confidence >= table->array[same_i].truth.confidence)
-            {
-                Table_Remove(table, same_i);
-                //printf("REPLACED\n");
-                return Table_Add(table, imp);
-            }
-        } 
-        else
-        {*/
-            //revision adds the revised element, removing the old implication from the table if it results in higher confidence than premises
-            Implication OldImp = table->array[same_i];
-            Implication revised = Inference_ImplicationRevision(&OldImp, imp);
-            //if(revised.truth.confidence >= OldImp.truth.confidence && revised.truth.confidence >= imp->truth.confidence)
-            {
-                strcpy(revised.debug, debug);
-                Implication_SetSDR(&revised, imp->sdr);
-                //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
-                Table_Remove(table, same_i);
-                //printf("REVISED\n");
-                Implication *ret = Table_Add(table, &revised);
-                assert(ret != NULL, "WAAAT");
-                return ret;
-                /*RetRevised = revised;
-                IN_DEBUG
-                (
-                    puts("START\n\n");
-                    for(int i=0; i<table->itemsAmount; i++)
-                    {
-                        puts(table->array[i].debug);
-                        puts("\n");
-                        Implication_Print(&table->array[i]);
-                    }
-                    puts("REVISION END\n");
-                    getchar();
-                )*/
-            }
-        //}
+        //revision adds the revised element, removing the old implication from the table
+        Implication OldImp = table->array[same_i];
+        Implication revised = Inference_ImplicationRevision(&OldImp, imp);
+        strcpy(revised.debug, debug);
+        Implication_SetSDR(&revised, imp->sdr);
+        //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
+        Table_Remove(table, same_i);
+        //printf("REVISED\n");
+        Implication *ret = Table_Add(table, &revised);
+        assert(ret != NULL, "WAAAT");
+        return ret;
     }
     else
     {
@@ -111,18 +82,6 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         strcpy(imp->debug, debug);
         //printf("ADDED\n");
         return Table_Add(table, imp);
-        /*IN_DEBUG
-        (
-            puts("START");
-            for(int i=0; i<table->itemsAmount; i++)
-            {
-                puts(table->array[i].debug);
-                puts("");
-                Implication_Print(&table->array[i]);
-            }
-            puts("ADDITION END");
-            getchar();
-        )*/
     }
     return NULL;
 }

@@ -325,8 +325,7 @@ void ANSNA_Pong_Stop()
 {
     ANSNA_Pong_Stop_executed = true;
 }
-//int t=0;
-void ANSNA_Pong(bool useNumericEncoding)
+void ANSNA_Pong2(bool useNumericEncoding)
 {
     OUTPUT = 0;
     ANSNA_INIT();
@@ -476,6 +475,141 @@ void ANSNA_Pong(bool useNumericEncoding)
         //ANSNA_Cycles(10);
     }
 }
+//int t=0;
+void ANSNA_Pong(bool useNumericEncoding)
+{
+    OUTPUT = 0;
+    ANSNA_INIT();
+    puts(">>ANSNA Pong start");
+    ANSNA_AddOperation(Encode_Term("op_left"), ANSNA_Pong_Left); 
+    ANSNA_AddOperation(Encode_Term("op_right"), ANSNA_Pong_Right); 
+    int szX = 50;
+    int szY = 20;
+    int ballX = szX/2;
+    int ballY = szY/5;
+    int batX = 20;
+    int batVX = 0;
+    int batWidth = 4; //"radius", batWidth from middle to the left and right
+    int vX = 1;
+    int vY = 1;
+    int hits = 0;
+    int misses = 0;
+    while(1)
+    {
+        //t++;
+        //if(t%10000 == 0)
+        //    getchar();
+        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        for(int i=0; i<batX-batWidth+1; i++)
+        {
+            fputs(" ", stdout);
+        }
+        for(int i=0; i<batWidth*2-1 ;i++)
+        {
+            fputs("@", stdout);
+        }
+        puts("");
+        for(int i=0; i<ballY; i++)
+        {
+            for(int k=0; k<szX; k++)
+            {
+                fputs(" ", stdout);
+            }
+            puts("|");
+        }
+        for(int i=0; i<ballX; i++)
+        {
+            fputs(" ", stdout);
+        }
+        fputs("#", stdout);
+        for(int i=ballX+1; i<szX; i++)
+        {
+            fputs(" ", stdout);
+        }
+        puts("|");
+        for(int i=ballY+1; i<szY; i++)
+        {
+            for(int k=0; k<szX; k++)
+            {
+                fputs(" ", stdout);
+            }
+            puts("|");
+        }
+        if(useNumericEncoding)
+        {
+            SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
+            //SDR_PrintWhereTrue(&sdrX);
+            ANSNA_AddInputBelief(sdrX);
+        }
+        else
+        {
+            if(batX < ballX)
+            {
+                ANSNA_AddInputBelief(Encode_Term("ball_right"));
+            }
+            if(ballX < batX)
+            {
+                ANSNA_AddInputBelief(Encode_Term("ball_left"));
+            }
+        }
+        ANSNA_AddInputGoal(Encode_Term("good_ansna"));
+        if(ballX <= 0)
+        {
+            vX = 1;
+        }
+        if(ballX >= szX-1)
+        {
+            vX = -1;
+        }
+        if(ballY <= 0)
+        {
+            vY = 1;
+        }
+        if(ballY >= szY-1)
+        {
+            vY = -1;
+        }
+        ballX += vX;
+        ballY += vY;
+        if(ballY == 0)
+        {
+            if(abs(ballX-batX) <= batWidth)
+            {
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                puts("good");
+                hits++;
+            }
+            else
+            {
+                //ANSNA_AddInput(Encode_Term("good_ansna"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_ansna");
+                puts("bad");
+                misses++;
+            }
+        }
+        if(ballY == 0 || ballX == 0 || ballX >= szX-1)
+        {
+            ballY = szY/2+rand()%(szY/2);
+            ballX = rand()%szX;
+            vX = rand()%2 == 0 ? 1 : -1;
+        }
+        if(ANSNA_Pong_Left_executed)
+        {
+            ANSNA_Pong_Left_executed = false;
+            puts("Exec: op_left");
+            batVX = -2;
+        }
+        if(ANSNA_Pong_Right_executed)
+        {
+            ANSNA_Pong_Right_executed = false;
+            puts("Exec: op_right");
+            batVX = 2;
+        }
+        batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
+        nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        //ANSNA_Cycles(10);
+    }
+}
 
 bool ANSNA_Lightswitch_GotoSwitch_executed = false;
 void ANSNA_Lightswitch_GotoSwitch()
@@ -572,9 +706,17 @@ int main(int argc, char *argv[])
         {
             ANSNA_Pong(false);
         }
+        if(!strcmp(argv[1],"pong2"))
+        {
+            ANSNA_Pong2(false);
+        }
         if(!strcmp(argv[1],"numeric-pong"))
         {
             ANSNA_Pong(true);
+        }
+        if(!strcmp(argv[1],"numeric-pong2"))
+        {
+            ANSNA_Pong2(true);
         }
     }
     srand(1337);
@@ -593,6 +735,8 @@ int main(int argc, char *argv[])
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("ANSNA pong (starts Pong example)");
     puts("ANSNA numeric-pong (starts Pong example with numeric input)");
+    puts("ANSNA pong2 (starts Pong2 example)");
+    puts("ANSNA numeric-pong2 (starts Pong2 example with numeric input)");
     return 0;
 }
 
