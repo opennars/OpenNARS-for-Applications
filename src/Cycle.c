@@ -29,7 +29,7 @@ static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentT
             }
         }
     }
-    return true;
+    return false;
 }
 
 //Process an event, by creating a concept, or activating an existing
