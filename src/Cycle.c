@@ -208,20 +208,17 @@ void Cycle_Perform(long currentTime)
         }
     }
     //process goals
+    bool decisionMade = false;
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed)
         {
-            Cycle_ProcessEvent(goal, currentTime);
-        }
-    }
-    for(int i=0; i<PROPAGATION_ITERATIONS; i++)
-    {
-        bool decisionMade = Cycle_PropagateSpikes(currentTime);
-        if(decisionMade)
-        {
-            break;
+            decisionMade = Cycle_ProcessEvent(goal, currentTime);
+            for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
+            {
+                decisionMade = Cycle_PropagateSpikes(currentTime);
+            }
         }
     }
     //end of iterations, remove spikes
