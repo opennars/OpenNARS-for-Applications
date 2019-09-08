@@ -31,5 +31,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound);
 Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime);
 //{Event a!, Event a!} |- Event a! (essentially revision or choice dependent on evidental overlap)
 Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime);
+//{Event a., Implication <a =/> b>.} |- Event b.
+Event Inference_BeliefDeduction(Event *component, Implication *compound);
 
 #endif

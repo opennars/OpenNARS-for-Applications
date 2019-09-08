@@ -1,7 +1,7 @@
 #include "Memory.h"
 
-Concept concept_storage[CONCEPTS_MAX];
-Item concept_items_storage[CONCEPTS_MAX];
+Concept concept_storage[CONCEPT_LAYERS][CONCEPTS_MAX]; //TODO optimize
+Item concept_items_storage[CONCEPT_LAYERS][CONCEPTS_MAX]; //in space consumption
 int operations_index = 0;
 
 static void Memory_ResetEvents()
@@ -12,11 +12,16 @@ static void Memory_ResetEvents()
 
 static void Memory_ResetConcepts()
 {
-    PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
-    for(int i=0; i<CONCEPTS_MAX; i++)
+    int curCAmount = CONCEPTS_MAX;
+    for(int l=0; l<CONCEPT_LAYERS; l++)
     {
-        concept_storage[i] = (Concept) {0};
-        concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
+        PriorityQueue_RESET(&concepts[l], concept_items_storage[l], curCAmount);
+        for(int i=0; i<CONCEPTS_MAX; i++)
+        {
+            concept_storage[l][i] = (Concept) {0};
+            concepts[l].items[i] = (Item) { .address = &(concept_storage[l][i]) };
+        }
+        curCAmount /= 2;
     }   
 }
 
@@ -31,11 +36,11 @@ void Memory_INIT()
     operations_index = 0;
 }
 
-bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
+bool Memory_FindConceptBySDR(int layer, SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-    for(int i=0; i<concepts.itemsAmount; i++)
+    for(int i=0; i<concepts[layer].itemsAmount; i++)
     {
-        Concept *existing = concepts.items[i].address;
+        Concept *existing = concepts[layer].items[i].address;
         if(!USE_HASHING || existing->sdr_hash == sdr_hash)
         {
             if(SDR_Equal(&existing->sdr, sdr))
@@ -51,37 +56,43 @@ bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
     return false;
 }
 
-Concept* Memory_Conceptualize(SDR *sdr)
+void Memory_Conceptualize(SDR *sdr)
 {
-    Concept *addedConcept = NULL;
-    //try to add it, and if successful add to voting structure
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 0.0);
-    if(feedback.added)
+    SDR_HASH_TYPE hash = SDR_Hash(sdr);
+    for(int l=0; l<CONCEPT_LAYERS; l++)
     {
-        addedConcept = feedback.addedItem.address;
-        *addedConcept = (Concept) {0};
-        Concept_SetSDR(addedConcept, *sdr);
+        if(!Memory_FindConceptBySDR(l, sdr, hash, NULL))
+        {
+            Concept *addedConcept = NULL;
+            //try to add it, and if successful add to voting structure
+            PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts[l], 0.0);
+            if(feedback.added)
+            {
+                addedConcept = feedback.addedItem.address;
+                *addedConcept = (Concept) {0};
+                Concept_SetSDR(addedConcept, *sdr);
+            }
+        }
     }
-    return addedConcept;
 }
 
-bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
+bool Memory_getClosestConcept(int layer, SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 {
-    if(concepts.itemsAmount == 0)
+    if(concepts[layer].itemsAmount == 0)
     {
         return false;   
     }
     int foundSameConcept_i;
-    if(Memory_FindConceptBySDR(sdr, sdr_hash, &foundSameConcept_i))
+    if(Memory_FindConceptBySDR(layer, sdr, sdr_hash, &foundSameConcept_i))
     {
         *returnIndex = foundSameConcept_i;
         return true;
     }
     int best_i = -1;
     double bestValSoFar = -1;
-    for(int i=0; i<concepts.itemsAmount; i++)
+    for(int i=0; i<concepts[layer].itemsAmount; i++)
     {
-        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*)concepts.items[i].address)->sdr)));
+        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*)concepts[layer].items[i].address)->sdr)));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;
@@ -116,40 +127,20 @@ bool Memory_addEvent(Event *event)
     return true;
 }
 
-bool Memory_addConcept(Concept *concept, long currentTime)
+void Memory_addConcept(int layer, Concept *concept, long currentTime)
 {
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, Usage_usefulness(&concept->usage, currentTime));
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts[layer], Usage_usefulness(&concept->usage, currentTime));
     if(feedback.added)
     {
         Concept *toRecyle = feedback.addedItem.address;
         *toRecyle = *concept;
-        return true;
     }
-    return false;
 }
 
 void Memory_addOperation(Operation op)
 {
     operations[operations_index%OPERATIONS_MAX] = op;
     operations_index++;
-}
-
-bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
-{
-    if(!Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, NULL))
-    {
-        bool different_enough = true;
-        if(c_matched_to != NULL)
-        {
-            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&event->sdr, &c_matched_to->sdr));
-            if(novelty < CONCEPT_FORMATION_NOVELTY)
-            {
-                different_enough = false;
-            }
-        }
-        return different_enough;
-    }
-    return false;
 }
 
 Event Memory_MatchEventToConcept(Concept *c, Event *e)

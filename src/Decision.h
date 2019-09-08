@@ -12,12 +12,11 @@
 //----------//
 //truth expectation needed for executions
 #define DECISION_THRESHOLD 0.501
+#define ANTICIPATION_THRESHOLD 0.54
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
+#define REFRACTORY_PERIOD 50
 extern double MOTOR_BABBLING_CHANCE;
-#define ANTICIPATION_FORWARD_MUL 1.0
-#define ANTICIPATION_VARIANCE_MUL 2.0
-#define ANTICIPATION_MIN_WINDOW 500
 
 //Data structure//
 //--------------//
@@ -30,7 +29,9 @@ typedef struct
 
 //Methods//
 //-------//
+//TODO move
+void Relink_Implication(int layer, Implication *imp);
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(Event *goal, long currentTime);
+bool Decision_Making(int layer, Event *goal, long currentTime);
 
 #endif

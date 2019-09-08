@@ -24,11 +24,7 @@ typedef struct {
 //-------//
 //Add implication to table
 Implication *Table_Add(Table *table, Implication *imp);
-//Remove item at index
-void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
 Implication* Table_AddAndRevise(Table *table, Implication *imp, char *debug);
-//Copy all table entries
-void Table_COPY(Table *src, Table *target);
 
 #endif

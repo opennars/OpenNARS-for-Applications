@@ -33,7 +33,6 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
                             .stamp = conclusionStamp,
                             .revisions = 1,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
-                            .minOccurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
                             .maxOccurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }
 
@@ -55,11 +54,10 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     Implication ret = (Implication) { .sdr = a->sdr,
-                                      .truth = Truth_Projection(Truth_Revision(a->truth, b->truth), a->occurrenceTimeOffset, b->occurrenceTimeOffset),
+                                      .truth = Truth_Revision(a->truth, b->truth),
                                       .stamp = conclusionStamp, 
                                       .revisions = a->revisions + b->revisions,
                                       .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
-                                      .minOccurrenceTimeOffset = MIN(a->minOccurrenceTimeOffset, b->minOccurrenceTimeOffset),
                                       .maxOccurrenceTimeOffset = MAX(a->maxOccurrenceTimeOffset, b->maxOccurrenceTimeOffset) };
     strcpy(ret.debug, a->debug);
     return ret;
@@ -134,4 +132,15 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
         }
     }
     return *existing_potential;
+}
+
+//{Event a., Implication <a =/> b>.} |- Event b.
+Event Inference_BeliefDeduction(Event *component, Implication *compound)
+{
+    DERIVATION_STAMP(component,compound)
+    return (Event) { .sdr = compound->sdr, 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
 }
