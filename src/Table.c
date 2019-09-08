@@ -24,7 +24,7 @@ Implication *Table_Add(Table *table, Implication *imp)
     return NULL;
 }
 
-void Table_Remove(Table *table, int index)
+static void Table_Remove(Table *table, int index)
 {
     //move up the rest beginning at index
     for(int j=index; j<table->itemsAmount; j++)

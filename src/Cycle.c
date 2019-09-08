@@ -155,6 +155,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
 }
 
+int last_automatic_decision_time = 0;
 void Cycle_Perform(long currentTime)
 {   
     //1. process newest event
@@ -215,9 +216,17 @@ void Cycle_Perform(long currentTime)
         if(!goal->processed)
         {
             decisionMade = Cycle_ProcessEvent(goal, currentTime);
-            for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
+            if(decisionMade)
             {
-                decisionMade = Cycle_PropagateSpikes(currentTime);
+                last_automatic_decision_time = currentTime;
+            }
+            //let "thinking" take over since automatic mechanism didn't succeed
+            if(!decisionMade && currentTime > last_automatic_decision_time + REFRACTORY_PERIOD)
+            {
+                for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
+                {
+                    decisionMade = Cycle_PropagateSpikes(currentTime);
+                }
             }
         }
     }

@@ -15,6 +15,7 @@
 #define ANTICIPATION_THRESHOLD 0.54
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
+#define REFRACTORY_PERIOD 50
 extern double MOTOR_BABBLING_CHANCE;
 
 //Data structure//
