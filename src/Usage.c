@@ -3,7 +3,7 @@
 double Usage_usefulness(Usage *usage, long currentTime)
 {
     double age = currentTime - usage->lastUsed;
-    double usefulnessToNormalize = ((double) usage->useCount) / age;
+    double usefulnessToNormalize = ((double) usage->useCount) / (age + 1.0);
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }
 
