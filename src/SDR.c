@@ -10,7 +10,7 @@ void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value)
     sdr->blocks[block_i] = (sdr->blocks[block_i] & (~(((SDR_BLOCK_TYPE)1) << block_bit_j))) | (((SDR_BLOCK_TYPE)value) << block_bit_j);
 }
 
-static int SDR_ReadBit(SDR *sdr, int bit_i)
+int SDR_ReadBit(SDR *sdr, int bit_i)
 {
     SDR_INDEX_TO_BLOCK_AND_BIT(bit_i, block_i,block_bit_i)
     return SDR_ReadBitInBlock(sdr, block_i, block_bit_i);

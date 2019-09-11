@@ -1,7 +1,6 @@
 #include "ANSNA.h"
 
 long currentTime = 1;
-int concept_id = 1;
 
 void ANSNA_INIT()
 {
@@ -10,7 +9,6 @@ void ANSNA_INIT()
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
     event_inspector = NULL;
-    concept_id = 0;
 }
 
 void ANSNA_Cycles(int cycles)
@@ -36,7 +34,7 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
             {
                 char debug[20];
                 //assign index as name to event and concept since concept has no name yet
-                sprintf(debug, "%d", concept_id++);
+                sprintf(debug, "%d", c->id);
                 strcpy(ev.debug, debug);
                 strcpy(c->debug, debug);
             }

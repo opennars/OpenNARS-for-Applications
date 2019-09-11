@@ -12,6 +12,9 @@ void SDR_Test()
     puts(">>SDR Test Start");
     puts("testing encoding and permutation:");
     SDR mySDR = Encode_Term("term1");
+    int previous = SDR_ReadBit(&mySDR, 0);
+    SDR_WriteBit(&mySDR, 0, previous);
+    assert(SDR_ReadBit(&mySDR, 0) == previous, "SDR was written to with same value, shouldn't have changed");
     assert(SDR_CountTrue(&mySDR) == TERM_ONES, "SDR term should have TERM_ONES ones");
     SDR sdr2 = SDR_PermuteByRotation(&mySDR, true);
     SDR mySDR_Recons1 = SDR_PermuteByRotation(&sdr2, false);
@@ -696,7 +699,7 @@ void ANSNA_Multistep2_Test()
     puts("<<ANSNA Multistep2 test successful");
 }
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);

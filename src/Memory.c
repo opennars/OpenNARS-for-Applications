@@ -25,6 +25,7 @@ static void Memory_ResetConcepts()
     }   
 }
 
+int concept_id = 0;
 void Memory_INIT()
 {
     Memory_ResetConcepts();
@@ -34,6 +35,7 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     operations_index = 0;
+    concept_id = 0;
 }
 
 bool Memory_FindConceptBySDR(int layer, SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
@@ -71,6 +73,8 @@ void Memory_Conceptualize(SDR *sdr)
                 addedConcept = feedback.addedItem.address;
                 *addedConcept = (Concept) {0};
                 Concept_SetSDR(addedConcept, *sdr);
+                addedConcept->id = concept_id;
+                concept_id++;
             }
         }
     }

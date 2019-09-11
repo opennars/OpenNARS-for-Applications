@@ -22,6 +22,7 @@
 //Data structure//
 //--------------//
 typedef struct {
+    int id;
     Usage usage;
     SDR sdr;
     SDR_HASH_TYPE sdr_hash;

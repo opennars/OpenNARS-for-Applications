@@ -64,6 +64,8 @@ typedef struct
 int SDR_ReadBitInBlock(SDR *sdr, int block_i, int block_bit_j);
 //Write the jth bit in the ith block of the SDR with value
 void SDR_WriteBitInBlock(SDR *sdr, int block_i, int block_bit_j, int value);
+//Read the ith bit in the SDR returning value:
+int SDR_ReadBit(SDR *sdr, int bit_i);
 //Write the ith bit in the SDR with value:
 void SDR_WriteBit(SDR *sdr, int bit_i, int value);
 // count amount of true bits
