@@ -45,6 +45,6 @@ void Concept_Print(Concept *concept);
 //Interpolate concepts, see https://github.com/patham9/ANSNA/wiki/Concept:-Conceptual-Interpolation
 void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth);
 //Local inference: confirming anticipations, firing spikes, matching event, adjusting Usage
-Event Concept_LocalInference(int layer, Concept *c, Event *e, long currentTime);
+Event Concept_LocalInference(Concept *c, Event *e, long currentTime);
 
 #endif

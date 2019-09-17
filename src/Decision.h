@@ -15,7 +15,6 @@
 #define ANTICIPATION_THRESHOLD 0.54
 //motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
-#define REFRACTORY_PERIOD 50
 extern double MOTOR_BABBLING_CHANCE;
 
 //Data structure//
@@ -30,8 +29,8 @@ typedef struct
 //Methods//
 //-------//
 //TODO move
-void Relink_Implication(int layer, Implication *imp);
+void Relink_Implication(Implication *imp);
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(int layer, Event *goal, long currentTime);
+bool Decision_Making(Event *goal, long currentTime);
 
 #endif

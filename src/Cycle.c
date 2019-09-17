@@ -1,7 +1,7 @@
 #include "Cycle.h"
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentTime, bool decisionMade)
+static bool Cycle_ActivateConcept(Concept *c, Event *e, long currentTime, bool decisionMade)
 {
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     Event eMatch = Memory_MatchEventToConcept(c, e);
@@ -18,7 +18,7 @@ static bool Cycle_ActivateConcept(int layer, Concept *c, Event *e, long currentT
         if(!decisionMade)
         {
             //pass spike if the concept doesn't have a satisfying motor command
-            if(!Decision_Making(layer, &eMatch, currentTime))
+            if(!Decision_Making(&eMatch, currentTime))
             {
                 c->incoming_goal_spike = eMatch;
             }
@@ -39,19 +39,19 @@ static bool Cycle_ProcessEvent(Event *e, long currentTime)
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     bool decisionMade = false;
-    for(int l=0; l<CONCEPT_LAYERS; l++)
+    //determine the concept it is related to
+    int closest_concept_i;
+    Concept *c = NULL;
+    if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
-        //determine the concept it is related to
-        int closest_concept_i;
-        Concept *c = NULL;
-        if(Memory_getClosestConcept(l, &e->sdr, e->sdr_hash, &closest_concept_i))
-        {
-            c = concepts[l].items[closest_concept_i].address;
-            decisionMade |= Cycle_ActivateConcept(l, c, e, currentTime, decisionMade);
-        }
+        c = concepts.items[closest_concept_i].address;
+        decisionMade |= Cycle_ActivateConcept(c, e, currentTime, decisionMade);
     }
     //add a new concept for e too at the end (in all layers)
-    Memory_Conceptualize(&e->sdr);
+    if(Memory_EventIsNovel(e, c))
+    {
+        Memory_Conceptualize(&e->sdr);
+    }
     return decisionMade;
 }
 
@@ -62,50 +62,44 @@ static bool Cycle_PropagateSpikes(long currentTime)
     if(PROPAGATE_GOAL_SPIKES)
     {
         //pass goal spikes on to the next
-        for(int l=0; l<CONCEPT_LAYERS; l++)
+        for(int i=0; i<concepts.itemsAmount; i++)
         {
-            for(int i=0; i<concepts[l].itemsAmount; i++)
+            Concept *postc = concepts.items[i].address;
+            if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
             {
-                Concept *postc = concepts[l].items[i].address;
-                if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
+                for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
-                    for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                    for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
                     {
-                        for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
+                        Implication *imp = &postc->precondition_beliefs[opi].array[j];
+                        Relink_Implication(imp);
+                        Concept *pre = imp->sourceConcept;
+                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                         {
-                            Implication *imp = &postc->precondition_beliefs[opi].array[j];
-                            Relink_Implication(l, imp);
-                            Concept *pre = imp->sourceConcept;
-                            if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
-                            {
-                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
-                            }
+                            pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
                         }
                     }
                 }
-                postc->goal_spike.propagated = true;
             }
+            postc->goal_spike.propagated = true;
         }
         //process incoming goal spikes, invoking potential operations
-        for(int l=0; l<CONCEPT_LAYERS; l++)
+        for(int i=0; i<concepts.itemsAmount; i++)
         {
-            for(int i=0; i<concepts[l].itemsAmount; i++)
+            Concept *c = concepts.items[i].address;
+            if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
             {
-                Concept *c = concepts[l].items[i].address;
-                if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
+                c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
+                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
                 {
-                    c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
-                    if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
+                    bool decisionMade = Cycle_ProcessEvent(&c->goal_spike, currentTime);
+                    if(decisionMade)
                     {
-                        bool decisionMade = Cycle_ProcessEvent(&c->goal_spike, currentTime);
-                        if(decisionMade)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
-                c->incoming_goal_spike = (Event) {0};
             }
+            c->incoming_goal_spike = (Event) {0};
         }
     }
     return false;
@@ -118,36 +112,33 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     {
         return;
     }
-    for(int l=0; l<CONCEPT_LAYERS; l++)
+    int AConceptIndex;
+    int BConceptIndex;
+    if(Memory_getClosestConcept(&a->sdr, a->sdr_hash, &AConceptIndex) &&
+       Memory_getClosestConcept(&b->sdr, b->sdr_hash, &BConceptIndex))
     {
-        int AConceptIndex;
-        int BConceptIndex;
-        if(Memory_getClosestConcept(l, &a->sdr, a->sdr_hash, &AConceptIndex) &&
-           Memory_getClosestConcept(l, &b->sdr, b->sdr_hash, &BConceptIndex))
+        Concept *A = concepts.items[AConceptIndex].address;
+        Concept *B = concepts.items[BConceptIndex].address;
+        if(A != B)
         {
-            Concept *A = concepts[l].items[AConceptIndex].address;
-            Concept *B = concepts[l].items[BConceptIndex].address;
-            if(A != B)
+            //temporal induction
+            if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
             {
-                //temporal induction
-                if(!Stamp_checkOverlap(&a->stamp, &b->stamp))
+                Implication precondition_implication = Inference_BeliefInduction(a, b);
+                precondition_implication.sourceConcept = A;
+                precondition_implication.sourceConceptSDR = A->sdr;
+                if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    Implication precondition_implication = Inference_BeliefInduction(a, b);
-                    precondition_implication.sourceConcept = A;
-                    precondition_implication.sourceConceptSDR = A->sdr;
-                    if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
+                    char debug[200];
+                    sprintf(debug, "<(&/,%s,^op%d(),+%ld) =/> %s>.",A->debug, operationID,precondition_implication.occurrenceTimeOffset ,B->debug);
+                    IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
+                    IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
+                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
+                    if(revised_precon != NULL)
                     {
-                        char debug[200];
-                        sprintf(debug, "<(&/,%s,^op%d(),+%ld) =/> %s>.",A->debug, operationID,precondition_implication.occurrenceTimeOffset ,B->debug);
-                        IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
-                        IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
-                        Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
-                        if(revised_precon != NULL)
-                        {
-                            revised_precon->sourceConcept = A;
-                            revised_precon->sourceConceptSDR = A->sdr;
-                            IN_OUTPUT( if(revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } )
-                        }
+                        revised_precon->sourceConcept = A;
+                        revised_precon->sourceConceptSDR = A->sdr;
+                        IN_OUTPUT( if(revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } )
                     }
                 }
             }
@@ -221,7 +212,7 @@ void Cycle_Perform(long currentTime)
                 last_automatic_decision_time = currentTime;
             }
             //let "thinking" take over since automatic mechanism didn't succeed
-            if(!decisionMade && currentTime > last_automatic_decision_time + REFRACTORY_PERIOD)
+            if(!decisionMade)
             {
                 for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
                 {
@@ -231,27 +222,21 @@ void Cycle_Perform(long currentTime)
         }
     }
     //end of iterations, remove spikes
-    for(int l=0; l<CONCEPT_LAYERS; l++)
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
-        for(int i=0; i<concepts[l].itemsAmount; l++)
-        {
-            Concept *c = concepts[l].items[i].address;
-            c->incoming_goal_spike = (Event) {0};
-            c->goal_spike = (Event) {0};
-        }
+        Concept *c = concepts.items[i].address;
+        c->incoming_goal_spike = (Event) {0};
+        c->goal_spike = (Event) {0};
     }
     //Re-sort queue
-    for(int l=0; l<CONCEPT_LAYERS; l++)
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
-        for(int i=0; i<concepts[l].itemsAmount; i++)
+        Concept *concept = concepts.items[i].address;
+        //usefulness was changed, push back if it didn't get void by interpolation
+        PriorityQueue_PopAt(&concepts, i, NULL);
+        if(SDR_CountTrue(&concept->sdr) > 0)
         {
-            Concept *concept = concepts[l].items[i].address;
-            //usefulness was changed, push back if it didn't get void by interpolation
-            PriorityQueue_PopAt(&concepts[l], i, NULL);
-            if(SDR_CountTrue(&concept->sdr) > 0)
-            {
-                Memory_addConcept(l, concept, currentTime);
-            }
+            Memory_addConcept(concept, currentTime);
         }
     }
 }
