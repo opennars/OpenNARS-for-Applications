@@ -48,7 +48,10 @@ static bool Cycle_ProcessEvent(Event *e, long currentTime)
         decisionMade |= Cycle_ActivateConcept(c, e, currentTime, decisionMade);
     }
     //add a new concept for e too at the end (in all layers)
-    Memory_Conceptualize(&e->sdr);
+    if(Memory_EventIsNovel(e, c))
+    {
+        Memory_Conceptualize(&e->sdr);
+    }
     return decisionMade;
 }
 

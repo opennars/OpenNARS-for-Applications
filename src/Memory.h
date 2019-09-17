@@ -20,6 +20,7 @@
 #define PROPAGATE_GOAL_SPIKES true
 #define PROPAGATION_THRESHOLD 0.6
 #define PROPAGATION_ITERATIONS 5
+#define CONCEPT_FORMATION_NOVELTY 0.2
 
 //Data structure//
 //--------------//
@@ -57,5 +58,7 @@ void Memory_addOperation(Operation op);
 void Memory_SpikePropagation(long currentTime);
 //Match event to concept
 Event Memory_MatchEventToConcept(Concept *c, Event *e);
+//Whether an event is novel in respect to a concept
+bool Memory_EventIsNovel(Event *event, Concept *c_matched_to);
 
 #endif

@@ -146,3 +146,21 @@ Event Memory_MatchEventToConcept(Concept *c, Event *e)
     eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
     return eMatch;
 }
+
+bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
+{
+    if(!Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, NULL))
+    {
+        bool different_enough = true;
+        if(c_matched_to != NULL)
+        {
+            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&event->sdr, &c_matched_to->sdr));
+            if(novelty < CONCEPT_FORMATION_NOVELTY)
+            {
+                different_enough = false;
+            }
+        }
+        return different_enough;
+    }
+    return false;
+}
