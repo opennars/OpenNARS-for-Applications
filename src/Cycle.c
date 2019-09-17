@@ -209,7 +209,7 @@ void Cycle_Perform(long currentTime)
                 last_automatic_decision_time = currentTime;
             }
             //let "thinking" take over since automatic mechanism didn't succeed
-            if(!decisionMade && currentTime > last_automatic_decision_time + REFRACTORY_PERIOD)
+            if(!decisionMade)
             {
                 for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
                 {
