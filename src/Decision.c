@@ -31,14 +31,14 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-void Relink_Implication(int layer, Implication *imp)
+void Relink_Implication(Implication *imp)
 {
     if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
     {
         int closest_concept_i;
-        if(Memory_getClosestConcept(layer, &imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
+        if(Memory_getClosestConcept(&imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
         {
-            imp->sourceConcept = concepts[layer].items[closest_concept_i].address;
+            imp->sourceConcept = concepts.items[closest_concept_i].address;
             imp->sourceConceptSDR = ((Concept*) imp->sourceConcept)->sdr;
             imp->sourceConceptSDRHash = SDR_Hash(&imp->sourceConceptSDR);
         }
@@ -50,13 +50,13 @@ void Relink_Implication(int layer, Implication *imp)
 }
 
 int stampID = -1;
-Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
+Decision Decision_RealizeGoal(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     int closest_postc_i;
-    if(Memory_getClosestConcept(layer, &goal->sdr, goal->sdr_hash, &closest_postc_i))
+    if(Memory_getClosestConcept(&goal->sdr, goal->sdr_hash, &closest_postc_i))
     {
-        Concept *postc = concepts[layer].items[closest_postc_i].address;
+        Concept *postc = concepts.items[closest_postc_i].address;
         double bestTruthExpectation = 0;
         Implication bestImp = {0};
         Concept *prec;
@@ -68,7 +68,7 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
             }
             for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
             {
-                Relink_Implication(layer, &postc->precondition_beliefs[opi].array[j]);
+                Relink_Implication(&postc->precondition_beliefs[opi].array[j]);
                 Implication imp = postc->precondition_beliefs[opi].array[j];
                 IN_DEBUG
                 (
@@ -109,7 +109,7 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
         {
             return decision;
         }
-        printf("decision layer%d expectation %f impTruth=(%f, %f): %s future=%ld maxFuture=%ld\n", layer, bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset, bestImp.maxOccurrenceTimeOffset);
+        printf("decision expectation %f impTruth=(%f, %f): %s future=%ld maxFuture=%ld\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset, bestImp.maxOccurrenceTimeOffset);
         IN_DEBUG
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
@@ -126,66 +126,63 @@ Decision Decision_RealizeGoal(int layer, Event *goal, long currentTime)
 
 void Decision_AssumptionOfFailure(Decision *decision)
 {
-    for(int l=0; l<CONCEPT_LAYERS; l++)
+    for(int j=0; j<concepts.itemsAmount; j++)
     {
-        for(int j=0; j<concepts[l].itemsAmount; j++)
+        Concept *postc = concepts.items[j].address;
+        for(int  h=0; h<postc->precondition_beliefs[decision->operationID].itemsAmount; h++)
         {
-            Concept *postc = concepts[l].items[j].address;
-            for(int  h=0; h<postc->precondition_beliefs[decision->operationID].itemsAmount; h++)
+            Relink_Implication(&postc->precondition_beliefs[decision->operationID].array[h]);
+            Implication imp = postc->precondition_beliefs[decision->operationID].array[h]; //(&/,a,op) =/> b.
+            Concept *current_prec = imp.sourceConcept;
+            Event *precondition = &current_prec->belief_spike; //a. :|:
+            if(precondition != NULL)
             {
-                Relink_Implication(l, &postc->precondition_beliefs[decision->operationID].array[h]);
-                Implication imp = postc->precondition_beliefs[decision->operationID].array[h]; //(&/,a,op) =/> b.
-                Concept *current_prec = imp.sourceConcept;
-                Event *precondition = &current_prec->belief_spike; //a. :|:
-                if(precondition != NULL)
+                Event op = (Event) { .sdr = operations[decision->operationID-1].sdr,
+                                     .type = EVENT_TYPE_BELIEF,
+                                     .truth = { .frequency = 1.0, .confidence = 0.9 },
+                                     .occurrenceTime = currentTime,
+                                     .operationID = decision->operationID };
+                Event seqop = Inference_BeliefIntersection(precondition, &op); //(&/,a,op). :|:
+                Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
+                if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
                 {
-                    Event op = (Event) { .sdr = operations[decision->operationID-1].sdr,
-                                         .type = EVENT_TYPE_BELIEF,
-                                         .truth = { .frequency = 1.0, .confidence = 0.9 },
-                                         .occurrenceTime = currentTime,
-                                         .operationID = decision->operationID };
-                    Event seqop = Inference_BeliefIntersection(precondition, &op); //(&/,a,op). :|:
-                    Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
+                    //"compute amount of negative evidence based on current evidence" (Robert's estimation)
+                    //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
+                    long countWithNegativeEvidence = imp.revisions;
+                    double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
+                    //compute confidence by negative evidence
+                    double w = Truth_c2w(imp.truth.confidence) * negativeEvidenceRatio;
+                    double c = Truth_w2c(w);
+                    Implication negative_confirmation = imp;
+                    negative_confirmation.truth = (Truth) { .frequency = 0.0, .confidence = c };
+                    negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
+                    IN_DEBUG ( printf("ANTICIPATE %s, future=%ld maxfuture=%ld\n", imp.debug, imp.occurrenceTimeOffset, imp.maxOccurrenceTimeOffset); )
+                    //assumption of failure
+                    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[decision->operationID], &negative_confirmation, negative_confirmation.debug);
+                    if(added != NULL)
                     {
-                        //"compute amount of negative evidence based on current evidence" (Robert's estimation)
-                        //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
-                        long countWithNegativeEvidence = imp.revisions;
-                        double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
-                        //compute confidence by negative evidence
-                        double w = Truth_c2w(imp.truth.confidence) * negativeEvidenceRatio;
-                        double c = Truth_w2c(w);
-                        Implication negative_confirmation = imp;
-                        negative_confirmation.truth = (Truth) { .frequency = 0.0, .confidence = c };
-                        negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                        IN_DEBUG ( printf("ANTICIPATE %s, future=%ld maxfuture=%ld layer=%d\n", imp.debug, imp.occurrenceTimeOffset, imp.maxOccurrenceTimeOffset, l); )
-                        //assumption of failure
-                        Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[decision->operationID], &negative_confirmation, negative_confirmation.debug);
-                        if(added != NULL)
-                        {
-                            added->sourceConcept = negative_confirmation.sourceConcept;
-                            added->sourceConceptSDR = negative_confirmation.sourceConceptSDR;
-                        }                                
-                        stampID--;
-                    }
+                        added->sourceConcept = negative_confirmation.sourceConcept;
+                        added->sourceConceptSDR = negative_confirmation.sourceConceptSDR;
+                    }                                
+                    stampID--;
                 }
             }
         }
     }
 }
 
-bool Decision_Making(int layer, Event *goal, long currentTime)
+bool Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
     //try motor babbling with a certain chance
-    if(layer==0 && !decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(!decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
     {
         decision = Decision_MotorBabbling();
     }
     //try matching op if didn't motor babble
     if(!decision.execute)
     {
-        decision = Decision_RealizeGoal(layer, goal, currentTime);
+        decision = Decision_RealizeGoal(goal, currentTime);
     }
     if(decision.execute && decision.operationID)
     {
