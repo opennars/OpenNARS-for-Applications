@@ -27,7 +27,7 @@ void SDR_Print(SDR *sdr)
     ITERATE_SDR_BITS(i,j,
         if (SDR_ReadBitInBlock(sdr,i,j)) 
         {
-            printf("[%lu](%d,%d)\n", i*SDR_BLOCK_SIZE+j, i, j);
+            printf("[%d](%d,%d)\n", (int) (i*SDR_BLOCK_SIZE+j), i, j);
         }
     )
     puts("===");
