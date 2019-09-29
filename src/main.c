@@ -159,7 +159,7 @@ void Memory_Test()
                                (Truth) {.frequency = 1, .confidence = 0.9}, 
                                1337);
     Memory_addEvent(&e);
-    assert(belief_events.array[0][0].truth.confidence == 0.9, "event has to be there"); //identify
+    assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
     Memory_Conceptualize(&e.sdr);
