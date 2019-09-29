@@ -116,7 +116,7 @@ void PriorityQueue_Test()
         if(feedback.evicted)
         {
             printf("evicted item %f %ld\n", feedback.evictedItem.priority, (long)feedback.evictedItem.address);
-            assert(evictions>0 || feedback.evictedItem.priority == ((double)1.0/((double) (n_items*2))), "the evicted item has to be the lowest priority one");
+            assert(evictions>0 || feedback.evictedItem.priority == ((double)(1.0/((double) (n_items*2)))), "the evicted item has to be the lowest priority one");
             assert(queue.itemsAmount < n_items+1, "eviction should only happen when full!");
             evictions++;
         }
