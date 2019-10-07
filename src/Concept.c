@@ -34,13 +34,13 @@ void Concept_SDRInterpolation(Concept *concept, SDR *eventSDR, Truth matchTruth)
         double newValue = concept->sdr_bit_counter[k];
         if(oldValue<0.5 && newValue >= 0.5)
         {
-            SDR_WriteBit(&concept->sdr,k,1);
+            SDR_WriteBitInBlock(&concept->sdr,i,j,1);
             rehash = true;
         }
         else
         if(oldValue>=0.5 && newValue < 0.5)
         {
-            SDR_WriteBit(&concept->sdr,k,0);
+            SDR_WriteBitInBlock(&concept->sdr,i,j,0);
             rehash = true;
         }
         k++;
