@@ -1,5 +1,6 @@
 #include "Memory.h"
 
+double CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 int operations_index = 0;
