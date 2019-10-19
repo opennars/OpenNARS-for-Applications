@@ -61,5 +61,7 @@ void Memory_SpikePropagation(long currentTime);
 Event Memory_MatchEventToConcept(Concept *c, Event *e);
 //Whether an event is novel in respect to a concept
 bool Memory_EventIsNovel(Event *event, Concept *c_matched_to);
+//relink implication, so that link stays intact after forgetting
+void Relink_Implication(Implication *imp);
 
 #endif

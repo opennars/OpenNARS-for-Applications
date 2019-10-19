@@ -28,8 +28,6 @@ typedef struct
 
 //Methods//
 //-------//
-//TODO move
-void Relink_Implication(Implication *imp);
 //ANSNA decision making rule applying when goal is an operation
 bool Decision_Making(Event *goal, long currentTime);
 

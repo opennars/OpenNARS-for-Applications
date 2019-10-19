@@ -165,3 +165,21 @@ bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
     }
     return false;
 }
+
+void Relink_Implication(Implication *imp)
+{
+    if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
+    {
+        int closest_concept_i;
+        if(Memory_getClosestConcept(&imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
+        {
+            imp->sourceConcept = concepts.items[closest_concept_i].address;
+            imp->sourceConceptSDR = ((Concept*) imp->sourceConcept)->sdr;
+            imp->sourceConceptSDRHash = SDR_Hash(&imp->sourceConceptSDR);
+        }
+        else
+        {
+            assert(false, "No concept to re-link to, call the ghostbusters!\n");
+        }
+    }
+}
