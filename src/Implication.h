@@ -14,9 +14,8 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long revisions;
-    //for anticipation window:
+    //for deciding occurrence time of conclusion:
     long occurrenceTimeOffset;
-    long maxOccurrenceTimeOffset;
     //for efficient spike propagation:
     void *sourceConcept;
     SDR sourceConceptSDR; //to check whether it's still the same

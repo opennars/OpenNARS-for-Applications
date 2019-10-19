@@ -91,7 +91,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
         {
             return decision;
         }
-        printf("decision expectation %f impTruth=(%f, %f): %s future=%ld maxFuture=%ld\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset, bestImp.maxOccurrenceTimeOffset);
+        printf("decision expectation %f impTruth=(%f, %f): %s future=%ld\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset);
         IN_DEBUG
         (
             printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
@@ -138,7 +138,7 @@ void Decision_AssumptionOfFailure(Decision *decision)
                     Implication negative_confirmation = imp;
                     negative_confirmation.truth = (Truth) { .frequency = 0.0, .confidence = c };
                     negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                    IN_DEBUG ( printf("ANTICIPATE %s, future=%ld maxfuture=%ld\n", imp.debug, imp.occurrenceTimeOffset, imp.maxOccurrenceTimeOffset); )
+                    IN_DEBUG ( printf("ANTICIPATE %s, future=%ld \n", imp.debug, imp.occurrenceTimeOffset); )
                     //assumption of failure
                     Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[decision->operationID], &negative_confirmation, negative_confirmation.debug);
                     if(added != NULL)
