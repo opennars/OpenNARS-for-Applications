@@ -74,7 +74,15 @@ void FIFO_Test()
     FIFO fifo2 = {0};
     for(int i=0; i<FIFO_SIZE*2; i++)
     {
+        SDR zero = (SDR) {0};
         FIFO_Add(&event2, &fifo2);
+        if(i < FIFO_SIZE && i < MAX_SEQUENCE_LEN)
+        {
+            char buf[100]; 
+            Event *ev = FIFO_GetKthNewestSequence(&fifo2, 0, i);
+            sprintf(buf,"This event SDR is not allowed to be zero, sequence length=%d\n",i+1);
+            assert(!SDR_Equal(&zero, &ev->sdr),buf);
+        }
     }
     assert(fifo2.itemsAmount == FIFO_SIZE, "FIFO size differs");
     puts("<<FIFO Test successful");

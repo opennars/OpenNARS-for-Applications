@@ -21,7 +21,7 @@ void FIFO_Add(Event *event, FIFO *fifo)
         Event sequence = *event;
         if(len>0)
         {
-            Event *ev = FIFO_GetNewestSequence(fifo, len);
+            Event *ev = FIFO_GetNewestSequence(fifo, len-1);
             if(ev == NULL || ev->type == EVENT_TYPE_DELETED)
             {
                 break;

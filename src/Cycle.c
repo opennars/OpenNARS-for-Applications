@@ -172,7 +172,6 @@ void Cycle_Perform(long currentTime)
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
-                            
                             //if it's an operation find the real precondition and use the current one as action
                             int operationID = precondition->operationID;
                             if(operationID != 0) //also meaning len2==0
