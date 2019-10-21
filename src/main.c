@@ -1226,7 +1226,7 @@ void Sequence_Test()
     ANSNA_AddOperation(Encode_Term("op_1"), op_1); 
     ANSNA_AddOperation(Encode_Term("op_2"), op_2); 
     ANSNA_AddOperation(Encode_Term("op_3"), op_3); 
-    for(int i=0;i<100;i++)
+    for(int i=0;i<5;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("a")); //0 2 4 5
         ANSNA_AddInputBelief(Encode_Term("b"));
@@ -1234,26 +1234,26 @@ void Sequence_Test()
         ANSNA_AddInputBelief(Encode_Term("g"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<100;i++)
+    for(int i=0;i<20;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("a"));
         ANSNA_AddInputBelief(Encode_Term("op_1"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<100;i++)
+    for(int i=0;i<20;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("b"));
         ANSNA_AddInputBelief(Encode_Term("op_1"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<10;i++)
+    for(int i=0;i<2;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("b"));
         ANSNA_AddInputBelief(Encode_Term("op_2"));
         ANSNA_AddInputBelief(Encode_Term("g"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<10;i++)
+    for(int i=0;i<2;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("a"));
         ANSNA_AddInputBelief(Encode_Term("op_3"));
@@ -1265,16 +1265,16 @@ void Sequence_Test()
     ANSNA_AddInputGoal(Encode_Term("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
-    //exit(0);
+    //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
     ANSNA_Cycles(100);
     ANSNA_AddInputBelief(Encode_Term("b"));
     ANSNA_AddInputGoal(Encode_Term("g"));
-    assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution");
+    assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
     op_1_executed = op_2_executed = op_3_executed = false;
     ANSNA_Cycles(100);
     ANSNA_AddInputBelief(Encode_Term("a"));
     ANSNA_AddInputGoal(Encode_Term("g"));
-    assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution");
+    assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
     CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
