@@ -129,7 +129,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                 precondition_implication.sourceConceptSDR = A->sdr;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    assert(precondition_implication.revisions > 0, "issue with revisions counter");
                     char debug[200];
                     sprintf(debug, "<(&/,%s,^op%d(),+%ld) =/> %s>.",A->debug, operationID,precondition_implication.occurrenceTimeOffset ,B->debug);
                     IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -161,7 +160,7 @@ void Cycle_Perform(long currentTime)
             {
                 Cycle_ProcessEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
-                //Decision_AssumptionOfFailure(postcondition.operationID, currentTime); //collection of negative evidence, new way
+                Decision_AssumptionOfFailure(postcondition.operationID, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {  

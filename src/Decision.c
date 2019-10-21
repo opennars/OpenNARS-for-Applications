@@ -129,18 +129,9 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
                 {
-                    //"compute amount of negative evidence based on current evidence" (Robert's estimation)
-                    //"we just take the counter and don't add one because we want to compute a w "unit" which will be revised"
-                    long countWithNegativeEvidence = imp.revisions;
-                    assert(countWithNegativeEvidence > 0, "Decision_AssumptionOfFailure: Revisions counter must be >0");
-                    double negativeEvidenceRatio = 1.0 / ((double) countWithNegativeEvidence);
-                    //compute confidence by negative evidence
-                    double w = Truth_c2w(imp.truth.confidence) * negativeEvidenceRatio;
-                    double c = Truth_w2c(w);
                     Implication negative_confirmation = imp;
                     negative_confirmation.truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
                     negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                    negative_confirmation.revisions = 1; //IMPORTANT!
                     IN_DEBUG ( printf("ANTICIPATE %s, future=%ld \n", imp.debug, imp.occurrenceTimeOffset); )
                     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
                     Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation, negative_confirmation.debug);
@@ -172,10 +163,6 @@ bool Decision_Making(Event *goal, long currentTime)
     if(decision.execute && decision.operationID)
     {
         Decision_InjectActionEvent(&decision);
-    }
-    if(decision.execute) //old way
-    {
-        Decision_AssumptionOfFailure(decision.operationID, currentTime);
     }
     return decision.execute;
 }

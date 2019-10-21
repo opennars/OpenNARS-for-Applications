@@ -50,7 +50,6 @@ static void Table_SantiyCheck(Table *table)
 
 Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
 {
-    assert(imp->revisions > 0, "Table_AddAndRevise: issue with revisions counter");
     IN_DEBUG ( Table_SantiyCheck(table); )
     //1. find element with same SDR
     int same_i = -1;
@@ -71,10 +70,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         assert(OldImp.truth.confidence >= 0.0 && OldImp.truth.confidence <= 1.0, "(1) confidence out of bounds");
         assert(imp->truth.frequency >= 0.0 && imp->truth.frequency <= 1.0, "(2) frequency out of bounds");
         assert(imp->truth.confidence >= 0.0 && imp->truth.confidence <= 1.0, "(2) confidence out of bounds");
-        assert(imp->revisions > 0, "Table_AddAndRevise: [imp] issue with revisions counter");
-        assert(OldImp.revisions > 0, "Table_AddAndRevise: [OldImp] issue with revisions counter");
         Implication revised = Inference_ImplicationRevision(&OldImp, imp);
-        assert(revised.revisions > 0, "Table_AddAndRevise: revision issue with revisions counter");
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
         strcpy(revised.debug, debug);

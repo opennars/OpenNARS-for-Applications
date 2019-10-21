@@ -141,8 +141,7 @@ void Table_Test()
         Implication imp = (Implication) { .sdr = Encode_Scalar(1,TABLE_SIZE*2,i), 
                                           .truth = (Truth) { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                                           .stamp = (Stamp) { .evidentalBase = {i} },
-                                          .occurrenceTimeOffset = 10,
-                                          .revisions = 1 };
+                                          .occurrenceTimeOffset = 10 };
         Table_Add(&table, &imp);
     }
     for(int i=0; i<TABLE_SIZE; i++)
@@ -152,8 +151,7 @@ void Table_Test()
     Implication imp = (Implication) { .sdr = Encode_Term("test"), 
                                       .truth = (Truth) { .frequency = 1.0, .confidence = 0.9},
                                       .stamp = (Stamp) { .evidentalBase = {TABLE_SIZE*2+1} },
-                                      .occurrenceTimeOffset = 10,
-                                      .revisions = 1 };
+                                      .occurrenceTimeOffset = 10 };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
     Table_AddAndRevise(&table, &imp, "");
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
