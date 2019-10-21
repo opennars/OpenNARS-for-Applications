@@ -19,6 +19,8 @@
 
 //Methods//
 //-------//
+//{Event a.} |- Event a. updated to currentTime
+Event Inference_EventUpdate(Event *ev, long currentTime);
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b);
 //{Event a., Event b.} |- Implication <a =/> c>.
@@ -33,5 +35,4 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
 Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime);
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound);
-
 #endif

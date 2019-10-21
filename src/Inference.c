@@ -15,6 +15,7 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b)
 {
+    assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .sdr = SDR_Tuple(&a->sdr,&b->sdr),
                      .type = EVENT_TYPE_BELIEF,
@@ -73,7 +74,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
 }
 
 //{Event a.} |- Event a. updated to currentTime
-static Event Inference_EventUpdate(Event *ev, long currentTime)
+Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
