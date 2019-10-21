@@ -56,7 +56,7 @@ void FIFO_Test()
                                  .type = EVENT_TYPE_BELIEF, 
                                  .truth = {.frequency = 1.0, .confidence = 0.9},
                                  .stamp = (Stamp) { .evidentalBase = {i} }, 
-                                 .occurrenceTime = i*10 };
+                                 .occurrenceTime = FIFO_SIZE*2 - i*10 };
         FIFO_Add(&event1, &fifo);
     }
     for(int i=0; i<FIFO_SIZE; i++)
@@ -1201,6 +1201,85 @@ void ANSNA_TestChamber()
     }
 }
 
+bool op_1_executed = false;
+void op_1()
+{
+    op_1_executed = true;
+}
+bool op_2_executed = false;
+void op_2()
+{
+    op_2_executed = true;
+}
+bool op_3_executed = false;
+void op_3()
+{
+    op_3_executed = true;
+}
+void Sequence_Test()
+{
+    OUTPUT=0;
+    ANSNA_INIT();
+    CONCEPT_FORMATION_NOVELTY = 0;
+    MOTOR_BABBLING_CHANCE = 0;
+    puts(">>Sequence test start");
+    ANSNA_AddOperation(Encode_Term("op_1"), op_1); 
+    ANSNA_AddOperation(Encode_Term("op_2"), op_2); 
+    ANSNA_AddOperation(Encode_Term("op_3"), op_3); 
+    for(int i=0;i<5;i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("a")); //0 2 4 5
+        ANSNA_AddInputBelief(Encode_Term("b"));
+        ANSNA_AddInputBelief(Encode_Term("op_1"));
+        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_Cycles(100);
+    }
+    for(int i=0;i<20;i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("a"));
+        ANSNA_AddInputBelief(Encode_Term("op_1"));
+        ANSNA_Cycles(100);
+    }
+    for(int i=0;i<20;i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("b"));
+        ANSNA_AddInputBelief(Encode_Term("op_1"));
+        ANSNA_Cycles(100);
+    }
+    for(int i=0;i<2;i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("b"));
+        ANSNA_AddInputBelief(Encode_Term("op_2"));
+        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_Cycles(100);
+    }
+    for(int i=0;i<2;i++)
+    {
+        ANSNA_AddInputBelief(Encode_Term("a"));
+        ANSNA_AddInputBelief(Encode_Term("op_3"));
+        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_Cycles(100);
+    }
+    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("b"));
+    ANSNA_AddInputGoal(Encode_Term("g"));
+    assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
+    op_1_executed = op_2_executed = op_3_executed = false;
+    //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
+    ANSNA_Cycles(100);
+    ANSNA_AddInputBelief(Encode_Term("b"));
+    ANSNA_AddInputGoal(Encode_Term("g"));
+    assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
+    op_1_executed = op_2_executed = op_3_executed = false;
+    ANSNA_Cycles(100);
+    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputGoal(Encode_Term("g"));
+    assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
+    op_1_executed = op_2_executed = op_3_executed = false;
+    MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+    CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
+    puts(">>Sequence Test successul");
+}
 
 int main(int argc, char *argv[])
 {
@@ -1242,6 +1321,7 @@ int main(int argc, char *argv[])
     ANSNA_Follow_Test();
     ANSNA_Multistep_Test();
     ANSNA_Multistep2_Test();
+    Sequence_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("ANSNA pong (starts Pong example)");
     puts("ANSNA numeric-pong (starts Pong example with numeric input)");

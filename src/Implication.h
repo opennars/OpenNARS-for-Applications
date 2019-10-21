@@ -13,7 +13,6 @@ typedef struct {
     SDR_HASH_TYPE sdr_hash;
     Truth truth;
     Stamp stamp;
-    long revisions;
     //for deciding occurrence time of conclusion:
     long occurrenceTimeOffset;
     //for efficient spike propagation:

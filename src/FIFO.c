@@ -18,17 +18,23 @@ void FIFO_Add(Event *event, FIFO *fifo)
     //build sequence elements:
     for(int len=0; len<MAX_SEQUENCE_LEN; len++)
     {
-        Event sequence = *event;
-        if(len>0)
+        //len is 0, just add current event to FIFO on len0 level
+        if(len == 0)
         {
-            Event *ev = FIFO_GetNewestSequence(fifo, len-1);
-            if(ev == NULL || ev->type == EVENT_TYPE_DELETED)
+            fifo->array[len][fifo->currentIndex] = *event;
+        }
+        else //len>0, so chain previous sequence with length len-1 with new event
+        {
+            Event *sequence = FIFO_GetNewestSequence(fifo, len-1);
+            if(sequence == NULL || sequence->type == EVENT_TYPE_DELETED)
             {
                 break;
             }
-            sequence = Inference_BeliefIntersection(&sequence, ev);
+            //printf("occurrence times a=%d, b=%d", ((int) sequence->occurrenceTime),((int) event->occurrenceTime));
+            Event new_sequence = Inference_BeliefIntersection(sequence, event);
+            fifo->array[len][fifo->currentIndex] = new_sequence;
         }
-        fifo->array[len][fifo->currentIndex] = sequence;
+        
     }
     fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
     fifo->itemsAmount = MIN(fifo->itemsAmount + 1, FIFO_SIZE);
@@ -36,7 +42,7 @@ void FIFO_Add(Event *event, FIFO *fifo)
 
 Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int len)
 {
-    if(fifo->itemsAmount == 0 || k >= FIFO_SIZE)
+    if(fifo->itemsAmount == 0 || k >= fifo->itemsAmount)
     {
         return NULL;
     }

@@ -3,9 +3,9 @@
 
 #define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp);
 #define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
-                long conclusionTime = (a->occurrenceTime + b->occurrenceTime)/2.0; \
+                long conclusionTime = b->occurrenceTime; \
                 Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
-                Truth truthB = Truth_Projection(b->truth, b->occurrenceTime, conclusionTime);
+                Truth truthB = b->truth;
                 
 static double weighted_average(double a1, double a2, double w1, double w2)
 {
@@ -15,6 +15,7 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b)
 {
+    assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .sdr = SDR_Tuple(&a->sdr,&b->sdr),
                      .type = EVENT_TYPE_BELIEF,
@@ -31,7 +32,6 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
     return  (Implication) { .sdr = a->sdr, 
                             .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                             .stamp = conclusionStamp,
-                            .revisions = 1,
                             .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }
 
@@ -39,6 +39,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 //{Event a!, Event a!} |- Event a!
 static Event Inference_EventRevision(Event *a, Event *b)
 {
+    assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .sdr = a->sdr, 
                      .type = a->type,
@@ -55,7 +56,6 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     Implication ret = (Implication) { .sdr = a->sdr,
                                       .truth = Truth_Revision(a->truth, b->truth),
                                       .stamp = conclusionStamp, 
-                                      .revisions = a->revisions + b->revisions,
                                       .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
     strcpy(ret.debug, a->debug);
     return ret;
@@ -73,7 +73,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
 }
 
 //{Event a.} |- Event a. updated to currentTime
-static Event Inference_EventUpdate(Event *ev, long currentTime)
+Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);

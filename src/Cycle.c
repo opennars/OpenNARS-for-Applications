@@ -156,10 +156,11 @@ void Cycle_Perform(long currentTime)
         for(int len=0; len<MAX_SEQUENCE_LEN; len++)
         {
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
-            if(!toProcess->processed)
+            if(toProcess != NULL && !toProcess->processed)
             {
                 Cycle_ProcessEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
+                Decision_AssumptionOfFailure(postcondition.operationID, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {  
@@ -172,25 +173,28 @@ void Cycle_Perform(long currentTime)
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
-                            //if it's an operation find the real precondition and use the current one as action
-                            int operationID = precondition->operationID;
-                            if(operationID != 0) //also meaning len2==0
+                            if(precondition != NULL)
                             {
-                                for(int j=k+1; j<belief_events.itemsAmount; j++)
+                                //if it's an operation find the real precondition and use the current one as action
+                                int operationID = precondition->operationID;
+                                if(operationID != 0) //also meaning len2==0
                                 {
-                                    for(int len3=0; len3<MAX_SEQUENCE_LEN; len3++)
+                                    for(int j=k+1; j<belief_events.itemsAmount; j++)
                                     {
-                                        precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
-                                        if(precondition->operationID == 0)
+                                        for(int len3=0; len3<MAX_SEQUENCE_LEN; len3++)
                                         {
-                                            Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                                            precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
+                                            if(precondition != NULL && precondition->operationID == 0)
+                                            {
+                                                Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                                else
+                                {
+                                    Cycle_ReinforceLink(precondition, &postcondition, operationID);
+                                }
                             }
                         }
                     }
