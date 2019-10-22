@@ -1,8 +1,9 @@
 #include "Cycle.h"
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static bool Cycle_ActivateConcept(Concept *c, Event *e, long currentTime, bool decisionMade)
+static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
+    Decision decision = {0};
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
     Event eMatch = Memory_MatchEventToConcept(c, e);
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
@@ -15,49 +16,49 @@ static bool Cycle_ActivateConcept(Concept *c, Event *e, long currentTime, bool d
             c->belief_spike = eMatch;
         }
         else
-        if(!decisionMade)
         {
             //pass spike if the concept doesn't have a satisfying motor command
-            if(!Decision_Making(&eMatch, currentTime))
+            decision = Decision_Making(&eMatch, currentTime);
+            if(!decision.execute)
             {
                 c->incoming_goal_spike = eMatch;
             }
             else
             {
                 e->propagated = true;
-                return true; //already invoked, no need to pass further up the hierarchy
             }
         }
     }
-    return false;
+    return decision;
 }
 
 //Process an event, by creating a concept, or activating an existing
-static bool Cycle_ProcessEvent(Event *e, long currentTime)
+static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
+    Decision decision = {0};
     e->processed = true;
     Event_SetSDR(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-    bool decisionMade = false;
     //determine the concept it is related to
     int closest_concept_i;
     Concept *c = NULL;
     if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
-        decisionMade |= Cycle_ActivateConcept(c, e, currentTime, decisionMade);
+        decision = Cycle_ActivateConcept(c, e, currentTime);
     }
     //add a new concept for e too at the end (in all layers)
     if(Memory_EventIsNovel(e, c))
     {
         Memory_Conceptualize(&e->sdr);
     }
-    return decisionMade;
+    return decision;
 }
 
 //Propagate spikes for subgoal processing, generating anticipations and decisions
-static bool Cycle_PropagateSpikes(long currentTime)
+static Decision Cycle_PropagateSpikes(long currentTime)
 {
+    Decision decision = {0};
     //process spikes
     if(PROPAGATE_GOAL_SPIKES)
     {
@@ -92,17 +93,17 @@ static bool Cycle_PropagateSpikes(long currentTime)
                 c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
                 if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
                 {
-                    bool decisionMade = Cycle_ProcessEvent(&c->goal_spike, currentTime);
-                    if(decisionMade)
+                    Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
+                    if(decision.execute)
                     {
-                        return true;
+                        return decision;
                     }
                 }
             }
             c->incoming_goal_spike = (Event) {0};
         }
     }
-    return false;
+    return decision;
 }
 
 //Reinforce link between concept a and b (creating it if non-existent)
@@ -146,7 +147,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
 }
 
-int last_automatic_decision_time = 0;
 void Cycle_Perform(long currentTime)
 {   
     //1. process newest event
@@ -203,26 +203,32 @@ void Cycle_Perform(long currentTime)
         }
     }
     //process goals
-    bool decisionMade = false;
+    Decision decision[PROPAGATION_ITERATIONS + 1] = {0};
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed)
         {
-            decisionMade = Cycle_ProcessEvent(goal, currentTime);
-            if(decisionMade)
+            decision[0] = Cycle_ProcessEvent(goal, currentTime);
+            //allow reasoning into the future by propagating spikes from goals back to potential current evens
+            for(int i=0; i<PROPAGATION_ITERATIONS; i++)
             {
-                last_automatic_decision_time = currentTime;
-            }
-            //let "thinking" take over since automatic mechanism didn't succeed
-            if(!decisionMade)
-            {
-                for(int i=0; i<PROPAGATION_ITERATIONS && !decisionMade; i++)
-                {
-                    decisionMade = Cycle_PropagateSpikes(currentTime);
-                }
+                decision[i+1] = Cycle_PropagateSpikes(currentTime);
             }
         }
+    }
+    //inject the best action if there was one
+    Decision best_decision = {0};
+    for(int i=0; i<PROPAGATION_ITERATIONS+1; i++)
+    {
+        if(decision[i].execute && decision[i].desire >= best_decision.desire)
+        {
+            best_decision = decision[i];
+        }
+    }
+    if(best_decision.execute && best_decision.operationID > 0)
+    {
+        Decision_InjectActionEvent(&best_decision);
     }
     //end of iterations, remove spikes
     for(int i=0; i<concepts.itemsAmount; i++)

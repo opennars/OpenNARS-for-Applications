@@ -2,7 +2,7 @@
 
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
-static void Decision_InjectActionEvent(Decision *decision)
+void Decision_InjectActionEvent(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
@@ -82,6 +82,7 @@ Decision Decision_RealizeGoal(Event *goal, long currentTime)
                         prec = current_prec;
                         bestImp = imp;
                         decision.operationID = opi;
+                        decision.desire = operationGoalTruthExpectation;
                         bestTruthExpectation = operationGoalTruthExpectation;
                     }
                 }
@@ -147,7 +148,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
     }
 }
 
-bool Decision_Making(Event *goal, long currentTime)
+Decision Decision_Making(Event *goal, long currentTime)
 {
     Decision decision = {0};
     //try motor babbling with a certain chance
@@ -160,9 +161,5 @@ bool Decision_Making(Event *goal, long currentTime)
     {
         decision = Decision_RealizeGoal(goal, currentTime);
     }
-    if(decision.execute && decision.operationID)
-    {
-        Decision_InjectActionEvent(&decision);
-    }
-    return decision.execute;
+    return decision;
 }
