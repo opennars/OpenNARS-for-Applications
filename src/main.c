@@ -52,11 +52,11 @@ void FIFO_Test()
     //First, evaluate whether the fifo works, not leading to overflow
     for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
-        Event event1 = (Event) { .sdr = Encode_Term("test"), 
-                                 .type = EVENT_TYPE_BELIEF, 
-                                 .truth = {.frequency = 1.0, .confidence = 0.9},
-                                 .stamp = (Stamp) { .evidentalBase = {i} }, 
-                                 .occurrenceTime = FIFO_SIZE*2 - i*10 };
+        Event event1 = { .sdr = Encode_Term("test"), 
+                         .type = EVENT_TYPE_BELIEF, 
+                         .truth = { .frequency = 1.0, .confidence = 0.9 },
+                         .stamp = { .evidentalBase = { i } }, 
+                         .occurrenceTime = FIFO_SIZE*2 - i*10 };
         FIFO_Add(&event1, &fifo);
     }
     for(int i=0; i<FIFO_SIZE; i++)
@@ -66,11 +66,11 @@ void FIFO_Test()
     //now see whether a new item is revised with the correct one:
     int i=3; //revise with item 10, which has occurrence time 10
     int newbase = FIFO_SIZE*2+1;
-    Event event2 = (Event) { .sdr = Encode_Term("test"), 
-                             .type = EVENT_TYPE_BELIEF, 
-                             .truth = {.frequency = 1.0, .confidence = 0.9},
-                             .stamp = (Stamp) { .evidentalBase = {newbase} }, 
-                             .occurrenceTime = i*10+3 };
+    Event event2 = { .sdr = Encode_Term("test"), 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = { .frequency = 1.0, .confidence = 0.9 },
+                     .stamp = { .evidentalBase = { newbase } }, 
+                     .occurrenceTime = i*10+3 };
     FIFO fifo2 = {0};
     for(int i=0; i<FIFO_SIZE*2; i++)
     {
@@ -91,9 +91,9 @@ void FIFO_Test()
 void Stamp_Test()
 {
     puts(">>Stamp test start");
-    Stamp stamp1 = (Stamp) { .evidentalBase = {1,2} };
+    Stamp stamp1 = { .evidentalBase = {1,2} };
     Stamp_print(&stamp1);
-    Stamp stamp2 = (Stamp) { .evidentalBase = {2,3,4} };
+    Stamp stamp2 = { .evidentalBase = {2,3,4} };
     Stamp_print(&stamp2);
     Stamp stamp3 = Stamp_make(&stamp1, &stamp2);
     fputs("zipped:", stdout);
@@ -138,20 +138,20 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = (Implication) { .sdr = Encode_Scalar(1,TABLE_SIZE*2,i), 
-                                          .truth = (Truth) { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
-                                          .stamp = (Stamp) { .evidentalBase = {i} },
-                                          .occurrenceTimeOffset = 10 };
+        Implication imp = { .sdr = Encode_Scalar(1,TABLE_SIZE*2,i), 
+                            .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
+                            .stamp = { .evidentalBase = { i } },
+                            .occurrenceTimeOffset = 10 };
         Table_Add(&table, &imp);
     }
     for(int i=0; i<TABLE_SIZE; i++)
     {
         assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
     }
-    Implication imp = (Implication) { .sdr = Encode_Term("test"), 
-                                      .truth = (Truth) { .frequency = 1.0, .confidence = 0.9},
-                                      .stamp = (Stamp) { .evidentalBase = {TABLE_SIZE*2+1} },
-                                      .occurrenceTimeOffset = 10 };
+    Implication imp = { .sdr = Encode_Term("test"), 
+                        .truth = { .frequency = 1.0, .confidence = 0.9},
+                        .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
+                        .occurrenceTimeOffset = 10 };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
     Table_AddAndRevise(&table, &imp, "");
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
@@ -164,7 +164,7 @@ void Memory_Test()
     puts(">>Memory test start");
     Event e = Event_InputEvent(Encode_Term("a"), 
                                EVENT_TYPE_BELIEF, 
-                               (Truth) {.frequency = 1, .confidence = 0.9}, 
+                               (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
     Memory_addEvent(&e);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
@@ -180,7 +180,7 @@ void Memory_Test()
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
     Event e2 = Event_InputEvent(Encode_Term("b"), 
                                EVENT_TYPE_BELIEF, 
-                               (Truth) {.frequency = 1, .confidence = 0.9}, 
+                               (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
     Memory_addEvent(&e2);
     Memory_Conceptualize(&e2.sdr);

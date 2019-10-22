@@ -89,7 +89,7 @@ bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex
     double bestValSoFar = -1;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*)concepts.items[i].address)->sdr)));
+        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*) concepts.items[i].address)->sdr)));
         if(curVal > bestValSoFar)
         {
             bestValSoFar = curVal;

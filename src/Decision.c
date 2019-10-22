@@ -121,10 +121,10 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
             Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
             if(precondition != NULL)
             {
-                Event op = (Event) { .type = EVENT_TYPE_BELIEF,
-                                     .truth = { .frequency = 1.0, .confidence = 0.9 },
-                                     .occurrenceTime = currentTime,
-                                     .operationID = operationID };
+                Event op = { .type = EVENT_TYPE_BELIEF,
+                             .truth = { .frequency = 1.0, .confidence = 0.9 },
+                             .occurrenceTime = currentTime,
+                             .operationID = operationID };
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)

@@ -29,10 +29,10 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return  (Implication) { .sdr = a->sdr, 
-                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
-                            .stamp = conclusionStamp,
-                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
+    return (Implication) { .sdr = a->sdr, 
+                           .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
+                           .stamp = conclusionStamp,
+                           .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
 }
 
 //{Event a., Event a.} |- Event a.
