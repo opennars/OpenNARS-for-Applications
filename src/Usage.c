@@ -7,10 +7,9 @@ double Usage_usefulness(Usage *usage, long currentTime)
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }
 
-Usage Usage_use(Usage *usage, long currentTime)
+void Usage_use(Usage *usage, long currentTime)
 {
-    return (Usage) { .useCount = usage->useCount+1,
-                     .lastUsed = currentTime };
+    usage->useCount++;
 }
 
 void Usage_Print(Usage *usage)

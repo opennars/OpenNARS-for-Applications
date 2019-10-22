@@ -23,7 +23,7 @@ typedef struct {
 //how useful it is in respect to the current moment
 double Usage_usefulness(Usage *usage, long currentTime);
 //use the item
-Usage Usage_use(Usage *usage, long currentTime);
+void Usage_use(Usage *usage, long currentTime);
 //print it
 void Usage_Print(Usage *usage);
 
