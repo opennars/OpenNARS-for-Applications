@@ -766,7 +766,7 @@ void ANSNA_TestChamber()
     ANSNA_AddOperation(Encode_Term("op_goto_s2"), ANSNA_TestChamber_goto_s2); 
     ANSNA_AddOperation(Encode_Term("op_goto_s3"), ANSNA_TestChamber_goto_s3); 
     ANSNA_AddOperation(Encode_Term("op_goto_l0"), ANSNA_TestChamber_goto_l0); 
-    ANSNA_AddOperation(Encode_Term("op_goto_l1"), ANSNA_TestChamber_goto_s1); 
+    ANSNA_AddOperation(Encode_Term("op_goto_l1"), ANSNA_TestChamber_goto_l1); 
     ANSNA_AddOperation(Encode_Term("op_activate"), ANSNA_TestChamber_activate); 
     ANSNA_AddOperation(Encode_Term("op_deactivate"), ANSNA_TestChamber_deactivate); 
     int size = 7;

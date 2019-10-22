@@ -126,7 +126,7 @@ bool Memory_addEvent(Event *event)
 
 void Memory_addConcept(Concept *concept, long currentTime)
 {
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, Usage_usefulness(&concept->usage, currentTime));
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, Usage_usefulness(concept->usage, currentTime));
     if(feedback.added)
     {
         Concept *toRecyle = feedback.addedItem.address;

@@ -8,7 +8,7 @@ static bool Cycle_ActivateConcept(Concept *c, Event *e, long currentTime, bool d
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
         Concept_SDRInterpolation(c, &e->sdr, eMatch.truth);
-        Usage_use(&c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
+        c->usage = Usage_use(c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
         //add event as spike to the concept:
         if(eMatch.type == EVENT_TYPE_BELIEF)
         {

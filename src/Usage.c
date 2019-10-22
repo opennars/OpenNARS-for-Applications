@@ -1,15 +1,16 @@
 #include "Usage.h"
 
-double Usage_usefulness(Usage *usage, long currentTime)
+double Usage_usefulness(Usage usage, long currentTime)
 {
-    double age = currentTime - usage->lastUsed;
-    double usefulnessToNormalize = ((double) usage->useCount) / (age + 1.0);
+    double age = currentTime - usage.lastUsed;
+    double usefulnessToNormalize = ((double) usage.useCount) / (age + 1.0);
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }
 
-void Usage_use(Usage *usage, long currentTime)
+Usage Usage_use(Usage usage, long currentTime)
 {
-    usage->useCount++;
+    return (Usage) { .useCount = usage.useCount+1,
+                     .lastUsed = currentTime };
 }
 
 void Usage_Print(Usage *usage)
