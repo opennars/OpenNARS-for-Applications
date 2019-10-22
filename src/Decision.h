@@ -22,6 +22,7 @@ extern double MOTOR_BABBLING_CHANCE;
 //--------------//
 typedef struct
 {
+    double desire;
     bool execute;
     int operationID;
     Operation op;
@@ -30,8 +31,9 @@ typedef struct
 //Methods//
 //-------//
 //ANSNA decision making rule applying when goal is an operation
-bool Decision_Making(Event *goal, long currentTime);
+Decision Decision_Making(Event *goal, long currentTime);
 //assumption of failure, also works for "do nothing operator"
 void Decision_AssumptionOfFailure(int operationID, long currentTime);
-
+//execute decision
+void Decision_InjectActionEvent(Decision *decision);
 #endif
