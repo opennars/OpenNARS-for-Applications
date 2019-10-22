@@ -203,27 +203,32 @@ void Cycle_Perform(long currentTime)
         }
     }
     //process goals
-    Decision decision = {0};
+    Decision decision[PROPAGATION_ITERATIONS + 1] = {0};
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed)
         {
-            decision = Cycle_ProcessEvent(goal, currentTime);
-            //let "thinking" take over since automatic mechanism didn't succeed
-            if(!decision.execute)
+            decision[0] = Cycle_ProcessEvent(goal, currentTime);
+            //allow reasoning into the future by propagating spikes from goals back to potential current evens
+            for(int i=0; i<PROPAGATION_ITERATIONS; i++)
             {
-                for(int i=0; i<PROPAGATION_ITERATIONS && !decision.execute; i++)
-                {
-                    decision = Cycle_PropagateSpikes(currentTime);
-                }
+                decision[i+1] = Cycle_PropagateSpikes(currentTime);
             }
         }
     }
-    //inject action if there was one
-    if(decision.execute && decision.operationID)
+    //inject the best action if there was one
+    Decision best_decision = {0};
+    for(int i=0; i<PROPAGATION_ITERATIONS+1; i++)
     {
-        Decision_InjectActionEvent(&decision);
+        if(decision[i].execute && decision[i].desire >= best_decision.desire)
+        {
+            best_decision = decision[i];
+        }
+    }
+    if(best_decision.execute && best_decision.operationID > 0)
+    {
+        Decision_InjectActionEvent(&best_decision);
     }
     //end of iterations, remove spikes
     for(int i=0; i<concepts.itemsAmount; i++)
