@@ -12,7 +12,7 @@ double Truth_c2w(double c)
 
 double Truth_Expectation(Truth v)
 {
-    return (v.confidence * (v.frequency - 0.5f) + 0.5f);
+    return (v.confidence * (v.frequency - 0.5) + 0.5);
 }
 
 Truth Truth_Revision(Truth v1, Truth v2)
