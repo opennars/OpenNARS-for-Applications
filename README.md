@@ -4,4 +4,4 @@ A minimal component supporting:
 - Learning from event streams in real time
 - Pursuing of multiple goals in parallel
 
-Theory: ANSNA / NARS
+Theory: ANSNA / NARS, especially NAL7/8
