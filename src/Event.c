@@ -4,14 +4,14 @@ void Event_SetSDR(Event *event, SDR sdr)
 {
     event->sdr = sdr;
     //Generate hash too:
-    event->sdr_hash = SDR_Hash(&sdr);
+    //event->sdr_hash = SDR_Hash(&sdr);
 }
 
 long base = 1;
 Event Event_InputEvent(SDR sdr, char type, Truth truth, long currentTime)
 {
     return (Event) { .sdr = sdr,
-                     .sdr_hash = SDR_Hash(&sdr),
+                     /*.sdr_hash = SDR_Hash(&sdr),*/
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 

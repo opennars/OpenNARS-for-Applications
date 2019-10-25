@@ -16,13 +16,12 @@
 
 //Parameters//
 //----------//
-#define TERMS_MAX 500
+#define TERMS_MAX 255
 #define TERM_ONES 5
 
 //Data structure//
 //--------------//
 SDR input_terms[TERMS_MAX];
-bool input_terms_used[TERMS_MAX];
 
 //Methods//
 //-------//

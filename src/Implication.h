@@ -15,7 +15,7 @@
 //--------------//
 typedef struct {
     SDR sdr;
-    SDR_HASH_TYPE sdr_hash;
+    //SDR_HASH_TYPE sdr_hash;
     Truth truth;
     Stamp stamp;
     //for deciding occurrence time of conclusion:
@@ -23,7 +23,7 @@ typedef struct {
     //for efficient spike propagation:
     void *sourceConcept;
     SDR sourceConceptSDR; //to check whether it's still the same
-    SDR_HASH_TYPE sourceConceptSDRHash;
+    //SDR_HASH_TYPE sourceConceptSDRHash;
     char debug[100]; //++ DEBUG
 } Implication;
 

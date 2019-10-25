@@ -23,7 +23,7 @@ typedef struct {
     int id;
     Usage usage;
     SDR sdr;
-    SDR_HASH_TYPE sdr_hash;
+    //SDR_HASH_TYPE sdr_hash;
     Event belief_spike;
     Event incoming_goal_spike;
     Event goal_spike;

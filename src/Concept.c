@@ -4,7 +4,7 @@ void Concept_SetSDR(Concept *concept, SDR sdr)
 {
     concept->sdr = sdr;
     //Generate hash too:
-    concept->sdr_hash = SDR_Hash(&sdr);
+    //concept->term_hash = Term_Hash(&term);
 }
 
 void Concept_Print(Concept *concept)

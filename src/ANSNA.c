@@ -4,7 +4,7 @@ long currentTime = 1;
 
 void ANSNA_INIT()
 {
-    SDR_INIT();
+    //SDR_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
@@ -20,11 +20,11 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
+Event ANSNA_AddInput(SDR sdr, char type, Truth truth, int operationID)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);
     int closest_concept_i=0;
-    if(Memory_getClosestConcept(&sdr, SDR_Hash(&sdr), &closest_concept_i))
+    if(Memory_FindConceptBySDR(&sdr, /*SDR_Hash(&sdr),*/ &closest_concept_i))
     {
         Concept *c = concepts.items[closest_concept_i].address;
         if(strlen(c->debug) == 0)
@@ -43,33 +43,22 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth)
         char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
         printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
     }
-    for(int i=0; i<OPERATIONS_MAX; i++)
-    {
-        if(operations[i].action == 0)
-        {
-            break;
-        }
-        if(SDR_Equal(&operations[i].sdr, &sdr)) //TODO relax to allow parametrized actions
-        {
-            ev.operationID = i+1;
-            break;
-        }
-    }
+    ev.operationID = operationID;
     Memory_addEvent(&ev);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     ANSNA_Cycles(1);
     return ev;
 }
 
-Event ANSNA_AddInputBelief(SDR sdr)
+Event ANSNA_AddInputBelief(SDR sdr, int operationID)
 {
-    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, operationID);
     return ret;
 }
 
 Event ANSNA_AddInputGoal(SDR sdr)
 {
-    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH);
+    return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH, 0);
 }
 
 void ANSNA_AddOperation(SDR sdr, Action procedure)

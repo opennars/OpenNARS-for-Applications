@@ -4,7 +4,7 @@ void Implication_SetSDR(Implication *implication, SDR sdr)
 {
     implication->sdr = sdr;
     //Generate hash too:
-    implication->sdr_hash = SDR_Hash(&sdr);
+    //implication->sdr_hash = SDR_Hash(&sdr);
 }
 
 void Implication_Print(Implication *implication)

@@ -7,45 +7,6 @@
 #include "Encode.h"
 #include "ANSNA.h"
 
-void SDR_Test()
-{
-    puts(">>SDR Test Start");
-    puts("testing encoding and permutation:");
-    SDR mySDR = Encode_Term("term1");
-    int previous = SDR_ReadBit(&mySDR, 0);
-    assert(SDR_ReadBitInBlock(&mySDR,0,0) == previous, "SDR ReadBitInBlock mismatch with SDR_ReadBit");
-    SDR_WriteBit(&mySDR, 0, previous);
-    assert(SDR_ReadBit(&mySDR, 0) == previous, "SDR was written to with same value, shouldn't have changed");
-    assert(SDR_CountTrue(&mySDR) == TERM_ONES, "SDR term should have TERM_ONES ones");
-    SDR sdr2 = SDR_PermuteByRotation(&mySDR, true);
-    SDR mySDR_Recons1 = SDR_PermuteByRotation(&sdr2, false);
-    assert(SDR_Equal(&mySDR_Recons1, &mySDR), "Inverse rotation should lead to original result");
-    int perm[SDR_SIZE];
-    int perm_inv[SDR_SIZE];
-    SDR_GeneratePermutation(perm, perm_inv);
-    SDR sdr3 = SDR_Permute(&mySDR, perm);
-    SDR mySDR_recons2 = SDR_Permute(&sdr3, perm_inv);
-    assert(SDR_Equal(&mySDR_recons2, &mySDR), "Inverse permutation should lead to original result");
-    puts("testing tuples now:");
-    SDR mySDR2 = Encode_Term("term2");
-    fputs("recons:", stdout);
-    SDR tuple = SDR_Tuple(&mySDR, &mySDR2);
-    SDR SDR1Recons = SDR_TupleGetFirstElement(&tuple, &mySDR2);
-    SDR SDR2Recons = SDR_TupleGetSecondElement(&tuple, &mySDR);
-    Truth selfTest = SDR_Similarity(&mySDR, &mySDR);
-    printf("sdr1 sdr1 similarity: %f %f\n", selfTest.frequency, selfTest.confidence);
-    assert(selfTest.frequency == 1, "No negative evidence is allowed to be found when matching to itself");
-    Truth t1 = SDR_Similarity(&mySDR, &SDR1Recons);
-    assert(t1.frequency == 1, "Reconstructed tuple element1 should be almost the same as the original");
-    Truth t2 = SDR_Similarity(&mySDR2, &SDR2Recons);
-    assert(t2.frequency == 1, "Reconstructed tuple element2 should be almost the same as the original");
-    Truth t3 = SDR_Similarity(&mySDR, &SDR2Recons);
-    assert(t3.frequency < 0.5, "These elements should mostly differ");
-    Truth t4 = SDR_Similarity(&mySDR2, &SDR1Recons);
-    assert(t4.frequency < 0.5, "These elements should mostly differ too");
-    puts("<<SDR Test successful");
-}
-
 void FIFO_Test()
 {
     puts(">>FIFO test start");
@@ -170,14 +131,14 @@ void Memory_Test()
     Memory_addEvent(&e);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
-    assert(!Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "a concept doesn't exist yet!");
+    assert(!Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash, */ &returnIndex), "a concept doesn't exist yet!");
     Memory_Conceptualize(&e.sdr);
     int concept_i;
-    assert(Memory_FindConceptBySDR(&e.sdr, SDR_Hash(&e.sdr), &concept_i), "Concept should have been created!");
+    assert(Memory_FindConceptBySDR(&e.sdr, /*SDR_Hash(&e.sdr),*/ &concept_i), "Concept should have been created!");
     Concept *c = concepts.items[concept_i].address;
-    assert(Memory_FindConceptBySDR(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
     Event e2 = Event_InputEvent(Encode_Term("b"), 
                                EVENT_TYPE_BELIEF, 
@@ -185,12 +146,12 @@ void Memory_Test()
                                1337);
     Memory_addEvent(&e2);
     Memory_Conceptualize(&e2.sdr);
-    assert(Memory_FindConceptBySDR(&e2.sdr, SDR_Hash(&e2.sdr), &concept_i), "Concept should have been created!");
+    assert(Memory_FindConceptBySDR(&e2.sdr, /*SDR_Hash(&e2.sdr),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;
     Concept_Print(c2);
-    assert(Memory_getClosestConcept(&e2.sdr, e2.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptBySDR(&e2.sdr, /*e2.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
-    assert(Memory_getClosestConcept(&e.sdr, e.sdr_hash, &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     puts("<<Memory test successful");
 }
@@ -199,14 +160,14 @@ void ANSNA_Alphabet_Test()
 {
     ANSNA_INIT();
     puts(">>ANSNA Alphabet test start");
-    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+    ANSNA_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH,0);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH);
+            ANSNA_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH,0);
         }
         ANSNA_Cycles(1);
         puts("TICK");
@@ -225,16 +186,16 @@ void ANSNA_Procedure_Test()
     ANSNA_INIT();
     puts(">>ANSNA Procedure test start");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), 0);
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("op"));
+    ANSNA_AddInputBelief(Encode_Term("op"), 1);
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("result"));
+    ANSNA_AddInputBelief(Encode_Term("result"), 0);
     ANSNA_Cycles(10);
     puts("---------------");
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), 0);
     ANSNA_Cycles(10);
     puts("---------------");
     ANSNA_AddInputGoal(Encode_Term("result"));
@@ -273,13 +234,13 @@ void ANSNA_Follow_Test()
     for(int i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
-        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"));
+        ANSNA_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), 0);
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
         if(ANSNA_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -297,7 +258,7 @@ void ANSNA_Follow_Test()
         {        
             if(BALL == LEFT)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -402,22 +363,22 @@ void ANSNA_Pong2(bool useNumericEncoding)
         {
             SDR sdrX = Encode_Scalar(0-batWidth*2, 2*szX+batWidth*2, szX+(ballX-batX));
             //SDR_PrintWhereTrue(&sdrX);
-            ANSNA_AddInputBelief(sdrX);
+            ANSNA_AddInputBelief(sdrX, 0);
         }
         else
         {
             if(batX <= ballX - batWidth)
             {
-                ANSNA_AddInputBelief(Encode_Term("ball_right"));
+                ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
             }
             else
             if(ballX + batWidth < batX)
             {
-                ANSNA_AddInputBelief(Encode_Term("ball_left"));
+                ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
             }
             else
             {
-                ANSNA_AddInputBelief(Encode_Term("ball_equal"));
+                ANSNA_AddInputBelief(Encode_Term("ball_equal"), 0);
             }
         }
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
@@ -446,7 +407,7 @@ void ANSNA_Pong2(bool useNumericEncoding)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), 0);
                 puts("good");
                 hits++;
             }
@@ -551,17 +512,17 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
             //SDR_PrintWhereTrue(&sdrX);
-            ANSNA_AddInputBelief(sdrX);
+            ANSNA_AddInputBelief(sdrX, 0);
         }
         else
         {
             if(batX < ballX)
             {
-                ANSNA_AddInputBelief(Encode_Term("ball_right"));
+                ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
             }
             if(ballX < batX)
             {
-                ANSNA_AddInputBelief(Encode_Term("ball_left"));
+                ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
             }
         }
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
@@ -587,7 +548,7 @@ void ANSNA_Pong(bool useNumericEncoding)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                ANSNA_AddInputBelief(Encode_Term("good_ansna"));
+                ANSNA_AddInputBelief(Encode_Term("good_ansna"), 0);
                 puts("good");
                 hits++;
             }
@@ -645,24 +606,24 @@ void ANSNA_Multistep_Test()
     ANSNA_AddOperation(Encode_Term("op_activate_switch"), ANSNA_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("start_at"));
-        ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
+        ANSNA_AddInputBelief(Encode_Term("start_at"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_goto_switch"), 1);
         ANSNA_Cycles(1);
-        ANSNA_AddInputBelief(Encode_Term("switch_at"));
-        ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
-        ANSNA_AddInputBelief(Encode_Term("switch_active"));
+        ANSNA_AddInputBelief(Encode_Term("switch_at"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_activate_switch"), 2);
+        ANSNA_AddInputBelief(Encode_Term("switch_active"), 0);
         ANSNA_Cycles(1);
-        ANSNA_AddInputBelief(Encode_Term("light_active"));
+        ANSNA_AddInputBelief(Encode_Term("light_active"), 0);
         ANSNA_Cycles(10);
     }
     ANSNA_Cycles(10);
-    ANSNA_AddInputBelief(Encode_Term("start_at"));
+    ANSNA_AddInputBelief(Encode_Term("start_at"), 0);
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(10);
     assert(ANSNA_Lightswitch_GotoSwitch_executed && !ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to go to the switch first");
     ANSNA_Lightswitch_GotoSwitch_executed = false;
     puts("ANSNA arrived at the switch");
-    ANSNA_AddInputBelief(Encode_Term("switch_at"));
+    ANSNA_AddInputBelief(Encode_Term("switch_at"), 0);
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch");
     ANSNA_Lightswitch_ActivateSwitch_executed = false;
@@ -678,30 +639,30 @@ void ANSNA_Multistep2_Test()
     ANSNA_AddOperation(Encode_Term("op_activate_switch"), ANSNA_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("start_at"));
-        ANSNA_AddInputBelief(Encode_Term("op_goto_switch"));
+        ANSNA_AddInputBelief(Encode_Term("start_at"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_goto_switch"), 1);
         ANSNA_Cycles(1);
-        ANSNA_AddInputBelief(Encode_Term("switch_at"));
+        ANSNA_AddInputBelief(Encode_Term("switch_at"), 0);
         ANSNA_Cycles(10);
     }
     ANSNA_Cycles(1000);
     for(int i=0; i<5; i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("switch_at"));
-        ANSNA_AddInputBelief(Encode_Term("op_activate_switch"));
-        ANSNA_AddInputBelief(Encode_Term("switch_active"));
+        ANSNA_AddInputBelief(Encode_Term("switch_at"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_activate_switch"), 2);
+        ANSNA_AddInputBelief(Encode_Term("switch_active"), 0);
         ANSNA_Cycles(1);
-        ANSNA_AddInputBelief(Encode_Term("light_active"));
+        ANSNA_AddInputBelief(Encode_Term("light_active"), 0);
         ANSNA_Cycles(10);
     }
     ANSNA_Cycles(10);
-    ANSNA_AddInputBelief(Encode_Term("start_at"));
+    ANSNA_AddInputBelief(Encode_Term("start_at"), 0);
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     ANSNA_Cycles(10);
     assert(ANSNA_Lightswitch_GotoSwitch_executed && !ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to go to the switch first (2)");
     ANSNA_Lightswitch_GotoSwitch_executed = false;
     puts("ANSNA arrived at the switch");
-    ANSNA_AddInputBelief(Encode_Term("switch_at"));
+    ANSNA_AddInputBelief(Encode_Term("switch_at"), 0);
     ANSNA_AddInputGoal(Encode_Term("light_active"));
     assert(!ANSNA_Lightswitch_GotoSwitch_executed && ANSNA_Lightswitch_ActivateSwitch_executed, "ANSNA needs to activate the switch (2)");
     ANSNA_Lightswitch_ActivateSwitch_executed = false;
@@ -796,7 +757,7 @@ void ANSNA_TestChamber()
     bool l1 = false;
     bool door = false; //door closed
     puts("at_s0");
-    ANSNA_AddInputBelief(Encode_Term("at_s0"));
+    ANSNA_AddInputBelief(Encode_Term("at_s0"), 0);
     char lastchar = 'a';
     while(1)
     {
@@ -840,98 +801,98 @@ void ANSNA_TestChamber()
         {
             s1 = false;
             puts("s1_is_0.");
-            ANSNA_AddInputBelief(Encode_Term("s1_is_0"));
+            ANSNA_AddInputBelief(Encode_Term("s1_is_0"), 0);
             //s1 also closes the door:
             door = false;
             puts("door_is_closed.");
-            ANSNA_AddInputBelief(Encode_Term("door_is_closed"));
+            ANSNA_AddInputBelief(Encode_Term("door_is_closed"), 0);
         }
         else
         if(pos == pos_s2 && deactivate)
         {
             s2 = false;
             puts("s2_is_0.");
-            ANSNA_AddInputBelief(Encode_Term("s2_is_0"));
+            ANSNA_AddInputBelief(Encode_Term("s2_is_0"), 0);
             //s2 also deactivates l0:
             l0 = false;
             puts("l0_is_0.");
-            ANSNA_AddInputBelief(Encode_Term("l0_is_0"));
+            ANSNA_AddInputBelief(Encode_Term("l0_is_0"), 0);
         }
         else
         if(pos == pos_s3 && deactivate)
         {
             s3 = false;
             puts("s3_is_0.");
-            ANSNA_AddInputBelief(Encode_Term("s3_is_0"));
+            ANSNA_AddInputBelief(Encode_Term("s3_is_0"), 0);
             //s3 also deactivates l1
             l1 = false;
             puts("l1_is_0.");
-            ANSNA_AddInputBelief(Encode_Term("l1_is_0"));
+            ANSNA_AddInputBelief(Encode_Term("l1_is_0"), 0);
         }
         else
         if(pos == pos_s1 && activate)
         {
             s1 = true;
             puts("s1_is_1.");
-            ANSNA_AddInputBelief(Encode_Term("s1_is_1"));
+            ANSNA_AddInputBelief(Encode_Term("s1_is_1"), 0);
             //s1 also opens the door:
             door = true;
             puts("door_is_open.");
-            ANSNA_AddInputBelief(Encode_Term("door_is_open"));
+            ANSNA_AddInputBelief(Encode_Term("door_is_open"), 0);
         }
         else
         if(pos == pos_s2 && activate)
         {
             s2 = true;
             puts("s2_is_1.");
-            ANSNA_AddInputBelief(Encode_Term("s2_is_1"));
+            ANSNA_AddInputBelief(Encode_Term("s2_is_1"), 0);
             //s2 also activates l0:
             l0 = true;
             puts("l0_is_1.");
-            ANSNA_AddInputBelief(Encode_Term("l0_is_1"));
+            ANSNA_AddInputBelief(Encode_Term("l0_is_1"), 0);
         }
         else
         if(pos == pos_s3 && activate)
         {
             s3 = true;
             puts("s3_is_1.");
-            ANSNA_AddInputBelief(Encode_Term("s3_is_1"));
+            ANSNA_AddInputBelief(Encode_Term("s3_is_1"), 0);
             //s3 also activates l1
             l1 = true;
             puts("l1_is_1.");
-            ANSNA_AddInputBelief(Encode_Term("l1_is_1"));
+            ANSNA_AddInputBelief(Encode_Term("l1_is_1"), 0);
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         //inform ANSNA about current location
         if(pos == pos_s0)
         {
             puts("at_s0.");
-            ANSNA_AddInputBelief(Encode_Term("at_s0"));
+            ANSNA_AddInputBelief(Encode_Term("at_s0"), 0);
         }
         if(pos == pos_s1)
         {
             puts("at_s1.");
-            ANSNA_AddInputBelief(Encode_Term("at_s1"));
+            ANSNA_AddInputBelief(Encode_Term("at_s1"), 0);
         }
         if(pos == pos_s2)
         {
             puts("at_s2.");
-            ANSNA_AddInputBelief(Encode_Term("at_s2"));
+            ANSNA_AddInputBelief(Encode_Term("at_s2"), 0);
         }
         if(pos == pos_s3)
         {
             puts("at_s3.");
-            ANSNA_AddInputBelief(Encode_Term("at_s3"));
+            ANSNA_AddInputBelief(Encode_Term("at_s3"), 0);
         }
         if(pos == pos_l0)
         {
             puts("at_l0.");
-            ANSNA_AddInputBelief(Encode_Term("at_l0"));
+            ANSNA_AddInputBelief(Encode_Term("at_l0"), 0);
         }
         if(pos == pos_l1)
         {
             puts("at_l1.");
-            ANSNA_AddInputBelief(Encode_Term("at_l1"));
+            ANSNA_AddInputBelief(Encode_Term("at_l1"), 0);
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -1055,49 +1016,49 @@ void ANSNA_TestChamber()
         {
             goto_s0 = true;
             puts("op_goto_s0.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_s0"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_s0"), 1);
         }
         if(c == 'b')
         {
             goto_s1 = true;
             puts("op_goto_s1.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_s1"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_s1"), 2);
         }
         if(c == 'c')
         {
             goto_s2 = true;
             puts("op_goto_s2.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_s2"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_s2"), 3);
         }
         if(c == 'd')
         {
             goto_s3 = true;
             puts("op_goto_s3.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_s3"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_s3"), 4);
         }
         if(c == 'e')
         {
             goto_l0 = true;
             puts("op_goto_l0.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_l0"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_l0"), 5);
         }
         if(c == 'f')
         {
             goto_l1 = true;
             puts("op_goto_l1.");
-            ANSNA_AddInputBelief(Encode_Term("op_goto_l1"));
+            ANSNA_AddInputBelief(Encode_Term("op_goto_l1"), 6);
         }
         if(c == 'g')
         {
             activate = true;
             puts("op_activate.");
-            ANSNA_AddInputBelief(Encode_Term("op_activate"));
+            ANSNA_AddInputBelief(Encode_Term("op_activate"), 7);
         }
         if(c == 'h')
         {
             deactivate = true;
             puts("op_deactivate.");
-            ANSNA_AddInputBelief(Encode_Term("op_deactivate"));
+            ANSNA_AddInputBelief(Encode_Term("op_deactivate"), 8);
         }
         if(c == 'i')
         {
@@ -1237,51 +1198,51 @@ void Sequence_Test()
     ANSNA_AddOperation(Encode_Term("op_3"), op_3); 
     for(int i=0;i<5;i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("a")); //0 2 4 5
-        ANSNA_AddInputBelief(Encode_Term("b"));
-        ANSNA_AddInputBelief(Encode_Term("op_1"));
-        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_AddInputBelief(Encode_Term("a"), 0); //0 2 4 5
+        ANSNA_AddInputBelief(Encode_Term("b"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_1"), 1);
+        ANSNA_AddInputBelief(Encode_Term("g"), 0);
         ANSNA_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("a"));
-        ANSNA_AddInputBelief(Encode_Term("op_1"));
+        ANSNA_AddInputBelief(Encode_Term("a"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_1"), 1);
         ANSNA_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("b"));
-        ANSNA_AddInputBelief(Encode_Term("op_1"));
+        ANSNA_AddInputBelief(Encode_Term("b"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_1"), 1);
         ANSNA_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("b"));
-        ANSNA_AddInputBelief(Encode_Term("op_2"));
-        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_AddInputBelief(Encode_Term("b"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_2"), 2);
+        ANSNA_AddInputBelief(Encode_Term("g"), 0);
         ANSNA_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        ANSNA_AddInputBelief(Encode_Term("a"));
-        ANSNA_AddInputBelief(Encode_Term("op_3"));
-        ANSNA_AddInputBelief(Encode_Term("g"));
+        ANSNA_AddInputBelief(Encode_Term("a"), 0);
+        ANSNA_AddInputBelief(Encode_Term("op_3"), 3);
+        ANSNA_AddInputBelief(Encode_Term("g"), 0);
         ANSNA_Cycles(100);
     }
-    ANSNA_AddInputBelief(Encode_Term("a"));
-    ANSNA_AddInputBelief(Encode_Term("b"));
+    ANSNA_AddInputBelief(Encode_Term("a"), 0);
+    ANSNA_AddInputBelief(Encode_Term("b"), 0);
     ANSNA_AddInputGoal(Encode_Term("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
     //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
     ANSNA_Cycles(100);
-    ANSNA_AddInputBelief(Encode_Term("b"));
+    ANSNA_AddInputBelief(Encode_Term("b"), 0);
     ANSNA_AddInputGoal(Encode_Term("g"));
     assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
     op_1_executed = op_2_executed = op_3_executed = false;
     ANSNA_Cycles(100);
-    ANSNA_AddInputBelief(Encode_Term("a"));
+    ANSNA_AddInputBelief(Encode_Term("a"), 0);
     ANSNA_AddInputGoal(Encode_Term("g"));
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
@@ -1319,7 +1280,7 @@ int main(int argc, char *argv[])
     }
     srand(1337);
     ANSNA_INIT();
-    SDR_Test();
+    //Term_Test();
     Stamp_Test();
     FIFO_Test();
     PriorityQueue_Test();

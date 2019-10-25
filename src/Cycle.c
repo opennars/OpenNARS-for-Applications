@@ -5,7 +5,7 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
     //Matched event, see https://github.com/patham9/ANSNA/wiki/SDR:-SDRInheritance-for-matching,-and-its-truth-value
-    Event eMatch = Memory_MatchEventToConcept(c, e);
+    Event eMatch = *e;
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
@@ -41,16 +41,13 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
     //determine the concept it is related to
     int closest_concept_i;
     Concept *c = NULL;
-    if(Memory_getClosestConcept(&e->sdr, e->sdr_hash, &closest_concept_i))
+    if(Memory_FindConceptBySDR(&e->sdr, /*e->sdr_hash,*/ &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
         decision = Cycle_ActivateConcept(c, e, currentTime);
     }
-    //add a new concept for e too at the end (in all layers)
-    if(Memory_EventIsNovel(e, c))
-    {
-        Memory_Conceptualize(&e->sdr);
-    }
+    //add a new concept for e too at the end
+    Memory_Conceptualize(&e->sdr);
     return decision;
 }
 
@@ -72,7 +69,12 @@ static Decision Cycle_PropagateSpikes(long currentTime)
                     for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
                     {
                         Implication *imp = &postc->precondition_beliefs[opi].array[j];
-                        Memory_RelinkImplication(imp);
+                        if(!Memory_ImplicationValid(imp))
+                        {
+                            Table_Remove(&postc->precondition_beliefs[opi], j);
+                            j--;
+                            continue;
+                        }
                         Concept *pre = imp->sourceConcept;
                         if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                         {
@@ -114,8 +116,8 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
     int AConceptIndex;
     int BConceptIndex;
-    if(Memory_getClosestConcept(&a->sdr, a->sdr_hash, &AConceptIndex) &&
-       Memory_getClosestConcept(&b->sdr, b->sdr_hash, &BConceptIndex))
+    if(Memory_FindConceptBySDR(&a->sdr, /*a->sdr_hash,*/ &AConceptIndex) &&
+       Memory_FindConceptBySDR(&b->sdr, /*b->sdr_hash,*/ &BConceptIndex))
     {
         Concept *A = concepts.items[AConceptIndex].address;
         Concept *B = concepts.items[BConceptIndex].address;
@@ -138,7 +140,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                     {
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptSDR = A->sdr;
-                        IN_OUTPUT( if(revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } )
+                        /*IN_OUTPUT( if(true && revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
                     }
                 }
             }
@@ -242,9 +244,6 @@ void Cycle_Perform(long currentTime)
         Concept *concept = concepts.items[i].address;
         //usefulness was changed, push back if it didn't get void by interpolation
         PriorityQueue_PopAt(&concepts, i, NULL);
-        if(SDR_CountTrue(&concept->sdr) > 0)
-        {
-            Memory_addConcept(concept, currentTime);
-        }
+        Memory_addConcept(concept, currentTime);
     }
 }

@@ -18,7 +18,7 @@
 #define EVENT_TYPE_DELETED 0
 typedef struct {
     SDR sdr;
-    SDR_HASH_TYPE sdr_hash;
+    //SDR_HASH_TYPE sdr_hash;
     char type; //either JUDGMENT or GOAL
     Truth truth;
     Stamp stamp;

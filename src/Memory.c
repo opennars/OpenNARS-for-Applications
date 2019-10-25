@@ -36,12 +36,12 @@ void Memory_INIT()
     concept_id = 0;
 }
 
-bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
+bool Memory_FindConceptBySDR(SDR *sdr, int *returnIndex)
 {
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *existing = concepts.items[i].address;
-        if(!USE_HASHING || existing->sdr_hash == sdr_hash)
+        //if(!USE_HASHING || existing->sdr_hash == sdr_hash)
         {
             if(SDR_Equal(&existing->sdr, sdr))
             {
@@ -58,8 +58,8 @@ bool Memory_FindConceptBySDR(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
 
 void Memory_Conceptualize(SDR *sdr)
 {
-    SDR_HASH_TYPE hash = SDR_Hash(sdr);
-    if(!Memory_FindConceptBySDR(sdr, hash, NULL))
+    //SDR_HASH_TYPE hash = SDR_Hash(sdr);
+    if(!Memory_FindConceptBySDR(sdr, /*hash,*/ NULL))
     {
         Concept *addedConcept = NULL;
         //try to add it, and if successful add to voting structure
@@ -73,37 +73,6 @@ void Memory_Conceptualize(SDR *sdr)
             concept_id++;
         }
     }
-}
-
-bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex)
-{
-    if(concepts.itemsAmount == 0)
-    {
-        return false;   
-    }
-    int foundSameConcept_i;
-    if(Memory_FindConceptBySDR(sdr, sdr_hash, &foundSameConcept_i))
-    {
-        *returnIndex = foundSameConcept_i;
-        return true;
-    }
-    int best_i = -1;
-    double bestValSoFar = -1;
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        double curVal = Truth_Expectation(SDR_Inheritance(sdr, &(((Concept*) concepts.items[i].address)->sdr)));
-        if(curVal > bestValSoFar)
-        {
-            bestValSoFar = curVal;
-            best_i = i;
-        }
-    }
-    if(best_i == -1) //TODO how?
-    {
-        return false;
-    }
-    *returnIndex = best_i;
-    return true;
 }
 
 bool Memory_addEvent(Event *event)
@@ -138,46 +107,7 @@ void Memory_addOperation(Operation op)
     operations_index++;
 }
 
-Event Memory_MatchEventToConcept(Concept *c, Event *e)
-{
-    Event eMatch = *e;
-    eMatch.sdr = c->sdr;
-    eMatch.truth = Truth_Deduction(SDR_Inheritance(&e->sdr, &c->sdr), e->truth);
-    return eMatch;
-}
-
-bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
-{
-    if(!Memory_FindConceptBySDR(&event->sdr, event->sdr_hash, NULL))
-    {
-        bool different_enough = true;
-        if(c_matched_to != NULL)
-        {
-            double novelty = 1.0 - Truth_Expectation(SDR_Similarity(&event->sdr, &c_matched_to->sdr));
-            if(novelty < CONCEPT_FORMATION_NOVELTY)
-            {
-                different_enough = false;
-            }
-        }
-        return different_enough;
-    }
-    return false;
-}
-
-void Memory_RelinkImplication(Implication *imp)
-{
-    if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
-    {
-        int closest_concept_i;
-        if(Memory_getClosestConcept(&imp->sourceConceptSDR, SDR_Hash(&imp->sourceConceptSDR), &closest_concept_i))
-        {
-            imp->sourceConcept = concepts.items[closest_concept_i].address;
-            imp->sourceConceptSDR = ((Concept*) imp->sourceConcept)->sdr;
-            imp->sourceConceptSDRHash = SDR_Hash(&imp->sourceConceptSDR);
-        }
-        else
-        {
-            assert(false, "No concept to re-link to, call the ghostbusters!\n");
-        }
-    }
+bool Memory_ImplicationValid(Implication *imp)
+{ //todo
+    return true; //SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr);
 }

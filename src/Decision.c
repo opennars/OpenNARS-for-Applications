@@ -11,7 +11,7 @@ void Decision_Execute(Decision *decision)
     decision->op = operations[decision->operationID-1];
     (*decision->op.action)();
     //and add operator feedback
-    ANSNA_AddInputBelief(decision->op.sdr);
+    ANSNA_AddInputBelief(decision->op.sdr, decision->operationID);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -39,7 +39,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     int closest_postc_i;
-    if(Memory_getClosestConcept(&goal->sdr, goal->sdr_hash, &closest_postc_i))
+    if(Memory_FindConceptBySDR(&goal->sdr, /*goal->sdr_hash,*/ &closest_postc_i))
     {
         Concept *postc = concepts.items[closest_postc_i].address;
         double bestTruthExpectation = 0;
@@ -53,7 +53,12 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
             }
             for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
             {
-                Memory_RelinkImplication(&postc->precondition_beliefs[opi].array[j]);
+                if(!Memory_ImplicationValid(&postc->precondition_beliefs[opi].array[j]))
+                {
+                    Table_Remove(&postc->precondition_beliefs[opi], j);
+                    j--;
+                    continue;
+                }
                 Implication imp = postc->precondition_beliefs[opi].array[j];
                 IN_DEBUG
                 (
@@ -118,7 +123,15 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
         Concept *postc = concepts.items[j].address;
         for(int  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
         {
-            Memory_RelinkImplication(&postc->precondition_beliefs[operationID].array[h]);
+            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
+            {
+                SDR_Print(&postc->precondition_beliefs[operationID].array[h].sdr);
+                SDR_Print(&postc->precondition_beliefs[operationID].array[h].sourceConceptSDR);
+                exit(0);
+                Table_Remove(&postc->precondition_beliefs[operationID], h);
+                h--;
+                continue;
+            }
             Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
             Concept *current_prec = imp.sourceConcept;
             Event *precondition = &current_prec->belief_spike; //a. :|:
