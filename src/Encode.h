@@ -1,9 +1,9 @@
 #ifndef H_SCALARENCODER
 #define H_SCALARENCODER
 
-////////////////////
-//  Scalar encoder//
-////////////////////
+//////////////////////////////
+//  Scalar and term encoder //
+//////////////////////////////
 //Supports to encode a value in HTM way:
 //https://www.youtube.com/watch?v=V3Yqtpytif0&list=PL3yXMgtrZmDqhsFQzwUC9V8MeeVOQ7eZ9&index=6
 

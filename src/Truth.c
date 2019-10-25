@@ -1,5 +1,8 @@
 #include "Truth.h"
 
+double TRUTH_EVIDENTAL_HORIZON = TRUTH_EVIDENTAL_HORIZON_INITIAL;
+double TRUTH_PROJECTION_DECAY = TRUTH_PROJECTION_DECAY_INITIAL;
+
 double Truth_w2c(double w)
 {
     return w / (w + TRUTH_EVIDENTAL_HORIZON);

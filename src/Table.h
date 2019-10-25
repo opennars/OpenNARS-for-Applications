@@ -1,6 +1,11 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+//////////////////////
+//  Table           //
+//////////////////////
+//A table of implications, ranked by truth expectation
+
 //References//
 //----------//
 #include "Inference.h"
@@ -9,7 +14,7 @@
 
 //Parameters//
 //----------//
-#define TABLE_SIZE 10
+#define TABLE_SIZE 20
 
 //Data structure//
 //--------------//

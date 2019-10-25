@@ -1,6 +1,11 @@
 #ifndef STAMP_H
 #define STAMP_H
 
+//////////////////////
+//  Stamp           //
+//////////////////////
+//keeps track of evidental bases
+
 //References//
 //----------//
 #include <stdbool.h>

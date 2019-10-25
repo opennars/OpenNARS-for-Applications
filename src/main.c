@@ -13,6 +13,7 @@ void SDR_Test()
     puts("testing encoding and permutation:");
     SDR mySDR = Encode_Term("term1");
     int previous = SDR_ReadBit(&mySDR, 0);
+    assert(SDR_ReadBitInBlock(&mySDR,0,0) == previous, "SDR ReadBitInBlock mismatch with SDR_ReadBit");
     SDR_WriteBit(&mySDR, 0, previous);
     assert(SDR_ReadBit(&mySDR, 0) == previous, "SDR was written to with same value, shouldn't have changed");
     assert(SDR_CountTrue(&mySDR) == TERM_ONES, "SDR term should have TERM_ONES ones");
@@ -757,7 +758,8 @@ void ANSNA_TestChamber_deactivate()
 }
 void ANSNA_TestChamber()
 {
-    CONCEPT_FORMATION_NOVELTY = 0.0;
+    //ANTICIPATION_CONFIDENCE = 0.3; //works with default value too, but neg. evidence accumulation takes longer
+    CONCEPT_FORMATION_NOVELTY = 0.0; //so it works a bit better with this value for demo purposes
     OUTPUT = 0;
     ANSNA_INIT();
     MOTOR_BABBLING_CHANCE = 0;
@@ -794,9 +796,11 @@ void ANSNA_TestChamber()
     bool door = false; //door closed
     puts("at_s0");
     ANSNA_AddInputBelief(Encode_Term("at_s0"));
+    char lastchar = 'a';
     while(1)
     {
         //movement
+        bool goto_executed = goto_l0 || goto_l1 || goto_s0 || goto_s1 || goto_s2 || goto_s3;
         if(goto_s0)
         {
             pos = pos_s0;
@@ -817,48 +821,18 @@ void ANSNA_TestChamber()
             pos = pos_l1;
         }
         else
-        if(door) //door must be open else it couldn't be in the room or move to a position inside
+        if(goto_l0 && door)
         {
-            if(goto_l0)
-            {
-                pos = pos_l0;
-            }
-            else
-            if(goto_s2)
-            {
-                pos = pos_s2;
-            }
+            pos = pos_l0;
         }
-        //inform ANSNA about current location
-        if(pos == pos_s0)
+        else
+        if(goto_s2 && door)
         {
-            puts("at_s0.");
-            ANSNA_AddInputBelief(Encode_Term("at_s0"));
+            pos = pos_s2;
         }
-        if(pos == pos_s1)
+        if(goto_executed)
         {
-            puts("at_s1.");
-            ANSNA_AddInputBelief(Encode_Term("at_s1"));
-        }
-        if(pos == pos_s2)
-        {
-            puts("at_s2.");
-            ANSNA_AddInputBelief(Encode_Term("at_s2"));
-        }
-        if(pos == pos_s3)
-        {
-            puts("at_s3.");
-            ANSNA_AddInputBelief(Encode_Term("at_s3"));
-        }
-        if(pos == pos_l0)
-        {
-            puts("at_l0.");
-            ANSNA_AddInputBelief(Encode_Term("at_l0"));
-        }
-        if(pos == pos_l1)
-        {
-            puts("at_l1.");
-            ANSNA_AddInputBelief(Encode_Term("at_l1"));
+            activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         }
         //manipulation
         if(pos == pos_s1 && deactivate)
@@ -925,6 +899,38 @@ void ANSNA_TestChamber()
             l1 = true;
             puts("l1_is_1.");
             ANSNA_AddInputBelief(Encode_Term("l1_is_1"));
+        }
+        activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
+        //inform ANSNA about current location
+        if(pos == pos_s0)
+        {
+            puts("at_s0.");
+            ANSNA_AddInputBelief(Encode_Term("at_s0"));
+        }
+        if(pos == pos_s1)
+        {
+            puts("at_s1.");
+            ANSNA_AddInputBelief(Encode_Term("at_s1"));
+        }
+        if(pos == pos_s2)
+        {
+            puts("at_s2.");
+            ANSNA_AddInputBelief(Encode_Term("at_s2"));
+        }
+        if(pos == pos_s3)
+        {
+            puts("at_s3.");
+            ANSNA_AddInputBelief(Encode_Term("at_s3"));
+        }
+        if(pos == pos_l0)
+        {
+            puts("at_l0.");
+            ANSNA_AddInputBelief(Encode_Term("at_l0"));
+        }
+        if(pos == pos_l1)
+        {
+            puts("at_l1.");
+            ANSNA_AddInputBelief(Encode_Term("at_l1"));
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -1000,8 +1006,7 @@ void ANSNA_TestChamber()
         {
             world[2][8] = '|';
         }
-        activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
-        //fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         puts("\n---------------\nNew iteration\nCommands:");
         puts("a ... goto s0");
         puts("b ... goto s1");
@@ -1029,8 +1034,7 @@ void ANSNA_TestChamber()
         puts("x ... you should be at s3!");
         puts("y ... you should be at l0!");
         puts("z ... you should be at l1!");
-        puts("other ... Next timestep\n");
-        //nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        puts("other ... Next timestep (same command)\n");
         for(int i=0; i<size; i++)
         {
             for(int j=0; j<13; j++)
@@ -1038,10 +1042,14 @@ void ANSNA_TestChamber()
                 putchar(world[i][j]);
             }
             puts("");
-            //puts(&world[i]);
         }
         puts("\nCommand:");
         char c = getchar();
+        if(!(c >= 'a' && c<='z'))
+        {
+            c = lastchar;
+        }
+        lastchar = c;
         if(c == 'a')
         {
             goto_s0 = true;
@@ -1234,13 +1242,13 @@ void Sequence_Test()
         ANSNA_AddInputBelief(Encode_Term("g"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<20;i++)
+    for(int i=0;i<100;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("a"));
         ANSNA_AddInputBelief(Encode_Term("op_1"));
         ANSNA_Cycles(100);
     }
-    for(int i=0;i<20;i++)
+    for(int i=0;i<100;i++)
     {
         ANSNA_AddInputBelief(Encode_Term("b"));
         ANSNA_AddInputBelief(Encode_Term("op_1"));

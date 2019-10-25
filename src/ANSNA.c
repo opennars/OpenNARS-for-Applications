@@ -8,7 +8,6 @@ void ANSNA_INIT()
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
-    event_inspector = NULL;
 }
 
 void ANSNA_Cycles(int cycles)

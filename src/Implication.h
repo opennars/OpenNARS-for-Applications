@@ -1,6 +1,11 @@
 #ifndef BELIEF_H
 #define BELIEF_H
 
+//////////////////////
+//  Implication     //
+//////////////////////
+//essentially allowing concepts to predict activations of others
+
 //References//
 //-----------//
 #include "SDR.h"

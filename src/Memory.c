@@ -1,6 +1,8 @@
 #include "Memory.h"
 
+double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
 double CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
+
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 int operations_index = 0;
@@ -106,10 +108,6 @@ bool Memory_getClosestConcept(SDR *sdr, SDR_HASH_TYPE sdr_hash, int *returnIndex
 
 bool Memory_addEvent(Event *event)
 {
-    if(event_inspector != NULL)
-    {
-        (*event_inspector)(event);
-    }
     if(event->type == EVENT_TYPE_BELIEF)
     {
         FIFO_Add(event, &belief_events); //not revised yet
@@ -166,7 +164,7 @@ bool Memory_EventIsNovel(Event *event, Concept *c_matched_to)
     return false;
 }
 
-void Relink_Implication(Implication *imp)
+void Memory_RelinkImplication(Implication *imp)
 {
     if(imp->sourceConceptSDRHash != ((Concept*) &imp->sourceConcept)->sdr_hash && !SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr))
     {

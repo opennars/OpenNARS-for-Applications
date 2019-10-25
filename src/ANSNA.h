@@ -18,8 +18,7 @@ extern long currentTime;
 
 //Callback function types//
 //-----------------------//
-//typedef void (*Action)(void);             //already defined in Memory, just listed here again to make
-//typedef void (*EventInspector)(Event *);  //it clear what it is
+//typedef void (*Action)(void);     //already defined in Memory
 
 //Methods//
 //-------//
@@ -33,7 +32,5 @@ Event ANSNA_AddInputBelief(SDR sdr);
 Event ANSNA_AddInputGoal(SDR sdr);
 //Add an operation
 void ANSNA_AddOperation(SDR sdr, Action procedure);
-//Add an operation
-void ANSNA_AddEventInspector(SDR sdr, EventInspector procedure);
 
 #endif
