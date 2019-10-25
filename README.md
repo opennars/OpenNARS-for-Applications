@@ -1,6 +1,4 @@
-Minimal Sensorimotor Component
-
-""""""""""""""""""""""""""""""
+*Minimal Sensorimotor Component*
 
 A minimal component supporting:
 - Learning from event streams in real time
