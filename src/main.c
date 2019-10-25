@@ -758,8 +758,9 @@ void ANSNA_TestChamber_deactivate()
 }
 void ANSNA_TestChamber()
 {
-    //ANTICIPATION_CONFIDENCE = 0.3; //works with default value too, but neg. evidence accumulation takes longer
-    CONCEPT_FORMATION_NOVELTY = 0.0; //so it works a bit better with this value for demo purposes
+    TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
+    ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
+    CONCEPT_FORMATION_NOVELTY = 0.0;
     OUTPUT = 0;
     ANSNA_INIT();
     MOTOR_BABBLING_CHANCE = 0;
