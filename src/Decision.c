@@ -39,7 +39,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     int closest_postc_i;
-    if(Memory_FindConceptBySDR(&goal->sdr, /*goal->sdr_hash,*/ &closest_postc_i))
+    if(Memory_FindConceptByTerm(&goal->sdr, /*goal->sdr_hash,*/ &closest_postc_i))
     {
         Concept *postc = concepts.items[closest_postc_i].address;
         double bestTruthExpectation = 0;
@@ -155,7 +155,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                     if(added != NULL)
                     {
                         added->sourceConcept = negative_confirmation.sourceConcept;
-                        added->sourceConceptSDR = negative_confirmation.sourceConceptSDR;
+                        added->sourceConceptTerm = negative_confirmation.sourceConceptTerm;
                     }                                
                     stampID--;
                 }

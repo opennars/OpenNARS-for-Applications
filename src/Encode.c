@@ -1,7 +1,7 @@
 #include "Encode.h"
 
 int term_index = 0;
-SDR Encode_Term(char *name)
+Term Encode_Term(char *name)
 {
     char number = -1;
     for(char i=0; i<term_index; i++)
@@ -19,7 +19,7 @@ SDR Encode_Term(char *name)
         terms[term_index] = name;
         term_index++;
     }
-    SDR ret = {0};
+    Term ret = {0};
     ret.terms[0] = number;
     assert(ret.terms[0] > 0, "issue with encoding in Encode_Term");
     return ret;

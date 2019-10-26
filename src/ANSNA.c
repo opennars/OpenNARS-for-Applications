@@ -4,7 +4,7 @@ long currentTime = 1;
 
 void ANSNA_INIT()
 {
-    //SDR_INIT();
+    //Term_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
@@ -20,11 +20,11 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-Event ANSNA_AddInput(SDR sdr, char type, Truth truth, int operationID)
+Event ANSNA_AddInput(Term sdr, char type, Truth truth, int operationID)
 {
     Event ev = Event_InputEvent(sdr, type, truth, currentTime);
     int closest_concept_i=0;
-    if(Memory_FindConceptBySDR(&sdr, /*SDR_Hash(&sdr),*/ &closest_concept_i))
+    if(Memory_FindConceptByTerm(&sdr, /*Term_Hash(&sdr),*/ &closest_concept_i))
     {
         Concept *c = concepts.items[closest_concept_i].address;
         if(strlen(c->debug) == 0)
@@ -50,18 +50,18 @@ Event ANSNA_AddInput(SDR sdr, char type, Truth truth, int operationID)
     return ev;
 }
 
-Event ANSNA_AddInputBelief(SDR sdr, int operationID)
+Event ANSNA_AddInputBelief(Term sdr, int operationID)
 {
     Event ret = ANSNA_AddInput(sdr, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, operationID);
     return ret;
 }
 
-Event ANSNA_AddInputGoal(SDR sdr)
+Event ANSNA_AddInputGoal(Term sdr)
 {
     return ANSNA_AddInput(sdr, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH, 0);
 }
 
-void ANSNA_AddOperation(SDR sdr, Action procedure)
+void ANSNA_AddOperation(Term sdr, Action procedure)
 {
     Memory_addOperation((Operation) {.sdr = sdr, .action = procedure});
 }

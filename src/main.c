@@ -36,13 +36,13 @@ void FIFO_Test()
     FIFO fifo2 = {0};
     for(int i=0; i<FIFO_SIZE*2; i++)
     {
-        SDR zero = (SDR) {0};
+        Term zero = (Term) {0};
         FIFO_Add(&event2, &fifo2);
         if(i < FIFO_SIZE && i < MAX_SEQUENCE_LEN)
         {
             char buf[100]; 
             Event *ev = FIFO_GetKthNewestSequence(&fifo2, 0, i);
-            sprintf(buf,"This event SDR is not allowed to be zero, sequence length=%d\n",i+1);
+            sprintf(buf,"This event Term is not allowed to be zero, sequence length=%d\n",i+1);
             assert(!Term_Equal(&zero, &ev->sdr),buf);
         }
     }
@@ -131,14 +131,14 @@ void Memory_Test()
     Memory_addEvent(&e);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
-    assert(!Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash, */ &returnIndex), "a concept doesn't exist yet!");
+    assert(!Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash, */ &returnIndex), "a concept doesn't exist yet!");
     Memory_Conceptualize(&e.sdr);
     int concept_i;
-    assert(Memory_FindConceptBySDR(&e.sdr, /*SDR_Hash(&e.sdr),*/ &concept_i), "Concept should have been created!");
+    assert(Memory_FindConceptByTerm(&e.sdr, /*Term_Hash(&e.sdr),*/ &concept_i), "Concept should have been created!");
     Concept *c = concepts.items[concept_i].address;
-    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
     Event e2 = Event_InputEvent(Encode_Term("b"), 
                                EVENT_TYPE_BELIEF, 
@@ -146,12 +146,12 @@ void Memory_Test()
                                1337);
     Memory_addEvent(&e2);
     Memory_Conceptualize(&e2.sdr);
-    assert(Memory_FindConceptBySDR(&e2.sdr, /*SDR_Hash(&e2.sdr),*/ &concept_i), "Concept should have been created!");
+    assert(Memory_FindConceptByTerm(&e2.sdr, /*Term_Hash(&e2.sdr),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;
     Concept_Print(c2);
-    assert(Memory_FindConceptBySDR(&e2.sdr, /*e2.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e2.sdr, /*e2.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
-    assert(Memory_FindConceptBySDR(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     puts("<<Memory test successful");
 }

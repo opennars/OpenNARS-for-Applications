@@ -51,7 +51,7 @@ static void Table_SantiyCheck(Table *table)
 Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
 {
     IN_DEBUG ( Table_SantiyCheck(table); )
-    //1. find element with same SDR
+    //1. find element with same Term
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
     {
@@ -74,7 +74,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
         strcpy(revised.debug, debug);
-        Implication_SetSDR(&revised, imp->sdr);
+        Implication_SetTerm(&revised, imp->sdr);
         //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
         Table_Remove(table, same_i);
         //printf("REVISED\n");

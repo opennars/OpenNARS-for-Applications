@@ -1,10 +1,10 @@
 #include "Implication.h"
 
-void Implication_SetSDR(Implication *implication, SDR sdr)
+void Implication_SetTerm(Implication *implication, Term sdr)
 {
     implication->sdr = sdr;
     //Generate hash too:
-    //implication->sdr_hash = SDR_Hash(&sdr);
+    //implication->sdr_hash = Term_Hash(&sdr);
 }
 
 void Implication_Print(Implication *implication)

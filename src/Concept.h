@@ -2,9 +2,9 @@
 #define CONCEPT_H
 
 ///////////////////
-//  SDR Concept  //
+//  Term Concept  //
 ///////////////////
-//A concept named by a SDR
+//A concept named by a Term
 
 //References//
 //-----------//
@@ -22,8 +22,8 @@
 typedef struct {
     int id;
     Usage usage;
-    SDR sdr;
-    //SDR_HASH_TYPE sdr_hash;
+    Term sdr;
+    //Term_HASH_TYPE sdr_hash;
     Event belief_spike;
     Event incoming_goal_spike;
     Event goal_spike;
@@ -35,7 +35,7 @@ typedef struct {
 //Methods//
 //-------//
 //Assign a new name to a concept
-void Concept_SetSDR(Concept *concept, SDR sdr);
+void Concept_SetTerm(Concept *concept, Term sdr);
 //print a concept
 void Concept_Print(Concept *concept);
 

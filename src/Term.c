@@ -1,6 +1,6 @@
 #include "Term.h"
 
-void Term_Print(SDR *sdr)
+void Term_Print(Term *sdr)
 {
     for(int i=0; i<MAX_SEQUENCE_LEN; i++)
     {
@@ -12,9 +12,9 @@ void Term_Print(SDR *sdr)
     puts("===");
 }
 
-SDR Term_Tuple(SDR *a, SDR *b)
+Term Term_Tuple(Term *a, Term *b)
 {
-    SDR ret = {0};
+    Term ret = {0};
     assert(a->terms[0] > 0, "issue with term encoding1");
     assert(b->terms[0] > 0, "issue with term encoding2");
     assert(b->terms[1] == 0, "issue with term encoding4");
@@ -41,7 +41,7 @@ SDR Term_Tuple(SDR *a, SDR *b)
     return ret;
 }
 
-bool Term_Equal(SDR *a, SDR *b)
+bool Term_Equal(Term *a, Term *b)
 {
     for(int i=0; i<MAX_SEQUENCE_LEN; i++)
     {

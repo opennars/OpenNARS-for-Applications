@@ -27,6 +27,6 @@ char *terms[TERMS_MAX];
 //Methods//
 //-------//
 //Encodes a term 
-SDR Encode_Term(char *name);
+Term Encode_Term(char *name);
 
 #endif

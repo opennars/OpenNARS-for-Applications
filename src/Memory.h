@@ -31,7 +31,7 @@ FIFO goal_events;
 typedef void (*Action)(void);
 typedef struct
 {
-    SDR sdr;
+    Term sdr;
     Action action;
 }Operation;
 Operation operations[OPERATIONS_MAX];
@@ -41,9 +41,9 @@ Operation operations[OPERATIONS_MAX];
 //Init memory
 void Memory_INIT();
 //Find a concept
-bool Memory_FindConceptBySDR(SDR *sdr, /*SDR_HASH_TYPE sdr_hash,*/ int *returnIndex);
+bool Memory_FindConceptByTerm(Term *sdr, /*Term_HASH_TYPE sdr_hash,*/ int *returnIndex);
 //Create a new concept
-void Memory_Conceptualize(SDR *sdr);
+void Memory_Conceptualize(Term *sdr);
 //Add an already existing concept to memory that was taken out from the concept priority queue
 void Memory_addConcept(Concept *concept, long currentTime);
 //Add event to memory

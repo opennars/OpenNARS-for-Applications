@@ -1,6 +1,6 @@
 #include "Concept.h"
 
-void Concept_SetSDR(Concept *concept, SDR sdr)
+void Concept_SetTerm(Concept *concept, Term sdr)
 {
     concept->sdr = sdr;
     //Generate hash too:

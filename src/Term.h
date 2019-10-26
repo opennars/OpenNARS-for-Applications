@@ -1,8 +1,8 @@
-#ifndef SDR_H
-#define SDR_H
+#ifndef Term_H
+#define Term_H
 
 ///////////////////
-//  SDR_TERM     //
+//  Term_TERM     //
 ///////////////////
 
 //Parameters//
@@ -11,8 +11,8 @@
 
 //Description//
 //-----------//
-//An SDR is an blocksay of a specific number of 128 bit blocks
-//(that way no Hash ops are necessary, it's faster for this SDR size)
+//An Term is an blocksay of a specific number of 128 bit blocks
+//(that way no Hash ops are necessary, it's faster for this Term size)
 
 //References//
 //-----------//
@@ -27,15 +27,15 @@
 typedef struct
 {
     char terms[MAX_SEQUENCE_LEN];
-}SDR;
+}Term;
 
 //Methods//
 //-------//
 // print indices of true bits
-void Term_Print(SDR *sdr);
+void Term_Print(Term *sdr);
 //Tuple on the other hand:
-SDR Term_Tuple(SDR *a, SDR *b);
-//Whether two SDR's are equal completely
-bool Term_Equal(SDR *a, SDR *b);
+Term Term_Tuple(Term *a, Term *b);
+//Whether two Term's are equal completely
+bool Term_Equal(Term *a, Term *b);
 
 #endif
