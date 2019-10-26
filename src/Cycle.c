@@ -4,7 +4,6 @@
 static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
-    //Matched event, see https://github.com/patham9/ANSNA/wiki/Term:-TermInheritance-for-matching,-and-its-truth-value
     Event eMatch = *e;
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {

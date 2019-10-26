@@ -1,9 +1,9 @@
 #ifndef PRIORITYQUEUE_H
 #define PRIORITYQUEUE_H
 
-///////////////////////////
-//  ANSNA priority queue //
-///////////////////////////
+/////////////////////
+//  Priority queue //
+/////////////////////
 //The priority queue for concepts and tasks
 //Ported from https://github.com/quxiaofeng/python-stl/blob/master/meshlab/MeshLabSrc_AllInc_v132/meshlab/src/plugins_experimental/edit_ocme/src/cache/old/mmheap.h
 

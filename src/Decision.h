@@ -6,11 +6,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "Memory.h"
-#include "ANSNA.h"
+#include "MSC.h"
 
-//////////////////////
-//  ANSNA Decision  //
-//////////////////////
+////////////////////
+//  MSC Decision  //
+////////////////////
 //Realization of goals
 
 //Parameters//
@@ -42,7 +42,7 @@ typedef struct
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_AssumptionOfFailure(int operationID, long currentTime);
-//ANSNA decision making rule applying when goal is an operation
+//MSC decision making rule applying when goal is an operation
 Decision Decision_Suggest(Event *goal, long currentTime);
 
 #endif

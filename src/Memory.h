@@ -1,12 +1,10 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-///////////////////
-//  ANSNA Memory //
-///////////////////
-//The conce-based memory of ANSNA
-//See voting mechanism to make it fast:
-//https://github.com/patham9/ANSNA/wiki/Voting-Schema
+/////////////////
+//  MSC Memory //
+/////////////////
+//The concept-based memory of MSC
 
 //References//
 //////////////

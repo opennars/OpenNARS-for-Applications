@@ -2,7 +2,7 @@
 #define USEFULNESSVALUE_H
 
 /////////////////////////////
-//  ANSNA usefulness value //
+//  MSC usefulness value //
 /////////////////////////////
 
 //References//

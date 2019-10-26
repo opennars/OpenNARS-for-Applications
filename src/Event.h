@@ -2,9 +2,8 @@
 #define EVENT_H
 
 ///////////////////
-//  Term Event    //
+//  Term Event   //
 ///////////////////
-//also see https://github.com/patham9/ANSNA/wiki/Input
 
 //References//
 //-----------//

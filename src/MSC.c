@@ -1,8 +1,8 @@
-#include "ANSNA.h"
+#include "MSC.h"
 
 long currentTime = 1;
 
-void ANSNA_INIT()
+void MSC_INIT()
 {
     //Term_INIT();
     Memory_INIT(); //clear data structures
@@ -10,7 +10,7 @@ void ANSNA_INIT()
     currentTime = 1; //reset time
 }
 
-void ANSNA_Cycles(int cycles)
+void MSC_Cycles(int cycles)
 {
     for(int i=0; i<cycles; i++)
     {
@@ -20,7 +20,7 @@ void ANSNA_Cycles(int cycles)
     }
 }
 
-Event ANSNA_AddInput(Term term, char type, Truth truth, int operationID)
+Event MSC_AddInput(Term term, char type, Truth truth, int operationID)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
     int closest_concept_i=0;
@@ -46,22 +46,22 @@ Event ANSNA_AddInput(Term term, char type, Truth truth, int operationID)
     ev.operationID = operationID;
     Memory_addEvent(&ev);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
-    ANSNA_Cycles(1);
+    MSC_Cycles(1);
     return ev;
 }
 
-Event ANSNA_AddInputBelief(Term term, int operationID)
+Event MSC_AddInputBelief(Term term, int operationID)
 {
-    Event ret = ANSNA_AddInput(term, EVENT_TYPE_BELIEF, ANSNA_DEFAULT_TRUTH, operationID);
+    Event ret = MSC_AddInput(term, EVENT_TYPE_BELIEF, MSC_DEFAULT_TRUTH, operationID);
     return ret;
 }
 
-Event ANSNA_AddInputGoal(Term term)
+Event MSC_AddInputGoal(Term term)
 {
-    return ANSNA_AddInput(term, EVENT_TYPE_GOAL, ANSNA_DEFAULT_TRUTH, 0);
+    return MSC_AddInput(term, EVENT_TYPE_GOAL, MSC_DEFAULT_TRUTH, 0);
 }
 
-void ANSNA_AddOperation(Term term, Action procedure)
+void MSC_AddOperation(Term term, Action procedure)
 {
     Memory_addOperation((Operation) {.term = term, .action = procedure});
 }
