@@ -1,7 +1,6 @@
 #include "Memory.h"
 
 double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
-double CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
 
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
@@ -43,7 +42,7 @@ bool Memory_FindConceptBySDR(SDR *sdr, int *returnIndex)
         Concept *existing = concepts.items[i].address;
         //if(!USE_HASHING || existing->sdr_hash == sdr_hash)
         {
-            if(SDR_Equal(&existing->sdr, sdr))
+            if(Term_Equal(&existing->sdr, sdr))
             {
                 if(returnIndex != NULL)
                 {
@@ -108,6 +107,6 @@ void Memory_addOperation(Operation op)
 }
 
 bool Memory_ImplicationValid(Implication *imp)
-{ //todo
-    return true; //SDR_Equal(&imp->sourceConceptSDR, &((Concept*) &imp->sourceConcept)->sdr);
+{
+    return Term_Equal(&imp->sourceConceptSDR, &((Concept*) imp->sourceConcept)->sdr);
 }

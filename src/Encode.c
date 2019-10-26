@@ -1,30 +1,26 @@
 #include "Encode.h"
 
-SDR Encode_Scalar(int min, int max, int value) //this is just for now :)
+int term_index = 0;
+SDR Encode_Term(char *name)
 {
-    SDR result = {0};
-    result.terms[0] = value % TERMS_MAX;
-    return result;
-}
-
-//A fast hash function for strings
-//https://stackoverflow.com/questions/7666509/hash-function-for-string
-//answer by cnicutar:
-static unsigned long hash(unsigned char *str)
-{
-    unsigned long hash = 5381;
-    int c;
-    while ((c = *str++))
+    char number = -1;
+    for(char i=0; i<term_index; i++)
     {
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+        if(!strcmp(terms[i], name))
+        {
+            number = i+1;
+            break;
+        }
     }
-    return hash;
-}
-
-SDR Encode_Term(char *name) //also this is just for now :)
-{
-    int number = hash((unsigned char*)name)%(TERMS_MAX-1);
-    input_terms[number].terms[0] = 1+number;
-    //assert(input_terms[number].terms[0] > 0, "encoding issue");
-    return input_terms[number];
+    if(number == -1)
+    {
+        assert(term_index < 255, "Too many terms for MSC");
+        number = term_index+1;
+        terms[term_index] = name;
+        term_index++;
+    }
+    SDR ret = {0};
+    ret.terms[0] = number;
+    assert(ret.terms[0] > 0, "issue with encoding in Encode_Term");
+    return ret;
 }

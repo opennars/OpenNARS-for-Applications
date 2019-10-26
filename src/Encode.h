@@ -11,23 +11,21 @@
 //-----------//
 #include <string.h>
 #include <math.h>
-#include "SDR.h"
+#include "Term.h"
 #include "Globals.h"
 
 //Parameters//
 //----------//
 #define TERMS_MAX 255
+#define TERMS_LEN 255
 #define TERM_ONES 5
 
 //Data structure//
 //--------------//
-SDR input_terms[TERMS_MAX];
+char *terms[TERMS_MAX];
 
 //Methods//
 //-------//
-//encodes an integer value as a SDR
-//https://www.youtube.com/watch?v=V3Yqtpytif0&list=PL3yXMgtrZmDqhsFQzwUC9V8MeeVOQ7eZ9&index=6
-SDR Encode_Scalar(int min, int max, int value);
 //Encodes a term 
 SDR Encode_Term(char *name);
 

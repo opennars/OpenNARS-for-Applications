@@ -1,5 +1,5 @@
 #include "Inference.h"
-#include "SDR.h"
+#include "Term.h"
 
 #define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp);
 #define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
@@ -17,7 +17,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .sdr = SDR_Tuple(&a->sdr,&b->sdr),
+    return (Event) { .sdr = Term_Equal(&a->sdr, &b->sdr),
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 

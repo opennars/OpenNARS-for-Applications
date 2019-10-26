@@ -1,6 +1,6 @@
-#include "SDR.h"
+#include "Term.h"
 
-void SDR_Print(SDR *sdr)
+void Term_Print(SDR *sdr)
 {
     for(int i=0; i<MAX_SEQUENCE_LEN; i++)
     {
@@ -12,10 +12,13 @@ void SDR_Print(SDR *sdr)
     puts("===");
 }
 
-SDR SDR_Tuple(SDR *a, SDR *b)
+SDR Term_Tuple(SDR *a, SDR *b)
 {
     SDR ret = {0};
-    int i=0;
+    assert(a->terms[0] > 0, "issue with term encoding1");
+    assert(b->terms[0] > 0, "issue with term encoding2");
+    assert(b->terms[1] == 0, "issue with term encoding4");
+    /*int i=0;
     for(; i<MAX_SEQUENCE_LEN; i++)
     {
         if(a->terms[i] == 0)
@@ -31,11 +34,14 @@ SDR SDR_Tuple(SDR *a, SDR *b)
             break;
         }
         ret.terms[i] = a->terms[j];
-    }
+    }*/
+    assert(MAX_SEQUENCE_LEN == 2, "Not generalized, outcommented code not yet working");
+    ret.terms[0] = a->terms[0];
+    ret.terms[1] = b->terms[0];
     return ret;
 }
 
-bool SDR_Equal(SDR *a, SDR *b)
+bool Term_Equal(SDR *a, SDR *b)
 {
     for(int i=0; i<MAX_SEQUENCE_LEN; i++)
     {

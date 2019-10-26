@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "SDR.h"
+#include "Term.h"
 #include "Memory.h"
 #include "Encode.h"
 #include "ANSNA.h"
@@ -43,7 +43,7 @@ void FIFO_Test()
             char buf[100]; 
             Event *ev = FIFO_GetKthNewestSequence(&fifo2, 0, i);
             sprintf(buf,"This event SDR is not allowed to be zero, sequence length=%d\n",i+1);
-            assert(!SDR_Equal(&zero, &ev->sdr),buf);
+            assert(!Term_Equal(&zero, &ev->sdr),buf);
         }
     }
     assert(fifo2.itemsAmount == FIFO_SIZE, "FIFO size differs");
@@ -100,7 +100,7 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = { .sdr = Encode_Scalar(1,TABLE_SIZE*2,i), 
+        Implication imp = { .sdr = Encode_Term("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                             .stamp = { .evidentalBase = { i } },
                             .occurrenceTimeOffset = 10 };
@@ -187,19 +187,19 @@ void ANSNA_Procedure_Test()
     puts(">>ANSNA Procedure test start");
     ANSNA_AddOperation(Encode_Term("op"), ANSNA_Procedure_Test_Op); 
     ANSNA_AddInputBelief(Encode_Term("a"), 0);
-    ANSNA_Cycles(10);
+    ANSNA_Cycles(1);
     puts("---------------");
     ANSNA_AddInputBelief(Encode_Term("op"), 1);
-    ANSNA_Cycles(10);
+    ANSNA_Cycles(1);
     puts("---------------");
     ANSNA_AddInputBelief(Encode_Term("result"), 0);
-    ANSNA_Cycles(10);
+    ANSNA_Cycles(1);
     puts("---------------");
     ANSNA_AddInputBelief(Encode_Term("a"), 0);
-    ANSNA_Cycles(10);
+    ANSNA_Cycles(1);
     puts("---------------");
     ANSNA_AddInputGoal(Encode_Term("result"));
-    ANSNA_Cycles(10);
+    ANSNA_Cycles(1);
     puts("---------------");
     assert(ANSNA_Procedure_Test_Op_executed, "ANSNA should have executed op!");
     puts("<<ANSNA Procedure test successful");
@@ -298,7 +298,7 @@ void ANSNA_Pong_Stop()
 {
     ANSNA_Pong_Stop_executed = true;
 }
-void ANSNA_Pong2(bool useNumericEncoding)
+void ANSNA_Pong2()
 {
     OUTPUT = 0;
     ANSNA_INIT();
@@ -359,27 +359,18 @@ void ANSNA_Pong2(bool useNumericEncoding)
             }
             puts("|");
         }
-        if(useNumericEncoding)
+        if(batX <= ballX - batWidth)
         {
-            SDR sdrX = Encode_Scalar(0-batWidth*2, 2*szX+batWidth*2, szX+(ballX-batX));
-            //SDR_PrintWhereTrue(&sdrX);
-            ANSNA_AddInputBelief(sdrX, 0);
+            ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
+        }
+        else
+        if(ballX + batWidth < batX)
+        {
+            ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
         }
         else
         {
-            if(batX <= ballX - batWidth)
-            {
-                ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
-            }
-            else
-            if(ballX + batWidth < batX)
-            {
-                ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
-            }
-            else
-            {
-                ANSNA_AddInputBelief(Encode_Term("ball_equal"), 0);
-            }
+            ANSNA_AddInputBelief(Encode_Term("ball_equal"), 0);
         }
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
         if(ballX <= 0)
@@ -449,7 +440,7 @@ void ANSNA_Pong2(bool useNumericEncoding)
     }
 }
 //int t=0;
-void ANSNA_Pong(bool useNumericEncoding)
+void ANSNA_Pong()
 {
     OUTPUT = 0;
     ANSNA_INIT();
@@ -508,22 +499,13 @@ void ANSNA_Pong(bool useNumericEncoding)
             }
             puts("|");
         }
-        if(useNumericEncoding)
+        if(batX < ballX)
         {
-            SDR sdrX = Encode_Scalar(0, 2*szX, szX+(ballX-batX));
-            //SDR_PrintWhereTrue(&sdrX);
-            ANSNA_AddInputBelief(sdrX, 0);
+            ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
         }
-        else
+        if(ballX < batX)
         {
-            if(batX < ballX)
-            {
-                ANSNA_AddInputBelief(Encode_Term("ball_right"), 0);
-            }
-            if(ballX < batX)
-            {
-                ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
-            }
+            ANSNA_AddInputBelief(Encode_Term("ball_left"), 0);
         }
         ANSNA_AddInputGoal(Encode_Term("good_ansna"));
         if(ballX <= 0)
@@ -721,7 +703,6 @@ void ANSNA_TestChamber()
 {
     TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
     ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
-    CONCEPT_FORMATION_NOVELTY = 0.0;
     OUTPUT = 0;
     ANSNA_INIT();
     MOTOR_BABBLING_CHANCE = 0;
@@ -1190,7 +1171,6 @@ void Sequence_Test()
 {
     OUTPUT=0;
     ANSNA_INIT();
-    CONCEPT_FORMATION_NOVELTY = 0;
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
     ANSNA_AddOperation(Encode_Term("op_1"), op_1); 
@@ -1247,7 +1227,6 @@ void Sequence_Test()
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
-    CONCEPT_FORMATION_NOVELTY = CONCEPT_FORMATION_NOVELTY_INITIAL;
     puts(">>Sequence Test successul");
 }
 
@@ -1259,19 +1238,11 @@ int main(int argc, char *argv[])
     {
         if(!strcmp(argv[1],"pong"))
         {
-            ANSNA_Pong(false);
+            ANSNA_Pong();
         }
         if(!strcmp(argv[1],"pong2"))
         {
-            ANSNA_Pong2(false);
-        }
-        if(!strcmp(argv[1],"numeric-pong"))
-        {
-            ANSNA_Pong(true);
-        }
-        if(!strcmp(argv[1],"numeric-pong2"))
-        {
-            ANSNA_Pong2(true);
+            ANSNA_Pong2();
         }
         if(!strcmp(argv[1],"testchamber"))
         {
@@ -1280,6 +1251,7 @@ int main(int argc, char *argv[])
     }
     srand(1337);
     ANSNA_INIT();
+    OUTPUT = 0;
     //Term_Test();
     Stamp_Test();
     FIFO_Test();
@@ -1293,11 +1265,9 @@ int main(int argc, char *argv[])
     ANSNA_Multistep2_Test();
     Sequence_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
-    puts("ANSNA pong (starts Pong example)");
-    puts("ANSNA numeric-pong (starts Pong example with numeric input)");
-    puts("ANSNA pong2 (starts Pong2 example)");
-    puts("ANSNA numeric-pong2 (starts Pong2 example with numeric input)");
-    puts("ANSNA testchamber (starts Test Chamber multistep procedure learning example)");
+    puts("MSC pong (starts Pong example)");
+    puts("MSC pong2 (starts Pong2 example)");
+    puts("MSC testchamber (starts Test Chamber multistep procedure learning example)");
     return 0;
 }
 

@@ -8,7 +8,7 @@
 
 //References//
 //-----------//
-#include "SDR.h"
+#include "Term.h"
 #include "Stamp.h"
 
 //Data structure//

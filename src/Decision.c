@@ -63,7 +63,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                 IN_DEBUG
                 (
                     printf("CONSIDERED IMPLICATION: impTruth=(%f, %f) %s \n", imp.truth.frequency, imp.truth.confidence, imp.debug);
-                    SDR_Print(&imp.sdr);
+                    Term_Print(&imp.sdr);
                 )
                 //now look at how much the precondition is fulfilled
                 Concept *current_prec = imp.sourceConcept;
@@ -82,8 +82,8 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         fputs("CONSIDERED imp truth ", stdout);
                         Truth_Print(&imp.truth);
                         printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                        SDR_Print(&current_prec->sdr);
-                        SDR_Print(&precondition->sdr);
+                        Term_Print(&current_prec->sdr);
+                        Term_Print(&precondition->sdr);
                     )
                     if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
@@ -125,9 +125,6 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
         {
             if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
             {
-                SDR_Print(&postc->precondition_beliefs[operationID].array[h].sdr);
-                SDR_Print(&postc->precondition_beliefs[operationID].array[h].sourceConceptSDR);
-                exit(0);
                 Table_Remove(&postc->precondition_beliefs[operationID], h);
                 h--;
                 continue;
@@ -135,13 +132,14 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
             Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
             Concept *current_prec = imp.sourceConcept;
             Event *precondition = &current_prec->belief_spike; //a. :|:
-            Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
-            if(precondition != NULL)
+            if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {
+                Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
                              .truth = { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime,
                              .operationID = operationID };
+                op.sdr.terms[0] = 42; //for now, to make sure we don't operate on an empty term here
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)

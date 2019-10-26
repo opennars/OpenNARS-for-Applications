@@ -32,10 +32,10 @@ typedef struct
 //Methods//
 //-------//
 // print indices of true bits
-void SDR_Print(SDR *sdr);
+void Term_Print(SDR *sdr);
 //Tuple on the other hand:
-SDR SDR_Tuple(SDR *a, SDR *b);
+SDR Term_Tuple(SDR *a, SDR *b);
 //Whether two SDR's are equal completely
-bool SDR_Equal(SDR *a, SDR *b);
+bool Term_Equal(SDR *a, SDR *b);
 
 #endif

@@ -26,7 +26,7 @@ void Event_INIT()
 void Event_Print(Event *event)
 {
     printf("Event: %s\n", event->debug);
-    SDR_Print(&event->sdr);
+    Term_Print(&event->sdr);
     //printf("SDR hash=%d", event->sdr_hash);
     printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));
     printf("operationID=%d\n", event->operationID);
