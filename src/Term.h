@@ -32,7 +32,7 @@ typedef struct
 //Methods//
 //-------//
 // print indices of true bits
-void Term_Print(Term *sdr);
+void Term_Print(Term *term);
 //Tuple on the other hand:
 Term Term_Tuple(Term *a, Term *b);
 //Whether two Term's are equal completely

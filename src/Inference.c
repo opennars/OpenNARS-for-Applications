@@ -17,7 +17,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .sdr = Term_Equal(&a->sdr, &b->sdr),
+    return (Event) { .term = Term_Equal(&a->term, &b->term),
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 
@@ -29,7 +29,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Implication) { .sdr = a->sdr, 
+    return (Implication) { .term = a->term, 
                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                            .stamp = conclusionStamp,
                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
@@ -41,7 +41,7 @@ static Event Inference_EventRevision(Event *a, Event *b)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .sdr = a->sdr, 
+    return (Event) { .term = a->term, 
                      .type = a->type,
                      .truth = Truth_Revision(truthA, truthB),
                      .stamp = conclusionStamp, 
@@ -53,7 +53,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
-    Implication ret = (Implication) { .sdr = a->sdr,
+    Implication ret = (Implication) { .term = a->term,
                                       .truth = Truth_Revision(a->truth, b->truth),
                                       .stamp = conclusionStamp, 
                                       .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
@@ -65,7 +65,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
+    return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
@@ -86,7 +86,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
     DERIVATION_STAMP(component,compound)
     Event compoundUpdated = Inference_EventUpdate(compound, currentTime);
     Event componentUpdated = Inference_EventUpdate(component, currentTime);
-    return (Event) { .sdr = compound->sdr, 
+    return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
@@ -136,7 +136,7 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .sdr = compound->sdr, 
+    return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 

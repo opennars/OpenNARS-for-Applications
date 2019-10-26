@@ -36,18 +36,18 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
     Decision decision = {0};
     e->processed = true;
-    Event_SetTerm(e, e->sdr); // TODO make sure that hash needs to be calculated once instead already
+    Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     int closest_concept_i;
     Concept *c = NULL;
-    if(Memory_FindConceptByTerm(&e->sdr, /*e->sdr_hash,*/ &closest_concept_i))
+    if(Memory_FindConceptByTerm(&e->term, /*e->term_hash,*/ &closest_concept_i))
     {
         c = concepts.items[closest_concept_i].address;
         decision = Cycle_ActivateConcept(c, e, currentTime);
     }
     //add a new concept for e too at the end
-    Memory_Conceptualize(&e->sdr);
+    Memory_Conceptualize(&e->term);
     return decision;
 }
 
@@ -116,8 +116,8 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
     int AConceptIndex;
     int BConceptIndex;
-    if(Memory_FindConceptByTerm(&a->sdr, /*a->sdr_hash,*/ &AConceptIndex) &&
-       Memory_FindConceptByTerm(&b->sdr, /*b->sdr_hash,*/ &BConceptIndex))
+    if(Memory_FindConceptByTerm(&a->term, /*a->term_hash,*/ &AConceptIndex) &&
+       Memory_FindConceptByTerm(&b->term, /*b->term_hash,*/ &BConceptIndex))
     {
         Concept *A = concepts.items[AConceptIndex].address;
         Concept *B = concepts.items[BConceptIndex].address;
@@ -128,7 +128,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
             {
                 Implication precondition_implication = Inference_BeliefInduction(a, b);
                 precondition_implication.sourceConcept = A;
-                precondition_implication.sourceConceptTerm = A->sdr;
+                precondition_implication.sourceConceptTerm = A->term;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
                     char debug[200];
@@ -139,8 +139,8 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                     if(revised_precon != NULL)
                     {
                         revised_precon->sourceConcept = A;
-                        revised_precon->sourceConceptTerm = A->sdr;
-                        /*IN_OUTPUT( if(true && revised_precon->sdr_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
+                        revised_precon->sourceConceptTerm = A->term;
+                        /*IN_OUTPUT( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
                     }
                 }
             }

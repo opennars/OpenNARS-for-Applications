@@ -1,12 +1,12 @@
 #include "Term.h"
 
-void Term_Print(Term *sdr)
+void Term_Print(Term *term)
 {
     for(int i=0; i<MAX_SEQUENCE_LEN; i++)
     {
-        if(sdr->terms[i] != 0)
+        if(term->terms[i] != 0)
         {
-            printf("%d", (int) sdr->terms[i]);
+            printf("%d", (int) term->terms[i]);
         }
     }
     puts("===");

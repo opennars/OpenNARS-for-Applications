@@ -11,7 +11,7 @@ void Decision_Execute(Decision *decision)
     decision->op = operations[decision->operationID-1];
     (*decision->op.action)();
     //and add operator feedback
-    ANSNA_AddInputBelief(decision->op.sdr, decision->operationID);
+    ANSNA_AddInputBelief(decision->op.term, decision->operationID);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -39,7 +39,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     int closest_postc_i;
-    if(Memory_FindConceptByTerm(&goal->sdr, /*goal->sdr_hash,*/ &closest_postc_i))
+    if(Memory_FindConceptByTerm(&goal->term, /*goal->term_hash,*/ &closest_postc_i))
     {
         Concept *postc = concepts.items[closest_postc_i].address;
         double bestTruthExpectation = 0;
@@ -63,7 +63,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                 IN_DEBUG
                 (
                     printf("CONSIDERED IMPLICATION: impTruth=(%f, %f) %s \n", imp.truth.frequency, imp.truth.confidence, imp.debug);
-                    Term_Print(&imp.sdr);
+                    Term_Print(&imp.term);
                 )
                 //now look at how much the precondition is fulfilled
                 Concept *current_prec = imp.sourceConcept;
@@ -82,8 +82,8 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         fputs("CONSIDERED imp truth ", stdout);
                         Truth_Print(&imp.truth);
                         printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                        Term_Print(&current_prec->sdr);
-                        Term_Print(&precondition->sdr);
+                        Term_Print(&current_prec->term);
+                        Term_Print(&precondition->term);
                     )
                     if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
@@ -139,7 +139,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                              .truth = { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime,
                              .operationID = operationID };
-                op.sdr.terms[0] = 42; //for now, to make sure we don't operate on an empty term here
+                op.term.terms[0] = 42; //for now, to make sure we don't operate on an empty term here
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)

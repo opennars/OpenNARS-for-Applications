@@ -22,8 +22,8 @@
 typedef struct {
     int id;
     Usage usage;
-    Term sdr;
-    //Term_HASH_TYPE sdr_hash;
+    Term term;
+    //Term_HASH_TYPE term_hash;
     Event belief_spike;
     Event incoming_goal_spike;
     Event goal_spike;
@@ -35,7 +35,7 @@ typedef struct {
 //Methods//
 //-------//
 //Assign a new name to a concept
-void Concept_SetTerm(Concept *concept, Term sdr);
+void Concept_SetTerm(Concept *concept, Term term);
 //print a concept
 void Concept_Print(Concept *concept);
 

@@ -14,7 +14,7 @@ void FIFO_Test()
     //First, evaluate whether the fifo works, not leading to overflow
     for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
-        Event event1 = { .sdr = Encode_Term("test"), 
+        Event event1 = { .term = Encode_Term("test"), 
                          .type = EVENT_TYPE_BELIEF, 
                          .truth = { .frequency = 1.0, .confidence = 0.9 },
                          .stamp = { .evidentalBase = { i } }, 
@@ -28,7 +28,7 @@ void FIFO_Test()
     //now see whether a new item is revised with the correct one:
     int i=3; //revise with item 10, which has occurrence time 10
     int newbase = FIFO_SIZE*2+1;
-    Event event2 = { .sdr = Encode_Term("test"), 
+    Event event2 = { .term = Encode_Term("test"), 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = { .frequency = 1.0, .confidence = 0.9 },
                      .stamp = { .evidentalBase = { newbase } }, 
@@ -43,7 +43,7 @@ void FIFO_Test()
             char buf[100]; 
             Event *ev = FIFO_GetKthNewestSequence(&fifo2, 0, i);
             sprintf(buf,"This event Term is not allowed to be zero, sequence length=%d\n",i+1);
-            assert(!Term_Equal(&zero, &ev->sdr),buf);
+            assert(!Term_Equal(&zero, &ev->term),buf);
         }
     }
     assert(fifo2.itemsAmount == FIFO_SIZE, "FIFO size differs");
@@ -100,7 +100,7 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = { .sdr = Encode_Term("test"), 
+        Implication imp = { .term = Encode_Term("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                             .stamp = { .evidentalBase = { i } },
                             .occurrenceTimeOffset = 10 };
@@ -110,7 +110,7 @@ void Table_Test()
     {
         assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
     }
-    Implication imp = { .sdr = Encode_Term("test"), 
+    Implication imp = { .term = Encode_Term("test"), 
                         .truth = { .frequency = 1.0, .confidence = 0.9},
                         .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
                         .occurrenceTimeOffset = 10 };
@@ -131,27 +131,27 @@ void Memory_Test()
     Memory_addEvent(&e);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
-    assert(!Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash, */ &returnIndex), "a concept doesn't exist yet!");
-    Memory_Conceptualize(&e.sdr);
+    assert(!Memory_FindConceptByTerm(&e.term, /*e.term_hash, */ &returnIndex), "a concept doesn't exist yet!");
+    Memory_Conceptualize(&e.term);
     int concept_i;
-    assert(Memory_FindConceptByTerm(&e.sdr, /*Term_Hash(&e.sdr),*/ &concept_i), "Concept should have been created!");
+    assert(Memory_FindConceptByTerm(&e.term, /*Term_Hash(&e.term),*/ &concept_i), "Concept should have been created!");
     Concept *c = concepts.items[concept_i].address;
-    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
     Event e2 = Event_InputEvent(Encode_Term("b"), 
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
     Memory_addEvent(&e2);
-    Memory_Conceptualize(&e2.sdr);
-    assert(Memory_FindConceptByTerm(&e2.sdr, /*Term_Hash(&e2.sdr),*/ &concept_i), "Concept should have been created!");
+    Memory_Conceptualize(&e2.term);
+    assert(Memory_FindConceptByTerm(&e2.term, /*Term_Hash(&e2.term),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;
     Concept_Print(c2);
-    assert(Memory_FindConceptByTerm(&e2.sdr, /*e2.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e2.term, /*e2.term_hash,*/ &returnIndex), "Concept should be found!");
     assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
-    assert(Memory_FindConceptByTerm(&e.sdr, /*e.sdr_hash,*/ &returnIndex), "Concept should be found!");
+    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     puts("<<Memory test successful");
 }

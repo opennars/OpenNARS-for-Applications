@@ -5,7 +5,7 @@ Implication *Table_Add(Table *table, Implication *imp)
     double impTruthExp = Truth_Expectation(imp->truth);
     for(int i=0; i<TABLE_SIZE; i++)
     {
-        bool same_term = (/*table->array[i].sdr_hash == imp->sdr_hash &&*/ Term_Equal(&table->array[i].sdr,&imp->sdr));
+        bool same_term = (/*table->array[i].term_hash == imp->term_hash &&*/ Term_Equal(&table->array[i].term,&imp->term));
         //either it's not yet full and we reached a new space,
         //or the term is different and the truth expectation is higher
         //or the term is the same and the confidence is higher
@@ -42,7 +42,7 @@ static void Table_SantiyCheck(Table *table)
         {
             if(i != j)
             {
-                assert(!Term_Equal(&table->array[i].sdr, &table->array[j].sdr), "THEY CANNOT BE THE SAME\n");
+                assert(!Term_Equal(&table->array[i].term, &table->array[j].term), "THEY CANNOT BE THE SAME\n");
             }
         }
     }
@@ -55,7 +55,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
     {
-        if(/*imp->sdr_hash == table->array[i].sdr_hash &&*/ Term_Equal(&imp->sdr, &table->array[i].sdr))
+        if(/*imp->term_hash == table->array[i].term_hash &&*/ Term_Equal(&imp->term, &table->array[i].term))
         {
             same_i = i;
             break;
@@ -74,7 +74,7 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
         strcpy(revised.debug, debug);
-        Implication_SetTerm(&revised, imp->sdr);
+        Implication_SetTerm(&revised, imp->term);
         //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
         Table_Remove(table, same_i);
         //printf("REVISED\n");

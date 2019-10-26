@@ -35,14 +35,14 @@ void Memory_INIT()
     concept_id = 0;
 }
 
-bool Memory_FindConceptByTerm(Term *sdr, int *returnIndex)
+bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
 {
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *existing = concepts.items[i].address;
-        //if(!USE_HASHING || existing->sdr_hash == sdr_hash)
+        //if(!USE_HASHING || existing->term_hash == term_hash)
         {
-            if(Term_Equal(&existing->sdr, sdr))
+            if(Term_Equal(&existing->term, term))
             {
                 if(returnIndex != NULL)
                 {
@@ -55,10 +55,10 @@ bool Memory_FindConceptByTerm(Term *sdr, int *returnIndex)
     return false;
 }
 
-void Memory_Conceptualize(Term *sdr)
+void Memory_Conceptualize(Term *term)
 {
-    //Term_HASH_TYPE hash = Term_Hash(sdr);
-    if(!Memory_FindConceptByTerm(sdr, /*hash,*/ NULL))
+    //Term_HASH_TYPE hash = Term_Hash(term);
+    if(!Memory_FindConceptByTerm(term, /*hash,*/ NULL))
     {
         Concept *addedConcept = NULL;
         //try to add it, and if successful add to voting structure
@@ -67,7 +67,7 @@ void Memory_Conceptualize(Term *sdr)
         {
             addedConcept = feedback.addedItem.address;
             *addedConcept = (Concept) {0};
-            Concept_SetTerm(addedConcept, *sdr);
+            Concept_SetTerm(addedConcept, *term);
             addedConcept->id = concept_id;
             concept_id++;
         }
@@ -108,5 +108,5 @@ void Memory_addOperation(Operation op)
 
 bool Memory_ImplicationValid(Implication *imp)
 {
-    return Term_Equal(&imp->sourceConceptTerm, &((Concept*) imp->sourceConcept)->sdr);
+    return Term_Equal(&imp->sourceConceptTerm, &((Concept*) imp->sourceConcept)->term);
 }
