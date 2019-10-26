@@ -2,7 +2,7 @@
 #define Term_H
 
 ///////////////////
-//  Term_TERM     //
+//   Term        //
 ///////////////////
 
 //Parameters//
