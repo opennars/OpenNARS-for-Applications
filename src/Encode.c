@@ -3,8 +3,8 @@
 int term_index = 0;
 Term Encode_Term(char *name)
 {
-    char number = -1;
-    for(char i=0; i<term_index; i++)
+    int number = -1;
+    for(int i=0; i<term_index; i++)
     {
         if(!strcmp(terms[i], name))
         {
