@@ -5,7 +5,7 @@
 #include "Term.h"
 #include "Memory.h"
 #include "Encode.h"
-#include "MSC.h"
+#include "YAN.h"
 
 void FIFO_Test()
 {
@@ -122,7 +122,7 @@ void Table_Test()
 
 void Memory_Test()
 {
-    MSC_INIT();
+    YAN_INIT();
     puts(">>Memory test start");
     Event e = Event_InputEvent(Encode_Term("a"), 
                                EVENT_TYPE_BELIEF, 
@@ -156,74 +156,74 @@ void Memory_Test()
     puts("<<Memory test successful");
 }
 
-void MSC_Alphabet_Test()
+void YAN_Alphabet_Test()
 {
-    MSC_INIT();
-    puts(">>MSC Alphabet test start");
-    MSC_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, MSC_DEFAULT_TRUTH,0);
+    YAN_INIT();
+    puts(">>YAN Alphabet test start");
+    YAN_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            MSC_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, MSC_DEFAULT_TRUTH,0);
+            YAN_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
         }
-        MSC_Cycles(1);
+        YAN_Cycles(1);
         puts("TICK");
     }
-    puts("<<MSC Alphabet test successful");
+    puts("<<YAN Alphabet test successful");
 }
 
-bool MSC_Procedure_Test_Op_executed = false;
-void MSC_Procedure_Test_Op()
+bool YAN_Procedure_Test_Op_executed = false;
+void YAN_Procedure_Test_Op()
 {
-    puts("op executed by MSC");
-    MSC_Procedure_Test_Op_executed = true;
+    puts("op executed by YAN");
+    YAN_Procedure_Test_Op_executed = true;
 }
-void MSC_Procedure_Test()
+void YAN_Procedure_Test()
 {
-    MSC_INIT();
-    puts(">>MSC Procedure test start");
-    MSC_AddOperation(Encode_Term("op"), MSC_Procedure_Test_Op); 
-    MSC_AddInputBelief(Encode_Term("a"), 0);
-    MSC_Cycles(1);
+    YAN_INIT();
+    puts(">>YAN Procedure test start");
+    YAN_AddOperation(Encode_Term("op"), YAN_Procedure_Test_Op); 
+    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_Cycles(1);
     puts("---------------");
-    MSC_AddInputBelief(Encode_Term("op"), 1);
-    MSC_Cycles(1);
+    YAN_AddInputBelief(Encode_Term("op"), 1);
+    YAN_Cycles(1);
     puts("---------------");
-    MSC_AddInputBelief(Encode_Term("result"), 0);
-    MSC_Cycles(1);
+    YAN_AddInputBelief(Encode_Term("result"), 0);
+    YAN_Cycles(1);
     puts("---------------");
-    MSC_AddInputBelief(Encode_Term("a"), 0);
-    MSC_Cycles(1);
+    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_Cycles(1);
     puts("---------------");
-    MSC_AddInputGoal(Encode_Term("result"));
-    MSC_Cycles(1);
+    YAN_AddInputGoal(Encode_Term("result"));
+    YAN_Cycles(1);
     puts("---------------");
-    assert(MSC_Procedure_Test_Op_executed, "MSC should have executed op!");
-    puts("<<MSC Procedure test successful");
+    assert(YAN_Procedure_Test_Op_executed, "YAN should have executed op!");
+    puts("<<YAN Procedure test successful");
 }
 
-bool MSC_Follow_Test_Left_executed = false;
-void MSC_Follow_Test_Left()
+bool YAN_Follow_Test_Left_executed = false;
+void YAN_Follow_Test_Left()
 {
-    puts("left executed by MSC");
-    MSC_Follow_Test_Left_executed = true;
+    puts("left executed by YAN");
+    YAN_Follow_Test_Left_executed = true;
 }
-bool MSC_Follow_Test_Right_executed = false;
-void MSC_Follow_Test_Right()
+bool YAN_Follow_Test_Right_executed = false;
+void YAN_Follow_Test_Right()
 {
-    puts("right executed by MSC");
-    MSC_Follow_Test_Right_executed = true;
+    puts("right executed by YAN");
+    YAN_Follow_Test_Right_executed = true;
 }
-void MSC_Follow_Test()
+void YAN_Follow_Test()
 {
     OUTPUT = 0;
-    MSC_INIT();
-    puts(">>MSC Follow test start");
-    MSC_AddOperation(Encode_Term("op_left"), MSC_Follow_Test_Left); 
-    MSC_AddOperation(Encode_Term("op_right"), MSC_Follow_Test_Right); 
+    YAN_INIT();
+    puts(">>YAN Follow test start");
+    YAN_AddOperation(Encode_Term("op_left"), YAN_Follow_Test_Left); 
+    YAN_AddOperation(Encode_Term("op_right"), YAN_Follow_Test_Right); 
     int simsteps = 1000000;
     int LEFT = 0;
     int RIGHT = 1;
@@ -234,43 +234,43 @@ void MSC_Follow_Test()
     for(int i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
-        MSC_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), 0);
-        MSC_AddInputGoal(Encode_Term("good_msc"));
-        if(MSC_Follow_Test_Right_executed)
+        YAN_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), 0);
+        YAN_AddInputGoal(Encode_Term("good_yan"));
+        if(YAN_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                MSC_AddInputBelief(Encode_Term("good_msc"), 0);
+                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
             }
             else
             {
-                //MSC_AddInput(Encode_Term("good_msc"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_msc");
+                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
             }
-            MSC_Follow_Test_Right_executed = false;
+            YAN_Follow_Test_Right_executed = false;
         }
-        if(MSC_Follow_Test_Left_executed)
+        if(YAN_Follow_Test_Left_executed)
         {        
             if(BALL == LEFT)
             {
-                MSC_AddInputBelief(Encode_Term("good_msc"), 0);
+                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
             }
             else
             {
-                //MSC_AddInput(Encode_Term("good_msc"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_msc");
+                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
             }
-            MSC_Follow_Test_Left_executed = false;
+            YAN_Follow_Test_Left_executed = false;
         }
         BALL = rand() % 2;
         printf("Score %i step%d=\n", score,i);
@@ -278,34 +278,34 @@ void MSC_Follow_Test()
         assert(bads < 500, "too many wrong trials");
         if(score >= 500)
             break;
-        MSC_Cycles(10);
+        YAN_Cycles(10);
     }
-    printf("<<MSC Follow test successful goods=%d bads=%d\n",goods,bads);
+    printf("<<YAN Follow test successful goods=%d bads=%d\n",goods,bads);
 }
 
-bool MSC_Pong_Left_executed = false;
-void MSC_Pong_Left()
+bool YAN_Pong_Left_executed = false;
+void YAN_Pong_Left()
 {
-    MSC_Pong_Left_executed = true;
+    YAN_Pong_Left_executed = true;
 }
-bool MSC_Pong_Right_executed = false;
-void MSC_Pong_Right()
+bool YAN_Pong_Right_executed = false;
+void YAN_Pong_Right()
 {
-    MSC_Pong_Right_executed = true;
+    YAN_Pong_Right_executed = true;
 }
-bool MSC_Pong_Stop_executed = false;
-void MSC_Pong_Stop()
+bool YAN_Pong_Stop_executed = false;
+void YAN_Pong_Stop()
 {
-    MSC_Pong_Stop_executed = true;
+    YAN_Pong_Stop_executed = true;
 }
-void MSC_Pong2()
+void YAN_Pong2()
 {
     OUTPUT = 0;
-    MSC_INIT();
-    puts(">>MSC Pong start");
-    MSC_AddOperation(Encode_Term("op_left"), MSC_Pong_Left); 
-    MSC_AddOperation(Encode_Term("op_right"), MSC_Pong_Right); 
-    MSC_AddOperation(Encode_Term("op_stop"), MSC_Pong_Stop); 
+    YAN_INIT();
+    puts(">>YAN Pong start");
+    YAN_AddOperation(Encode_Term("op_left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_Term("op_right"), YAN_Pong_Right); 
+    YAN_AddOperation(Encode_Term("op_stop"), YAN_Pong_Stop); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -361,18 +361,18 @@ void MSC_Pong2()
         }
         if(batX <= ballX - batWidth)
         {
-            MSC_AddInputBelief(Encode_Term("ball_right"), 0);
+            YAN_AddInputBelief(Encode_Term("ball_right"), 0);
         }
         else
         if(ballX + batWidth < batX)
         {
-            MSC_AddInputBelief(Encode_Term("ball_left"), 0);
+            YAN_AddInputBelief(Encode_Term("ball_left"), 0);
         }
         else
         {
-            MSC_AddInputBelief(Encode_Term("ball_equal"), 0);
+            YAN_AddInputBelief(Encode_Term("ball_equal"), 0);
         }
-        MSC_AddInputGoal(Encode_Term("good_msc"));
+        YAN_AddInputGoal(Encode_Term("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -398,13 +398,13 @@ void MSC_Pong2()
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                MSC_AddInputBelief(Encode_Term("good_msc"), 0);
+                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
                 puts("good");
                 hits++;
             }
             else
             {
-                //MSC_AddInput(Encode_Term("good_msc"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
+                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
                 puts("bad");
                 misses++;
             }
@@ -415,38 +415,38 @@ void MSC_Pong2()
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
         }
-        if(MSC_Pong_Left_executed)
+        if(YAN_Pong_Left_executed)
         {
-            MSC_Pong_Left_executed = false;
+            YAN_Pong_Left_executed = false;
             puts("Exec: op_left");
             batVX = -3;
         }
-        if(MSC_Pong_Right_executed)
+        if(YAN_Pong_Right_executed)
         {
-            MSC_Pong_Right_executed = false;
+            YAN_Pong_Right_executed = false;
             puts("Exec: op_right");
             batVX = 3;
         }
-        if(MSC_Pong_Stop_executed)
+        if(YAN_Pong_Stop_executed)
         {
-            MSC_Pong_Stop_executed = false;
+            YAN_Pong_Stop_executed = false;
             puts("Exec: op_stop");
             batVX = 0;
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
         printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
         nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
-        //MSC_Cycles(10);
+        //YAN_Cycles(10);
     }
 }
 //int t=0;
-void MSC_Pong()
+void YAN_Pong()
 {
     OUTPUT = 0;
-    MSC_INIT();
-    puts(">>MSC Pong start");
-    MSC_AddOperation(Encode_Term("op_left"), MSC_Pong_Left); 
-    MSC_AddOperation(Encode_Term("op_right"), MSC_Pong_Right); 
+    YAN_INIT();
+    puts(">>YAN Pong start");
+    YAN_AddOperation(Encode_Term("op_left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_Term("op_right"), YAN_Pong_Right); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -501,13 +501,13 @@ void MSC_Pong()
         }
         if(batX < ballX)
         {
-            MSC_AddInputBelief(Encode_Term("ball_right"), 0);
+            YAN_AddInputBelief(Encode_Term("ball_right"), 0);
         }
         if(ballX < batX)
         {
-            MSC_AddInputBelief(Encode_Term("ball_left"), 0);
+            YAN_AddInputBelief(Encode_Term("ball_left"), 0);
         }
-        MSC_AddInputGoal(Encode_Term("good_msc"));
+        YAN_AddInputGoal(Encode_Term("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -530,13 +530,13 @@ void MSC_Pong()
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                MSC_AddInputBelief(Encode_Term("good_msc"), 0);
+                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
                 puts("good");
                 hits++;
             }
             else
             {
-                //MSC_AddInput(Encode_Term("good_msc"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_msc");
+                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 puts("bad");
                 misses++;
             }
@@ -547,108 +547,108 @@ void MSC_Pong()
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
         }
-        if(MSC_Pong_Left_executed)
+        if(YAN_Pong_Left_executed)
         {
-            MSC_Pong_Left_executed = false;
+            YAN_Pong_Left_executed = false;
             puts("Exec: op_left");
             batVX = -2;
         }
-        if(MSC_Pong_Right_executed)
+        if(YAN_Pong_Right_executed)
         {
-            MSC_Pong_Right_executed = false;
+            YAN_Pong_Right_executed = false;
             puts("Exec: op_right");
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
         printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
         nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
-        //MSC_Cycles(10);
+        //YAN_Cycles(10);
     }
 }
 
-bool MSC_Lightswitch_GotoSwitch_executed = false;
-void MSC_Lightswitch_GotoSwitch()
+bool YAN_Lightswitch_GotoSwitch_executed = false;
+void YAN_Lightswitch_GotoSwitch()
 {
-    MSC_Lightswitch_GotoSwitch_executed = true;
-    puts("MSC invoked goto switch");
+    YAN_Lightswitch_GotoSwitch_executed = true;
+    puts("YAN invoked goto switch");
 }
-bool MSC_Lightswitch_ActivateSwitch_executed = false;
-void MSC_Lightswitch_ActivateSwitch()
+bool YAN_Lightswitch_ActivateSwitch_executed = false;
+void YAN_Lightswitch_ActivateSwitch()
 {
-    MSC_Lightswitch_ActivateSwitch_executed = true;
-    puts("MSC invoked activate switch");
+    YAN_Lightswitch_ActivateSwitch_executed = true;
+    puts("YAN invoked activate switch");
 }
-void MSC_Multistep_Test()
+void YAN_Multistep_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
-    puts(">>MSC Multistep test start");
+    puts(">>YAN Multistep test start");
     OUTPUT = 0;
-    MSC_INIT();
-    MSC_AddOperation(Encode_Term("op_goto_switch"), MSC_Lightswitch_GotoSwitch); 
-    MSC_AddOperation(Encode_Term("op_activate_switch"), MSC_Lightswitch_ActivateSwitch); 
+    YAN_INIT();
+    YAN_AddOperation(Encode_Term("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_Term("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        MSC_AddInputBelief(Encode_Term("start_at"), 0);
-        MSC_AddInputBelief(Encode_Term("op_goto_switch"), 1);
-        MSC_Cycles(1);
-        MSC_AddInputBelief(Encode_Term("switch_at"), 0);
-        MSC_AddInputBelief(Encode_Term("op_activate_switch"), 2);
-        MSC_AddInputBelief(Encode_Term("switch_active"), 0);
-        MSC_Cycles(1);
-        MSC_AddInputBelief(Encode_Term("light_active"), 0);
-        MSC_Cycles(10);
+        YAN_AddInputBelief(Encode_Term("start_at"), 0);
+        YAN_AddInputBelief(Encode_Term("op_goto_switch"), 1);
+        YAN_Cycles(1);
+        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+        YAN_AddInputBelief(Encode_Term("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_Term("switch_active"), 0);
+        YAN_Cycles(1);
+        YAN_AddInputBelief(Encode_Term("light_active"), 0);
+        YAN_Cycles(10);
     }
-    MSC_Cycles(10);
-    MSC_AddInputBelief(Encode_Term("start_at"), 0);
-    MSC_AddInputGoal(Encode_Term("light_active"));
-    MSC_Cycles(10);
-    assert(MSC_Lightswitch_GotoSwitch_executed && !MSC_Lightswitch_ActivateSwitch_executed, "MSC needs to go to the switch first");
-    MSC_Lightswitch_GotoSwitch_executed = false;
-    puts("MSC arrived at the switch");
-    MSC_AddInputBelief(Encode_Term("switch_at"), 0);
-    MSC_AddInputGoal(Encode_Term("light_active"));
-    assert(!MSC_Lightswitch_GotoSwitch_executed && MSC_Lightswitch_ActivateSwitch_executed, "MSC needs to activate the switch");
-    MSC_Lightswitch_ActivateSwitch_executed = false;
-    puts("<<MSC Multistep test successful");
+    YAN_Cycles(10);
+    YAN_AddInputBelief(Encode_Term("start_at"), 0);
+    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_Cycles(10);
+    assert(YAN_Lightswitch_GotoSwitch_executed && !YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to go to the switch first");
+    YAN_Lightswitch_GotoSwitch_executed = false;
+    puts("YAN arrived at the switch");
+    YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+    YAN_AddInputGoal(Encode_Term("light_active"));
+    assert(!YAN_Lightswitch_GotoSwitch_executed && YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to activate the switch");
+    YAN_Lightswitch_ActivateSwitch_executed = false;
+    puts("<<YAN Multistep test successful");
 }
-void MSC_Multistep2_Test()
+void YAN_Multistep2_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
-    puts(">>MSC Multistep2 test start");
+    puts(">>YAN Multistep2 test start");
     OUTPUT = 0;
-    MSC_INIT();
-    MSC_AddOperation(Encode_Term("op_goto_switch"), MSC_Lightswitch_GotoSwitch); 
-    MSC_AddOperation(Encode_Term("op_activate_switch"), MSC_Lightswitch_ActivateSwitch); 
+    YAN_INIT();
+    YAN_AddOperation(Encode_Term("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_Term("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        MSC_AddInputBelief(Encode_Term("start_at"), 0);
-        MSC_AddInputBelief(Encode_Term("op_goto_switch"), 1);
-        MSC_Cycles(1);
-        MSC_AddInputBelief(Encode_Term("switch_at"), 0);
-        MSC_Cycles(10);
+        YAN_AddInputBelief(Encode_Term("start_at"), 0);
+        YAN_AddInputBelief(Encode_Term("op_goto_switch"), 1);
+        YAN_Cycles(1);
+        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+        YAN_Cycles(10);
     }
-    MSC_Cycles(1000);
+    YAN_Cycles(1000);
     for(int i=0; i<5; i++)
     {
-        MSC_AddInputBelief(Encode_Term("switch_at"), 0);
-        MSC_AddInputBelief(Encode_Term("op_activate_switch"), 2);
-        MSC_AddInputBelief(Encode_Term("switch_active"), 0);
-        MSC_Cycles(1);
-        MSC_AddInputBelief(Encode_Term("light_active"), 0);
-        MSC_Cycles(10);
+        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+        YAN_AddInputBelief(Encode_Term("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_Term("switch_active"), 0);
+        YAN_Cycles(1);
+        YAN_AddInputBelief(Encode_Term("light_active"), 0);
+        YAN_Cycles(10);
     }
-    MSC_Cycles(10);
-    MSC_AddInputBelief(Encode_Term("start_at"), 0);
-    MSC_AddInputGoal(Encode_Term("light_active"));
-    MSC_Cycles(10);
-    assert(MSC_Lightswitch_GotoSwitch_executed && !MSC_Lightswitch_ActivateSwitch_executed, "MSC needs to go to the switch first (2)");
-    MSC_Lightswitch_GotoSwitch_executed = false;
-    puts("MSC arrived at the switch");
-    MSC_AddInputBelief(Encode_Term("switch_at"), 0);
-    MSC_AddInputGoal(Encode_Term("light_active"));
-    assert(!MSC_Lightswitch_GotoSwitch_executed && MSC_Lightswitch_ActivateSwitch_executed, "MSC needs to activate the switch (2)");
-    MSC_Lightswitch_ActivateSwitch_executed = false;
-    puts("<<MSC Multistep2 test successful");
+    YAN_Cycles(10);
+    YAN_AddInputBelief(Encode_Term("start_at"), 0);
+    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_Cycles(10);
+    assert(YAN_Lightswitch_GotoSwitch_executed && !YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to go to the switch first (2)");
+    YAN_Lightswitch_GotoSwitch_executed = false;
+    puts("YAN arrived at the switch");
+    YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+    YAN_AddInputGoal(Encode_Term("light_active"));
+    assert(!YAN_Lightswitch_GotoSwitch_executed && YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to activate the switch (2)");
+    YAN_Lightswitch_ActivateSwitch_executed = false;
+    puts("<<YAN Multistep2 test successful");
 }
 
 static bool goto_s0 = false;
@@ -659,61 +659,61 @@ static bool goto_l0 = false;
 static bool goto_l1 = false;
 static bool activate = false;
 static bool deactivate = false;
-void MSC_TestChamber_goto_s0()
+void YAN_TestChamber_goto_s0()
 {
     goto_s0 = true;
-    puts("MSC goto s0");
+    puts("YAN goto s0");
 }
-void MSC_TestChamber_goto_s1()
+void YAN_TestChamber_goto_s1()
 {
     goto_s1 = true;
-    puts("MSC goto s1");
+    puts("YAN goto s1");
 }
-void MSC_TestChamber_goto_s2()
+void YAN_TestChamber_goto_s2()
 {
     goto_s2 = true;
-    puts("MSC goto s2");
+    puts("YAN goto s2");
 }
-void MSC_TestChamber_goto_s3()
+void YAN_TestChamber_goto_s3()
 {
     goto_s3 = true;
-    puts("MSC goto s3");
+    puts("YAN goto s3");
 }
-void MSC_TestChamber_goto_l0()
+void YAN_TestChamber_goto_l0()
 {
     goto_l0 = true;
-    puts("MSC goto l0");
+    puts("YAN goto l0");
 }
-void MSC_TestChamber_goto_l1()
+void YAN_TestChamber_goto_l1()
 {
     goto_l1 = true;
-    puts("MSC goto l1");
+    puts("YAN goto l1");
 }
-void MSC_TestChamber_activate()
+void YAN_TestChamber_activate()
 {
     activate = true;
-    puts("MSC activate");
+    puts("YAN activate");
 }
-void MSC_TestChamber_deactivate()
+void YAN_TestChamber_deactivate()
 {
     deactivate = true;
-    puts("MSC deactivate");
+    puts("YAN deactivate");
 }
-void MSC_TestChamber()
+void YAN_TestChamber()
 {
     TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
     ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
     OUTPUT = 0;
-    MSC_INIT();
+    YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
-    MSC_AddOperation(Encode_Term("op_goto_s0"), MSC_TestChamber_goto_s0); 
-    MSC_AddOperation(Encode_Term("op_goto_s1"), MSC_TestChamber_goto_s1); 
-    MSC_AddOperation(Encode_Term("op_goto_s2"), MSC_TestChamber_goto_s2); 
-    MSC_AddOperation(Encode_Term("op_goto_s3"), MSC_TestChamber_goto_s3); 
-    MSC_AddOperation(Encode_Term("op_goto_l0"), MSC_TestChamber_goto_l0); 
-    MSC_AddOperation(Encode_Term("op_goto_l1"), MSC_TestChamber_goto_l1); 
-    MSC_AddOperation(Encode_Term("op_activate"), MSC_TestChamber_activate); 
-    MSC_AddOperation(Encode_Term("op_deactivate"), MSC_TestChamber_deactivate); 
+    YAN_AddOperation(Encode_Term("op_goto_s0"), YAN_TestChamber_goto_s0); 
+    YAN_AddOperation(Encode_Term("op_goto_s1"), YAN_TestChamber_goto_s1); 
+    YAN_AddOperation(Encode_Term("op_goto_s2"), YAN_TestChamber_goto_s2); 
+    YAN_AddOperation(Encode_Term("op_goto_s3"), YAN_TestChamber_goto_s3); 
+    YAN_AddOperation(Encode_Term("op_goto_l0"), YAN_TestChamber_goto_l0); 
+    YAN_AddOperation(Encode_Term("op_goto_l1"), YAN_TestChamber_goto_l1); 
+    YAN_AddOperation(Encode_Term("op_activate"), YAN_TestChamber_activate); 
+    YAN_AddOperation(Encode_Term("op_deactivate"), YAN_TestChamber_deactivate); 
     int size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
@@ -738,7 +738,7 @@ void MSC_TestChamber()
     bool l1 = false;
     bool door = false; //door closed
     puts("at_s0");
-    MSC_AddInputBelief(Encode_Term("at_s0"), 0);
+    YAN_AddInputBelief(Encode_Term("at_s0"), 0);
     char lastchar = 'a';
     while(1)
     {
@@ -782,98 +782,98 @@ void MSC_TestChamber()
         {
             s1 = false;
             puts("s1_is_0.");
-            MSC_AddInputBelief(Encode_Term("s1_is_0"), 0);
+            YAN_AddInputBelief(Encode_Term("s1_is_0"), 0);
             //s1 also closes the door:
             door = false;
             puts("door_is_closed.");
-            MSC_AddInputBelief(Encode_Term("door_is_closed"), 0);
+            YAN_AddInputBelief(Encode_Term("door_is_closed"), 0);
         }
         else
         if(pos == pos_s2 && deactivate)
         {
             s2 = false;
             puts("s2_is_0.");
-            MSC_AddInputBelief(Encode_Term("s2_is_0"), 0);
+            YAN_AddInputBelief(Encode_Term("s2_is_0"), 0);
             //s2 also deactivates l0:
             l0 = false;
             puts("l0_is_0.");
-            MSC_AddInputBelief(Encode_Term("l0_is_0"), 0);
+            YAN_AddInputBelief(Encode_Term("l0_is_0"), 0);
         }
         else
         if(pos == pos_s3 && deactivate)
         {
             s3 = false;
             puts("s3_is_0.");
-            MSC_AddInputBelief(Encode_Term("s3_is_0"), 0);
+            YAN_AddInputBelief(Encode_Term("s3_is_0"), 0);
             //s3 also deactivates l1
             l1 = false;
             puts("l1_is_0.");
-            MSC_AddInputBelief(Encode_Term("l1_is_0"), 0);
+            YAN_AddInputBelief(Encode_Term("l1_is_0"), 0);
         }
         else
         if(pos == pos_s1 && activate)
         {
             s1 = true;
             puts("s1_is_1.");
-            MSC_AddInputBelief(Encode_Term("s1_is_1"), 0);
+            YAN_AddInputBelief(Encode_Term("s1_is_1"), 0);
             //s1 also opens the door:
             door = true;
             puts("door_is_open.");
-            MSC_AddInputBelief(Encode_Term("door_is_open"), 0);
+            YAN_AddInputBelief(Encode_Term("door_is_open"), 0);
         }
         else
         if(pos == pos_s2 && activate)
         {
             s2 = true;
             puts("s2_is_1.");
-            MSC_AddInputBelief(Encode_Term("s2_is_1"), 0);
+            YAN_AddInputBelief(Encode_Term("s2_is_1"), 0);
             //s2 also activates l0:
             l0 = true;
             puts("l0_is_1.");
-            MSC_AddInputBelief(Encode_Term("l0_is_1"), 0);
+            YAN_AddInputBelief(Encode_Term("l0_is_1"), 0);
         }
         else
         if(pos == pos_s3 && activate)
         {
             s3 = true;
             puts("s3_is_1.");
-            MSC_AddInputBelief(Encode_Term("s3_is_1"), 0);
+            YAN_AddInputBelief(Encode_Term("s3_is_1"), 0);
             //s3 also activates l1
             l1 = true;
             puts("l1_is_1.");
-            MSC_AddInputBelief(Encode_Term("l1_is_1"), 0);
+            YAN_AddInputBelief(Encode_Term("l1_is_1"), 0);
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
-        //inform MSC about current location
+        //inform YAN about current location
         if(pos == pos_s0)
         {
             puts("at_s0.");
-            MSC_AddInputBelief(Encode_Term("at_s0"), 0);
+            YAN_AddInputBelief(Encode_Term("at_s0"), 0);
         }
         if(pos == pos_s1)
         {
             puts("at_s1.");
-            MSC_AddInputBelief(Encode_Term("at_s1"), 0);
+            YAN_AddInputBelief(Encode_Term("at_s1"), 0);
         }
         if(pos == pos_s2)
         {
             puts("at_s2.");
-            MSC_AddInputBelief(Encode_Term("at_s2"), 0);
+            YAN_AddInputBelief(Encode_Term("at_s2"), 0);
         }
         if(pos == pos_s3)
         {
             puts("at_s3.");
-            MSC_AddInputBelief(Encode_Term("at_s3"), 0);
+            YAN_AddInputBelief(Encode_Term("at_s3"), 0);
         }
         if(pos == pos_l0)
         {
             puts("at_l0.");
-            MSC_AddInputBelief(Encode_Term("at_l0"), 0);
+            YAN_AddInputBelief(Encode_Term("at_l0"), 0);
         }
         if(pos == pos_l1)
         {
             puts("at_l1.");
-            MSC_AddInputBelief(Encode_Term("at_l1"), 0);
+            YAN_AddInputBelief(Encode_Term("at_l1"), 0);
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -997,156 +997,156 @@ void MSC_TestChamber()
         {
             goto_s0 = true;
             puts("op_goto_s0.");
-            MSC_AddInputBelief(Encode_Term("op_goto_s0"), 1);
+            YAN_AddInputBelief(Encode_Term("op_goto_s0"), 1);
         }
         if(c == 'b')
         {
             goto_s1 = true;
             puts("op_goto_s1.");
-            MSC_AddInputBelief(Encode_Term("op_goto_s1"), 2);
+            YAN_AddInputBelief(Encode_Term("op_goto_s1"), 2);
         }
         if(c == 'c')
         {
             goto_s2 = true;
             puts("op_goto_s2.");
-            MSC_AddInputBelief(Encode_Term("op_goto_s2"), 3);
+            YAN_AddInputBelief(Encode_Term("op_goto_s2"), 3);
         }
         if(c == 'd')
         {
             goto_s3 = true;
             puts("op_goto_s3.");
-            MSC_AddInputBelief(Encode_Term("op_goto_s3"), 4);
+            YAN_AddInputBelief(Encode_Term("op_goto_s3"), 4);
         }
         if(c == 'e')
         {
             goto_l0 = true;
             puts("op_goto_l0.");
-            MSC_AddInputBelief(Encode_Term("op_goto_l0"), 5);
+            YAN_AddInputBelief(Encode_Term("op_goto_l0"), 5);
         }
         if(c == 'f')
         {
             goto_l1 = true;
             puts("op_goto_l1.");
-            MSC_AddInputBelief(Encode_Term("op_goto_l1"), 6);
+            YAN_AddInputBelief(Encode_Term("op_goto_l1"), 6);
         }
         if(c == 'g')
         {
             activate = true;
             puts("op_activate.");
-            MSC_AddInputBelief(Encode_Term("op_activate"), 7);
+            YAN_AddInputBelief(Encode_Term("op_activate"), 7);
         }
         if(c == 'h')
         {
             deactivate = true;
             puts("op_deactivate.");
-            MSC_AddInputBelief(Encode_Term("op_deactivate"), 8);
+            YAN_AddInputBelief(Encode_Term("op_deactivate"), 8);
         }
         if(c == 'i')
         {
             puts("door_is_open!");
-            MSC_AddInputGoal(Encode_Term("door_is_open"));
+            YAN_AddInputGoal(Encode_Term("door_is_open"));
             //door should be open
         }
         if(c == 'j')
         {
             puts("door_is_closed!");
-            MSC_AddInputGoal(Encode_Term("door_is_closed"));
+            YAN_AddInputGoal(Encode_Term("door_is_closed"));
             //door should be closed
         }
         if(c == 'k')
         {
             puts("s1_is_1!");
-            MSC_AddInputGoal(Encode_Term("s1_is_1"));
+            YAN_AddInputGoal(Encode_Term("s1_is_1"));
             //s1 should be 1
         }
         if(c == 'l')
         {
             puts("s1_is_0!");
-            MSC_AddInputGoal(Encode_Term("s1_is_0"));
+            YAN_AddInputGoal(Encode_Term("s1_is_0"));
             //s1 should be 0
         }
         if(c == 'm')
         {
             puts("s2_is_1!");
-            MSC_AddInputGoal(Encode_Term("s2_is_1"));
+            YAN_AddInputGoal(Encode_Term("s2_is_1"));
             //s2 should be 1
         }
         if(c == 'n')
         {
             puts("s2_is_0!");
-            MSC_AddInputGoal(Encode_Term("s2_is_0"));
+            YAN_AddInputGoal(Encode_Term("s2_is_0"));
             //s2 should be 0
         }
         if(c == 'o')
         {
             puts("s3_is_1!");
-            MSC_AddInputGoal(Encode_Term("s3_is_1"));
+            YAN_AddInputGoal(Encode_Term("s3_is_1"));
             //s3 should be 1
         }
         if(c == 'p')
         {
             puts("s3_is_0!");
-            MSC_AddInputGoal(Encode_Term("s3_is_0"));
+            YAN_AddInputGoal(Encode_Term("s3_is_0"));
             //s3 should be 0
         }
         if(c == 'q')
         {
             puts("l0_is_1!");
-            MSC_AddInputGoal(Encode_Term("l0_is_1"));
+            YAN_AddInputGoal(Encode_Term("l0_is_1"));
             //l0 should be 1
         }
         if(c == 'r')
         {
             puts("l0_is_1!");
-            MSC_AddInputGoal(Encode_Term("l0_is_0"));
+            YAN_AddInputGoal(Encode_Term("l0_is_0"));
             //l0 should be 0
         }
         if(c == 's')
         {
             puts("l1_is_1!");
-            MSC_AddInputGoal(Encode_Term("l1_is_1"));
+            YAN_AddInputGoal(Encode_Term("l1_is_1"));
             //l1 should be 1
         }
         if(c == 't')
         {
             puts("l1_is_0!");
-            MSC_AddInputGoal(Encode_Term("l1_is_0"));
+            YAN_AddInputGoal(Encode_Term("l1_is_0"));
             //l1 should be 0
         }
         if(c == 'u')
         {
             puts("at_s0!");
-            MSC_AddInputGoal(Encode_Term("at_s0"));
+            YAN_AddInputGoal(Encode_Term("at_s0"));
             //you should be at s0!
         }
         if(c == 'v')
         {
             puts("at_s1!");
-            MSC_AddInputGoal(Encode_Term("at_s1"));
+            YAN_AddInputGoal(Encode_Term("at_s1"));
             //you should be at s1!
         }
         if(c == 'w')
         {
             puts("at_s2!");
-            MSC_AddInputGoal(Encode_Term("at_s2"));
+            YAN_AddInputGoal(Encode_Term("at_s2"));
             //you should be at s2!
         }
         if(c == 'x')
         {
             puts("at_s3!");
-            MSC_AddInputGoal(Encode_Term("at_s3"));
+            YAN_AddInputGoal(Encode_Term("at_s3"));
             //you should be at s3!
         }
         if(c == 'y')
         {
             puts("at_l0!");
-            MSC_AddInputGoal(Encode_Term("at_l0"));
+            YAN_AddInputGoal(Encode_Term("at_l0"));
             //you should be at l0!
         }
         if(c == 'z')
         {
             puts("at_l1!");
-            MSC_AddInputGoal(Encode_Term("at_l1"));
+            YAN_AddInputGoal(Encode_Term("at_l1"));
             //you should be at l1!
         }
     }
@@ -1170,60 +1170,60 @@ void op_3()
 void Sequence_Test()
 {
     OUTPUT=0;
-    MSC_INIT();
+    YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
-    MSC_AddOperation(Encode_Term("op_1"), op_1); 
-    MSC_AddOperation(Encode_Term("op_2"), op_2); 
-    MSC_AddOperation(Encode_Term("op_3"), op_3); 
+    YAN_AddOperation(Encode_Term("op_1"), op_1); 
+    YAN_AddOperation(Encode_Term("op_2"), op_2); 
+    YAN_AddOperation(Encode_Term("op_3"), op_3); 
     for(int i=0;i<5;i++)
     {
-        MSC_AddInputBelief(Encode_Term("a"), 0); //0 2 4 5
-        MSC_AddInputBelief(Encode_Term("b"), 0);
-        MSC_AddInputBelief(Encode_Term("op_1"), 1);
-        MSC_AddInputBelief(Encode_Term("g"), 0);
-        MSC_Cycles(100);
+        YAN_AddInputBelief(Encode_Term("a"), 0); //0 2 4 5
+        YAN_AddInputBelief(Encode_Term("b"), 0);
+        YAN_AddInputBelief(Encode_Term("op_1"), 1);
+        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        MSC_AddInputBelief(Encode_Term("a"), 0);
-        MSC_AddInputBelief(Encode_Term("op_1"), 1);
-        MSC_Cycles(100);
+        YAN_AddInputBelief(Encode_Term("a"), 0);
+        YAN_AddInputBelief(Encode_Term("op_1"), 1);
+        YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        MSC_AddInputBelief(Encode_Term("b"), 0);
-        MSC_AddInputBelief(Encode_Term("op_1"), 1);
-        MSC_Cycles(100);
+        YAN_AddInputBelief(Encode_Term("b"), 0);
+        YAN_AddInputBelief(Encode_Term("op_1"), 1);
+        YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        MSC_AddInputBelief(Encode_Term("b"), 0);
-        MSC_AddInputBelief(Encode_Term("op_2"), 2);
-        MSC_AddInputBelief(Encode_Term("g"), 0);
-        MSC_Cycles(100);
+        YAN_AddInputBelief(Encode_Term("b"), 0);
+        YAN_AddInputBelief(Encode_Term("op_2"), 2);
+        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        MSC_AddInputBelief(Encode_Term("a"), 0);
-        MSC_AddInputBelief(Encode_Term("op_3"), 3);
-        MSC_AddInputBelief(Encode_Term("g"), 0);
-        MSC_Cycles(100);
+        YAN_AddInputBelief(Encode_Term("a"), 0);
+        YAN_AddInputBelief(Encode_Term("op_3"), 3);
+        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_Cycles(100);
     }
-    MSC_AddInputBelief(Encode_Term("a"), 0);
-    MSC_AddInputBelief(Encode_Term("b"), 0);
-    MSC_AddInputGoal(Encode_Term("g"));
+    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_AddInputBelief(Encode_Term("b"), 0);
+    YAN_AddInputGoal(Encode_Term("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
     //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
-    MSC_Cycles(100);
-    MSC_AddInputBelief(Encode_Term("b"), 0);
-    MSC_AddInputGoal(Encode_Term("g"));
+    YAN_Cycles(100);
+    YAN_AddInputBelief(Encode_Term("b"), 0);
+    YAN_AddInputGoal(Encode_Term("g"));
     assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
     op_1_executed = op_2_executed = op_3_executed = false;
-    MSC_Cycles(100);
-    MSC_AddInputBelief(Encode_Term("a"), 0);
-    MSC_AddInputGoal(Encode_Term("g"));
+    YAN_Cycles(100);
+    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_AddInputGoal(Encode_Term("g"));
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
@@ -1238,36 +1238,36 @@ int main(int argc, char *argv[])
     {
         if(!strcmp(argv[1],"pong"))
         {
-            MSC_Pong();
+            YAN_Pong();
         }
         if(!strcmp(argv[1],"pong2"))
         {
-            MSC_Pong2();
+            YAN_Pong2();
         }
         if(!strcmp(argv[1],"testchamber"))
         {
-            MSC_TestChamber();
+            YAN_TestChamber();
         }
     }
     srand(1337);
-    MSC_INIT();
+    YAN_INIT();
     OUTPUT = 0;
     //Term_Test();
     Stamp_Test();
     FIFO_Test();
     PriorityQueue_Test();
     Table_Test();
-    MSC_Alphabet_Test();
-    MSC_Procedure_Test();
+    YAN_Alphabet_Test();
+    YAN_Procedure_Test();
     Memory_Test();
-    MSC_Follow_Test();
-    MSC_Multistep_Test();
-    MSC_Multistep2_Test();
+    YAN_Follow_Test();
+    YAN_Multistep_Test();
+    YAN_Multistep2_Test();
     Sequence_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
-    puts("MSC pong (starts Pong example)");
-    puts("MSC pong2 (starts Pong2 example)");
-    puts("MSC testchamber (starts Test Chamber multistep procedure learning example)");
+    puts("YAN pong (starts Pong example)");
+    puts("YAN pong2 (starts Pong2 example)");
+    puts("YAN testchamber (starts Test Chamber multistep procedure learning example)");
     return 0;
 }
 

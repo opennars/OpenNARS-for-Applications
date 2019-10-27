@@ -11,7 +11,7 @@ void Decision_Execute(Decision *decision)
     decision->op = operations[decision->operationID-1];
     (*decision->op.action)();
     //and add operator feedback
-    MSC_AddInputBelief(decision->op.term, decision->operationID);
+    YAN_AddInputBelief(decision->op.term, decision->operationID);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -27,7 +27,7 @@ static Decision Decision_MotorBabbling()
     {
         decision.operationID = 1+(rand() % (n_ops));
         IN_DEBUG (
-            printf(" MSC BABBLE %d\n", decision.operationID);
+            printf(" YAN BABBLE %d\n", decision.operationID);
         )
         decision.execute = true;
     }
@@ -107,7 +107,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
             puts("");
             printf("SELECTED PRECON: %s\n", prec->debug);
             puts(bestImp.debug); //++
-            printf(" MSC TAKING ACTIVE CONTROL %d\n", decision.operationID);
+            printf(" YAN TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;
 

@@ -6,10 +6,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "Memory.h"
-#include "MSC.h"
+#include "YAN.h"
 
 ////////////////////
-//  MSC Decision  //
+//  YAN Decision  //
 ////////////////////
 //Realization of goals
 
@@ -42,7 +42,7 @@ typedef struct
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_AssumptionOfFailure(int operationID, long currentTime);
-//MSC decision making rule applying when goal is an operation
+//YAN decision making rule applying when goal is an operation
 Decision Decision_Suggest(Event *goal, long currentTime);
 
 #endif

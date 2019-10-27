@@ -14,7 +14,7 @@ Term Encode_Term(char *name)
     }
     if(number == -1)
     {
-        assert(term_index < 255, "Too many terms for MSC");
+        assert(term_index < 255, "Too many terms for YAN");
         number = term_index+1;
         terms[term_index] = name;
         term_index++;

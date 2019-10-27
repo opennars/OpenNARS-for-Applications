@@ -2,7 +2,7 @@
 #define USEFULNESSVALUE_H
 
 /////////////////////////////
-//  MSC usefulness value //
+//  YAN usefulness value //
 /////////////////////////////
 
 //References//

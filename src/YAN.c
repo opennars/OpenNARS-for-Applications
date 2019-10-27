@@ -1,15 +1,15 @@
-#include "MSC.h"
+#include "YAN.h"
 
 long currentTime = 1;
 
-void MSC_INIT()
+void YAN_INIT()
 {
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
 }
 
-void MSC_Cycles(int cycles)
+void YAN_Cycles(int cycles)
 {
     for(int i=0; i<cycles; i++)
     {
@@ -19,7 +19,7 @@ void MSC_Cycles(int cycles)
     }
 }
 
-Event MSC_AddInput(Term term, char type, Truth truth, int operationID)
+Event YAN_AddInput(Term term, char type, Truth truth, int operationID)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
     int closest_concept_i=0;
@@ -45,22 +45,22 @@ Event MSC_AddInput(Term term, char type, Truth truth, int operationID)
     ev.operationID = operationID;
     Memory_addEvent(&ev);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
-    MSC_Cycles(1);
+    YAN_Cycles(1);
     return ev;
 }
 
-Event MSC_AddInputBelief(Term term, int operationID)
+Event YAN_AddInputBelief(Term term, int operationID)
 {
-    Event ret = MSC_AddInput(term, EVENT_TYPE_BELIEF, MSC_DEFAULT_TRUTH, operationID);
+    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, operationID);
     return ret;
 }
 
-Event MSC_AddInputGoal(Term term)
+Event YAN_AddInputGoal(Term term)
 {
-    return MSC_AddInput(term, EVENT_TYPE_GOAL, MSC_DEFAULT_TRUTH, 0);
+    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0);
 }
 
-void MSC_AddOperation(Term term, Action procedure)
+void YAN_AddOperation(Term term, Action procedure)
 {
     Memory_addOperation((Operation) {.term = term, .action = procedure});
 }

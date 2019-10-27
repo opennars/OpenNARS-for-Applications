@@ -2,9 +2,9 @@
 #define MEMORY_H
 
 /////////////////
-//  MSC Memory //
+//  YAN Memory //
 /////////////////
-//The concept-based memory of MSC
+//The concept-based memory of YAN
 
 //References//
 //////////////
