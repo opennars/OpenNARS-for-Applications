@@ -17,7 +17,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .term = Term_Equal(&a->term, &b->term),
+    return (Event) { .term = Term_Sequence(&a->term, &b->term),
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 

@@ -4,7 +4,6 @@ long currentTime = 1;
 
 void MSC_INIT()
 {
-    //Term_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     currentTime = 1; //reset time
