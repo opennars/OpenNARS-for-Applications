@@ -1,12 +1,12 @@
 #include "Encode.h"
 
 int term_index = 0;
-Term Encode_Term(char *name)
+Term Encode_AtomicTerm(char *name)
 {
     int number = -1;
     for(int i=0; i<term_index; i++)
     {
-        if(!strcmp(terms[i], name))
+        if(!strcmp(atoms[i], name))
         {
             number = i+1;
             break;
@@ -16,11 +16,17 @@ Term Encode_Term(char *name)
     {
         assert(term_index < 255, "Too many terms for YAN");
         number = term_index+1;
-        terms[term_index] = name;
+        atoms[term_index] = name;
         term_index++;
     }
     Term ret = {0};
-    ret.terms[0] = number;
-    assert(ret.terms[0] > 0, "issue with encoding in Encode_Term");
+    ret.atoms[0] = number;
+    assert(ret.atoms[0] > 0, "issue with encoding in Encode_Term");
     return ret;
+}
+
+Term Encode_Term(char *name)
+{
+    //TODO!!!!!
+    return Encode_AtomicTerm(name);
 }

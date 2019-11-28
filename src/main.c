@@ -14,7 +14,7 @@ void FIFO_Test()
     //First, evaluate whether the fifo works, not leading to overflow
     for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
-        Event event1 = { .term = Encode_Term("test"), 
+        Event event1 = { .term = Encode_AtomicTerm("test"), 
                          .type = EVENT_TYPE_BELIEF, 
                          .truth = { .frequency = 1.0, .confidence = 0.9 },
                          .stamp = { .evidentalBase = { i } }, 
@@ -28,7 +28,7 @@ void FIFO_Test()
     //now see whether a new item is revised with the correct one:
     int i=3; //revise with item 10, which has occurrence time 10
     int newbase = FIFO_SIZE*2+1;
-    Event event2 = { .term = Encode_Term("test"), 
+    Event event2 = { .term = Encode_AtomicTerm("test"), 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = { .frequency = 1.0, .confidence = 0.9 },
                      .stamp = { .evidentalBase = { newbase } }, 
@@ -100,7 +100,7 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = { .term = Encode_Term("test"), 
+        Implication imp = { .term = Encode_AtomicTerm("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                             .stamp = { .evidentalBase = { i } },
                             .occurrenceTimeOffset = 10 };
@@ -110,7 +110,7 @@ void Table_Test()
     {
         assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
     }
-    Implication imp = { .term = Encode_Term("test"), 
+    Implication imp = { .term = Encode_AtomicTerm("test"), 
                         .truth = { .frequency = 1.0, .confidence = 0.9},
                         .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
                         .occurrenceTimeOffset = 10 };
@@ -124,7 +124,7 @@ void Memory_Test()
 {
     YAN_INIT();
     puts(">>Memory test start");
-    Event e = Event_InputEvent(Encode_Term("a"), 
+    Event e = Event_InputEvent(Encode_AtomicTerm("a"), 
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
@@ -140,7 +140,7 @@ void Memory_Test()
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
     assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
     assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    Event e2 = Event_InputEvent(Encode_Term("b"), 
+    Event e2 = Event_InputEvent(Encode_AtomicTerm("b"), 
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
@@ -160,14 +160,14 @@ void YAN_Alphabet_Test()
 {
     YAN_INIT();
     puts(">>YAN Alphabet test start");
-    YAN_AddInput(Encode_Term("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
+    YAN_AddInput(Encode_AtomicTerm("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            YAN_AddInput(Encode_Term(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
+            YAN_AddInput(Encode_AtomicTerm(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
         }
         YAN_Cycles(1);
         puts("TICK");
@@ -185,20 +185,20 @@ void YAN_Procedure_Test()
 {
     YAN_INIT();
     puts(">>YAN Procedure test start");
-    YAN_AddOperation(Encode_Term("op"), YAN_Procedure_Test_Op); 
-    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_AddOperation(Encode_AtomicTerm("op"), YAN_Procedure_Test_Op); 
+    YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
     YAN_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Encode_Term("op"), 1);
+    YAN_AddInputBelief(Encode_AtomicTerm("op"), 1);
     YAN_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Encode_Term("result"), 0);
+    YAN_AddInputBelief(Encode_AtomicTerm("result"), 0);
     YAN_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Encode_Term("a"), 0);
+    YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
     YAN_Cycles(1);
     puts("---------------");
-    YAN_AddInputGoal(Encode_Term("result"));
+    YAN_AddInputGoal(Encode_AtomicTerm("result"));
     YAN_Cycles(1);
     puts("---------------");
     assert(YAN_Procedure_Test_Op_executed, "YAN should have executed op!");
@@ -222,8 +222,8 @@ void YAN_Follow_Test()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Follow test start");
-    YAN_AddOperation(Encode_Term("op_left"), YAN_Follow_Test_Left); 
-    YAN_AddOperation(Encode_Term("op_right"), YAN_Follow_Test_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Follow_Test_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Follow_Test_Right); 
     int simsteps = 1000000;
     int LEFT = 0;
     int RIGHT = 1;
@@ -234,20 +234,20 @@ void YAN_Follow_Test()
     for(int i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
-        YAN_AddInputBelief(BALL == LEFT ? Encode_Term("ball_left") : Encode_Term("ball_right"), 0);
-        YAN_AddInputGoal(Encode_Term("good_yan"));
+        YAN_AddInputBelief(BALL == LEFT ? Encode_AtomicTerm("ball_left") : Encode_AtomicTerm("ball_right"), 0);
+        YAN_AddInputGoal(Encode_AtomicTerm("good_yan"));
         if(YAN_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
+                YAN_AddInputBelief(Encode_AtomicTerm("good_yan"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
             }
             else
             {
-                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
+                //YAN_AddInput(Encode_AtomicTerm("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
@@ -258,14 +258,14 @@ void YAN_Follow_Test()
         {        
             if(BALL == LEFT)
             {
-                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
+                YAN_AddInputBelief(Encode_AtomicTerm("good_yan"), 0);
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
             }
             else
             {
-                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
+                //YAN_AddInput(Encode_AtomicTerm("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 printf("(ball=%d) bad\n",BALL);
                 score--;
                 bads++;
@@ -303,9 +303,9 @@ void YAN_Pong2()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
-    YAN_AddOperation(Encode_Term("op_left"), YAN_Pong_Left); 
-    YAN_AddOperation(Encode_Term("op_right"), YAN_Pong_Right); 
-    YAN_AddOperation(Encode_Term("op_stop"), YAN_Pong_Stop); 
+    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Pong_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("op_stop"), YAN_Pong_Stop); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -361,18 +361,18 @@ void YAN_Pong2()
         }
         if(batX <= ballX - batWidth)
         {
-            YAN_AddInputBelief(Encode_Term("ball_right"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("ball_right"), 0);
         }
         else
         if(ballX + batWidth < batX)
         {
-            YAN_AddInputBelief(Encode_Term("ball_left"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("ball_left"), 0);
         }
         else
         {
-            YAN_AddInputBelief(Encode_Term("ball_equal"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("ball_equal"), 0);
         }
-        YAN_AddInputGoal(Encode_Term("good_yan"));
+        YAN_AddInputGoal(Encode_AtomicTerm("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -398,13 +398,13 @@ void YAN_Pong2()
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
+                YAN_AddInputBelief(Encode_AtomicTerm("good_yan"), 0);
                 puts("good");
                 hits++;
             }
             else
             {
-                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
+                //YAN_AddInput(Encode_AtomicTerm("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9});
                 puts("bad");
                 misses++;
             }
@@ -445,8 +445,8 @@ void YAN_Pong()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
-    YAN_AddOperation(Encode_Term("op_left"), YAN_Pong_Left); 
-    YAN_AddOperation(Encode_Term("op_right"), YAN_Pong_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Pong_Right); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -501,13 +501,13 @@ void YAN_Pong()
         }
         if(batX < ballX)
         {
-            YAN_AddInputBelief(Encode_Term("ball_right"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("ball_right"), 0);
         }
         if(ballX < batX)
         {
-            YAN_AddInputBelief(Encode_Term("ball_left"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("ball_left"), 0);
         }
-        YAN_AddInputGoal(Encode_Term("good_yan"));
+        YAN_AddInputGoal(Encode_AtomicTerm("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -530,13 +530,13 @@ void YAN_Pong()
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                YAN_AddInputBelief(Encode_Term("good_yan"), 0);
+                YAN_AddInputBelief(Encode_AtomicTerm("good_yan"), 0);
                 puts("good");
                 hits++;
             }
             else
             {
-                //YAN_AddInput(Encode_Term("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
+                //YAN_AddInput(Encode_AtomicTerm("good_yan"), EVENT_TYPE_BELIEF, (Truth) {.frequency = 0, .confidence = 0.9}, "good_yan");
                 puts("bad");
                 misses++;
             }
@@ -584,29 +584,29 @@ void YAN_Multistep_Test()
     puts(">>YAN Multistep test start");
     OUTPUT = 0;
     YAN_INIT();
-    YAN_AddOperation(Encode_Term("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
-    YAN_AddOperation(Encode_Term("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        YAN_AddInputBelief(Encode_Term("start_at"), 0);
-        YAN_AddInputBelief(Encode_Term("op_goto_switch"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_goto_switch"), 1);
         YAN_Cycles(1);
-        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
-        YAN_AddInputBelief(Encode_Term("op_activate_switch"), 2);
-        YAN_AddInputBelief(Encode_Term("switch_active"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("switch_active"), 0);
         YAN_Cycles(1);
-        YAN_AddInputBelief(Encode_Term("light_active"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("light_active"), 0);
         YAN_Cycles(10);
     }
     YAN_Cycles(10);
-    YAN_AddInputBelief(Encode_Term("start_at"), 0);
-    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("light_active"));
     YAN_Cycles(10);
     assert(YAN_Lightswitch_GotoSwitch_executed && !YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to go to the switch first");
     YAN_Lightswitch_GotoSwitch_executed = false;
     puts("YAN arrived at the switch");
-    YAN_AddInputBelief(Encode_Term("switch_at"), 0);
-    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("light_active"));
     assert(!YAN_Lightswitch_GotoSwitch_executed && YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to activate the switch");
     YAN_Lightswitch_ActivateSwitch_executed = false;
     puts("<<YAN Multistep test successful");
@@ -617,35 +617,35 @@ void YAN_Multistep2_Test()
     puts(">>YAN Multistep2 test start");
     OUTPUT = 0;
     YAN_INIT();
-    YAN_AddOperation(Encode_Term("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
-    YAN_AddOperation(Encode_Term("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        YAN_AddInputBelief(Encode_Term("start_at"), 0);
-        YAN_AddInputBelief(Encode_Term("op_goto_switch"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_goto_switch"), 1);
         YAN_Cycles(1);
-        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
         YAN_Cycles(10);
     }
     YAN_Cycles(1000);
     for(int i=0; i<5; i++)
     {
-        YAN_AddInputBelief(Encode_Term("switch_at"), 0);
-        YAN_AddInputBelief(Encode_Term("op_activate_switch"), 2);
-        YAN_AddInputBelief(Encode_Term("switch_active"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("switch_active"), 0);
         YAN_Cycles(1);
-        YAN_AddInputBelief(Encode_Term("light_active"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("light_active"), 0);
         YAN_Cycles(10);
     }
     YAN_Cycles(10);
-    YAN_AddInputBelief(Encode_Term("start_at"), 0);
-    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("light_active"));
     YAN_Cycles(10);
     assert(YAN_Lightswitch_GotoSwitch_executed && !YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to go to the switch first (2)");
     YAN_Lightswitch_GotoSwitch_executed = false;
     puts("YAN arrived at the switch");
-    YAN_AddInputBelief(Encode_Term("switch_at"), 0);
-    YAN_AddInputGoal(Encode_Term("light_active"));
+    YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("light_active"));
     assert(!YAN_Lightswitch_GotoSwitch_executed && YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to activate the switch (2)");
     YAN_Lightswitch_ActivateSwitch_executed = false;
     puts("<<YAN Multistep2 test successful");
@@ -706,14 +706,14 @@ void YAN_TestChamber()
     OUTPUT = 0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
-    YAN_AddOperation(Encode_Term("op_goto_s0"), YAN_TestChamber_goto_s0); 
-    YAN_AddOperation(Encode_Term("op_goto_s1"), YAN_TestChamber_goto_s1); 
-    YAN_AddOperation(Encode_Term("op_goto_s2"), YAN_TestChamber_goto_s2); 
-    YAN_AddOperation(Encode_Term("op_goto_s3"), YAN_TestChamber_goto_s3); 
-    YAN_AddOperation(Encode_Term("op_goto_l0"), YAN_TestChamber_goto_l0); 
-    YAN_AddOperation(Encode_Term("op_goto_l1"), YAN_TestChamber_goto_l1); 
-    YAN_AddOperation(Encode_Term("op_activate"), YAN_TestChamber_activate); 
-    YAN_AddOperation(Encode_Term("op_deactivate"), YAN_TestChamber_deactivate); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_s0"), YAN_TestChamber_goto_s0); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_s1"), YAN_TestChamber_goto_s1); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_s2"), YAN_TestChamber_goto_s2); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_s3"), YAN_TestChamber_goto_s3); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_l0"), YAN_TestChamber_goto_l0); 
+    YAN_AddOperation(Encode_AtomicTerm("op_goto_l1"), YAN_TestChamber_goto_l1); 
+    YAN_AddOperation(Encode_AtomicTerm("op_activate"), YAN_TestChamber_activate); 
+    YAN_AddOperation(Encode_AtomicTerm("op_deactivate"), YAN_TestChamber_deactivate); 
     int size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
@@ -738,7 +738,7 @@ void YAN_TestChamber()
     bool l1 = false;
     bool door = false; //door closed
     puts("at_s0");
-    YAN_AddInputBelief(Encode_Term("at_s0"), 0);
+    YAN_AddInputBelief(Encode_AtomicTerm("at_s0"), 0);
     char lastchar = 'a';
     while(1)
     {
@@ -782,98 +782,98 @@ void YAN_TestChamber()
         {
             s1 = false;
             puts("s1_is_0.");
-            YAN_AddInputBelief(Encode_Term("s1_is_0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s1_is_0"), 0);
             //s1 also closes the door:
             door = false;
             puts("door_is_closed.");
-            YAN_AddInputBelief(Encode_Term("door_is_closed"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("door_is_closed"), 0);
         }
         else
         if(pos == pos_s2 && deactivate)
         {
             s2 = false;
             puts("s2_is_0.");
-            YAN_AddInputBelief(Encode_Term("s2_is_0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s2_is_0"), 0);
             //s2 also deactivates l0:
             l0 = false;
             puts("l0_is_0.");
-            YAN_AddInputBelief(Encode_Term("l0_is_0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("l0_is_0"), 0);
         }
         else
         if(pos == pos_s3 && deactivate)
         {
             s3 = false;
             puts("s3_is_0.");
-            YAN_AddInputBelief(Encode_Term("s3_is_0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s3_is_0"), 0);
             //s3 also deactivates l1
             l1 = false;
             puts("l1_is_0.");
-            YAN_AddInputBelief(Encode_Term("l1_is_0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("l1_is_0"), 0);
         }
         else
         if(pos == pos_s1 && activate)
         {
             s1 = true;
             puts("s1_is_1.");
-            YAN_AddInputBelief(Encode_Term("s1_is_1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s1_is_1"), 0);
             //s1 also opens the door:
             door = true;
             puts("door_is_open.");
-            YAN_AddInputBelief(Encode_Term("door_is_open"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("door_is_open"), 0);
         }
         else
         if(pos == pos_s2 && activate)
         {
             s2 = true;
             puts("s2_is_1.");
-            YAN_AddInputBelief(Encode_Term("s2_is_1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s2_is_1"), 0);
             //s2 also activates l0:
             l0 = true;
             puts("l0_is_1.");
-            YAN_AddInputBelief(Encode_Term("l0_is_1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("l0_is_1"), 0);
         }
         else
         if(pos == pos_s3 && activate)
         {
             s3 = true;
             puts("s3_is_1.");
-            YAN_AddInputBelief(Encode_Term("s3_is_1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("s3_is_1"), 0);
             //s3 also activates l1
             l1 = true;
             puts("l1_is_1.");
-            YAN_AddInputBelief(Encode_Term("l1_is_1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("l1_is_1"), 0);
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         //inform YAN about current location
         if(pos == pos_s0)
         {
             puts("at_s0.");
-            YAN_AddInputBelief(Encode_Term("at_s0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_s0"), 0);
         }
         if(pos == pos_s1)
         {
             puts("at_s1.");
-            YAN_AddInputBelief(Encode_Term("at_s1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_s1"), 0);
         }
         if(pos == pos_s2)
         {
             puts("at_s2.");
-            YAN_AddInputBelief(Encode_Term("at_s2"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_s2"), 0);
         }
         if(pos == pos_s3)
         {
             puts("at_s3.");
-            YAN_AddInputBelief(Encode_Term("at_s3"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_s3"), 0);
         }
         if(pos == pos_l0)
         {
             puts("at_l0.");
-            YAN_AddInputBelief(Encode_Term("at_l0"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_l0"), 0);
         }
         if(pos == pos_l1)
         {
             puts("at_l1.");
-            YAN_AddInputBelief(Encode_Term("at_l1"), 0);
+            YAN_AddInputBelief(Encode_AtomicTerm("at_l1"), 0);
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -997,156 +997,156 @@ void YAN_TestChamber()
         {
             goto_s0 = true;
             puts("op_goto_s0.");
-            YAN_AddInputBelief(Encode_Term("op_goto_s0"), 1);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s0"), 1);
         }
         if(c == 'b')
         {
             goto_s1 = true;
             puts("op_goto_s1.");
-            YAN_AddInputBelief(Encode_Term("op_goto_s1"), 2);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s1"), 2);
         }
         if(c == 'c')
         {
             goto_s2 = true;
             puts("op_goto_s2.");
-            YAN_AddInputBelief(Encode_Term("op_goto_s2"), 3);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s2"), 3);
         }
         if(c == 'd')
         {
             goto_s3 = true;
             puts("op_goto_s3.");
-            YAN_AddInputBelief(Encode_Term("op_goto_s3"), 4);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s3"), 4);
         }
         if(c == 'e')
         {
             goto_l0 = true;
             puts("op_goto_l0.");
-            YAN_AddInputBelief(Encode_Term("op_goto_l0"), 5);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_l0"), 5);
         }
         if(c == 'f')
         {
             goto_l1 = true;
             puts("op_goto_l1.");
-            YAN_AddInputBelief(Encode_Term("op_goto_l1"), 6);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_l1"), 6);
         }
         if(c == 'g')
         {
             activate = true;
             puts("op_activate.");
-            YAN_AddInputBelief(Encode_Term("op_activate"), 7);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_activate"), 7);
         }
         if(c == 'h')
         {
             deactivate = true;
             puts("op_deactivate.");
-            YAN_AddInputBelief(Encode_Term("op_deactivate"), 8);
+            YAN_AddInputBelief(Encode_AtomicTerm("op_deactivate"), 8);
         }
         if(c == 'i')
         {
             puts("door_is_open!");
-            YAN_AddInputGoal(Encode_Term("door_is_open"));
+            YAN_AddInputGoal(Encode_AtomicTerm("door_is_open"));
             //door should be open
         }
         if(c == 'j')
         {
             puts("door_is_closed!");
-            YAN_AddInputGoal(Encode_Term("door_is_closed"));
+            YAN_AddInputGoal(Encode_AtomicTerm("door_is_closed"));
             //door should be closed
         }
         if(c == 'k')
         {
             puts("s1_is_1!");
-            YAN_AddInputGoal(Encode_Term("s1_is_1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s1_is_1"));
             //s1 should be 1
         }
         if(c == 'l')
         {
             puts("s1_is_0!");
-            YAN_AddInputGoal(Encode_Term("s1_is_0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s1_is_0"));
             //s1 should be 0
         }
         if(c == 'm')
         {
             puts("s2_is_1!");
-            YAN_AddInputGoal(Encode_Term("s2_is_1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s2_is_1"));
             //s2 should be 1
         }
         if(c == 'n')
         {
             puts("s2_is_0!");
-            YAN_AddInputGoal(Encode_Term("s2_is_0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s2_is_0"));
             //s2 should be 0
         }
         if(c == 'o')
         {
             puts("s3_is_1!");
-            YAN_AddInputGoal(Encode_Term("s3_is_1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s3_is_1"));
             //s3 should be 1
         }
         if(c == 'p')
         {
             puts("s3_is_0!");
-            YAN_AddInputGoal(Encode_Term("s3_is_0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("s3_is_0"));
             //s3 should be 0
         }
         if(c == 'q')
         {
             puts("l0_is_1!");
-            YAN_AddInputGoal(Encode_Term("l0_is_1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("l0_is_1"));
             //l0 should be 1
         }
         if(c == 'r')
         {
             puts("l0_is_1!");
-            YAN_AddInputGoal(Encode_Term("l0_is_0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("l0_is_0"));
             //l0 should be 0
         }
         if(c == 's')
         {
             puts("l1_is_1!");
-            YAN_AddInputGoal(Encode_Term("l1_is_1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("l1_is_1"));
             //l1 should be 1
         }
         if(c == 't')
         {
             puts("l1_is_0!");
-            YAN_AddInputGoal(Encode_Term("l1_is_0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("l1_is_0"));
             //l1 should be 0
         }
         if(c == 'u')
         {
             puts("at_s0!");
-            YAN_AddInputGoal(Encode_Term("at_s0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_s0"));
             //you should be at s0!
         }
         if(c == 'v')
         {
             puts("at_s1!");
-            YAN_AddInputGoal(Encode_Term("at_s1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_s1"));
             //you should be at s1!
         }
         if(c == 'w')
         {
             puts("at_s2!");
-            YAN_AddInputGoal(Encode_Term("at_s2"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_s2"));
             //you should be at s2!
         }
         if(c == 'x')
         {
             puts("at_s3!");
-            YAN_AddInputGoal(Encode_Term("at_s3"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_s3"));
             //you should be at s3!
         }
         if(c == 'y')
         {
             puts("at_l0!");
-            YAN_AddInputGoal(Encode_Term("at_l0"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_l0"));
             //you should be at l0!
         }
         if(c == 'z')
         {
             puts("at_l1!");
-            YAN_AddInputGoal(Encode_Term("at_l1"));
+            YAN_AddInputGoal(Encode_AtomicTerm("at_l1"));
             //you should be at l1!
         }
     }
@@ -1173,57 +1173,57 @@ void Sequence_Test()
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
-    YAN_AddOperation(Encode_Term("op_1"), op_1); 
-    YAN_AddOperation(Encode_Term("op_2"), op_2); 
-    YAN_AddOperation(Encode_Term("op_3"), op_3); 
+    YAN_AddOperation(Encode_AtomicTerm("op_1"), op_1); 
+    YAN_AddOperation(Encode_AtomicTerm("op_2"), op_2); 
+    YAN_AddOperation(Encode_AtomicTerm("op_3"), op_3); 
     for(int i=0;i<5;i++)
     {
-        YAN_AddInputBelief(Encode_Term("a"), 0); //0 2 4 5
-        YAN_AddInputBelief(Encode_Term("b"), 0);
-        YAN_AddInputBelief(Encode_Term("op_1"), 1);
-        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("a"), 0); //0 2 4 5
+        YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        YAN_AddInputBelief(Encode_Term("a"), 0);
-        YAN_AddInputBelief(Encode_Term("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
         YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        YAN_AddInputBelief(Encode_Term("b"), 0);
-        YAN_AddInputBelief(Encode_Term("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
         YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        YAN_AddInputBelief(Encode_Term("b"), 0);
-        YAN_AddInputBelief(Encode_Term("op_2"), 2);
-        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_2"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        YAN_AddInputBelief(Encode_Term("a"), 0);
-        YAN_AddInputBelief(Encode_Term("op_3"), 3);
-        YAN_AddInputBelief(Encode_Term("g"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
+        YAN_AddInputBelief(Encode_AtomicTerm("op_3"), 3);
+        YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
-    YAN_AddInputBelief(Encode_Term("a"), 0);
-    YAN_AddInputBelief(Encode_Term("b"), 0);
-    YAN_AddInputGoal(Encode_Term("g"));
+    YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
+    YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
     //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
     YAN_Cycles(100);
-    YAN_AddInputBelief(Encode_Term("b"), 0);
-    YAN_AddInputGoal(Encode_Term("g"));
+    YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("g"));
     assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
     op_1_executed = op_2_executed = op_3_executed = false;
     YAN_Cycles(100);
-    YAN_AddInputBelief(Encode_Term("a"), 0);
-    YAN_AddInputGoal(Encode_Term("g"));
+    YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
+    YAN_AddInputGoal(Encode_AtomicTerm("g"));
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;

@@ -22,11 +22,15 @@
 
 //Data structure//
 //--------------//
-char *terms[TERMS_MAX];
+//Atomic terms:
+Atom *atoms[TERMS_MAX];
 
 //Methods//
 //-------//
-//Encodes a term 
+//
+Term Encode_AtomicTerm(char *name);
+
+//Parses a term in Narsese
 Term Encode_Term(char *name);
 
 #endif
