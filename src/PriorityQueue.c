@@ -134,7 +134,7 @@ void bubbleUp(PriorityQueue *queue, int i)
     m = grandparent(i);
     while (m>=0 && ((at(i).priority < at(m).priority)^invert))
     {
-        swap(queue, i,m);
+        swap(queue, i, m);
         i = m;
         m = grandparent(i);
     }
@@ -196,4 +196,12 @@ bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
         *returnItemAddress = item.address; 
     }
     return true;
+}
+
+void PriorityQueue_Rebuild(PriorityQueue *queue)
+{
+    for(int i = 0; i < queue->itemsAmount; i++)
+    {
+        bubbleUp(queue, i);
+    }
 }

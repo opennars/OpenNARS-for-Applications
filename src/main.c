@@ -561,7 +561,7 @@ void YAN_Pong()
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
         printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
-        nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        //nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         //YAN_Cycles(10);
     }
 }

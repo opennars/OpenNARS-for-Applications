@@ -44,6 +44,8 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements);
 PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority);
 //use this function and add again if maybe lower!
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress);
+//Rebuilds the data structure by re-inserting all elements:
+void PriorityQueue_Rebuild(PriorityQueue *queue);
 
 #endif
 
