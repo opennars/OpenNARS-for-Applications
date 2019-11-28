@@ -125,14 +125,14 @@ void bubbleUp(PriorityQueue *queue, int i)
     int m;
     m = parent(i);
     bool invert = isOnMaxLevel(i);
-    if (m>=0 && ((at(i).priority > at(m).priority)^invert))
+    if(m>=0 && ((at(i).priority > at(m).priority)^invert))
     {
         swap(queue, i, m);
         i = m;
         invert = !invert;
     }
     m = grandparent(i);
-    while (m>=0 && ((at(i).priority < at(m).priority)^invert))
+    while(m>=0 && ((at(i).priority < at(m).priority)^invert))
     {
         swap(queue, i, m);
         i = m;
@@ -200,7 +200,7 @@ bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
 
 void PriorityQueue_Rebuild(PriorityQueue *queue)
 {
-    for(int i = 0; i < queue->itemsAmount; i++)
+    for(int i=0; i<queue->itemsAmount; i++)
     {
         bubbleUp(queue, i);
     }
