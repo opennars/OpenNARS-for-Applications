@@ -38,4 +38,5 @@ Term Encode_Term(char *narsese);
 Term Encode_AtomicTerm(char *name);
 //Print a term
 void Encode_PrintTerm(Term *term);
+
 #endif
