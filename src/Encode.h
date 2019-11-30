@@ -9,7 +9,6 @@
 //References//
 //-----------//
 #include <string.h>
-#include <math.h>
 #include "Term.h"
 #include "Globals.h"
 
