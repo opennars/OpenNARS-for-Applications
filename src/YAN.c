@@ -6,6 +6,7 @@ void YAN_INIT()
 {
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
+    Encode_INIT();
     currentTime = 1; //reset time
 }
 

@@ -9,6 +9,7 @@
 //----------//
 #define Atom char
 #define MAX_SEQUENCE_LEN 2
+#define COMPOUND_TERM_SIZE_MAX 100
 
 //Description//
 //-----------//
@@ -27,7 +28,7 @@
 //--------------//
 typedef struct
 {
-    Atom atoms[MAX_SEQUENCE_LEN];
+    Atom atoms[COMPOUND_TERM_SIZE_MAX];
 }Term;
 
 //Methods//

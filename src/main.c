@@ -1230,6 +1230,32 @@ void Sequence_Test()
     puts(">>Sequence Test successul");
 }
 
+void Parser_Test()
+{
+    puts(">>Parser test start");
+    char* narsese = "<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>";
+    printf("Narsese: %s\n", narsese);
+    char* preprocessed = Encode_Expand("<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>");
+    printf("Preprocessed: %s\n", preprocessed);
+    char **tokens = Encode_PrefixTransform(preprocessed);
+    int k = 0;
+    for(;tokens[k] != NULL;k++)
+    {
+        printf("token: %s\n", tokens[k]);
+    }
+    Term ret = Encode_Term(narsese);
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(ret.atoms[i] != 0)
+        {
+            printf("Subterm: %i %d %s\n", i, ret.atoms[i], atoms[ret.atoms[i]-1]);
+        }
+    }
+    puts("Result:");
+    Encode_PrintTerm(&ret);
+    puts(">>Parser Test successul");
+}
+
 int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
@@ -1264,6 +1290,7 @@ int main(int argc, char *argv[])
     YAN_Multistep_Test();
     YAN_Multistep2_Test();
     Sequence_Test();
+    Parser_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");
