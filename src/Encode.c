@@ -261,7 +261,6 @@ Term Encode_AtomicTerm(char *name)
     int number = atomicTermIndex(name);
     Term ret = {0};
     ret.atoms[0] = number;
-    assert(ret.atoms[0] > 0, "issue with encoding in Encode_Term");
     return ret;
 }
 
