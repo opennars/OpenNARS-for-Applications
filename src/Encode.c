@@ -5,7 +5,8 @@
 //size for the expanded array with spaces for tokenization, has at most 2 times the amount of chars as the replacement array
 #define EXPANSION_LEN REPLACEMENT_LEN*3
 
-char* replace(char *narsese, int n)
+//Replace copulas with canonical single-char copulas, including sets and set elements!
+char* replaceWithCanonicalCopulas(char *narsese, int n)
 {
     static char narsese_replaced[REPLACEMENT_LEN]; 
     memset(narsese_replaced, ' ', REPLACEMENT_LEN);
@@ -98,13 +99,14 @@ char* replace(char *narsese, int n)
     return narsese_replaced;
 }
 
+//Expands Narsese into by strtok(str," ") tokenizable string with canonical copulas
 char* Encode_Expand(char *narsese)
 {
     int n = strlen(narsese);
     //upper bound being 3* the multiplier of the previous upper bound
     static char narsese_expanded[EXPANSION_LEN]; 
     memset(narsese_expanded, ' ', EXPANSION_LEN);
-    char *narsese_replaced = replace(narsese, n);
+    char *narsese_replaced = replaceWithCanonicalCopulas(narsese, n);
     int k=0;
     for(int i=0; i<n; i++)
     {
@@ -128,7 +130,8 @@ char* Encode_Expand(char *narsese)
     return narsese_expanded;
 }
 
-int skip_compound(char** tokens, int i, int nt)
+//skips one compound term by counting parenthesis (1 for "(", -1 for ")") till counter becomes zero again, returning the component index right after it
+int skipCompound(char** tokens, int i, int nt)
 {
     int parenthesis_cnt = 0; //incremented for each (, decremented for each ), count will be zero after the compound again
     for(;i<nt; i++)
@@ -151,12 +154,12 @@ int skip_compound(char** tokens, int i, int nt)
 
 char** Encode_PrefixTransform(char* narsese_expanded)
 {
-    static char* copulas = "&|,;:$,'\"/\\.";
+    static char* canonical_copulas = "&|,;:$,'\"/\\.";
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
     char* token = strtok(narsese_expanded, " ");
     int nt=0;
-    int nc = strlen(copulas);
+    int nc = strlen(canonical_copulas);
     while(token)
     {
         tokens[nt] = token;
@@ -170,13 +173,13 @@ char** Encode_PrefixTransform(char* narsese_expanded)
         {
             for(int k=0; k<nc; k++)
             {
-                if(tokens[i+1][0]==(int)copulas[k] && tokens[i+1][1] == 0)
+                if(tokens[i+1][0]==(int)canonical_copulas[k] && tokens[i+1][1] == 0)
                 {
                     goto Continue;
                 }
             }
             //it's not a copula, so its in infix form, we need to find its copula and put it before tokens[i+1]
-            int i2 = skip_compound(tokens, i+1, nt);
+            int i2 = skipCompound(tokens, i+1, nt);
             //printf("not a copula %s\n", tokens[i+1]);
             //printf("copula found %s\n", tokens[i2]);
             if(i2 < nt)
@@ -200,6 +203,7 @@ char** Encode_PrefixTransform(char* narsese_expanded)
 }
 
 int term_index = 0;
+//Returns the memoized index of an already seen atomic term
 static int atomicTermIndex(char *name)
 {
     int ret_index = -1;
@@ -221,6 +225,7 @@ static int atomicTermIndex(char *name)
     return ret_index;
 }
 
+//Encodes a binary tree in an array, based on the the S-expression tokenization with prefix order
 void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index, int nt)
 {
     if(tokens_prefix[i1][0] == '(' && tokens_prefix[i1][1] == 0)
@@ -229,7 +234,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         //first argument is given by the copula
         i1 = i1+2;
         //second argument has to be searched for
-        int i2 = skip_compound(tokens_prefix, i1, nt);
+        int i2 = skipCompound(tokens_prefix, i1, nt);
         bintree->atoms[tree_index-1] = atomicTermIndex(tokens_prefix[icop]);
         if(i1<nt)
         {

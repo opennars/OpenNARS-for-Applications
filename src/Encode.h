@@ -29,16 +29,16 @@ Atom atoms[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
 
 //Methods//
 //-------//
-//
+//Initializes encoder
 void Encode_INIT();
 //Convert Narsese to expanded minimal Narsese
 char* Encode_Expand(char *narsese);
-//Tokenize minimal Narsese in prefix format
+//Tokenize minimal Narsese in prefix copula order
 char** Encode_PrefixTransform(char* narsese_expanded);
-//Parses a term in Narsese
+//Parses a Narsese string to a compound term
 Term Encode_Term(char *narsese);
-//Parses an atomic term in Narsese
+//Parses an atomic term string to a term
 Term Encode_AtomicTerm(char *name);
-//Print a term to Narsese
+//Print a term
 void Encode_PrintTerm(Term *term);
 #endif
