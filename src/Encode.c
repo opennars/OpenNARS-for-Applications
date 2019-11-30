@@ -99,7 +99,6 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
     return narsese_replaced;
 }
 
-//Expands Narsese into by strtok(str," ") tokenizable string with canonical copulas
 char* Encode_Expand(char *narsese)
 {
     int k = 0, n = strlen(narsese);
