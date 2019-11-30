@@ -30,7 +30,7 @@ Atom atoms[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
 void Encode_INIT();
 //Expands Narsese into by strtok(str," ") tokenizable string with canonical copulas
 char* Encode_Expand(char *narsese);
-//Tokenize minimal Narsese in prefix copula order
+//Tokenize expanded Narsese in prefix copula order
 char** Encode_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Encode_Term(char *narsese);
