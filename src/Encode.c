@@ -102,12 +102,11 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
 //Expands Narsese into by strtok(str," ") tokenizable string with canonical copulas
 char* Encode_Expand(char *narsese)
 {
-    int n = strlen(narsese);
+    int k = 0, n = strlen(narsese);
     //upper bound being 3* the multiplier of the previous upper bound
     static char narsese_expanded[EXPANSION_LEN]; 
     memset(narsese_expanded, ' ', EXPANSION_LEN);
     char *narsese_replaced = replaceWithCanonicalCopulas(narsese, n);
-    int k=0;
     for(int i=0; i<n; i++)
     {
         bool opener_closer = false;
@@ -134,7 +133,7 @@ char* Encode_Expand(char *narsese)
 int skipCompound(char** tokens, int i, int nt)
 {
     int parenthesis_cnt = 0; //incremented for each (, decremented for each ), count will be zero after the compound again
-    for(;i<nt; i++)
+    for(; i<nt; i++)
     {
         if(tokens[i][0] == '(' && tokens[i][1] == 0)
         {
@@ -158,12 +157,10 @@ char** Encode_PrefixTransform(char* narsese_expanded)
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
     char* token = strtok(narsese_expanded, " ");
-    int nt=0;
-    int nc = strlen(canonical_copulas);
+    int nt=0, nc = strlen(canonical_copulas);
     while(token)
     {
         tokens[nt] = token;
-        //printf("token: %s\n", token);
         token = strtok(NULL, " ");
         nt++;
     }
@@ -180,8 +177,6 @@ char** Encode_PrefixTransform(char* narsese_expanded)
             }
             //it's not a copula, so its in infix form, we need to find its copula and put it before tokens[i+1]
             int i2 = skipCompound(tokens, i+1, nt);
-            //printf("not a copula %s\n", tokens[i+1]);
-            //printf("copula found %s\n", tokens[i2]);
             if(i2 < nt)
             {
                 //1. backup copula token
