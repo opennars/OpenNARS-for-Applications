@@ -16,10 +16,8 @@
 //Parameters//
 //----------//
 #define TERMS_MAX 255
-#define TERMS_LEN 255
-#define TERM_ONES 5
-#define NARSESE_LEN_MAX 1000
 #define ATOMIC_TERM_LEN_MAX 30
+#define NARSESE_LEN_MAX 1000
 
 //Data structure//
 //--------------//
