@@ -1,5 +1,5 @@
-#ifndef H_SCALARENCODER
-#define H_SCALARENCODER
+#ifndef H_ENCODE
+#define H_ENCODE
 
 /////////////////////
 // Narsese encoder //
@@ -20,8 +20,8 @@
 
 //Data structure//
 //--------------//
-//Atomic terms:
-Atom atoms[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+//Atomic term names:
+Atom atom_names[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
 
 //Methods//
 //-------//
@@ -35,6 +35,8 @@ char** Encode_PrefixTransform(char* narsese_expanded);
 Term Encode_Term(char *narsese);
 //Parses an atomic term string to a term
 Term Encode_AtomicTerm(char *name);
+//Print an atom
+void Encode_PrintAtom(Atom atom);
 //Print a term
 void Encode_PrintTerm(Term *term);
 

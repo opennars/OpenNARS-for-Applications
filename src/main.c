@@ -1249,7 +1249,7 @@ void Parser_Test()
     {
         if(ret.atoms[i] != 0)
         {
-            printf("Subterm: %i %d %s\n", i, ret.atoms[i], atoms[ret.atoms[i]-1]);
+            printf("Subterm: %i %d %s\n", i, ret.atoms[i], atom_names[ret.atoms[i]-1]);
         }
     }
     puts("Result:");
@@ -1339,6 +1339,12 @@ void YAN_Alien()
     }
 }
 
+#include "NAL.h"
+void NAL_Test()
+{
+    NAL_Rules();
+}
+
 int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
@@ -1378,6 +1384,7 @@ int main(int argc, char *argv[])
     YAN_Multistep2_Test();
     Sequence_Test();
     Parser_Test();
+    NAL_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");

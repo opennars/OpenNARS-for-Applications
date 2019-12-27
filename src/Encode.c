@@ -203,7 +203,7 @@ static int atomicTermIndex(char *name)
     int ret_index = -1;
     for(int i=0; i<term_index; i++)
     {
-        if(!strcmp(atoms[i], name))
+        if(!strcmp(atom_names[i], name))
         {
             ret_index = i+1;
             break;
@@ -213,7 +213,7 @@ static int atomicTermIndex(char *name)
     {
         assert(term_index < 255, "Too many terms for YAN");
         ret_index = term_index+1;
-        strncpy(atoms[term_index], name, ATOMIC_TERM_LEN_MAX);
+        strncpy(atom_names[term_index], name, ATOMIC_TERM_LEN_MAX);
         term_index++;
     }
     return ret_index;
@@ -264,19 +264,24 @@ Term Encode_AtomicTerm(char *name)
     return ret;
 }
 
+void Encode_PrintAtom(Atom atom)
+{
+    if(atom)
+    {
+        fputs(atom_names[atom-1], stdout);
+        fputs(" ", stdout);
+    }
+    else
+    {
+        fputs("@ ", stdout);
+    }
+}
+
 void Encode_PrintTerm(Term *term)
 {
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        if(term->atoms[i] > 0)
-        {
-            fputs(atoms[term->atoms[i]-1], stdout);
-            fputs(" ", stdout);
-        }
-        else
-        {
-            fputs("@ ", stdout);
-        }
+        Encode_PrintAtom(term->atoms[i]);
     }
     puts("");
 }
@@ -285,6 +290,6 @@ void Encode_INIT()
 {
     for(int i=0; i<TERMS_MAX; i++)
     {
-        memset(&atoms[i], 0, ATOMIC_TERM_LEN_MAX);
+        memset(&atom_names[i], 0, ATOMIC_TERM_LEN_MAX);
     }
 }
