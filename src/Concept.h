@@ -24,6 +24,7 @@ typedef struct {
     Usage usage;
     Term term;
     //Term_HASH_TYPE term_hash;
+    Event belief; //the highest confident eternal belief
     Event belief_spike;
     Event incoming_goal_spike;
     Event goal_spike;

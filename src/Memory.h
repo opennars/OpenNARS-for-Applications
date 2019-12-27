@@ -24,6 +24,7 @@ extern double PROPAGATION_THRESHOLD;
 //--------------//
 //Data structures
 PriorityQueue concepts;
+PriorityQueue cycling_events;
 FIFO belief_events;
 FIFO goal_events;
 typedef void (*Action)(void);

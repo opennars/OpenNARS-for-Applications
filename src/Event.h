@@ -15,6 +15,7 @@
 #define EVENT_TYPE_GOAL 1
 #define EVENT_TYPE_BELIEF 2
 #define EVENT_TYPE_DELETED 0
+#define OCCURRENCE_ETERNAL -1
 typedef struct {
     Term term;
     //Term_HASH_TYPE term_hash;

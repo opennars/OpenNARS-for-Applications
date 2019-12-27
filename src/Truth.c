@@ -52,6 +52,11 @@ Truth Truth_Induction(Truth v1, Truth v2)
     return (Truth) {.frequency = f1, .confidence = c};;
 }
 
+Truth Truth_Abduction(Truth v1, Truth v2)
+{
+    return Truth_Induction(v2, v1);
+}
+
 Truth Truth_Intersection(Truth v1, Truth v2)
 {
     double f1 = v1.frequency;
