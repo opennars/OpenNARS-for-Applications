@@ -5,3 +5,4 @@ compileparams="-ffunction-sections -fdata-sections -Wl,--gc-sections -Wl,--print
 gcc $compileparams
 ./YAN NAL_GenerateRuleTable > ./src/RuleTable.c
 echo "Done."
+echo "Compile again on first compilation, or if changes to rule files have been made as well!"
