@@ -1258,6 +1258,87 @@ void Parser_Test()
     Encode_PrintTerm(&ret);
 }
 
+bool YAN_Alien_Left_executed = false;
+void YAN_Alien_Left()
+{
+    puts("YAN invoked left");
+    YAN_Alien_Left_executed = true;
+}
+bool YAN_Alien_Right_executed = false;
+void YAN_Alien_Right()
+{
+    puts("YAN invoked right");
+    YAN_Alien_Right_executed = true;
+}
+bool YAN_Alien_Shoot_executed = false;
+void YAN_Alien_Shoot()
+{
+    puts("YAN invoked shoot");
+    YAN_Alien_Shoot_executed = true;
+}
+void YAN_Alien()
+{
+    OUTPUT = 0;
+    YAN_INIT();
+    puts(">>YAN Alien1 start");
+    YAN_AddOperation(Encode_Term("op_left"), YAN_Alien_Left); 
+    YAN_AddOperation(Encode_Term("op_right"), YAN_Alien_Right); 
+    YAN_AddOperation(Encode_Term("op_shoot"), YAN_Alien_Shoot); 
+    double alien0X = 0.5;
+    double defenderX = 0.5;
+    double alienWidth = 0.18;
+    int hits = 0;
+    int shots = 0;
+    int t=0;
+    while(1)
+    {
+        if(t++%10000 == 0)
+        {
+            getchar();
+        }
+        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        bool cond1 = (defenderX <= alien0X - alienWidth);
+        bool cond2 = (defenderX >  alien0X + alienWidth);
+        if(cond1)
+        {
+            YAN_AddInputBelief(Encode_Term("r0"), 0);
+        }
+        else if(cond2)
+        {
+            YAN_AddInputBelief(Encode_Term("l0"), 0);
+        }
+        else
+        {
+            YAN_AddInputBelief(Encode_Term("c0"), 0);
+        }
+        YAN_AddInputGoal(Encode_Term("s0"));
+        if(YAN_Alien_Shoot_executed)
+        {
+            YAN_Alien_Shoot_executed = false;
+            shots++;
+            if(!cond1 && !cond2)
+            {
+                hits++;
+                YAN_AddInputBelief(Encode_Term("s0"), 0);
+                alien0X = ((double)(rand() % 1000)) / 1000.0;
+            }
+        }
+        if(YAN_Alien_Left_executed)
+        {
+            YAN_Alien_Left_executed = false;
+            defenderX = MAX(0.0, defenderX-0.1);
+        }
+        if(YAN_Alien_Right_executed)
+        {
+            YAN_Alien_Right_executed = false;
+            defenderX = MIN(1.0, defenderX+0.1);
+        }
+        printf("shots=%d hits=%d percenta=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
+        //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
+        //YAN_Cycles(10);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
@@ -1275,6 +1356,10 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[1],"testchamber"))
         {
             YAN_TestChamber();
+        }
+        if(!strcmp(argv[1],"alien"))
+        {
+            YAN_Alien();
         }
     }
     srand(1337);
