@@ -12,7 +12,7 @@
 
 //Methods//
 //-------//
-//Initializes encoder
-void NAL_Rules();
+//Generates inference rule code.
+void NAL_GenerateRuleTable();
 
 #endif

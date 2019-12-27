@@ -6,6 +6,7 @@
 #include "Memory.h"
 #include "Encode.h"
 #include "YAN.h"
+#include "NAL.h"
 
 void FIFO_Test()
 {
@@ -1339,18 +1340,17 @@ void YAN_Alien()
     }
 }
 
-#include "NAL.h"
-void NAL_Test()
-{
-    NAL_Rules();
-}
-
 int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);
     if(argc == 2) //pong
     {
+        if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
+        {
+            NAL_GenerateRuleTable();
+            exit(0);
+        }
         if(!strcmp(argv[1],"pong"))
         {
             YAN_Pong();
@@ -1384,7 +1384,6 @@ int main(int argc, char *argv[])
     YAN_Multistep2_Test();
     Sequence_Test();
     Parser_Test();
-    NAL_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");

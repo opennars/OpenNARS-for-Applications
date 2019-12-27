@@ -9,8 +9,8 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
         if(atom_names[atom-1][0]>= 'A' && atom_names[atom-1][0] <= 'Z')
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
-            printf("if(substitutions[%c] && substitutions[%c] != term%d.atoms[%d]){ goto RULE_%d; }\n", atom, atom, premiseIndex, i, ruleID);
-            printf("substitutions[%c] = term%d.atoms[%d];\n",atom, premiseIndex, i);
+            printf("if(substitutions[%d] && substitutions[%d] != term%d.atoms[%d]){ goto RULE_%d; }\n", atom, atom, premiseIndex, i, ruleID);
+            printf("substitutions[%d] = term%d.atoms[%d];\n",atom, premiseIndex, i);
         }
         else
         {
@@ -27,8 +27,8 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom, Term *conclusio
         if(atom_names[atom-1][0]>= 'A' && atom_names[atom-1][0] <= 'Z')
         {
             //conclusion term gets variables substituted
-            printf("assert(substitutions[%c]>0,\"Meta variable was not substituted, check inference rule!\");\n", atom);
-            printf("conclusion.atoms[%d] = substitutions[%c];\n", i, conclusion_term->atoms[i]);
+            printf("assert(substitutions[%d]>0,\"Meta variable was not substituted, check inference rule!\");\n", atom);
+            printf("conclusion.atoms[%d] = substitutions[%d];\n", i, conclusion_term->atoms[i]);
         }
         else
         {
@@ -66,11 +66,11 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
 //macro for syntactic representation, increases readability
 #define R(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction);
 
-void NAL_Rules()
+void NAL_GenerateRuleTable()
 {
     puts("void RuleTable(Term term1, Term term2, Truth truth1, Truth truth2)\n{");
-    R( (S --> M), (M --> P), ⊢, (S --> P), Truth_Deduction )
-    R( (A --> B), (A --> C), ⊢, (C --> B), Truth_Abduction )
-    R( (A --> C), (B --> C), ⊢, (B --> A), Truth_Induction )
+    R( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
+    R( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
+    R( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
     puts("}");
 }
