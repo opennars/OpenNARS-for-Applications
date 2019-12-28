@@ -129,7 +129,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_addEvent(&e, 0, true);
+    Memory_addEvent(&e, 0, true, false);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_FindConceptByTerm(&e.term, /*e.term_hash, */ &returnIndex), "a concept doesn't exist yet!");
@@ -145,7 +145,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_addEvent(&e2, 0, true);
+    Memory_addEvent(&e2, 0, true, false);
     Memory_Conceptualize(&e2.term);
     assert(Memory_FindConceptByTerm(&e2.term, /*Term_Hash(&e2.term),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;
@@ -161,14 +161,14 @@ void YAN_Alphabet_Test()
 {
     YAN_INIT();
     puts(">>YAN Alphabet test start");
-    YAN_AddInput(Encode_AtomicTerm("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
+    YAN_AddInput(Encode_AtomicTerm("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0,false);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            YAN_AddInput(Encode_AtomicTerm(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0);
+            YAN_AddInput(Encode_AtomicTerm(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH,0,false);
         }
         YAN_Cycles(1);
         puts("TICK");
@@ -1233,9 +1233,8 @@ void Sequence_Test()
 
 void Parser_Test()
 {
-    char* narsese = "<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>";
     puts(">>Parser test start");
-    
+    char* narsese = "<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>";
     printf("Narsese: %s\n", narsese);
     char* preprocessed = Encode_Expand("<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>");
     printf("Preprocessed: %s\n", preprocessed);
@@ -1255,8 +1254,10 @@ void Parser_Test()
     }
     puts("Result:");
     Encode_PrintTerm(&ret);
+    puts("");
     puts(">>Parser Test successul");
     Encode_PrintTerm(&ret);
+    puts("");
 }
 
 bool YAN_Alien_Left_executed = false;
@@ -1340,10 +1341,22 @@ void YAN_Alien()
     }
 }
 
+void RuleTable_Test()
+{
+    puts(">>RuleTable test start");
+    YAN_INIT();
+    YAN_AddInput(Encode_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, true);
+    YAN_AddInput(Encode_Term("<animal --> being>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, true);
+    YAN_Cycles(1);
+    puts(">>RuleTable Test successul");
+}
+
 int main(int argc, char *argv[])
 {
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);
+    srand(1337);
+    YAN_INIT();
     if(argc == 2) //pong
     {
         if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
@@ -1368,8 +1381,6 @@ int main(int argc, char *argv[])
             YAN_Alien();
         }
     }
-    srand(1337);
-    YAN_INIT();
     OUTPUT = 0;
     //Term_Test();
     Stamp_Test();
@@ -1384,6 +1395,7 @@ int main(int argc, char *argv[])
     YAN_Multistep2_Test();
     Sequence_Test();
     Parser_Test();
+    RuleTable_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");

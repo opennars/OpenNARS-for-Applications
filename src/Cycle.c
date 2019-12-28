@@ -159,12 +159,13 @@ void popEvents()
         if(!PriorityQueue_PopMax(&cycling_events, (void**) &e, &priority))
         {
             assert(cycling_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-            IN_DEBUG( printf("Selecting event failed, maybe there is no event left.\n"); )
+            IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
             break;
         }
         selectedEventsPriority[eventsSelected] = priority;
         selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
         eventsSelected++; //that while processing, would make recycled pointers invalid to use
+        puts("Event was selected!!");
     }
 }
 
@@ -176,14 +177,14 @@ void pushEvents(long currentTime)
         double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
         if(priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
         {
-            Memory_addEvent2(e, currentTime, priority, false);
+            Memory_addEvent2(e, currentTime, priority, false, false);
         }
     }   
 }
 
 void Cycle_Perform(long currentTime)
 {   
-    int eventsSelected = 0;
+    eventsSelected = 0;
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -274,19 +275,29 @@ void Cycle_Perform(long currentTime)
     }
     //Inferences
     popEvents();
+    printf("Events popped: %d\n", eventsSelected);
     for(int i=0; i<eventsSelected; i++)
     {
+        puts("Selected event!!!");
         Event *e = &selectedEvents[i];
         Memory_Conceptualize(&e->term);
-        IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
-        for(int i=0; i<concepts.itemsAmount; i++)
+        IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+        for(int j=0; j<concepts.itemsAmount; j++)
         {
-            Concept *c = concepts.items[i].address;
+            puts("Concept iter!!!");
+            Concept *c = concepts.items[j].address;
             if(c->belief.type != EVENT_TYPE_DELETED)
             {
+                puts("Event was considered!!!");
                 if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
                 {
+                    puts("No overlap!!!");
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
+                    fputs("Apply rule table on ", stdout);
+                    Encode_PrintTerm(&e->term);
+                    fputs(" and ", stdout);
+                    Encode_PrintTerm(&c->term);
+                    puts("");
                     RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime);
                 }
             }

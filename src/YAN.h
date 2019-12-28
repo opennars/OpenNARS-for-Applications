@@ -27,7 +27,7 @@ void YAN_INIT();
 //Run the system for a certain amount of cycles
 void YAN_Cycles(int cycles);
 //Add input
-Event YAN_AddInput(Term term, char type, Truth truth, int operationID);
+Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eternal);
 Event YAN_AddInputBelief(Term term, int operationID);
 Event YAN_AddInputGoal(Term term);
 //Add an operation

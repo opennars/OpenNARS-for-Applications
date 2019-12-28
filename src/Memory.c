@@ -94,8 +94,15 @@ static void Memory_addCyclingEvent(Event *event, double priority)
     }
 }
 
-void Memory_addEvent2(Event *event, long currentTime, double priority, bool input)
+void Memory_addEvent2(Event *event, long currentTime, double priority, bool input, bool derived)
 {
+    if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived))
+    {
+        fputs((input ? "Input: " : "Derived: "), stdout);
+        Encode_PrintTerm(&event->term);
+        fputs((event->type == EVENT_TYPE_BELIEF ? "." : "!"), stdout);
+        puts(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : " :|:");
+    }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
         if(input)
@@ -121,7 +128,7 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
             int concept_i;
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
-                Concept *c = concepts.items[concept_id].address;
+                Concept *c = concepts.items[concept_i].address;
                 c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime);
             }
             else
@@ -137,9 +144,9 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_addEvent(Event *event, long currentTime, bool input)
+void Memory_addEvent(Event *event, long currentTime, bool input, bool derived)
 {
-    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input);
+    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input, derived);
 }
 
 void Memory_addConcept(Concept *concept, long currentTime)

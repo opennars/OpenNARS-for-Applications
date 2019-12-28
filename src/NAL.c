@@ -82,5 +82,5 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .truth = conclusionTruth, 
                 .stamp = stamp,
                 .occurrenceTime = conclusionOccurrence };
-    Memory_addEvent(&e, currentTime, false);
+    Memory_addEvent(&e, currentTime, false, true);
 }

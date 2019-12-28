@@ -150,9 +150,9 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
+static char* canonical_copulas = "&|,;:$,'\"/\\.";
 char** Encode_PrefixTransform(char* narsese_expanded)
 {
-    static char* canonical_copulas = "&|,;:$,'\"/\\.";
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
     char* token = strtok(narsese_expanded, " ");
@@ -283,7 +283,6 @@ void Encode_PrintTerm(Term *term)
     {
         Encode_PrintAtom(term->atoms[i]);
     }
-    puts("");
 }
 
 void Encode_INIT()
@@ -292,4 +291,12 @@ void Encode_INIT()
     {
         memset(&atom_names[i], 0, ATOMIC_TERM_LEN_MAX);
     }
+    //index the copulas at first, to make sure these will have same index on next run
+    for(int i=0; i<(int) strlen(canonical_copulas); i++)
+    {
+        char cop[2] = {0, 0};
+        cop[0] = canonical_copulas[i];
+        atomicTermIndex(cop);
+    }
+    term_index = 0;
 }

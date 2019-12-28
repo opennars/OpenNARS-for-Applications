@@ -20,9 +20,13 @@ void YAN_Cycles(int cycles)
     }
 }
 
-Event YAN_AddInput(Term term, char type, Truth truth, int operationID)
+Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eternal)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
+    if(eternal)
+    {
+        ev.occurrenceTime = OCCURRENCE_ETERNAL;
+    }
     int closest_concept_i=0;
     if(Memory_FindConceptByTerm(&term, /*Term_Hash(&term),*/ &closest_concept_i))
     {
@@ -44,7 +48,7 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID)
         printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
     }
     ev.operationID = operationID;
-    Memory_addEvent(&ev, 0, true);
+    Memory_addEvent(&ev, 0, true, false);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     YAN_Cycles(1);
     return ev;
@@ -52,13 +56,13 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID)
 
 Event YAN_AddInputBelief(Term term, int operationID)
 {
-    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, operationID);
+    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, operationID, false);
     return ret;
 }
 
 Event YAN_AddInputGoal(Term term)
 {
-    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0);
+    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0, false);
 }
 
 void YAN_AddOperation(Term term, Action procedure)
