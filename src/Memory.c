@@ -100,8 +100,9 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
     {
         fputs((input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(&event->term);
-        fputs((event->type == EVENT_TYPE_BELIEF ? "." : "!"), stdout);
-        puts(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : " :|:");
+        fputs((event->type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
+        fputs(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
+        Truth_Print(&event->truth);
     }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {

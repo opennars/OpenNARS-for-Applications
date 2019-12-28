@@ -275,23 +275,19 @@ void Cycle_Perform(long currentTime)
     }
     //Inferences
     popEvents();
-    printf("Events popped: %d\n", eventsSelected);
     for(int i=0; i<eventsSelected; i++)
     {
-        puts("Selected event!!!");
         Event *e = &selectedEvents[i];
         Memory_Conceptualize(&e->term);
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
         for(int j=0; j<concepts.itemsAmount; j++)
         {
-            puts("Concept iter!!!");
             Concept *c = concepts.items[j].address;
             if(c->belief.type != EVENT_TYPE_DELETED)
             {
-                puts("Event was considered!!!");
                 if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
                 {
-                    puts("No overlap!!!");
+#if STAGE==2
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
                     fputs("Apply rule table on ", stdout);
                     Encode_PrintTerm(&e->term);
@@ -299,6 +295,7 @@ void Cycle_Perform(long currentTime)
                     Encode_PrintTerm(&c->term);
                     puts("");
                     RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime);
+#endif
                 }
             }
         }

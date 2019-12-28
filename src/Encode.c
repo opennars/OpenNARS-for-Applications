@@ -277,12 +277,38 @@ void Encode_PrintAtom(Atom atom)
     }
 }
 
+void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1!
+{
+    Atom atom = term->atoms[index-1];
+    if(!atom)
+    {
+        return;
+    }
+    int child1 = index*2;
+    int child2 = index*2+1;
+    bool hasChild = child1 < NARSESE_LEN_MAX && term->atoms[child1-1];
+    if(hasChild)
+    {
+        fputs("(", stdout);
+    }
+    if(child1 < NARSESE_LEN_MAX)
+    {
+        Encode_PrintTermPrettyRecursive(term, child1);
+    }
+    Encode_PrintAtom(atom);
+    if(child2 < NARSESE_LEN_MAX)
+    {
+        Encode_PrintTermPrettyRecursive(term, child2);
+    }
+    if(hasChild)
+    {
+        fputs(")", stdout);
+    }
+}
+
 void Encode_PrintTerm(Term *term)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-    {
-        Encode_PrintAtom(term->atoms[i]);
-    }
+    Encode_PrintTermPrettyRecursive(term, 1);
 }
 
 void Encode_INIT()
@@ -294,8 +320,7 @@ void Encode_INIT()
     //index the copulas at first, to make sure these will have same index on next run
     for(int i=0; i<(int) strlen(canonical_copulas); i++)
     {
-        char cop[2] = {0, 0};
-        cop[0] = canonical_copulas[i];
+        char cop[2] = {canonical_copulas[i], 0};
         atomicTermIndex(cop);
     }
     term_index = 0;
