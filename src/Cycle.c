@@ -147,8 +147,43 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
 }
 
+int eventsSelected = 0;
+Event selectedEvents[EVENT_SELECTIONS]; //better to be global
+double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
+void popEvents()
+{
+    for(int i=0; i<EVENT_SELECTIONS; i++)
+    {
+        Event *e;
+        double priority = 0;
+        if(!PriorityQueue_PopMax(&cycling_events, (void**) &e, &priority))
+        {
+            assert(cycling_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+            IN_DEBUG( printf("Selecting event failed, maybe there is no event left.\n"); )
+            break;
+        }
+        selectedEventsPriority[eventsSelected] = priority;
+        selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
+        eventsSelected++; //that while processing, would make recycled pointers invalid to use
+    }
+}
+
+void pushEvents(long currentTime)
+{
+    for(int i=0; i<eventsSelected; i++)
+    {
+        Event *e = &selectedEvents[i];
+        double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
+        if(priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
+        {
+            Memory_addEvent2(e, currentTime, priority, false);
+        }
+    }   
+}
+
 void Cycle_Perform(long currentTime)
 {   
+    int eventsSelected = 0;
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -237,6 +272,29 @@ void Cycle_Perform(long currentTime)
         c->incoming_goal_spike = (Event) {0};
         c->goal_spike = (Event) {0};
     }
-    //Re-sort queue
+    //Inferences
+    popEvents();
+    for(int i=0; i<eventsSelected; i++)
+    {
+        Event *e = &selectedEvents[i];
+        Memory_Conceptualize(&e->term);
+        IN_DEBUG( printf("Event was selected:\n"); Event_Print(e); )
+        for(int i=0; i<concepts.itemsAmount; i++)
+        {
+            Concept *c = concepts.items[i].address;
+            if(c->belief.type != EVENT_TYPE_DELETED)
+            {
+                if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
+                {
+                    Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
+                    RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime);
+                }
+            }
+        }
+    }
+    //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
+    PriorityQueue_Rebuild(&cycling_events);
+    //push selected events back to the queue as well
+    pushEvents(currentTime);
 }

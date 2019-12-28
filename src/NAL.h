@@ -8,12 +8,16 @@
 
 //References//
 //----------//
+#include "Truth.h"
+#include "Stamp.h"
 #include "Encode.h"
+#include "Memory.h"
 
 //Methods//
 //-------//
 //Generates inference rule code
 void NAL_GenerateRuleTable();
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime);
 
 #endif
 

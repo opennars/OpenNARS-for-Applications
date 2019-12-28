@@ -77,6 +77,10 @@ Truth Truth_Eternalize(Truth v)
 
 Truth Truth_Projection(Truth v, long originalTime, long targetTime)
 {
+    if(originalTime == OCCURRENCE_ETERNAL)
+    {
+        return v;
+    }
     double difference = labs(targetTime - originalTime);
     return (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference)};
 }

@@ -61,16 +61,26 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
         NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i], &conclusion_term);
     }
     printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
-    puts("derivedEvent(conclusion, conclusionTruth);");
+    puts("NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime);");
     puts("}");
 }
 
 void NAL_GenerateRuleTable()
 {
     puts("#include \"RuleTable.h\"");
-    puts("void RuleTable(Term term1, Term term2, Truth truth1, Truth truth2)\n{");
+    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime)\n{\ngoto RULE_0;");
 #define H_NAL_RULES
 #include "NAL.h"
 #undef H_NAL_RULES
     printf("RULE_%d:;\n}\n", ruleID);
+}
+
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime)
+{
+    Event e = { .term = conclusionTerm,
+                .type = EVENT_TYPE_BELIEF, 
+                .truth = conclusionTruth, 
+                .stamp = stamp,
+                .occurrenceTime = conclusionOccurrence };
+    Memory_addEvent(&e, currentTime, false);
 }

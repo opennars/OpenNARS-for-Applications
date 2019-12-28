@@ -1,3 +1,4 @@
+rm YAN
 Str=`ls src/*.c | xargs`
 echo $Str
 echo "Compilation started: Unused code will be printed and removed from the binary:"

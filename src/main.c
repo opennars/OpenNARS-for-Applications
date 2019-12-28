@@ -129,7 +129,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_addEvent(&e);
+    Memory_addEvent(&e, 0, true);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
     assert(!Memory_FindConceptByTerm(&e.term, /*e.term_hash, */ &returnIndex), "a concept doesn't exist yet!");
@@ -145,7 +145,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_addEvent(&e2);
+    Memory_addEvent(&e2, 0, true);
     Memory_Conceptualize(&e2.term);
     assert(Memory_FindConceptByTerm(&e2.term, /*Term_Hash(&e2.term),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;

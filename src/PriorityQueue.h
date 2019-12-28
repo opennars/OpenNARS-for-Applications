@@ -47,6 +47,10 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress);
 //Rebuilds the data structure by re-inserting all elements:
 void PriorityQueue_Rebuild(PriorityQueue *queue);
+//Pops minimum element
+bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress, double* returnItemPriority);
+//Pops maximum element
+bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress, double* returnItemPriority);
 
 #endif
 

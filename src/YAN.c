@@ -44,7 +44,7 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID)
         printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
     }
     ev.operationID = operationID;
-    Memory_addEvent(&ev);
+    Memory_addEvent(&ev, 0, true);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     YAN_Cycles(1);
     return ev;

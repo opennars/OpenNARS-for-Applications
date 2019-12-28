@@ -13,7 +13,9 @@
 
 //Parameters//
 //----------//
-#define CONCEPTS_MAX 1024 //always adjust both
+#define CONCEPTS_MAX 1024
+#define CYCLING_EVENTS_MAX 1024
+#define CYCLING_EVENTS_SELECT 10
 #define USE_HASHING true
 #define PROPAGATE_GOAL_SPIKES true
 #define PROPAGATION_THRESHOLD_INITIAL 0.501
@@ -22,9 +24,11 @@ extern double PROPAGATION_THRESHOLD;
 
 //Data structure//
 //--------------//
-//Data structures
+//Concepts in main memory:
 PriorityQueue concepts;
+//cycling events cycling in main memory:
 PriorityQueue cycling_events;
+//Input event buffers:
 FIFO belief_events;
 FIFO goal_events;
 typedef void (*Action)(void);
@@ -46,7 +50,8 @@ void Memory_Conceptualize(Term *term);
 //Add an already existing concept to memory that was taken out from the concept priority queue
 void Memory_addConcept(Concept *concept, long currentTime);
 //Add event to memory
-bool Memory_addEvent(Event *event);
+void Memory_addEvent2(Event *event, long currentTime, double priority, bool input);
+void Memory_addEvent(Event *event, long currentTime, bool input);
 //Add operation to memory
 void Memory_addOperation(Operation op);
 //check if implication is still valid (source concept might be forgotten)

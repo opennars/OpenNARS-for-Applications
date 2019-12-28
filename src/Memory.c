@@ -4,12 +4,20 @@ double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
 
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
+Event cycling_event_storage[CYCLING_EVENTS_MAX];
+Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
 int operations_index = 0;
 
 static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
+    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_EVENTS_MAX);
+    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
+    {
+        cycling_event_storage[i] = (Event) {0};
+        cycling_events.items[i] = (Item) { .address = &(cycling_event_storage[i]) };
+    }
 }
 
 static void Memory_ResetConcepts()
@@ -74,20 +82,64 @@ void Memory_Conceptualize(Term *term)
     }
 }
 
-bool Memory_addEvent(Event *event)
+//Add event for cycling through the system (inference and context)
+//called by addEvent for eternal knowledge
+static void Memory_addCyclingEvent(Event *event, double priority)
 {
-    if(event->type == EVENT_TYPE_BELIEF)
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
+    if(feedback.added)
     {
-        FIFO_Add(event, &belief_events); //not revised yet
-        return true;
+        Event *toRecyle = feedback.addedItem.address;
+        *toRecyle = *event;
     }
-    if(event->type == EVENT_TYPE_GOAL)
+}
+
+void Memory_addEvent2(Event *event, long currentTime, double priority, bool input)
+{
+    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
-        FIFO_Add(event, &goal_events);
-        return true;
+        if(input)
+        {
+            if(event->type == EVENT_TYPE_BELIEF)
+            {
+                FIFO_Add(event, &belief_events); //not revised yet
+            }
+            else
+            if(event->type == EVENT_TYPE_GOAL)
+            {
+                FIFO_Add(event, &goal_events);
+            }
+        }
     }
-    assert(false, "errornous event type");
-    return true;
+    else
+    {
+        if(event->type == EVENT_TYPE_BELIEF)
+        {
+            Memory_addCyclingEvent(event, priority);
+            //eternal ones get conceptualized and event added directly
+            Memory_Conceptualize(&event->term);
+            int concept_i;
+            if(Memory_FindConceptByTerm(&event->term, &concept_i))
+            {
+                Concept *c = concepts.items[concept_id].address;
+                c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime);
+            }
+            else
+            {
+                assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
+            }
+        }
+        else
+        {
+            assert(false, "Eternal goals are not supported");
+        }
+    }
+    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
+}
+
+void Memory_addEvent(Event *event, long currentTime, bool input)
+{
+    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input);
 }
 
 void Memory_addConcept(Concept *concept, long currentTime)

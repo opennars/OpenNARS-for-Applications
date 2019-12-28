@@ -28,6 +28,7 @@ extern double TRUTH_EVIDENTAL_HORIZON;
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 extern double TRUTH_PROJECTION_DECAY;
 #define TRUTH_EPSILON 0.01
+#define OCCURRENCE_ETERNAL -1
 
 //Methods//
 //-------//

@@ -140,7 +140,7 @@ void bubbleUp(PriorityQueue *queue, int i)
     }
 }
 
-static bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress)
+bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress, double* returnItemPriority)
 {
     if(queue->itemsAmount == 0)
     {
@@ -150,7 +150,36 @@ static bool PriorityQueue_PopMin(PriorityQueue *queue, void** returnItemAddress)
     swap(queue, 0, queue->itemsAmount-1);
     queue->itemsAmount--;
     trickleDown(queue, 0, false); //enforce minmax heap property
-    *returnItemAddress = item.address; 
+    if(returnItemAddress != NULL)
+    {
+        *returnItemAddress = item.address;
+    }
+    if(returnItemPriority != NULL)
+    {
+        *returnItemPriority = item.priority;
+    }
+    return true;
+}
+
+bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress, double* returnItemPriority)
+{
+    if(queue->itemsAmount == 0)
+    {
+        return false;
+    }
+    int p = smallestChild(queue, 0, true);
+    Item item = at(p);
+    swap(queue, p, queue->itemsAmount-1); //swap max with last item
+    queue->itemsAmount--;
+    trickleDown(queue, p, true); //enforce minmax heap property
+    if(returnItemAddress != NULL)
+    {
+        *returnItemAddress = item.address;
+    }
+    if(returnItemPriority != NULL)
+    {
+        *returnItemPriority = item.priority;
+    }
     return true;
 }
 
@@ -167,7 +196,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
         }
         feedback.evicted = true;
         feedback.evictedItem.priority = minPriority;
-        PriorityQueue_PopMin(queue, &feedback.evictedItem.address);
+        PriorityQueue_PopMin(queue, &feedback.evictedItem.address, NULL);
     }
     at(queue->itemsAmount).priority = priority;
     if(feedback.evicted)
