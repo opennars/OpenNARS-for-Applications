@@ -1405,6 +1405,8 @@ int main(int argc, char *argv[])
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");
     puts("YAN testchamber (starts Test Chamber multistep procedure learning example)");
+    puts("YAN alien (starts the alien example)");
+    puts("YAN shell (starts the interactive NAL shell)");
     return 0;
 }
 
