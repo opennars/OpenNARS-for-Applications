@@ -165,7 +165,6 @@ void popEvents()
         selectedEventsPriority[eventsSelected] = priority;
         selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
         eventsSelected++; //that while processing, would make recycled pointers invalid to use
-        puts("Event was selected!!");
     }
 }
 

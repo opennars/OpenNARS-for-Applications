@@ -2,6 +2,8 @@
 
 void Shell_Start()
 {
+    YAN_INIT();
+    OUTPUT = 0;
     for(;;)
     {
         char line[1024];
