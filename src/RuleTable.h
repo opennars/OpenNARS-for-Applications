@@ -9,13 +9,11 @@
 
 //References//
 //----------//
-//#include "Term.h"
-//#include "Truth.h"
 #include "Memory.h"
 #include "NAL.h"
 
 //Methods//
 //-------//
-extern void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime);
+void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime);
 
 #endif

@@ -7,6 +7,7 @@
 #include "Encode.h"
 #include "YAN.h"
 #include "NAL.h"
+#include "Shell.h"
 
 void FIFO_Test()
 {
@@ -1379,6 +1380,10 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[1],"alien"))
         {
             YAN_Alien();
+        }
+        if(!strcmp(argv[1],"shell"))
+        {
+            Shell_Start();
         }
     }
     OUTPUT = 0;

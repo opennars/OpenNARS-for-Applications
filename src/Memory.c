@@ -1,7 +1,7 @@
 #include "Memory.h"
 
 double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
-
+bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
