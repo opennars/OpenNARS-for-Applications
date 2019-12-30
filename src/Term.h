@@ -39,5 +39,9 @@ void Term_Print(Term *term);
 Term Term_Sequence(Term *a, Term *b);
 //Whether two Term's are equal completely
 bool Term_Equal(Term *a, Term *b);
+//Overwrites a subterm
+void Term_OverrideSubterm(Term *term, int i, Term *subterm);
+//Extract a subterm as a term
+Term Term_ExtractSubterm(Term *term, int j);
 
 #endif

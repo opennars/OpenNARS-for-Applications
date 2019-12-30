@@ -1,6 +1,7 @@
 #include "YAN.h"
 
 long currentTime = 1;
+bool INPUT = true;
 
 void YAN_INIT()
 {
@@ -45,7 +46,10 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eter
             strcpy(ev.debug, c->debug);
         }
         char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
-        printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
+        if(INPUT) //TODO, this was ANSNA/MSC's way to print input, not required anymore!
+        {
+            printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
+        }
     }
     ev.operationID = operationID;
     Memory_addEvent(&ev, 0, true, false);

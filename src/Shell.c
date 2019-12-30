@@ -4,6 +4,7 @@ void Shell_Start()
 {
     YAN_INIT();
     OUTPUT = 0;
+    INPUT = false;
     for(;;)
     {
         char line[1024];
@@ -23,6 +24,13 @@ void Shell_Start()
             if(!strcmp(line,"*volume=100"))
             {
                 PRINT_DERIVATIONS = true;
+            }
+            else
+            if(!strcmp(line,"100000"))
+            {
+                puts("performing 100k inference steps:");
+                YAN_Cycles(100000);
+                puts("done with 100k additional inference steps.");
             }
             else
             {

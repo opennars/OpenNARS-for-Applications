@@ -9,7 +9,6 @@
 
 //References//
 //----------//
-#include "Memory.h"
 #include "NAL.h"
 
 //Methods//

@@ -90,7 +90,7 @@ static Decision Cycle_PropagateSpikes(long currentTime)
             Concept *c = concepts.items[i].address;
             if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
             {
-                c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime);
+                c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
                 if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
                 {
                     Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
@@ -162,6 +162,15 @@ void popEvents()
             IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
             break;
         }
+        int concept_i = 0;
+        if(Memory_FindConceptByTerm(&e->term, &concept_i))
+        {
+            Concept *c = concepts.items[i].address;
+            if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && c->belief.truth.confidence > e->truth.confidence)
+            {
+                continue; //the belief has a higher confidence and was already revised up, get rid of the task!
+            }   //more radical than OpenNARS!
+        }
         selectedEventsPriority[eventsSelected] = priority;
         selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
         eventsSelected++; //that while processing, would make recycled pointers invalid to use
@@ -176,7 +185,7 @@ void pushEvents(long currentTime)
         double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
         if(priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
         {
-            Memory_addEvent2(e, currentTime, priority, false, false);
+            Memory_addEvent2(e, currentTime, priority, false, false, true, false);
         }
     }   
 }

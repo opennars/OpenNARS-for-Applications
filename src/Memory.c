@@ -94,20 +94,26 @@ static void Memory_addCyclingEvent(Event *event, double priority)
     }
 }
 
-void Memory_addEvent2(Event *event, long currentTime, double priority, bool input, bool derived)
+static void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
 {
     if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived))
     {
-        fputs((input ? "Input: " : "Derived: "), stdout);
+        fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(&event->term);
         fputs((event->type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         fputs(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
         Truth_Print(&event->truth);
     }
+}
+
+void Memory_addEvent2(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
+{
+    Memory_printAddedEvent(event, priority, input, derived, revised);
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
         if(input)
         {
+            //process event
             if(event->type == EVENT_TYPE_BELIEF)
             {
                 FIFO_Add(event, &belief_events); //not revised yet
@@ -123,18 +129,31 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
     {
         if(event->type == EVENT_TYPE_BELIEF)
         {
-            Memory_addCyclingEvent(event, priority);
-            //eternal ones get conceptualized and event added directly
-            Memory_Conceptualize(&event->term);
-            int concept_i;
-            if(Memory_FindConceptByTerm(&event->term, &concept_i))
+            bool revision_happened = false;
+            if(!readded)
             {
-                Concept *c = concepts.items[concept_i].address;
-                c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime);
+                //process eternal knowledge
+                //eternal ones get conceptualized and event added directly
+                Memory_Conceptualize(&event->term);
+                int concept_i;
+                if(Memory_FindConceptByTerm(&event->term, &concept_i))
+                {
+                    Concept *c = concepts.items[concept_i].address;
+                    c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime, &revision_happened);
+                    if(revision_happened)
+                    {
+                        revision_happened = true;
+                        Memory_addEvent2(&c->belief, currentTime, priority, input, derived, false, true);
+                    }
+                }
+                else
+                {
+                    assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
+                }
             }
-            else
+            if(!revision_happened)
             {
-                assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
+                Memory_addCyclingEvent(event, priority); //task gets replaced with revised one, more radical than OpenNARS!!
             }
         }
         else
@@ -147,7 +166,7 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
 
 void Memory_addEvent(Event *event, long currentTime, bool input, bool derived)
 {
-    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input, derived);
+    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input, derived, false, false);
 }
 
 void Memory_addConcept(Concept *concept, long currentTime)

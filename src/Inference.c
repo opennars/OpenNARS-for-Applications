@@ -39,7 +39,6 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 //{Event a!, Event a!} |- Event a!
 static Event Inference_EventRevision(Event *a, Event *b)
 {
-    assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .term = a->term, 
                      .type = a->type,
@@ -94,8 +93,12 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
 }
 
 //{Event a!, Event a!} |- Event a! (revision and choice)
-Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime)
+Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised)
 {
+    if(revised != NULL)
+    {
+        *revised = false;
+    }
     if(existing_potential->type == EVENT_TYPE_DELETED)
     {
         return *incoming_spike;
@@ -120,6 +123,10 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
             Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
             if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
             {
+                if(revised != NULL)
+                {
+                    *revised = true;
+                }
                 return revised_spike;
             }
             //lower, also use choice
