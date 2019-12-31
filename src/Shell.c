@@ -47,8 +47,7 @@ void Shell_Start()
                         
                         for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
                         {
-                            if(c->term.atoms[j] != term.atoms[j] &&
-                               atom_names[term.atoms[j]-1][0] != '?') //rudimentar question var for now
+                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && atom_names[term.atoms[j]-1][0] != '?') //rudimentar question var for now
                             {
                                 goto Continue;
                             }
