@@ -156,7 +156,7 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "&|,;:=$'\"/\\.";
+static char* canonical_copulas = "*&|;:=$'\"/\\.-%#";
 char** Encode_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
