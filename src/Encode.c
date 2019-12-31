@@ -43,7 +43,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
             i++; j++; 
         }
         else
-        if(narsese[i] == '<') // < becomes (
+        if(narsese[i] == '<' && narsese[i+1] != '-') // < becomes (
         {
             narsese_replaced[j] = '(';
             i++; j++; 
@@ -68,6 +68,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] == '>') // --> becomes :
                 {
                     narsese_replaced[j] = ':';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '<' && narsese[i+1] == '-' && narsese[i+2] == '>') // -<-> becomes :
+                {
+                    narsese_replaced[j] = '=';
                     i+=3; j++;
                 }
                 else
@@ -150,7 +156,7 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "&|,;:$,'\"/\\.";
+static char* canonical_copulas = "&|,;:=$'\"/\\.";
 char** Encode_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
@@ -313,6 +319,7 @@ void Encode_PrintTerm(Term *term)
 
 void Encode_INIT()
 {
+    term_index = 0;
     for(int i=0; i<TERMS_MAX; i++)
     {
         memset(&atom_names[i], 0, ATOMIC_TERM_LEN_MAX);
@@ -323,5 +330,4 @@ void Encode_INIT()
         char cop[2] = {canonical_copulas[i], 0};
         atomicTermIndex(cop);
     }
-    term_index = 0;
 }

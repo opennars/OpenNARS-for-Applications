@@ -43,5 +43,10 @@ Truth Truth_Intersection(Truth v1, Truth v2);
 Truth Truth_Eternalize(Truth v);
 Truth Truth_Projection(Truth v, long originalTime, long targetTime);
 void Truth_Print(Truth *truth);
+//not part of MSC:
+Truth Truth_Exemplification(Truth v1, Truth v2);
+Truth Truth_Comparison(Truth v1, Truth v2);
+Truth Truth_Analogy(Truth v1, Truth v2);
+Truth Truth_Resemblance(Truth v1, Truth v2);
 
 #endif

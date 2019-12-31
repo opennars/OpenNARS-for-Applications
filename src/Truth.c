@@ -30,39 +30,32 @@ Truth Truth_Revision(Truth v1, Truth v2)
     return (Truth) {.frequency = f, .confidence = MIN(1.0-TRUTH_EPSILON, MAX(MAX(c, v1.confidence), v2.confidence))};
 }
 
+#define TruthValues(v1,v2, f1,c1, f2,c2) double f1 = v1.frequency; double f2 = v2.frequency; double c1 = v1.confidence; double c2 = v2.confidence;
+
 Truth Truth_Deduction(Truth v1, Truth v2)
 {
-    double f1 = v1.frequency;
-    double f2 = v2.frequency;
-    double c1 = v1.confidence;
-    double c2 = v2.confidence;
+    TruthValues(v1,v2, f1,c1, f2,c2);
     double f = f1 * f2;
     double c = c1 * c2 * f;
     return (Truth) {.frequency = f, .confidence = c};
 }
 
-Truth Truth_Induction(Truth v1, Truth v2)
-{
-    double f1 = v2.frequency;
-    double f2 = v1.frequency;
-    double c1 = v2.confidence;
-    double c2 = v1.confidence;
-    double w = f2 * c1 * c2;
-    double c = Truth_w2c(w);
-    return (Truth) {.frequency = f1, .confidence = c};;
-}
-
 Truth Truth_Abduction(Truth v1, Truth v2)
 {
-    return Truth_Induction(v2, v1);
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double w = f2 * c1 * c2;
+    double c = Truth_w2c(w);
+    return (Truth) {.frequency = f1, .confidence = c};
+}
+
+Truth Truth_Induction(Truth v1, Truth v2)
+{
+    return Truth_Abduction(v2, v1);
 }
 
 Truth Truth_Intersection(Truth v1, Truth v2)
 {
-    double f1 = v1.frequency;
-    double f2 = v2.frequency;
-    double c1 = v1.confidence;
-    double c2 = v2.confidence;
+    TruthValues(v1,v2, f1,c1, f2,c2);
     double f = f1 * f2;
     double c = c1 * c2;
     return (Truth) {.frequency = f, .confidence = c};
@@ -88,4 +81,45 @@ Truth Truth_Projection(Truth v, long originalTime, long targetTime)
 void Truth_Print(Truth *truth)
 {
     printf("Truth: frequency=%f, confidence=%f\n", truth->frequency, truth->confidence);
+}
+
+//not part of MSC:
+
+Truth Truth_Exemplification(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double w = f1 * f2 * c1 * c2;
+    double c = Truth_w2c(w);
+    return (Truth) {.frequency = 1.0, .confidence = c};
+}
+
+static inline double or(double a, double b)
+{
+    return 1.0 - (1.0 - a) * (1.0 - b);
+}
+
+Truth Truth_Comparison(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double f0 = or(f1, f2);
+    double f = (f0 == 0.0) ? 0.0 : ((f1*f2) / f0);
+    double w = f0 * c1 * c2;
+    double c = Truth_w2c(w);
+    return (Truth) {.frequency = f, .confidence = c};
+}
+
+Truth Truth_Analogy(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double f = f1 * f2;
+    double c = c1 * c2 * f2;
+    return (Truth) {.frequency = f, .confidence = c};
+}
+
+Truth Truth_Resemblance(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double f = f1 * f2;
+    double c = c1 * c2 * or(f1, f2);
+    return (Truth) {.frequency = f, .confidence = c};
 }

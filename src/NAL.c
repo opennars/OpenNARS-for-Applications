@@ -23,7 +23,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
     }
 }
 
-static void NAL_GenerateConclusionSubstitution(int i, Atom atom, Term *conclusion_term)
+static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
 {
     if(atom)
     {
@@ -31,12 +31,12 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom, Term *conclusio
         {
             //conclusion term gets variables substituted
             //printf("assert(substitutions[%d]>0,\"Meta variable was not substituted, check inference rule!\");\n", atom);
-            printf("Term_OverrideSubterm(&conclusion,%d,&substitutions[%d]);\n", i, conclusion_term->atoms[i]);
+            printf("Term_OverrideSubterm(&conclusion,%d,&substitutions[%d]);\n", i, atom);
         }
         else
         {
             //conclusion term inherits structure from meta rule, namely the copula
-            printf("conclusion.atoms[%d] = %d;\n", i, conclusion_term->atoms[i]);
+            printf("conclusion.atoms[%d] = %d;\n", i, atom);
         }
     }
 }
@@ -59,7 +59,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     puts("Term conclusion = {0};");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i], &conclusion_term);
+        NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i]);
     }
     printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     puts("NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime);");

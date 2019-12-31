@@ -29,5 +29,13 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 R( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
 R( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
+R( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
+//NAL2 rules
+R( (S --> P), (P --> S), |-, (S <-> P), Truth_Intersection )
+//R( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
+//R( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
+//R( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
+//R( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
+//R( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 
 #endif
