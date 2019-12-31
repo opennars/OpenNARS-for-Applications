@@ -34,19 +34,18 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
     Decision decision = {0};
+    //add a new concept for e if not yet existing
+    Memory_Conceptualize(&e->term);
     e->processed = true;
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
-    int closest_concept_i;
-    Concept *c = NULL;
-    if(Memory_FindConceptByTerm(&e->term, /*e->term_hash,*/ &closest_concept_i))
+    int concept_i;
+    if(Memory_FindConceptByTerm(&e->term, /*e->term_hash,*/ &concept_i))
     {
-        c = concepts.items[closest_concept_i].address;
+        Concept *c = concepts.items[concept_i].address;
         decision = Cycle_ActivateConcept(c, e, currentTime);
     }
-    //add a new concept for e too at the end
-    Memory_Conceptualize(&e->term);
     return decision;
 }
 

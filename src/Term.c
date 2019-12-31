@@ -41,7 +41,7 @@ Term Term_Sequence(Term *a, Term *b)
 
 bool Term_Equal(Term *a, Term *b)
 {
-    for(int i=0; i<MAX_SEQUENCE_LEN; i++)
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(a->atoms[i] != b->atoms[i])
         {

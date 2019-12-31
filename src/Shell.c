@@ -34,7 +34,32 @@ void Shell_Start()
             }
             else
             {
-                YAN_AddInput(Encode_Term(line), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, true);
+                Term term = Encode_Term(line);
+                if(line[strlen(line)-1] == '?')
+                {
+                    int concept_i = 0;
+                    if(Memory_FindConceptByTerm(&term, &concept_i))
+                    {
+                        Concept *c = concepts.items[concept_i].address;
+                        if(c->belief.type != EVENT_TYPE_DELETED)
+                        {
+                            fputs("Answer: ", stdout);
+                            Truth_Print(&c->belief.truth);
+                        }
+                        else
+                        {
+                            puts("No belief yet");
+                        }
+                    }
+                    else
+                    {
+                        puts("No concept yet");
+                    }
+                }
+                else
+                {
+                    YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, true);
+                }
             }
         }
         memset(line, 0, 1024);
