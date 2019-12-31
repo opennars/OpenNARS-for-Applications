@@ -37,7 +37,7 @@ R( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
 R( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
 R( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
 R( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
-//union and intersection
+//NAL3 rules
 R( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
 R( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )
 R( (P --> M), (S --> M), |-, ((S ~ P) --> M), Truth_Difference )
