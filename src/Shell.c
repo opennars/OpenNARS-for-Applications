@@ -35,26 +35,35 @@ void Shell_Start()
             else
             {
                 Term term = Encode_Term(line);
+                Truth best_truth = {0};
                 if(line[strlen(line)-1] == '?')
                 {
                     int concept_i = 0;
-                    if(Memory_FindConceptByTerm(&term, &concept_i))
+                    for(int i=0; i<concepts.itemsAmount; i++)
                     {
-                        Concept *c = concepts.items[concept_i].address;
+                        Concept *c = concepts.items[i].address;
+                        //now match the concept term, for now just ignoring the question variables
+                        //TODO use unification approach as the generated RuleTable already uses.
+                        
+                        for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+                        {
+                            if(c->term.atoms[j] != term.atoms[j] &&
+                               atom_names[term.atoms[j]-1][0] != '?') //rudimentar question var for now
+                            {
+                                goto Continue;
+                            }
+                        }
                         if(c->belief.type != EVENT_TYPE_DELETED)
                         {
-                            fputs("Answer: ", stdout);
-                            Truth_Print(&c->belief.truth);
+                            if(Truth_Expectation(c->belief.truth) > Truth_Expectation(best_truth))
+                            {
+                                best_truth = c->belief.truth;
+                            }
                         }
-                        else
-                        {
-                            puts("No belief yet");
-                        }
+                        Continue:;
                     }
-                    else
-                    {
-                        puts("No concept yet");
-                    }
+                    fputs("Answer: ", stdout);
+                    Truth_Print(&best_truth);
                 }
                 else
                 {
