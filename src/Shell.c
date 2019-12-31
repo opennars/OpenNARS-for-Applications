@@ -36,6 +36,7 @@ void Shell_Start()
             {
                 Term term = Encode_Term(line);
                 Truth best_truth = {0};
+                Term best_term = {0};
                 if(line[strlen(line)-1] == '?')
                 {
                     int concept_i = 0;
@@ -57,11 +58,14 @@ void Shell_Start()
                             if(Truth_Expectation(c->belief.truth) > Truth_Expectation(best_truth))
                             {
                                 best_truth = c->belief.truth;
+                                best_term = c->belief.term;
                             }
                         }
                         Continue:;
                     }
                     fputs("Answer: ", stdout);
+                    Encode_PrintTerm(&best_term);
+                    fputs(" ", stdout);
                     Truth_Print(&best_truth);
                 }
                 else
