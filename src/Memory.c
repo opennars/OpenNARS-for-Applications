@@ -102,6 +102,7 @@ static void Memory_printAddedEvent(Event *event, double priority, bool input, bo
         Encode_PrintTerm(&event->term);
         fputs((event->type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         fputs(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
+        printf("Priority=%f ", priority);
         Truth_Print(&event->truth);
     }
 }

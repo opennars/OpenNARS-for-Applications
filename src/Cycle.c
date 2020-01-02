@@ -298,6 +298,7 @@ void Cycle_Perform(long currentTime)
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
                     fputs("Apply rule table on ", stdout);
                     Encode_PrintTerm(&e->term);
+                    printf(" Priority=%f\n", selectedEventsPriority[i]);
                     fputs(" and ", stdout);
                     Encode_PrintTerm(&c->term);
                     puts("");
