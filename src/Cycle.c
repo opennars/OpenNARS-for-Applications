@@ -184,7 +184,7 @@ void pushEvents(long currentTime)
         double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
         if(priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
         {
-            Memory_addEvent2(e, currentTime, priority, false, false, true, false);
+            Memory_addEvent(e, currentTime, priority, false, false, true, false);
         }
     }   
 }
@@ -282,10 +282,14 @@ void Cycle_Perform(long currentTime)
     }
     //Inferences
     popEvents();
+#if STAGE==2
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
-        Memory_Conceptualize(&e->term);
+        double priority = selectedEventsPriority[i];
+        Term dummy_term = {0};
+        Truth dummy_truth = {0};
+        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, false); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
         for(int j=0; j<concepts.itemsAmount; j++)
         {
@@ -294,20 +298,19 @@ void Cycle_Perform(long currentTime)
             {
                 if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
                 {
-#if STAGE==2
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
                     fputs("Apply rule table on ", stdout);
                     Encode_PrintTerm(&e->term);
-                    printf(" Priority=%f\n", selectedEventsPriority[i]);
+                    printf(" Priority=%f\n", priority);
                     fputs(" and ", stdout);
                     Encode_PrintTerm(&c->term);
                     puts("");
-                    RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime);
-#endif
+                    RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime, priority, true);
                 }
             }
         }
     }
+#endif
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_events);

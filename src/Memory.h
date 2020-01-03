@@ -53,8 +53,8 @@ void Memory_Conceptualize(Term *term);
 //Add an already existing concept to memory that was taken out from the concept priority queue
 void Memory_addConcept(Concept *concept, long currentTime);
 //Add event to memory
-void Memory_addEvent2(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised);
-void Memory_addEvent(Event *event, long currentTime, bool input, bool derived);
+void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised);
+void Memory_addInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_addOperation(Operation op);
 //check if implication is still valid (source concept might be forgotten)

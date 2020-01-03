@@ -107,7 +107,7 @@ static void Memory_printAddedEvent(Event *event, double priority, bool input, bo
     }
 }
 
-void Memory_addEvent2(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
+void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
     Memory_printAddedEvent(event, priority, input, derived, revised);
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -144,7 +144,7 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
                     if(revision_happened)
                     {
                         revision_happened = true;
-                        Memory_addEvent2(&c->belief, currentTime, priority, input, derived, false, true);
+                        Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
                     }
                 }
                 else
@@ -165,9 +165,9 @@ void Memory_addEvent2(Event *event, long currentTime, double priority, bool inpu
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_addEvent(Event *event, long currentTime, bool input, bool derived)
+void Memory_addInputEvent(Event *event, long currentTime)
 {
-    Memory_addEvent2(event, currentTime, Truth_Expectation(event->truth), input, derived, false, false);
+    Memory_addEvent(event, currentTime, Truth_Expectation(event->truth), true, false, false, false);
 }
 
 void Memory_addConcept(Concept *concept, long currentTime)

@@ -1,6 +1,4 @@
 #include "NAL.h"
-//macro for syntactic representation, increases readability
-#define R(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction);
 
 int ruleID = 0;
 static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
@@ -29,8 +27,7 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
     {
         if(atom_names[atom-1][0] >= 'A' && atom_names[atom-1][0] <= 'Z')
         {
-            //conclusion term gets variables substituted
-            //printf("assert(substitutions[%d]>0,\"Meta variable was not substituted, check inference rule!\");\n", atom);
+            //conclusion term gets variables substituteda
             printf("Term_OverrideSubterm(&conclusion,%d,&substitutions[%d]);\n", i, atom);
         }
         else
@@ -41,20 +38,26 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
     }
 }
 
-static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction)
+static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise)
 {
     Term term1 = Encode_Term(premise1);
-    Term term2 = Encode_Term(premise2);
+    Term term2 = doublePremise ? Encode_Term(premise2) : (Term) {0};
     Term conclusion_term = Encode_Term(conclusion);
-    printf("RULE_%d:\n{\n",ruleID++);
+    printf("RULE_%d:\n{\n", ruleID++);
+    //skip double/single premise rule if single/double premise
+    if(doublePremise) { printf("if(!doublePremise) { goto RULE_%d; }\n", ruleID); }
+    if(!doublePremise) { printf("if(doublePremise) { goto RULE_%d; }\n", ruleID); }
     puts("Term substitutions[255] = {0}; Term subtree = {0};");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         NAL_GeneratePremisesUnifier(i, term1.atoms[i], 1);
     }
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    if(doublePremise)
     {
-        NAL_GeneratePremisesUnifier(i, term2.atoms[i], 2);
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            NAL_GeneratePremisesUnifier(i, term2.atoms[i], 2);
+        }
     }
     puts("Term conclusion = {0};");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -62,26 +65,25 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
         NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i]);
     }
     printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
-    puts("NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime);");
-    puts("}");
+    puts("NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority);}\n");
 }
 
 void NAL_GenerateRuleTable()
 {
     puts("#include \"RuleTable.h\"");
-    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime)\n{\ngoto RULE_0;");
+    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime, double parentPriority, bool doublePremise)\n{\ngoto RULE_0;");
 #define H_NAL_RULES
 #include "NAL.h"
 #undef H_NAL_RULES
     printf("RULE_%d:;\n}\n", ruleID);
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime)
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority)
 {
     Event e = { .term = conclusionTerm,
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
                 .occurrenceTime = conclusionOccurrence };
-    Memory_addEvent(&e, currentTime, false, true);
+    Memory_addEvent(&e, currentTime, parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
 }

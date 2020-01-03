@@ -17,7 +17,13 @@
 //-------//
 //Generates inference rule code
 void NAL_GenerateRuleTable();
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime);
+//Method for the derivation of new events as called by the generated rule table
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority);
+//macro for syntactic representation, increases readability, double premise inference
+#define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true);
+//macro for syntactic representation, increases readability, single premise inference
+#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false);
+
 
 #endif
 
@@ -26,40 +32,39 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #ifdef H_NAL_RULES
 
 //NAL1 rules
-R( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
-R( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
-R( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
-R( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
+R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
+R2( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
+R2( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
+R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 //NAL2 rules
-R( (S --> P), (P --> S), |-, (S <-> P), Truth_Intersection )
-R( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
-R( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
-R( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
-R( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
-R( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
+R2( (S --> P), (P --> S), |-, (S <-> P), Truth_Intersection )
+R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
+R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
+R2( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
+R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
+R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 //NAL3 rules
-R( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
-R( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )
-R( (P --> M), (S --> M), |-, ((S ~ P) --> M), Truth_Difference )
-R( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
-R( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
-R( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
-R( (C --> [A]), (C --> [B]), |-, (C --> [A,B]), Truth_Intersection )
-R( ({A} --> C), ({B} --> C), |-, ({A,B} --> C), Truth_Intersection )
-R( (C --> [A,B]), (C --> [B]), |-, (C --> [B]), Truth_Union )
-R( ({A,B} --> C), ({B} --> C), |-, ({B} --> C), Truth_Union )
-R( ({A,B} --> C), ({B} --> C), |-, ({A} --> C), Truth_Difference )
-R( (C --> [A,B]), (C --> [B]), |-, (C --> [A]), Truth_Difference )
-R( (A --> [B,C]), X, |-, (A --> [C,B]), Truth_Identity )
-R( ({A,B} --> C), X, |-, ({B,A} --> C), Truth_Identity )
+R2( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
+R2( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )
+R2( (P --> M), (S --> M), |-, ((S ~ P) --> M), Truth_Difference )
+R2( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
+R2( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
+R2( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
+R2( (C --> [A]), (C --> [B]), |-, (C --> [A,B]), Truth_Intersection )
+R2( ({A} --> C), ({B} --> C), |-, ({A,B} --> C), Truth_Intersection )
+R2( (C --> [A,B]), (C --> [B]), |-, (C --> [B]), Truth_Union )
+R2( ({A,B} --> C), ({B} --> C), |-, ({B} --> C), Truth_Union )
+R2( ({A,B} --> C), ({B} --> C), |-, ({A} --> C), Truth_Difference )
+R2( (C --> [A,B]), (C --> [B]), |-, (C --> [A]), Truth_Difference )
+R1( (A --> [B,C]), |-, (A --> [C,B]), Truth_Identity )
 //NAL4 rules
-R( ((A * B) --> R), X, |-, (A --> (R / B)), Truth_Identity )
-R( ((A * B) --> R), X, |-, (B --> (R % A)), Truth_Identity )
-R( (R --> (A * B)), X, |-, ((R \ B) --> A), Truth_Identity )
-R( (R --> (A * B)), X, |-, ((R % A) --> B), Truth_Identity )
-R( (A --> (R / B)), X, |-, ((A * B) --> R), Truth_Identity )
-R( (B --> (R % A)), X, |-, ((A * B) --> R), Truth_Identity )
-R( ((R \ B) --> A), X, |-, ((A * B) --> R), Truth_Identity )
-R( ((R % A) --> B), X, |-, (R --> (A * B)), Truth_Identity )
+R1( ((A * B) --> R), |-, (A --> (R / B)), Truth_Identity )
+R1( ((A * B) --> R), |-, (B --> (R % A)), Truth_Identity )
+R1( (R --> (A * B)), |-, ((R \ B) --> A), Truth_Identity )
+R1( (R --> (A * B)), |-, ((R % A) --> B), Truth_Identity )
+R1( (A --> (R / B)), |-, ((A * B) --> R), Truth_Identity )
+R1( (B --> (R % A)), |-, ((A * B) --> R), Truth_Identity )
+R1( ((R \ B) --> A), |-, ((A * B) --> R), Truth_Identity )
+R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_Identity )
 
 #endif

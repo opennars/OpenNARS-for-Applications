@@ -52,7 +52,7 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eter
         }
     }
     ev.operationID = operationID;
-    Memory_addEvent(&ev, 0, true, false);
+    Memory_addInputEvent(&ev, 0);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     YAN_Cycles(1);
     return ev;
