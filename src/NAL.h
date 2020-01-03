@@ -57,14 +57,15 @@ R2( ({A,B} --> C), ({B} --> C), |-, ({B} --> C), Truth_Union )
 R2( ({A,B} --> C), ({B} --> C), |-, ({A} --> C), Truth_Difference )
 R2( (C --> [A,B]), (C --> [B]), |-, (C --> [A]), Truth_Difference )
 R1( (A --> [B,C]), |-, (A --> [C,B]), Truth_Identity )
+R1( ({A,B} --> C), |-, ({B,A} --> C), Truth_Identity )
 //NAL4 rules
 R1( ((A * B) --> R), |-, (A --> (R / B)), Truth_Identity )
 R1( ((A * B) --> R), |-, (B --> (R % A)), Truth_Identity )
-R1( (R --> (A * B)), |-, ((R \ B) --> A), Truth_Identity )
+R1( (R --> (A * B)), |-, ((R \\ B) --> A), Truth_Identity )
 R1( (R --> (A * B)), |-, ((R % A) --> B), Truth_Identity )
 R1( (A --> (R / B)), |-, ((A * B) --> R), Truth_Identity )
 R1( (B --> (R % A)), |-, ((A * B) --> R), Truth_Identity )
-R1( ((R \ B) --> A), |-, ((A * B) --> R), Truth_Identity )
+R1( ((R \\ B) --> A), |-, ((A * B) --> R), Truth_Identity )
 R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_Identity )
 
 #endif

@@ -248,7 +248,14 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
     else
     {
         assert(tree_index-1 < COMPOUND_TERM_SIZE_MAX, "COMPOUND_TERM_SIZE_MAX too small, consider increasing or split input into multiple statements!");
-        bintree->atoms[tree_index-1] = atomicTermIndex(tokens_prefix[i1]);
+        if(!(tokens_prefix[i1][0] == ')' && tokens_prefix[i1][1] == 0))
+        {
+            bintree->atoms[tree_index-1] = atomicTermIndex(tokens_prefix[i1]);
+        }
+        else
+        {
+            bintree->atoms[tree_index-1] = bintree->atoms[tree_index-2]; //copy first (for sets)
+        }
     }
 }
 
