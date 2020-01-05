@@ -31,6 +31,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #ifdef H_NAL_RULES
 
 //NAL1 rules
+R1( (S --> P), |-, (P --> S), Truth_Conversion )
 R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
@@ -44,6 +45,14 @@ R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_Identity )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_Identity )
+R1( (S --> {P}), |-, (S <-> {P}), Truth_Identity )
+R1( ([S] --> P), |-, ([S] <-> {P}), Truth_Identity )
+R1( (S <-> {P}), |-, (S --> {P}), Truth_Identity )
+R1( ([S] <-> P), |-, ([S] --> P), Truth_Identity )
+R1( ({S} <-> {P}), |-, ({P} --> {S}), Truth_Identity )
+R1( ([S] <-> [P]), |-, ([P] --> [S]), Truth_Identity )
+R1( (S <-> P), |-, (S --> P), Truth_StructuralDeduction )
+R1( (S --> P), |-, (S <-> P), Truth_StructuralAbduction )
 //NAL3 rules
 R2( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
 R2( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )

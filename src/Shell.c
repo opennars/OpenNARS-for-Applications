@@ -39,7 +39,6 @@ void Shell_Start()
                 Term best_term = {0};
                 if(line[strlen(line)-1] == '?')
                 {
-                    int concept_i = 0;
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;

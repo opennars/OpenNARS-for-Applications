@@ -138,4 +138,20 @@ Truth Truth_Difference(Truth v1, Truth v2)
                     .confidence = c1 * c2};
 }
 
+Truth Truth_Conversion(Truth v1, Truth v2)
+{
+    return (Truth) {.frequency = 1.0, 
+                    .confidence = Truth_w2c(v1.frequency * v1.confidence)};
+}
 
+Truth Truth_StructuralDeduction(Truth v1, Truth v2)
+{
+    Truth v_structural = { .frequency = 1.0, .confidence = 0.9 };
+    return Truth_Deduction(v1, v_structural);
+}
+
+Truth Truth_StructuralAbduction(Truth v1, Truth v2)
+{
+    Truth v_structural = { .frequency = 1.0, .confidence = 0.9 };
+    return Truth_Abduction(v1, v_structural);
+}
