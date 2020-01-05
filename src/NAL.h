@@ -24,7 +24,6 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false);
 
-
 #endif
 
 //Inference rules//
@@ -43,6 +42,8 @@ R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
 R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
+R1( ({A} <-> {B}), |-, (A <-> B), Truth_Identity )
+R1( ([A] <-> [B]), |-, (A <-> B), Truth_Identity )
 //NAL3 rules
 R2( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
 R2( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )
@@ -50,14 +51,6 @@ R2( (P --> M), (S --> M), |-, ((S ~ P) --> M), Truth_Difference )
 R2( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
 R2( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
 R2( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
-R2( (C --> [A]), (C --> [B]), |-, (C --> [A,B]), Truth_Intersection )
-R2( ({A} --> C), ({B} --> C), |-, ({A,B} --> C), Truth_Intersection )
-R2( (C --> [A,B]), (C --> [B]), |-, (C --> [B]), Truth_Union )
-R2( ({A,B} --> C), ({B} --> C), |-, ({B} --> C), Truth_Union )
-R2( ({A,B} --> C), ({B} --> C), |-, ({A} --> C), Truth_Difference )
-R2( (C --> [A,B]), (C --> [B]), |-, (C --> [A]), Truth_Difference )
-R1( (A --> [B,C]), |-, (A --> [C,B]), Truth_Identity )
-R1( ({A,B} --> C), |-, ({B,A} --> C), Truth_Identity )
 //NAL4 rules
 R1( ((A * B) --> R), |-, (A --> (R / B)), Truth_Identity )
 R1( ((A * B) --> R), |-, (B --> (R % A)), Truth_Identity )

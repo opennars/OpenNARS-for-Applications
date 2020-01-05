@@ -254,7 +254,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         }
         else
         {
-            bintree->atoms[tree_index-1] = bintree->atoms[tree_index-2]; //copy first (for sets)
+            bintree->atoms[tree_index-1] = atomicTermIndex("."); //use set element copula for second element acting as a placeholder and/or "deeper" set than 2
         }
     }
 }
