@@ -26,11 +26,11 @@ void Shell_Start()
                 PRINT_DERIVATIONS = true;
             }
             else
-            if(!strcmp(line,"100000"))
+            if(!strcmp(line,"1000"))
             {
-                puts("performing 100k inference steps:");
-                YAN_Cycles(100000);
-                puts("done with 100k additional inference steps.");
+                puts("performing 1000 inference steps:");
+                YAN_Cycles(1000);
+                puts("done with 1000 additional inference steps.");
             }
             else
             {
