@@ -194,7 +194,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             Memory_printAddedEvent(event, priority, input, derived, revised);
         }
     }
-    else
+    if(event->occurrenceTime == OCCURRENCE_ETERNAL && event->type == EVENT_TYPE_GOAL)
     {
         assert(false, "Eternal goals are not supported");
     }
