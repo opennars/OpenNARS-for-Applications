@@ -26,6 +26,8 @@ extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 #define PRINT_DERIVATIONS_INITIAL true
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
+#define MIN_CONFIDENCE 0.01
+#define MIN_PRIORITY 0.01
 
 //Data structure//
 //--------------//

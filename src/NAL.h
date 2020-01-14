@@ -24,7 +24,9 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false);
 //macro for term reductions
-#define Reduce(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
+#define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
+//macro for statement reductions
+#define ReduceStatement(pattern, _, replacement) NAL_GenerateReduction(#pattern " ", #replacement " "); 
 
 #endif
 
@@ -47,12 +49,6 @@ R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
-R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
-R1( ([S] --> P), |-, ([S] <-> {P}), Truth_StructuralDeduction )
-R1( (S <-> {P}), |-, (S --> {P}), Truth_StructuralDeduction )
-R1( ([S] <-> P), |-, ([S] --> P), Truth_StructuralDeduction )
-R1( ({S} <-> {P}), |-, ({P} --> {S}), Truth_StructuralDeduction )
-R1( ([S] <-> [P]), |-, ([P] --> [S]), Truth_StructuralDeduction )
 R1( (S <-> P), |-, (S --> P), Truth_StructuralDeduction )
 R1( (S --> P), |-, (S <-> P), Truth_StructuralAbduction )
 //NAL3 rules
@@ -82,17 +78,20 @@ R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Induction )
 #ifdef H_NAL_REDUCTIONS
 
 //Extensional intersection and union
-Reduce( (A & A), A )
-Reduce( (A | A), A )
+ReduceTerm( (A & A), A )
+ReduceTerm( (A | A), A )
 //Extensional set
-Reduce( ({A} & {B}),     {A B}             )
-Reduce( ({A X} & {B}),   {A (B . X)}       )
-Reduce( ({A X} & {B Y}), {A (B . (X . Y))} )
-Reduce( {A A},           {A}               )
+ReduceTerm( ({A} & {B}),     {A B}             )
+ReduceTerm( ({A X} & {B}),   {A (B . X)}       )
+ReduceTerm( ({A X} & {B Y}), {A (B . (X . Y))} )
+ReduceTerm( {A A},           {A}               )
 //Intensional set
-Reduce( ([A] & [B]),     [A B]             )
-Reduce( ([A X] & [B]),   [A (B . X)]       )
-Reduce( ([A X] & [B Y]), [A (B . (X . Y))] )
-Reduce( [A A],           [A]               )
+ReduceTerm( ([A] & [B]),     [A B]             )
+ReduceTerm( ([A X] & [B]),   [A (B . X)]       )
+ReduceTerm( ([A X] & [B Y]), [A (B . (X . Y))] )
+ReduceTerm( [A A],           [A]               )
+//Statement reductions (due to identities)
+ReduceStatement((S --> {P}), |-, (S <-> {P}) )
+ReduceStatement(([S] --> P), |-, ([S] <-> {P}) )
 
 #endif

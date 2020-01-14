@@ -17,7 +17,6 @@
 //Parameters//
 //----------//
 #define EVENT_DURABILITY 0.9
-#define MIN_PRIORITY 0.01
 
 //Methods//
 //-------//

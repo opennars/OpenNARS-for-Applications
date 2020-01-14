@@ -170,10 +170,7 @@ void pushEvents(long currentTime)
     {
         Event *e = &selectedEvents[i];
         double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
-        if(priority > MIN_PRIORITY)
-        {
-            Memory_addEvent(e, currentTime, priority, false, false, true, false);
-        }
+        Memory_addEvent(e, currentTime, priority, false, false, true, false);
     }   
 }
 

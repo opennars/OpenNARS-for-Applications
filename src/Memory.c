@@ -147,7 +147,7 @@ static void Memory_printAddedEvent(Event *event, double priority, bool input, bo
 
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
-    if(event->truth.confidence < MIN_CONFIDENCE)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
     {
         return;
     }
