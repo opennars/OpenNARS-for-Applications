@@ -48,3 +48,16 @@ Term Term_ExtractSubterm(Term *term, int j)
     Term_RelativeOverride(&ret, 0, term, j); //where we begin to write at root, 0
     return ret; //reading from term beginning at i
 }
+
+int Term_Complexity(Term *term)
+{
+    int s = 0;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(term->atoms[i])
+        {
+            s += 1;
+        }
+    }
+    return s;
+}

@@ -41,5 +41,7 @@ bool Term_Equal(Term *a, Term *b);
 void Term_OverrideSubterm(Term *term, int i, Term *subterm);
 //Extract a subterm as a term
 Term Term_ExtractSubterm(Term *term, int j);
+//The complexity of a term
+int Term_Complexity(Term *term);
 
 #endif

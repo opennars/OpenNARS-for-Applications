@@ -169,7 +169,7 @@ void pushEvents(long currentTime)
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
-        double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
+        double priority = selectedEventsPriority[i] * EVENT_DURABILITY * (1.0 / sqrt(1.0 + ((double) Term_Complexity(&e->term))));
         Memory_addEvent(e, currentTime, priority, false, false, true, false);
     }   
 }
