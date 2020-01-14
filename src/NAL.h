@@ -23,6 +23,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true);
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false);
+//macro for term reductions
+#define Reduce(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 
 #endif
 
@@ -69,5 +71,23 @@ R1( (A --> (R / B)), |-, ((A * B) --> R), Truth_Identity )
 R1( (B --> (R % A)), |-, ((A * B) --> R), Truth_Identity )
 R1( ((R \\ B) --> A), |-, ((A * B) --> R), Truth_Identity )
 R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_Identity )
+
+#endif
+
+#ifdef H_NAL_REDUCTIONS
+
+//Extensional intersection and union
+Reduce( (A & A), A )
+Reduce( (A | A), A )
+//Extensional set
+Reduce( ({A} & {B}),     {A B}             )
+Reduce( ({A X} & {B}),   {A (B . X)}       )
+Reduce( ({A X} & {B Y}), {A (B . (X . Y))} )
+Reduce( {A A},           {A}               )
+//Intensional set
+Reduce( ([A] & [B]),     [A B]             )
+Reduce( ([A X] & [B]),   [A (B . X)]       )
+Reduce( ([A X] & [B Y]), [A (B . (X . Y))] )
+Reduce( [A A],           [A]               )
 
 #endif

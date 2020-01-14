@@ -35,6 +35,9 @@ void Shell_Start()
             else
             {
                 Term term = Encode_Term(line);
+#if STAGE==2
+                term = RuleTable_Reduce(term, false);
+#endif
                 Truth best_truth = {0};
                 Term best_term = {0};
                 if(line[strlen(line)-1] == '?')

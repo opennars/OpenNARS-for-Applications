@@ -14,5 +14,6 @@
 //Methods//
 //-------//
 void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime, double parentPriority, bool doublePremise);
+Term RuleTable_Reduce(Term term1, bool doublePremise);
 
 #endif

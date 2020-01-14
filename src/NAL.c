@@ -38,7 +38,7 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
     }
 }
 
-static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise)
+static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* conclusion, bool doublePremise)
 {
     Term term1 = Encode_Term(premise1);
     Term term2 = doublePremise ? Encode_Term(premise2) : (Term) {0};
@@ -64,8 +64,19 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i]);
     }
+}
+
+static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise)
+{
+    NAL_GenerateConclusionTerm(premise1, premise2, conclusion, doublePremise);
     printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
-    puts("NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority);}\n");
+    puts("NAL_DerivedEvent(RuleTable_Reduce(conclusion, false), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority);}\n");
+}
+
+static void NAL_GenerateReduction(char *premise1, char* conclusion)
+{
+    NAL_GenerateConclusionTerm(premise1, NULL, conclusion, false);
+    puts("fputs(\"Reduced:\", stdout); Encode_PrintTerm(&term1); puts(\" -> \"); Encode_PrintTerm(&conclusion); puts(\"\"); return conclusion;\n}");
 }
 
 void NAL_GenerateRuleTable()
@@ -76,6 +87,11 @@ void NAL_GenerateRuleTable()
 #include "NAL.h"
 #undef H_NAL_RULES
     printf("RULE_%d:;\n}\n", ruleID);
+    printf("Term RuleTable_Reduce(Term term1, bool doublePremise)\n{\ngoto RULE_%d;\n", ruleID);
+#define H_NAL_REDUCTIONS
+#include "NAL.h"
+#undef H_NAL_REDUCTIONS
+    printf("RULE_%d:;\nreturn term1;\n}\n\n", ruleID);
 }
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority)
