@@ -139,7 +139,6 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                              .truth = { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime,
                              .operationID = operationID };
-                op.term.atoms[0] = 42; //for now, to make sure we don't operate on an empty term here
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)

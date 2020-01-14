@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "Event.h"
+#include "Encode.h"
 #include "Implication.h"
 #include "Globals.h"
 #include <string.h>

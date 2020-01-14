@@ -210,7 +210,7 @@ char** Encode_PrefixTransform(char* narsese_expanded)
 
 int term_index = 0;
 //Returns the memoized index of an already seen atomic term
-static int atomicTermIndex(char *name)
+int Encode_AtomicTermIndex(char *name)
 {
     int ret_index = -1;
     for(int i=0; i<term_index; i++)
@@ -241,7 +241,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         i1 = i1+2;
         //second argument has to be searched for
         int i2 = skipCompound(tokens_prefix, i1, nt);
-        bintree->atoms[tree_index-1] = atomicTermIndex(tokens_prefix[icop]);
+        bintree->atoms[tree_index-1] = Encode_AtomicTermIndex(tokens_prefix[icop]);
         if(i1<nt)
         {
             buildBinaryTree(bintree, tokens_prefix, i1, tree_index*2, nt); //left child of tree index
@@ -256,11 +256,11 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         assert(tree_index-1 < COMPOUND_TERM_SIZE_MAX, "COMPOUND_TERM_SIZE_MAX too small, consider increasing or split input into multiple statements!");
         if(!(tokens_prefix[i1][0] == ')' && tokens_prefix[i1][1] == 0))
         {
-            bintree->atoms[tree_index-1] = atomicTermIndex(tokens_prefix[i1]);
+            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex(tokens_prefix[i1]);
         }
         else
         {
-            bintree->atoms[tree_index-1] = atomicTermIndex("."); //use set element copula for second element acting as a placeholder and/or "deeper" set than 2
+            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex("."); //use set element copula for second element acting as a placeholder and/or "deeper" set than 2
         }
     }
 }
@@ -275,9 +275,18 @@ Term Encode_Term(char *narsese)
     return ret;
 }
 
+Term Encode_Sequence(Term *a, Term *b)
+{
+    Term ret = {0};
+    ret.atoms[0] = Encode_AtomicTermIndex("#");
+    Term_OverrideSubterm(&ret,1,a);
+    Term_OverrideSubterm(&ret,2,b);
+    return ret;
+}
+
 Term Encode_AtomicTerm(char *name)
 {
-    int number = atomicTermIndex(name);
+    int number = Encode_AtomicTermIndex(name);
     Term ret = {0};
     ret.atoms[0] = number;
     return ret;
@@ -341,6 +350,6 @@ void Encode_INIT()
     for(int i=0; i<(int) strlen(canonical_copulas); i++)
     {
         char cop[2] = {canonical_copulas[i], 0};
-        atomicTermIndex(cop);
+        Encode_AtomicTermIndex(cop);
     }
 }

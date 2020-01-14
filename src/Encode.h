@@ -33,8 +33,12 @@ char* Encode_Expand(char *narsese);
 char** Encode_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Encode_Term(char *narsese);
+//Encodes a sequence
+Term Encode_Sequence(Term *a, Term *b);
 //Parses an atomic term string to a term
 Term Encode_AtomicTerm(char *name);
+//Index of atomic term
+int Encode_AtomicTermIndex(char *name);
 //Print an atom
 void Encode_PrintAtom(Atom atom);
 //Print a term

@@ -35,8 +35,6 @@ typedef struct
 //-------//
 // print indices of true bits
 void Term_Print(Term *term);
-//Tuple on the other hand:
-Term Term_Sequence(Term *a, Term *b);
 //Whether two Term's are equal completely
 bool Term_Equal(Term *a, Term *b);
 //Overwrites a subterm
