@@ -133,7 +133,6 @@ void Memory_Test()
     Memory_addInputEvent(&e, 0);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
-    assert(!Memory_FindConceptByTerm(&e.term, /*e.term_hash, */ &returnIndex), "a concept doesn't exist yet!");
     Memory_Conceptualize(&e.term);
     int concept_i;
     assert(Memory_FindConceptByTerm(&e.term, /*Term_Hash(&e.term),*/ &concept_i), "Concept should have been created!");
