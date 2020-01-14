@@ -146,9 +146,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
     }
 }
 
-int eventsSelected = 0;
-Event selectedEvents[EVENT_SELECTIONS]; //better to be global
-double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 void popEvents()
 {
     for(int i=0; i<EVENT_SELECTIONS; i++)
@@ -160,15 +157,6 @@ void popEvents()
             assert(cycling_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
             IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
             break;
-        }
-        int concept_i = 0;
-        if(Memory_FindConceptByTerm(&e->term, &concept_i))
-        {
-            Concept *c = concepts.items[i].address;
-            if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && c->belief.truth.confidence > e->truth.confidence)
-            {
-                continue; //the belief has a higher confidence and was already revised up, get rid of the task!
-            }   //more radical than OpenNARS!
         }
         selectedEventsPriority[eventsSelected] = priority;
         selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
@@ -182,7 +170,7 @@ void pushEvents(long currentTime)
     {
         Event *e = &selectedEvents[i];
         double priority = selectedEventsPriority[i] * EVENT_DURABILITY;
-        if(priority > MIN_PRIORITY && e->truth.confidence > MIN_CONFIDENCE)
+        if(priority > MIN_PRIORITY)
         {
             Memory_addEvent(e, currentTime, priority, false, false, true, false);
         }

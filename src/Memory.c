@@ -82,21 +82,59 @@ void Memory_Conceptualize(Term *term)
     }
 }
 
+Event selectedEvents[EVENT_SELECTIONS]; //better to be global
+double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
+int eventsSelected = 0;
+
+static bool Memory_containsEvent(Event *event)
+{
+    for(int i=0; i<cycling_events.itemsAmount; i++)
+    {
+        if(Event_Equal(event, cycling_events.items[i].address))
+        {
+            return true;
+        }
+    }
+    for(int i=0; i<eventsSelected; i++)
+    {
+        if(Event_Equal(event, &selectedEvents[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static void Memory_addCyclingEvent(Event *event, double priority)
+static bool Memory_addCyclingEvent(Event *e, double priority)
 {
+    if(Memory_containsEvent(e))
+    {
+        return false;
+    }
+    int concept_i = 0;
+    if(Memory_FindConceptByTerm(&e->term, &concept_i))
+    {
+        Concept *c = concepts.items[concept_i].address;
+        if(e->type == EVENT_TYPE_BELIEF && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type != EVENT_TYPE_DELETED && c->belief.truth.confidence > e->truth.confidence)
+        {
+            return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
+        }   //more radical than OpenNARS!
+    }
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
-        *toRecyle = *event;
+        *toRecyle = *e;
+        return true;
     }
+    return false;
 }
 
 static void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
 {
-    if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived))
+    if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(&event->term);
@@ -109,7 +147,10 @@ static void Memory_printAddedEvent(Event *event, double priority, bool input, bo
 
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
-    Memory_printAddedEvent(event, priority, input, derived, revised);
+    if(event->truth.confidence < MIN_CONFIDENCE)
+    {
+        return;
+    }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
         if(input)
@@ -126,41 +167,36 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             }
         }
     }
+    if(event->type == EVENT_TYPE_BELIEF)
+    {
+        bool revision_happened = false;
+        if(!readded)
+        {
+            Memory_Conceptualize(&event->term);
+            int concept_i;
+            if(Memory_FindConceptByTerm(&event->term, &concept_i))
+            {
+                Concept *c = concepts.items[concept_i].address;
+                c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime, &revision_happened);
+                if(revision_happened)
+                {
+                    revision_happened = true;
+                    Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
+                }
+            }
+            else
+            {
+                assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
+            }
+        }
+        if(Memory_addCyclingEvent(event, priority) && !readded) //task gets replaced with revised one, more radical than OpenNARS!!
+        {
+            Memory_printAddedEvent(event, priority, input, derived, revised);
+        }
+    }
     else
     {
-        if(event->type == EVENT_TYPE_BELIEF)
-        {
-            bool revision_happened = false;
-            if(!readded)
-            {
-                //process eternal knowledge
-                //eternal ones get conceptualized and event added directly
-                Memory_Conceptualize(&event->term);
-                int concept_i;
-                if(Memory_FindConceptByTerm(&event->term, &concept_i))
-                {
-                    Concept *c = concepts.items[concept_i].address;
-                    c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime, &revision_happened);
-                    if(revision_happened)
-                    {
-                        revision_happened = true;
-                        Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
-                    }
-                }
-                else
-                {
-                    assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
-                }
-            }
-            if(!revision_happened)
-            {
-                Memory_addCyclingEvent(event, priority); //task gets replaced with revised one, more radical than OpenNARS!!
-            }
-        }
-        else
-        {
-            assert(false, "Eternal goals are not supported");
-        }
+        assert(false, "Eternal goals are not supported");
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }

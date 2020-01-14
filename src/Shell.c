@@ -40,17 +40,17 @@ void Shell_Start()
 #endif
                 Truth best_truth = {0};
                 Term best_term = {0};
-                if(line[strlen(line)-1] == '?')
+                int str_len = strlen(line);
+                if(line[str_len-1] == '?' || (str_len>=5 && line[str_len-5] == '?'))
                 {
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
-                        //now match the concept term, for now just ignoring the question variables
+                        //now match the concept term, for now just supporting one question var
                         //TODO use unification approach as the generated RuleTable already uses.
-                        
                         for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
                         {
-                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && atom_names[term.atoms[j]-1][0] != '?') //rudimentar question var for now
+                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && atom_names[term.atoms[j]-1][0] != '?')
                             {
                                 goto Continue;
                             }
@@ -72,7 +72,8 @@ void Shell_Start()
                 }
                 else
                 {
-                    YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, true);
+                    bool isEvent = str_len >= 3 && line[str_len-1] == ':' && line[str_len-2] == '|' && line[str_len-3] == ':'; 
+                    YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, !isEvent);
                 }
             }
         }

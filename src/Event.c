@@ -35,3 +35,7 @@ void Event_Print(Event *event)
     printf("occurrenceTime=%ld\n\n", event->occurrenceTime);
 }
 
+bool Event_Equal(Event *event, Event *existing)
+{
+    return Term_Equal(&event->term, &existing->term) && Truth_Equal(&event->truth, &existing->truth);
+}

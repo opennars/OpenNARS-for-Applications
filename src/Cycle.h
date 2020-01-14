@@ -16,8 +16,6 @@
 
 //Parameters//
 //----------//
-//Inferences per cycle (amount of events from cycling events)
-#define EVENT_SELECTIONS 1
 #define EVENT_DURABILITY 0.9
 #define MIN_PRIORITY 0.01
 

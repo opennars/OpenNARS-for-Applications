@@ -13,8 +13,10 @@
 
 //Parameters//
 //----------//
+//Inferences per cycle (amount of events from cycling events)
+#define EVENT_SELECTIONS 1
 #define CONCEPTS_MAX 1024
-#define CYCLING_EVENTS_MAX 1024
+#define CYCLING_EVENTS_MAX 8192
 #define CYCLING_EVENTS_SELECT 10
 #define USE_HASHING true
 #define PROPAGATE_GOAL_SPIKES true
@@ -27,6 +29,9 @@ extern bool PRINT_DERIVATIONS;
 
 //Data structure//
 //--------------//
+extern Event selectedEvents[EVENT_SELECTIONS]; //better to be global
+extern double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
+extern int eventsSelected;
 //Concepts in main memory:
 PriorityQueue concepts;
 //cycling events cycling in main memory:

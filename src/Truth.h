@@ -29,6 +29,7 @@ extern double TRUTH_EVIDENTAL_HORIZON;
 extern double TRUTH_PROJECTION_DECAY;
 #define TRUTH_EPSILON 0.01
 #define OCCURRENCE_ETERNAL -1
+#define STRUCTURAL_TRUTH (Truth) { .frequency = 1.0, .confidence = 0.9 }
 
 //Methods//
 //-------//
@@ -48,11 +49,11 @@ Truth Truth_Exemplification(Truth v1, Truth v2);
 Truth Truth_Comparison(Truth v1, Truth v2);
 Truth Truth_Analogy(Truth v1, Truth v2);
 Truth Truth_Resemblance(Truth v1, Truth v2);
-Truth Truth_Identity(Truth v1, Truth v2);
 Truth Truth_StructuralDeduction(Truth v1, Truth v2);
 Truth Truth_StructuralAbduction(Truth v1, Truth v2);
 Truth Truth_Union(Truth v1, Truth v2);
 Truth Truth_Difference(Truth v1, Truth v2);
 Truth Truth_Conversion(Truth v1, Truth v2);
+bool Truth_Equal(Truth *v1, Truth *v2);
 
 #endif

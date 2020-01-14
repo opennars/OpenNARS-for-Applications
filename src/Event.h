@@ -38,5 +38,7 @@ void Event_SetTerm(Event *event, Term term);
 Event Event_InputEvent(Term term, char type, Truth truth, long currentTime);
 //print event
 void Event_Print(Event *event);
+//Whether two events are the same
+bool Event_Equal(Event *event, Event *existing);
 
 #endif
