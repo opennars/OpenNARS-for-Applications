@@ -297,11 +297,10 @@ void Encode_PrintAtom(Atom atom)
     if(atom)
     {
         fputs(atom_names[atom-1], stdout);
-        fputs(" ", stdout);
     }
     else
     {
-        fputs("@ ", stdout);
+        fputs("@", stdout);
     }
 }
 
@@ -315,23 +314,19 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     int child1 = index*2;
     int child2 = index*2+1;
     bool hasChild = child1 < NARSESE_LEN_MAX && term->atoms[child1-1];
-    if(hasChild)
-    {
-        fputs("(", stdout);
-    }
+    fputs(hasChild ? "(" : "", stdout);
     if(child1 < NARSESE_LEN_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child1);
     }
+    fputs(hasChild ? " " : "", stdout);
     Encode_PrintAtom(atom);
+    fputs(hasChild ? " " : "", stdout);
     if(child2 < NARSESE_LEN_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child2);
     }
-    if(hasChild)
-    {
-        fputs(")", stdout);
-    }
+    fputs(hasChild ? ")" : "", stdout);
 }
 
 void Encode_PrintTerm(Term *term)
