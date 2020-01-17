@@ -66,10 +66,17 @@ static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* con
     }
 }
 
-static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise)
+static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise, bool switchTruthArgs)
 {
     NAL_GenerateConclusionTerm(premise1, premise2, conclusion, doublePremise);
-    printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
+    if(switchTruthArgs)
+    {
+        printf("Truth conclusionTruth = %s(truth2,truth1);\n", truthFunction);
+    }
+    else
+    {
+        printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
+    }
     puts("NAL_DerivedEvent(RuleTable_Reduce(conclusion, false), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority);}\n");
 }
 
