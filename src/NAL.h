@@ -92,6 +92,6 @@ ReduceTerm( ([A X] & [B Y]), [A (B . (X . Y))] )
 ReduceTerm( [A A],           [A]               )
 //Statement reductions (due to identities)
 ReduceStatement((S --> {P}), |-, (S <-> {P}) )
-ReduceStatement(([S] --> P), |-, ([S] <-> {P}) )
+ReduceStatement(([S] --> P), |-, ([S] <-> P) )
 
 #endif

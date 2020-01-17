@@ -137,6 +137,7 @@ char* Encode_Expand(char *narsese)
         }
         k+=1;
     }
+    narsese_expanded[k] = 0;
     return narsese_expanded;
 }
 
