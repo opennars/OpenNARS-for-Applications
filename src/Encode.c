@@ -2,7 +2,7 @@
 
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
-//size for the expanded array with spaces for tokenization, has at most 2 times the amount of chars as the replacement array
+//size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
 #define EXPANSION_LEN REPLACEMENT_LEN*3
 
 //Replace copulas with canonical single-char copulas, including sets and set elements!
@@ -113,11 +113,11 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
 
 char* Encode_Expand(char *narsese)
 {
-    int k = 0, n = strlen(narsese);
     //upper bound being 3* the multiplier of the previous upper bound
     static char narsese_expanded[EXPANSION_LEN]; 
     memset(narsese_expanded, ' ', EXPANSION_LEN);
-    char *narsese_replaced = replaceWithCanonicalCopulas(narsese, n);
+    char *narsese_replaced = replaceWithCanonicalCopulas(narsese, strlen(narsese));
+    int k = 0, n = strlen(narsese_replaced);
     for(int i=0; i<n; i++)
     {
         bool opener_closer = false;

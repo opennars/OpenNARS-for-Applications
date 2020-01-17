@@ -1236,7 +1236,7 @@ void Parser_Test()
     puts(">>Parser test start");
     char* narsese = "<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>";
     printf("Narsese: %s\n", narsese);
-    char* preprocessed = Encode_Expand("<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>");
+    char* preprocessed = Encode_Expand(narsese);
     printf("Preprocessed: %s\n", preprocessed);
     char **tokens = Encode_PrefixTransform(preprocessed);
     int k = 0;
