@@ -107,7 +107,7 @@ static bool Memory_containsEvent(Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static bool Memory_addCyclingEvent(Event *e, double priority)
+static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
     if(Memory_containsEvent(e))
     {
@@ -117,7 +117,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority)
     if(Memory_FindConceptByTerm(&e->term, &concept_i))
     {
         Concept *c = concepts.items[concept_i].address;
-        if(e->type == EVENT_TYPE_BELIEF && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type != EVENT_TYPE_DELETED && c->belief.truth.confidence > e->truth.confidence)
+        if(e->type == EVENT_TYPE_BELIEF && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
@@ -169,7 +169,6 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        bool revision_happened = false;
         if(!readded)
         {
             Memory_Conceptualize(&event->term);
@@ -177,10 +176,17 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
                 Concept *c = concepts.items[concept_i].address;
-                c->belief = Inference_IncreasedActionPotential(&c->belief, event, currentTime, &revision_happened);
+		Event eternal_event = *event;
+		if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+                {
+                    eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+                    eternal_event.truth = Truth_Eternalize(event->truth);
+		    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
+		}
+		bool revision_happened = false;
+                c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
                 if(revision_happened)
                 {
-                    revision_happened = true;
                     Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
                 }
             }
@@ -189,7 +195,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
             }
         }
-        if(Memory_addCyclingEvent(event, priority) && !readded) //task gets replaced with revised one, more radical than OpenNARS!!
+        if(Memory_addCyclingEvent(event, priority, currentTime) && !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);
         }
