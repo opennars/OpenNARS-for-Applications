@@ -177,6 +177,7 @@ void pushEvents(long currentTime)
 void Cycle_Perform(long currentTime)
 {   
     eventsSelected = 0;
+    popEvents();
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -191,7 +192,12 @@ void Cycle_Perform(long currentTime)
                 Decision_AssumptionOfFailure(postcondition.operationID, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
-                {  
+                { 
+		    //build link between internal derivations to explain external events:
+		    for(int k=0; k<eventsSelected; k++)
+		    {
+                        Cycle_ReinforceLink(&selectedEvents[k], &postcondition, selectedEvents[k].operationID);
+		    }
                     if(postcondition.operationID != 0)
                     {
                         return;
@@ -238,7 +244,7 @@ void Cycle_Perform(long currentTime)
         if(!goal->processed)
         {
             decision[0] = Cycle_ProcessEvent(goal, currentTime);
-            //allow reasoning into the future by propagating spikes from goals back to potential current evens
+            //allow reasoning into the future by propagating spikes from goals back to potential current events
             for(int i=0; i<PROPAGATION_ITERATIONS; i++)
             {
                 decision[i+1] = Cycle_PropagateSpikes(currentTime);
@@ -266,7 +272,6 @@ void Cycle_Perform(long currentTime)
         c->goal_spike = (Event) {0};
     }
     //Inferences
-    popEvents();
 #if STAGE==2
     for(int i=0; i<eventsSelected; i++)
     {
