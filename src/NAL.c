@@ -6,7 +6,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
     if(atom)
     {
         //upper case atoms are treated as variables in the meta rule language
-        if(atom_names[atom-1][0] >= 'A' && atom_names[atom-1][0] <= 'Z')
+        if(Encode_atomNames[atom-1][0] >= 'A' && Encode_atomNames[atom-1][0] <= 'Z')
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
             printf("subtree = Term_ExtractSubterm(&term%d, %d);\n", premiseIndex, i);
@@ -25,7 +25,7 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
 {
     if(atom)
     {
-        if(atom_names[atom-1][0] >= 'A' && atom_names[atom-1][0] <= 'Z')
+        if(Encode_atomNames[atom-1][0] >= 'A' && Encode_atomNames[atom-1][0] <= 'Z')
         {
             //conclusion term gets variables substituteda
             printf("Term_OverrideSubterm(&conclusion,%d,&substitutions[%d]);\n", i, atom);

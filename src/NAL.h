@@ -26,7 +26,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
-#define ReduceStatement(pattern, _, replacement) NAL_GenerateReduction(#pattern " ", #replacement " "); 
+#define ReduceStatement(pattern, _, replacement) NAL_GenerateReduction(#pattern, #replacement); 
 
 #endif
 

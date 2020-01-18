@@ -193,11 +193,11 @@ void Cycle_Perform(long currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 { 
-		    //build link between internal derivations to explain external events:
-		    for(int k=0; k<eventsSelected; k++)
-		    {
+                    //build link between internal derivations to explain external events:
+                    for(int k=0; k<eventsSelected; k++)
+                    {
                         Cycle_ReinforceLink(&selectedEvents[k], &postcondition, selectedEvents[k].operationID);
-		    }
+                    }
                     if(postcondition.operationID != 0)
                     {
                         return;

@@ -1249,7 +1249,7 @@ void Parser_Test()
     {
         if(ret.atoms[i] != 0)
         {
-            printf("Subterm: %i %d %s\n", i, ret.atoms[i], atom_names[ret.atoms[i]-1]);
+            printf("Subterm: %i %d %s\n", i, ret.atoms[i], Encode_atomNames[ret.atoms[i]-1]);
         }
     }
     puts("Result:");
