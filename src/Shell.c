@@ -73,7 +73,14 @@ void Shell_Start()
                 else
                 {
                     bool isEvent = str_len >= 3 && line[str_len-1] == ':' && line[str_len-2] == '|' && line[str_len-3] == ':'; 
-                    YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, !isEvent);
+		    if(line[str_len-1] == '!' || (str_len>=5 && line[str_len-5] == '!'))
+		    {
+                        YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0, !isEvent);
+		    }
+		    else
+		    {
+                        YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, !isEvent);
+		    }
                 }
             }
         }
