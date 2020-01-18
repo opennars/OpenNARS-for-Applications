@@ -184,7 +184,47 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
 		    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
 		}
 		bool revision_happened = false;
-                c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
+		//check if higher order now, implication "$"
+		if(atom_names[(int) event->term.atoms[0]][0] == '$' &&
+		   atom_names[(int) event->term.atoms[0]][1] == 0) //TODO proper method
+		{
+                    //get predicate and add
+		    //the subject to precondition
+		    //table as an implication
+		    Term subject = Term_ExtractSubterm(&event->term, 1);
+		    Term predicate = Term_ExtractSubterm(&event->term, 2);
+		    int concept_i;
+		    if(Memory_FindConceptByTerm(&predicate, &concept_i))
+		    {
+		        Concept *c = concepts.items[concept_i].address;
+			Implication imp = {
+                            .term = subject,
+			    .truth = eternal_event.truth,
+			    .stamp = eternal_event.stamp,
+			    .sourceConcept = c,
+			    .sourceConceptTerm = subject
+			};
+			//now extract operation id
+			int opi = 0;
+			if(atom_names[(int) subject.atoms[0]][0] == '#' &&
+			   atom_names[(int) subject.atoms[0]][1] == 0) //TODO
+			{ //TODO make sure sequences are right-encoded so that operation is the predicate and the subject can be a sequence itself
+                            Term potential_op = Term_ExtractSubterm(&subject, 2);
+			    Term precon_nop = Term_ExtractSubterm(&subject, 1);
+                            if(atom_names[(int) potential_op.atoms[0]][0] == '^')
+		            {
+                               opi = atom_names[(int) potential_op.atoms[0]][1] - (int) '0';
+			       //get rid of op as MSC links cannot use it
+			       Term_OverrideSubterm(&imp.term, 1, &precon_nop);
+			    }
+			}
+			Table_AddAndRevise(&c->precondition_beliefs[opi], &imp, "");
+		    }
+		}
+		else
+		{
+                    c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
+		}
                 if(revision_happened)
                 {
                     Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
