@@ -12,12 +12,22 @@ static void Shell_op_3()
 {
     puts("^3 executed");
 }
+static void Shell_op_4()
+{
+    puts("^4 executed");
+}
+static void Shell_op_5()
+{
+    puts("^5 executed");
+}
 void Shell_Start()
 {
     YAN_INIT();
     YAN_AddOperation(Encode_AtomicTerm("^1"), Shell_op_1); 
     YAN_AddOperation(Encode_AtomicTerm("^2"), Shell_op_2); 
     YAN_AddOperation(Encode_AtomicTerm("^3"), Shell_op_3); 
+    YAN_AddOperation(Encode_AtomicTerm("^4"), Shell_op_4);
+    YAN_AddOperation(Encode_AtomicTerm("^5"), Shell_op_5);
     OUTPUT = 0;
     INPUT = false;
     for(;;)

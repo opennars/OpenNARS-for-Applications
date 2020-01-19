@@ -172,66 +172,66 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     {
         if(!readded)
         {
+            Event eternal_event = *event;
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+            {
+                eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+                eternal_event.truth = Truth_Eternalize(event->truth);
+            }
+            //check if higher order now, implication "$"
+            if(Encode_copulaEquals(event->term.atoms[0], '$'))
+            {
+                //get predicate and add the subject to precondition table as an implication
+                Term subject = Term_ExtractSubterm(&event->term, 1);
+                Term predicate = Term_ExtractSubterm(&event->term, 2);
+                Memory_Conceptualize(&subject);
+                Memory_Conceptualize(&predicate);
+                int target_concept_i;
+                int source_concept_i;
+                if(Memory_FindConceptByTerm(&predicate, &target_concept_i) && Memory_FindConceptByTerm(&subject, &source_concept_i))
+                {
+                    Concept *target_concept = concepts.items[target_concept_i].address;
+                    Concept *source_concept = concepts.items[source_concept_i].address;
+                    Implication imp = { .term = subject,
+                                        .truth = eternal_event.truth,
+                                        .stamp = eternal_event.stamp,
+                                        .sourceConcept = source_concept,
+                                        .sourceConceptTerm = subject };
+                    //now extract operation id
+                    int opi = 0;
+                    if(Encode_copulaEquals(subject.atoms[0], '#'))
+                    {
+                        Term potential_op = Term_ExtractSubterm(&subject, 2);
+                        if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator
+                        {
+                            opi = atoi(&Encode_atomNames[(int) potential_op.atoms[0]-1][1]); //"^1" to integer 1
+                            imp.sourceConceptTerm = imp.term = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                            Memory_Conceptualize(&imp.term);
+                            int new_source_concept_i;
+                            if(Memory_FindConceptByTerm(&imp.term , &new_source_concept_i))
+                            {
+                                imp.sourceConcept = concepts.items[new_source_concept_i].address;
+                            }
+                            else
+                            {
+                                return; //failed to add, there was no space for these concepts
+                            }
+                        }
+                    }
+                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
+                }
+                return;
+            }
             Memory_Conceptualize(&event->term);
             int concept_i;
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
                 Concept *c = concepts.items[concept_i].address;
-                Event eternal_event = *event;
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL)
                 {
-                    eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-                    eternal_event.truth = Truth_Eternalize(event->truth);
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
                 }
                 bool revision_happened = false;
-                //check if higher order now, implication "$"
-                if(Encode_copulaEquals(event->term.atoms[0], '$'))
-                {
-                    //get predicate and add the subject to precondition table as an implication
-                    Term subject = Term_ExtractSubterm(&event->term, 1);
-                    Term predicate = Term_ExtractSubterm(&event->term, 2);
-                    Memory_Conceptualize(&subject);
-                    Memory_Conceptualize(&predicate);
-                    int target_concept_i;
-                    int source_concept_i;
-                    if(Memory_FindConceptByTerm(&predicate, &target_concept_i) && Memory_FindConceptByTerm(&subject, &source_concept_i))
-                    {
-                        Concept *target_concept = concepts.items[target_concept_i].address;
-                        Concept *source_concept = concepts.items[source_concept_i].address;
-                        Implication imp = { .term = subject,
-                                            .truth = eternal_event.truth,
-                                            .stamp = eternal_event.stamp,
-                                            .sourceConcept = source_concept,
-                                            .sourceConceptTerm = subject };
-                        //now extract operation id
-                        int opi = 0;
-                        if(Encode_copulaEquals(subject.atoms[0], '#'))
-                        {
-                            Term potential_op = Term_ExtractSubterm(&subject, 2);
-                            if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator
-                            {
-                                opi = atoi(&Encode_atomNames[(int) potential_op.atoms[0]-1][1]); //"^1" to integer 1
-                                imp.sourceConceptTerm = imp.term = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
-                                Memory_Conceptualize(&imp.term);
-                                int new_source_concept_i;
-                                if(Memory_FindConceptByTerm(&imp.term , &new_source_concept_i))
-                                {
-                                    imp.sourceConcept = concepts.items[new_source_concept_i].address;
-                                }
-                                else
-                                {
-                                    return; //failed to add, there was no space for these concepts
-                                }
-                            }
-                        }
-                        Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
-                    }
-                    else
-                    {
-                        return; //failed to add, there was no space for these concepts
-                    }
-                }
                 c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
                 if(revision_happened)
                 {

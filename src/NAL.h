@@ -67,10 +67,6 @@ R1( (A --> (R / B)), |-, ((A * B) --> R), Truth_StructuralDeduction )
 R1( (B --> (R % A)), |-, ((A * B) --> R), Truth_StructuralDeduction )
 R1( ((R \\ B) --> A), |-, ((A * B) --> R), Truth_StructuralDeduction )
 R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_StructuralDeduction )
-//NAL5 rules
-R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
-R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Abduction )
-R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Induction )
 //NAL7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
 
 #endif
