@@ -65,6 +65,10 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
 
 void Memory_Conceptualize(Term *term)
 {
+    if(Encode_atomNames[term->atoms[0]-1][0] == '^') //don't conceptualize operators
+    {
+        return;
+    }
     //Term_HASH_TYPE hash = Term_Hash(term);
     if(!Memory_FindConceptByTerm(term, /*hash,*/ NULL))
     {
@@ -113,6 +117,10 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     {
         return false;
     }
+    if(Encode_atomNames[e->term.atoms[0]-1][0] == '^')
+    {
+        return true; //return true for printing purposes only, operators don't form events as well
+    }
     int concept_i = 0;
     if(Memory_FindConceptByTerm(&e->term, &concept_i))
     {
@@ -132,17 +140,41 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     return false;
 }
 
-static void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
+static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double priority, bool input, bool derived, bool revised)
 {
     if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
-        Encode_PrintTerm(&event->term);
-        fputs((event->type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
-        fputs(event->occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
+        Encode_PrintTerm(term);
+        fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
+        fputs(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
         printf("Priority=%f ", priority);
-        Truth_Print(&event->truth);
+        Truth_Print(truth);
     }
+}
+
+static void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
+{
+    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, priority, input, derived, revised);
+}
+
+void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised)
+{
+    char opstring[4];
+    sprintf(opstring, "^%d", operationID);
+    Term opterm = Encode_AtomicTerm(opstring);
+    Term precon_op = operationID == 0 ? *precondition : (Term) {0};
+    if(operationID > 0) //a to (a &/ ^op)
+    {
+        precon_op.atoms[0] = '#';
+        Term_OverrideSubterm(&precon_op, 1, precondition);
+        Term_OverrideSubterm(&precon_op, 2, &opterm);
+    }
+    Term implication = {0};
+    implication.atoms[0] = Encode_AtomicTermIndex("$");
+    Term_OverrideSubterm(&implication, 1, &precon_op); //MSC links always store the precondition!
+    Term_OverrideSubterm(&implication, 2, postcondition);
+    Memory_printAddedKnowledge(&implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
@@ -164,6 +196,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             if(event->type == EVENT_TYPE_GOAL)
             {
                 FIFO_Add(event, &goal_events);
+                Memory_printAddedEvent(event, priority, input, derived, revised);
             }
         }
     }
@@ -171,28 +204,72 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     {
         if(!readded)
         {
+            Event eternal_event = *event;
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+            {
+                eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+                eternal_event.truth = Truth_Eternalize(event->truth);
+            }
+            //check if higher order now, implication "$"
+            if(Encode_copulaEquals(event->term.atoms[0], '$'))
+            {
+                //get predicate and add the subject to precondition table as an implication
+                Term subject = Term_ExtractSubterm(&event->term, 1);
+                Term predicate = Term_ExtractSubterm(&event->term, 2);
+                Memory_Conceptualize(&subject);
+                Memory_Conceptualize(&predicate);
+                int target_concept_i;
+                int source_concept_i;
+                if(Memory_FindConceptByTerm(&predicate, &target_concept_i) && Memory_FindConceptByTerm(&subject, &source_concept_i))
+                {
+                    Concept *target_concept = concepts.items[target_concept_i].address;
+                    Concept *source_concept = concepts.items[source_concept_i].address;
+                    Implication imp = { .term = subject,
+                                        .truth = eternal_event.truth,
+                                        .stamp = eternal_event.stamp,
+                                        .sourceConcept = source_concept,
+                                        .sourceConceptTerm = subject };
+                    //now extract operation id
+                    int opi = 0;
+                    if(Encode_copulaEquals(subject.atoms[0], '#'))
+                    {
+                        Term potential_op = Term_ExtractSubterm(&subject, 2);
+                        if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator
+                        {
+                            opi = atoi(&Encode_atomNames[(int) potential_op.atoms[0]-1][1]); //"^1" to integer 1
+                            imp.sourceConceptTerm = imp.term = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                            Memory_Conceptualize(&imp.term);
+                            int new_source_concept_i;
+                            if(Memory_FindConceptByTerm(&imp.term , &new_source_concept_i))
+                            {
+                                imp.sourceConcept = concepts.items[new_source_concept_i].address;
+                            }
+                            else
+                            {
+                                return; //failed to add, there was no space for these concepts
+                            }
+                        }
+                    }
+                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
+                    Memory_printAddedEvent(event, priority, input, derived, revised);
+                }
+                return;
+            }
             Memory_Conceptualize(&event->term);
             int concept_i;
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
                 Concept *c = concepts.items[concept_i].address;
-		Event eternal_event = *event;
-		if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+                if(event->occurrenceTime != OCCURRENCE_ETERNAL)
                 {
-                    eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-                    eternal_event.truth = Truth_Eternalize(event->truth);
-		    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
-		}
-		bool revision_happened = false;
+                    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
+                }
+                bool revision_happened = false;
                 c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
                 if(revision_happened)
                 {
                     Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
                 }
-            }
-            else
-            {
-                assert(false, "Concept creation failed, it should always be able to create one, even when full, by removing the worst!");
             }
         }
         if(Memory_addCyclingEvent(event, priority, currentTime) && !readded) //task gets replaced with revised one, more radical than OpenNARS!!

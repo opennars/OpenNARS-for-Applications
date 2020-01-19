@@ -21,7 +21,8 @@
 //Data structure//
 //--------------//
 //Atomic term names:
-Atom atom_names[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+Atom Encode_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+#define Encode_copulaEquals(atom,name) (Encode_atomNames[(int) atom-1][0] == name && Encode_atomNames[(int) atom-1][1] == 0)
 
 //Methods//
 //-------//

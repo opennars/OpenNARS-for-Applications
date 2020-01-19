@@ -51,9 +51,9 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
         else
         if(i+1 < n)
         {
-            if(narsese[i] == '&' && narsese[i+1] == '/') // &/ becomes ,
+            if(narsese[i] == '&' && narsese[i+1] == '/') // &/ becomes #
             {
-                narsese_replaced[j] = ',';
+                narsese_replaced[j] = '#';
                 i+=2; j++;
             }
             else
@@ -216,7 +216,7 @@ int Encode_AtomicTermIndex(char *name)
     int ret_index = -1;
     for(int i=0; i<term_index; i++)
     {
-        if(!strcmp(atom_names[i], name))
+        if(!strcmp(Encode_atomNames[i], name))
         {
             ret_index = i+1;
             break;
@@ -226,7 +226,7 @@ int Encode_AtomicTermIndex(char *name)
     {
         assert(term_index < 255, "Too many terms for YAN");
         ret_index = term_index+1;
-        strncpy(atom_names[term_index], name, ATOMIC_TERM_LEN_MAX);
+        strncpy(Encode_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
         term_index++;
     }
     return ret_index;
@@ -297,7 +297,7 @@ void Encode_PrintAtom(Atom atom)
 {
     if(atom)
     {
-        fputs(atom_names[atom-1], stdout);
+        fputs(Encode_atomNames[atom-1], stdout);
     }
     else
     {
@@ -340,7 +340,7 @@ void Encode_INIT()
     term_index = 0;
     for(int i=0; i<TERMS_MAX; i++)
     {
-        memset(&atom_names[i], 0, ATOMIC_TERM_LEN_MAX);
+        memset(&Encode_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     //index the copulas at first, to make sure these will have same index on next run
     for(int i=0; i<(int) strlen(canonical_copulas); i++)

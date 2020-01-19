@@ -139,6 +139,10 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptTerm = A->term;
                         /*IN_OUTPUT( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
+                        if(PRINT_DERIVATIONS)
+                        {
+                            Memory_printAddedImplication(&A->term, operationID, &B->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
+                        }
                     }
                 }
             }
@@ -193,11 +197,11 @@ void Cycle_Perform(long currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 { 
-		    //build link between internal derivations to explain external events:
-		    for(int k=0; k<eventsSelected; k++)
-		    {
+                    //build link between internal derivations to explain external events:
+                    for(int k=0; k<eventsSelected; k++)
+                    {
                         Cycle_ReinforceLink(&selectedEvents[k], &postcondition, selectedEvents[k].operationID);
-		    }
+                    }
                     if(postcondition.operationID != 0)
                     {
                         return;
@@ -289,12 +293,15 @@ void Cycle_Perform(long currentTime)
                 if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
                 {
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
-                    fputs("Apply rule table on ", stdout);
-                    Encode_PrintTerm(&e->term);
-                    printf(" Priority=%f\n", priority);
-                    fputs(" and ", stdout);
-                    Encode_PrintTerm(&c->term);
-                    puts("");
+                    if(PRINT_DERIVATIONS)
+                    {
+                        fputs("Apply rule table on ", stdout);
+                        Encode_PrintTerm(&e->term);
+                        printf(" Priority=%f\n", priority);
+                        fputs(" and ", stdout);
+                        Encode_PrintTerm(&c->term);
+                        puts("");
+                    }
                     RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime, priority, true);
                 }
             }

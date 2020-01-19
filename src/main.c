@@ -223,8 +223,8 @@ void YAN_Follow_Test()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Follow test start");
-    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Follow_Test_Left); 
-    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Follow_Test_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("^left"), YAN_Follow_Test_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("^right"), YAN_Follow_Test_Right); 
     int simsteps = 1000000;
     int LEFT = 0;
     int RIGHT = 1;
@@ -304,9 +304,9 @@ void YAN_Pong2()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
-    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Pong_Left); 
-    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Pong_Right); 
-    YAN_AddOperation(Encode_AtomicTerm("op_stop"), YAN_Pong_Stop); 
+    YAN_AddOperation(Encode_AtomicTerm("^left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("^right"), YAN_Pong_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("^stop"), YAN_Pong_Stop); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -446,8 +446,8 @@ void YAN_Pong()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
-    YAN_AddOperation(Encode_AtomicTerm("op_left"), YAN_Pong_Left); 
-    YAN_AddOperation(Encode_AtomicTerm("op_right"), YAN_Pong_Right); 
+    YAN_AddOperation(Encode_AtomicTerm("^left"), YAN_Pong_Left); 
+    YAN_AddOperation(Encode_AtomicTerm("^right"), YAN_Pong_Right); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -585,15 +585,15 @@ void YAN_Multistep_Test()
     puts(">>YAN Multistep test start");
     OUTPUT = 0;
     YAN_INIT();
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
-    YAN_AddOperation(Encode_AtomicTerm("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_goto_switch"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("^goto_switch"), 1);
         YAN_Cycles(1);
         YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("^activate_switch"), 2);
         YAN_AddInputBelief(Encode_AtomicTerm("switch_active"), 0);
         YAN_Cycles(1);
         YAN_AddInputBelief(Encode_AtomicTerm("light_active"), 0);
@@ -618,12 +618,12 @@ void YAN_Multistep2_Test()
     puts(">>YAN Multistep2 test start");
     OUTPUT = 0;
     YAN_INIT();
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_switch"), YAN_Lightswitch_GotoSwitch); 
-    YAN_AddOperation(Encode_AtomicTerm("op_activate_switch"), YAN_Lightswitch_ActivateSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
+    YAN_AddOperation(Encode_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("start_at"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_goto_switch"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("^goto_switch"), 1);
         YAN_Cycles(1);
         YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
         YAN_Cycles(10);
@@ -632,7 +632,7 @@ void YAN_Multistep2_Test()
     for(int i=0; i<5; i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("switch_at"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_activate_switch"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("^activate_switch"), 2);
         YAN_AddInputBelief(Encode_AtomicTerm("switch_active"), 0);
         YAN_Cycles(1);
         YAN_AddInputBelief(Encode_AtomicTerm("light_active"), 0);
@@ -707,14 +707,14 @@ void YAN_TestChamber()
     OUTPUT = 0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_s0"), YAN_TestChamber_goto_s0); 
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_s1"), YAN_TestChamber_goto_s1); 
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_s2"), YAN_TestChamber_goto_s2); 
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_s3"), YAN_TestChamber_goto_s3); 
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_l0"), YAN_TestChamber_goto_l0); 
-    YAN_AddOperation(Encode_AtomicTerm("op_goto_l1"), YAN_TestChamber_goto_l1); 
-    YAN_AddOperation(Encode_AtomicTerm("op_activate"), YAN_TestChamber_activate); 
-    YAN_AddOperation(Encode_AtomicTerm("op_deactivate"), YAN_TestChamber_deactivate); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_s0"), YAN_TestChamber_goto_s0); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_s1"), YAN_TestChamber_goto_s1); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_s2"), YAN_TestChamber_goto_s2); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_s3"), YAN_TestChamber_goto_s3); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_l0"), YAN_TestChamber_goto_l0); 
+    YAN_AddOperation(Encode_AtomicTerm("^goto_l1"), YAN_TestChamber_goto_l1); 
+    YAN_AddOperation(Encode_AtomicTerm("^activate"), YAN_TestChamber_activate); 
+    YAN_AddOperation(Encode_AtomicTerm("^deactivate"), YAN_TestChamber_deactivate); 
     int size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
@@ -997,50 +997,50 @@ void YAN_TestChamber()
         if(c == 'a')
         {
             goto_s0 = true;
-            puts("op_goto_s0.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s0"), 1);
+            puts("^goto_s0.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_s0"), 1);
         }
         if(c == 'b')
         {
             goto_s1 = true;
-            puts("op_goto_s1.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s1"), 2);
+            puts("^goto_s1.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_s1"), 2);
         }
         if(c == 'c')
         {
             goto_s2 = true;
-            puts("op_goto_s2.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s2"), 3);
+            puts("^goto_s2.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_s2"), 3);
         }
         if(c == 'd')
         {
             goto_s3 = true;
-            puts("op_goto_s3.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_s3"), 4);
+            puts("^goto_s3.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_s3"), 4);
         }
         if(c == 'e')
         {
             goto_l0 = true;
-            puts("op_goto_l0.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_l0"), 5);
+            puts("^goto_l0.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_l0"), 5);
         }
         if(c == 'f')
         {
             goto_l1 = true;
-            puts("op_goto_l1.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_goto_l1"), 6);
+            puts("^goto_l1.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^goto_l1"), 6);
         }
         if(c == 'g')
         {
             activate = true;
-            puts("op_activate.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_activate"), 7);
+            puts("^activate.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^activate"), 7);
         }
         if(c == 'h')
         {
             deactivate = true;
-            puts("op_deactivate.");
-            YAN_AddInputBelief(Encode_AtomicTerm("op_deactivate"), 8);
+            puts("^deactivate.");
+            YAN_AddInputBelief(Encode_AtomicTerm("^deactivate"), 8);
         }
         if(c == 'i')
         {
@@ -1174,40 +1174,40 @@ void Sequence_Test()
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
-    YAN_AddOperation(Encode_AtomicTerm("op_1"), op_1); 
-    YAN_AddOperation(Encode_AtomicTerm("op_2"), op_2); 
-    YAN_AddOperation(Encode_AtomicTerm("op_3"), op_3); 
+    YAN_AddOperation(Encode_AtomicTerm("^1"), op_1); 
+    YAN_AddOperation(Encode_AtomicTerm("^2"), op_2); 
+    YAN_AddOperation(Encode_AtomicTerm("^3"), op_3); 
     for(int i=0;i<5;i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("a"), 0); //0 2 4 5
         YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("^1"), 1);
         YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("^1"), 1);
         YAN_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_1"), 1);
+        YAN_AddInputBelief(Encode_AtomicTerm("^1"), 1);
         YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("b"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_2"), 2);
+        YAN_AddInputBelief(Encode_AtomicTerm("^2"), 2);
         YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
         YAN_AddInputBelief(Encode_AtomicTerm("a"), 0);
-        YAN_AddInputBelief(Encode_AtomicTerm("op_3"), 3);
+        YAN_AddInputBelief(Encode_AtomicTerm("^3"), 3);
         YAN_AddInputBelief(Encode_AtomicTerm("g"), 0);
         YAN_Cycles(100);
     }
@@ -1249,7 +1249,7 @@ void Parser_Test()
     {
         if(ret.atoms[i] != 0)
         {
-            printf("Subterm: %i %d %s\n", i, ret.atoms[i], atom_names[ret.atoms[i]-1]);
+            printf("Subterm: %i %d %s\n", i, ret.atoms[i], Encode_atomNames[ret.atoms[i]-1]);
         }
     }
     puts("Result:");
@@ -1283,9 +1283,9 @@ void YAN_Alien()
     OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Alien1 start");
-    YAN_AddOperation(Encode_Term("op_left"), YAN_Alien_Left); 
-    YAN_AddOperation(Encode_Term("op_right"), YAN_Alien_Right); 
-    YAN_AddOperation(Encode_Term("op_shoot"), YAN_Alien_Shoot); 
+    YAN_AddOperation(Encode_Term("^left"), YAN_Alien_Left); 
+    YAN_AddOperation(Encode_Term("^right"), YAN_Alien_Right); 
+    YAN_AddOperation(Encode_Term("^shoot"), YAN_Alien_Shoot); 
     double alien0X = 0.5;
     double defenderX = 0.5;
     double alienWidth = 0.18;
