@@ -35,7 +35,6 @@ static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
     }
     if(j < COMPOUND_TERM_SIZE_MAX)
     {
-        assert(subterm->atoms[j] > 0, "WTF HAPPENED AT ALL HERE?");
         term->atoms[i] = subterm->atoms[j];
         int left_in_subterm = (j+1)*2-1;
         if(left_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[left_in_subterm] != 0)

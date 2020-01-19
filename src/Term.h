@@ -9,7 +9,7 @@
 //----------//
 #define Atom char
 #define MAX_SEQUENCE_LEN 2
-#define COMPOUND_TERM_SIZE_MAX 100
+#define COMPOUND_TERM_SIZE_MAX 32
 
 //Description//
 //-----------//

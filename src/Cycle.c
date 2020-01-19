@@ -293,7 +293,7 @@ void Cycle_Perform(long currentTime)
                 if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
                 {
                     Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
-                    if(PRINT_DERIVATIONS)
+                    if(PRINT_CONTROL_INFO)
                     {
                         fputs("Apply rule table on ", stdout);
                         Encode_PrintTerm(&e->term);

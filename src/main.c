@@ -1234,7 +1234,7 @@ void Sequence_Test()
 void Parser_Test()
 {
     puts(">>Parser test start");
-    char* narsese = "<(<$sth --> (&,[furry,meowing],animal)> &| <a --> b>) =/> <$sth --> [good]>>";
+    char* narsese = "<<$sth --> (&,[furry,meowing],animal)> =/> <$sth --> [good]>>";
     printf("Narsese: %s\n", narsese);
     char* preprocessed = Encode_Expand(narsese);
     printf("Preprocessed: %s\n", preprocessed);

@@ -15,7 +15,7 @@
 //----------//
 //Inferences per cycle (amount of events from cycling events)
 #define EVENT_SELECTIONS 1
-#define CONCEPTS_MAX 1024
+#define CONCEPTS_MAX 16384
 #define CYCLING_EVENTS_MAX 8192
 #define CYCLING_EVENTS_SELECT 10
 #define USE_HASHING true
@@ -25,6 +25,7 @@ extern double PROPAGATION_THRESHOLD;
 #define PROPAGATION_ITERATIONS 5
 extern bool PRINT_DERIVATIONS;
 #define PRINT_DERIVATIONS_INITIAL false
+#define PRINT_CONTROL_INFO false
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.01

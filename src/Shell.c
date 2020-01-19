@@ -60,6 +60,13 @@ void Shell_Start()
                 puts("done with 1000 additional inference steps.");
             }
             else
+            if(!strcmp(line,"100"))
+            {
+                puts("performing 100 inference steps:");
+                YAN_Cycles(100);
+                puts("done with 100 additional inference steps.");
+            }
+            else
             {
                 //parse event marker, punctuation, and finally the term:
                 int str_len = strlen(line);
