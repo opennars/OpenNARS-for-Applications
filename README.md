@@ -6,20 +6,26 @@ Will become a complete NARS implementation in C, built on top of Minimal Sensori
 
 ***How to clone and compile:***
 
+```
 git clone https://github.com/patham9/YAN
-
 cd YAN
-
 ./build.sh
+```
 
 ***How to run the interactive Narsese shell:***
 
+```
 ./YAN shell
+```
 
 ***How to run the tests and then receive instructions how to run the current example programs:***
 
+```
 ./YAN
+```
 
 **How to run an example file:**
 
+```
 cat example1.nal | ./YAN shell
+```
