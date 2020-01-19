@@ -6,3 +6,4 @@
 ({tim} --> [seen]). :|:
 //I want to be good
 ({SELF} --> [good])! :|:
+//expected: ^1 executed
