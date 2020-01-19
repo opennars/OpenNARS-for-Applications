@@ -29,3 +29,7 @@ cd YAN
 ```
 cat example1.nal | ./YAN shell
 ```
+
+**Other**
+
+Usage from IRC is also possible, see https://gist.github.com/patham9/75b53ea120f140fce6538271e217dfac
