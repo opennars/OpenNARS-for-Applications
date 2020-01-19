@@ -42,8 +42,7 @@ void Shell_Start()
         int size = strlen(line);
         if(size==0)
         {
-            puts("CYCLE WTF");
-            YAN_Cycles(1); //not cat compatible
+            YAN_Cycles(1);
         }
         else
         {
@@ -94,6 +93,9 @@ void Shell_Start()
                 Term best_term = {0};
                 if(punctuation == '?')
                 {
+                    fputs("Input: ", stdout);
+                    Encode_PrintTerm(&term);
+                    puts("?");
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
@@ -132,9 +134,16 @@ void Shell_Start()
                         Continue:;
                     }
                     fputs("Answer: ", stdout);
-                    Encode_PrintTerm(&best_term);
-                    fputs(" ", stdout);
-                    Truth_Print(&best_truth);
+                    if(best_truth.confidence == 0)
+                    {
+                        puts("None.");
+                    }
+                    else
+                    {
+                        Encode_PrintTerm(&best_term);
+                        fputs(" ", stdout);
+                        Truth_Print(&best_truth);
+                    }
                 }
                 //input beliefs and goals
                 else

@@ -83,7 +83,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
 {
     NAL_GenerateConclusionTerm(premise1, NULL, conclusion, false);
-    puts("fputs(\"Reduced:\", stdout); Encode_PrintTerm(&term1); puts(\" -> \"); Encode_PrintTerm(&conclusion); puts(\"\"); return conclusion;\n}");
+    puts("fputs(\"Reduced: \", stdout); Encode_PrintTerm(&term1); fputs(\" -> \", stdout); Encode_PrintTerm(&conclusion); puts(\"\"); return conclusion;\n}");
 }
 
 void NAL_GenerateRuleTable()
