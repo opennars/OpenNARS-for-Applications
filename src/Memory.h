@@ -24,7 +24,7 @@
 extern double PROPAGATION_THRESHOLD;
 #define PROPAGATION_ITERATIONS 5
 extern bool PRINT_DERIVATIONS;
-#define PRINT_DERIVATIONS_INITIAL true
+#define PRINT_DERIVATIONS_INITIAL false
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.01
@@ -66,5 +66,7 @@ void Memory_addInputEvent(Event *event, long currentTime);
 void Memory_addOperation(Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
+//print implication
+void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised);
 
 #endif

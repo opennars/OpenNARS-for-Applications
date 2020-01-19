@@ -23,6 +23,7 @@ static void Shell_op_5()
 void Shell_Start()
 {
     YAN_INIT();
+    PRINT_DERIVATIONS = true;
     YAN_AddOperation(Encode_AtomicTerm("^1"), Shell_op_1); 
     YAN_AddOperation(Encode_AtomicTerm("^2"), Shell_op_2); 
     YAN_AddOperation(Encode_AtomicTerm("^3"), Shell_op_3); 
