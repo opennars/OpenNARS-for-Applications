@@ -1,24 +1,24 @@
 //Shape1 is a rectangle
-({shape1} --> rectangle).
+<{shape1} --> rectangle>.
 //shape1 is filled
-({shape1} --> [filled]).
+<{shape1} --> [filled]>.
 //shape1 is left of shape2
-(({shape1} * {shape2}) --> leftOf).
+<({shape1} * {shape2}) --> leftOf>.
 //shape1 is above of shape3
-(({shape1} * {shape3}) --> aboveOf).
+<({shape1} * {shape3}) --> aboveOf>.
 //shape2 is a circle
-({shape2} --> circle).
+<{shape2} --> circle>.
 //shape2 is unfilled
-({shape2} --> [unfilled]).
+<{shape2} --> [unfilled]>.
 //shape2 is above of shape3
-(({shape2} * {shape3}) --> aboveOf).
+<({shape2} * {shape3}) --> aboveOf>.
 //shape3 is a triangle
-({shape3} --> triangle).
+<{shape3} --> triangle>.
 //shape3 is unfilled
-({shape3} --> [unfilled]).
+<{shape3} --> [unfilled]>.
 //shape3 is left of shape2
-(({shape3} * {shape2}) --> leftOf).
+<({shape3} * {shape2}) --> leftOf>.
 100
 //the filled rectangle is left of what?
-(([filled] & rectangle) --> (leftOf / {?1}))?
+<([filled] & rectangle) --> (leftOf / {?1})>?
 //expected (((filled ' .) & rectangle) : (leftOf / (shape2 " .))) Truth: frequency=1.000000, confidence=0.396172
