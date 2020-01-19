@@ -4,7 +4,7 @@
 
 Will become a complete NARS implementation in C, built on top of Minimal Sensorimotor Component (a stripped down ANSNA with Compound Terms instead of SDR's, see https://github.com/patham9/MSC, in particular v0.6.0)
 
-***How to clone and compile (tested with gcc and Clang, x64, x86, ARM):***
+***How to clone and compile (tested with GCC and Clang, x64, x86, ARM):***
 
 ```
 git clone https://github.com/patham9/YAN
