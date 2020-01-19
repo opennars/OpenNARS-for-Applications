@@ -93,6 +93,13 @@ INIT:
                 puts("done with 100 additional inference steps.");
             }
             else
+            if(!strcmp(line,"10"))
+            {
+                puts("performing 10 inference steps:");
+                YAN_Cycles(10);
+                puts("done with 10 additional inference steps.");
+            }
+            else
             {
                 //parse event marker, punctuation, and finally the term:
                 int str_len = strlen(line);

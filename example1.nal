@@ -18,7 +18,8 @@
 <{shape3} --> [unfilled]>.
 //shape3 is left of shape2
 <({shape3} * {shape2}) --> leftOf>.
-100
+10
+10
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf / {?1})>?
 //expected (((filled ' .) & rectangle) : (leftOf / (shape2 " .))) Truth: frequency=1.000000, confidence=0.396172
