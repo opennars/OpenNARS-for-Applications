@@ -33,16 +33,25 @@ void Shell_Start()
     INPUT = false;
     for(;;)
     {
-        char line[1024];
-        scanf("%1023[^\n]", line);
+        char line[1024] = {0};
+        if(fgets(line, 1024, stdin) == NULL)
+        {
+            exit(0);
+        }
+        line[strlen(line)-1] = 0;
         int size = strlen(line);
         if(size==0)
         {
-            YAN_Cycles(1);
+            puts("CYCLE WTF");
+            YAN_Cycles(1); //not cat compatible
         }
         else
         {
             //accept commands
+            if(line[0] == '/' && line[1] == '/')
+            {
+                continue;
+            }
             if(!strcmp(line,"*volume=0"))
             {
                 PRINT_DERIVATIONS = false;
@@ -141,7 +150,5 @@ void Shell_Start()
                 }
             }
         }
-        memset(line, 0, 1024);
-        getchar();
     }
 }
