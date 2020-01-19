@@ -27,8 +27,8 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
     {
         if(Encode_atomNames[atom-1][0] >= 'A' && Encode_atomNames[atom-1][0] <= 'Z')
         {
-            //conclusion term gets variables substituteda
-            printf("Term_OverrideSubterm(&conclusion,%d,&substitutions[%d]);\n", i, atom);
+            //conclusion term gets variables substituted
+            printf("if(!Term_OverrideSubterm(&conclusion,%d,&substitutions[%d])){ goto RULE_%d; }\n", i, atom, ruleID);
         }
         else
         {

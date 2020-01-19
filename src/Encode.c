@@ -316,14 +316,14 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     int child2 = index*2+1;
     bool hasChild = child1 < NARSESE_LEN_MAX && term->atoms[child1-1];
     fputs(hasChild ? "(" : "", stdout);
-    if(child1 < NARSESE_LEN_MAX)
+    if(child1 < COMPOUND_TERM_SIZE_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child1);
     }
     fputs(hasChild ? " " : "", stdout);
     Encode_PrintAtom(atom);
     fputs(hasChild ? " " : "", stdout);
-    if(child2 < NARSESE_LEN_MAX)
+    if(child2 < COMPOUND_TERM_SIZE_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child2);
     }

@@ -27,25 +27,45 @@ bool Term_Equal(Term *a, Term *b)
     return true;
 }
 
-static void Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
+static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
 {
-    if(i < COMPOUND_TERM_SIZE_MAX && j < COMPOUND_TERM_SIZE_MAX)
+    if(i >= COMPOUND_TERM_SIZE_MAX)
     {
-        term->atoms[i] = subterm->atoms[j];
-        Term_RelativeOverride(term, (i+1)*2-1,   subterm, (j+1)*2-1);   //override left child
-        Term_RelativeOverride(term, (i+1)*2+1-1, subterm, (j+1)*2+1-1); //override right child
+        return false;
     }
+    if(j < COMPOUND_TERM_SIZE_MAX)
+    {
+        assert(subterm->atoms[j] > 0, "WTF HAPPENED AT ALL HERE?");
+        term->atoms[i] = subterm->atoms[j];
+        int left_in_subterm = (j+1)*2-1;
+        if(left_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[left_in_subterm] != 0)
+        {
+            if(!Term_RelativeOverride(term, (i+1)*2-1, subterm, left_in_subterm))   //override left child
+            {
+                return false;
+            }
+        }
+        int right_in_subterm = (j+1)*2+1-1;
+        if(right_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[right_in_subterm] != 0)
+        {
+            if(!Term_RelativeOverride(term, (i+1)*2+1-1, subterm, right_in_subterm)) //override right child
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
-void Term_OverrideSubterm(Term *term, int i, Term *subterm)
+bool Term_OverrideSubterm(Term *term, int i, Term *subterm)
 {
-    Term_RelativeOverride(term, i, subterm, 0); //subterm starts at its root, but its a subterm in term at position i
+    return Term_RelativeOverride(term, i, subterm, 0); //subterm starts at its root, but its a subterm in term at position i
 }
 
 Term Term_ExtractSubterm(Term *term, int j)
 {
     Term ret = {0}; //ret is where to "write into" 
-    Term_RelativeOverride(&ret, 0, term, j); //where we begin to write at root, 0
+    Term_RelativeOverride(&ret, 0, term, j); //where we begin to write at root, 0 (always succeeds as we extract just a subset)
     return ret; //reading from term beginning at i
 }
 
