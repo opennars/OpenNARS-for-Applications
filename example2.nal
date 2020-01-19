@@ -1,0 +1,8 @@
+//if a duck is seen, and stroke is executed, I feel good
+(((duck --> [seen]) &/ ^1) =/> ({SELF} --> [good])).
+//tim is a duck
+({tim} --> duck).
+//tim is seen
+({tim} --> [seen]). :|:
+//I want to be good
+({SELF} --> [good])! :|:
