@@ -49,6 +49,8 @@ void Shell_Start()
             //accept commands
             if(line[0] == '/' && line[1] == '/')
             {
+                fputs("Comment: ", stdout);
+                puts(&line[2]);
                 continue;
             }
             if(!strcmp(line,"*volume=0"))
