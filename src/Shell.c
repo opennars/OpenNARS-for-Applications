@@ -22,6 +22,8 @@ static void Shell_op_5()
 }
 void Shell_Start()
 {
+INIT:
+    fflush(stdout);
     YAN_INIT();
     PRINT_DERIVATIONS = true;
     YAN_AddOperation(Encode_AtomicTerm("^1"), Shell_op_1); 
@@ -38,7 +40,15 @@ void Shell_Start()
         {
             exit(0);
         }
-        line[strlen(line)-1] = 0;
+        //trim string, for IRC etc. convenience
+        for(int i=strlen(line)-1; i>=0; i--)
+        {
+            if(!isspace(line[i]))
+            {
+                break;
+            }
+            line[i] = 0;
+        }
         int size = strlen(line);
         if(size==0)
         {
@@ -53,6 +63,12 @@ void Shell_Start()
                 puts(&line[2]);
                 continue;
             }
+            else
+            if(!strcmp(line,"**"))
+            {
+                goto INIT;
+            }
+            else
             if(!strcmp(line,"*volume=0"))
             {
                 PRINT_DERIVATIONS = false;
@@ -161,5 +177,6 @@ void Shell_Start()
                 }
             }
         }
+        fflush(stdout);
     }
 }
