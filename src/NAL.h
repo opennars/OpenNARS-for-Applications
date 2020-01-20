@@ -78,13 +78,9 @@ ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 //Extensional set
 ReduceTerm( ({A} & {B}),     {A B}             )
-ReduceTerm( ({A X} & {B}),   {A (B . X)}       )
-ReduceTerm( ({A X} & {B Y}), {A (B . (X . Y))} )
 ReduceTerm( {A A},           {A}               )
 //Intensional set
 ReduceTerm( ([A] & [B]),     [A B]             )
-ReduceTerm( ([A X] & [B]),   [A (B . X)]       )
-ReduceTerm( ([A X] & [B Y]), [A (B . (X . Y))] )
 ReduceTerm( [A A],           [A]               )
 //Statement reductions (due to identities)
 ReduceStatement((S --> {P}), |-, (S <-> {P}) )
