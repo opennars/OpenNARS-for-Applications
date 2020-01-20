@@ -166,7 +166,7 @@ void Memory_printAddedImplication(Term *precondition, int operationID, Term *pos
     Term precon_op = operationID == 0 ? *precondition : (Term) {0};
     if(operationID > 0) //a to (a &/ ^op)
     {
-        precon_op.atoms[0] = '#';
+        precon_op.atoms[0] = '+';
         Term_OverrideSubterm(&precon_op, 1, precondition);
         Term_OverrideSubterm(&precon_op, 2, &opterm);
     }
@@ -231,7 +231,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                                         .sourceConceptTerm = subject };
                     //now extract operation id
                     int opi = 0;
-                    if(Encode_copulaEquals(subject.atoms[0], '#'))
+                    if(Encode_copulaEquals(subject.atoms[0], '+'))
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
                         if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator

@@ -51,9 +51,9 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
         else
         if(i+1 < n)
         {
-            if(narsese[i] == '&' && narsese[i+1] == '/') // &/ becomes #
+            if(narsese[i] == '&' && narsese[i+1] == '/') // &/ becomes +
             {
-                narsese_replaced[j] = '#';
+                narsese_replaced[j] = '+';
                 i+=2; j++;
             }
             else
@@ -163,7 +163,7 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "*&|;:=$'\"/\\.-%#~";
+static char* canonical_copulas = "*&|;:=$'\"/\\.-%#~+";
 char** Encode_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
@@ -279,7 +279,7 @@ Term Encode_Term(char *narsese)
 Term Encode_Sequence(Term *a, Term *b)
 {
     Term ret = {0};
-    ret.atoms[0] = Encode_AtomicTermIndex("#");
+    ret.atoms[0] = Encode_AtomicTermIndex("+");
     Term_OverrideSubterm(&ret,1,a);
     Term_OverrideSubterm(&ret,2,b);
     return ret;
@@ -307,7 +307,7 @@ void Encode_PrintAtom(Atom atom)
             fputs("=/>", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '#'))
+        if(Encode_copulaEquals(atom, '+'))
         {
             fputs("&/", stdout);
         }
