@@ -314,7 +314,7 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     }
     int child1 = index*2;
     int child2 = index*2+1;
-    bool hasChild = child1 < NARSESE_LEN_MAX && term->atoms[child1-1];
+    bool hasChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
     fputs(hasChild ? "(" : "", stdout);
     if(child1 < COMPOUND_TERM_SIZE_MAX)
     {
