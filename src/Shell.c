@@ -166,7 +166,7 @@ INIT:
                     else
                     {
                         Encode_PrintTerm(&best_term);
-                        fputs(" ", stdout);
+                        fputs(". ", stdout);
                         Truth_Print(&best_truth);
                     }
                 }

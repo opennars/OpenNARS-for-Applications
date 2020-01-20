@@ -261,7 +261,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         }
         else
         {
-            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex("."); //use set element copula for second element acting as a placeholder and/or "deeper" set than 2
+            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex("@"); //just use "@" for second element as terminator, while "." acts for "deeper" sets than 2
         }
     }
 }
@@ -297,7 +297,34 @@ void Encode_PrintAtom(Atom atom)
 {
     if(atom)
     {
-        fputs(Encode_atomNames[atom-1], stdout);
+        if(Encode_copulaEquals(atom, ':'))
+        {
+            fputs("-->", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '$'))
+        {
+            fputs("=/>", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '#'))
+        {
+            fputs("&/", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, ';'))
+        {
+            fputs("&|", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '='))
+        {
+            fputs("<->", stdout);
+        }
+        else
+        {
+            fputs(Encode_atomNames[atom-1], stdout);
+        }
     }
     else
     {
@@ -314,20 +341,64 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     }
     int child1 = index*2;
     int child2 = index*2+1;
-    bool hasChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
-    fputs(hasChild ? "(" : "", stdout);
+    bool hasLeftChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
+    bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Encode_copulaEquals(term->atoms[child2-1], '@');
+    bool isExtSet = Encode_copulaEquals(atom, '"');
+    bool isIntSet = Encode_copulaEquals(atom, '\'');
+    bool isStatement = Encode_copulaEquals(atom, '$') || Encode_copulaEquals(atom, ':') || Encode_copulaEquals(atom, '=');
+    if(isExtSet)
+    {
+        fputs(hasLeftChild ? "{" : "", stdout);
+    }
+    else
+    if(isIntSet)
+    {
+        fputs(hasLeftChild ? "[" : "", stdout);
+    }
+    else
+    if(isStatement)
+    {
+        fputs(hasLeftChild ? "<" : "", stdout);
+    }
+    else
+    {
+        fputs(hasLeftChild ? "(" : "", stdout);
+    }
     if(child1 < COMPOUND_TERM_SIZE_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child1);
     }
-    fputs(hasChild ? " " : "", stdout);
-    Encode_PrintAtom(atom);
-    fputs(hasChild ? " " : "", stdout);
+    if(hasRightChild)
+    {
+        fputs(hasLeftChild ? " " : "", stdout);
+    }
+    if(!isExtSet && !isIntSet && !Encode_copulaEquals(atom, '@'))
+    {
+        Encode_PrintAtom(atom);
+        fputs(hasLeftChild ? " " : "", stdout);
+    }
     if(child2 < COMPOUND_TERM_SIZE_MAX)
     {
         Encode_PrintTermPrettyRecursive(term, child2);
     }
-    fputs(hasChild ? ")" : "", stdout);
+    if(isExtSet)
+    {
+        fputs(hasLeftChild ? "}" : "", stdout);
+    }
+    else
+    if(isIntSet)
+    {
+        fputs(hasLeftChild ? "]" : "", stdout);
+    }
+    else
+    if(isStatement)
+    {
+        fputs(hasLeftChild ? ">" : "", stdout);
+    }
+    else
+    {
+        fputs(hasLeftChild ? ")" : "", stdout);
+    }
 }
 
 void Encode_PrintTerm(Term *term)
