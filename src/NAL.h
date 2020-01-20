@@ -26,7 +26,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
-#define ReduceStatement(pattern, _, replacement) NAL_GenerateReduction(#pattern, #replacement); 
+#define ReduceStatement(pattern, replacement) NAL_GenerateReduction(#pattern, #replacement); 
 
 #endif
 
@@ -70,7 +70,7 @@ R1( (R --> (A * B)), |-, ((R \\ B) --> A), Truth_StructuralDeduction )
 R1( (R --> (A * B)), |-, ((R % A) --> B), Truth_StructuralDeduction )
 R1( (A --> (R / B)), |-, ((A * B) --> R), Truth_StructuralDeduction )
 R1( (B --> (R % A)), |-, ((A * B) --> R), Truth_StructuralDeduction )
-R1( ((R \\ B) --> A), |-, ((A * B) --> R), Truth_StructuralDeduction )
+R1( ((R \\ B) --> A), |-, (R --> (A * B)), Truth_StructuralDeduction )
 R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_StructuralDeduction )
 //NAL7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
 
@@ -82,13 +82,11 @@ R1( ((R % A) --> B), |-, (R --> (A * B)), Truth_StructuralDeduction )
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 //Extensional set
-ReduceTerm( ({A} & {B}),     {A B}             )
-ReduceTerm( {A A},           {A}               )
+ReduceTerm( ({A} & {B}),   {A B} )
 //Intensional set
-ReduceTerm( ([A] & [B]),     [A B]             )
-ReduceTerm( [A A],           [A]               )
+ReduceTerm( ([A] & [B]),   [A B] )
 //Statement reductions (due to identities)
-ReduceStatement((S --> {P}), |-, (S <-> {P}) )
-ReduceStatement(([S] --> P), |-, ([S] <-> P) )
+ReduceStatement((S --> {P}), (S <-> {P}) )
+ReduceStatement(([S] --> P), ([S] <-> P) )
 
 #endif
