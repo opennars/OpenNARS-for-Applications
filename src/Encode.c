@@ -63,6 +63,30 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
+            if(narsese[i] == '/' && narsese[i+1] == '1') // /1 becomes /
+            {
+                narsese_replaced[j] = '/';
+                i+=2; j++;
+            }
+            else
+            if(narsese[i] == '/' && narsese[i+1] == '2') // /2 becomes %
+            {
+                narsese_replaced[j] = '%';
+                i+=2; j++;
+            }
+            else
+            if(narsese[i] == '\\' && narsese[i+1] == '1') // \1 becomes backslash
+            {
+                narsese_replaced[j] = '\\';
+                i+=2; j++;
+            }
+            else
+            if(narsese[i] == '\\' && narsese[i+1] == '2') // \2 becomes #
+            {
+                narsese_replaced[j] = '#';
+                i+=2; j++;
+            }
+            else
             if(i+2 < n)
             {
                 if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] == '>') // --> becomes :
@@ -320,6 +344,26 @@ void Encode_PrintAtom(Atom atom)
         if(Encode_copulaEquals(atom, '='))
         {
             fputs("<->", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '/'))
+        {
+            fputs("/1", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '%'))
+        {
+            fputs("/2", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '\\'))
+        {
+            fputs("\\1", stdout);
+        }
+        else
+        if(Encode_copulaEquals(atom, '#'))
+        {
+            fputs("\\2", stdout);
         }
         else
         {
