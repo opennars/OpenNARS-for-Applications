@@ -22,4 +22,4 @@
 10
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf / {?1})>?
-Answer: <([filled] & rectangle) --> (leftOf / {shape2})>. Truth: frequency=1.000000, confidence=0.396172
+//Answer: <([filled] & rectangle) --> (leftOf / {shape2})>. Truth: frequency=1.000000, confidence=0.396172
