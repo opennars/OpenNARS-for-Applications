@@ -153,7 +153,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     }
 }
 
-static void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
+void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised)
 {
     Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, priority, input, derived, revised);
 }

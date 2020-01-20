@@ -90,6 +90,7 @@ static Decision Cycle_PropagateSpikes(long currentTime)
             if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
             {
                 c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
+                Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
                 if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
                 {
                     Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
