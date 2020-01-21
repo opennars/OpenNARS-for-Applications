@@ -2,22 +2,21 @@
 #can "parse" anything with roughly the structure:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
-#easy_install-2.7 nltk
+#pip install nltk
 import sys
 import thread
 from subprocess import Popen, PIPE, STDOUT
 import subprocess
 import nltk as nltk
-#uncomment on first time:
-#nltk.download('punkt')
-#nltk.download('averaged_perceptron_tagger')
-#nltk.download('universal_tagset')
-#nltk.download('wordnet')
 from nltk import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('universal_tagset')
+nltk.download('wordnet')
 proc = subprocess.Popen(["./YAN","shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
 #convert universal tag set to the wordnet word types
