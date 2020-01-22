@@ -1,0 +1,8 @@
+*volume=0
+the stranger eats a burger in the pub
+burgers are tasty food
+100
+who eats tasty food?
+Answer: <stranger --> (eat /1 ([tasty] & food))>. :|: occurrenceTime=1 Truth: frequency=1.000000, confidence=0.207911
+who is in the pub?
+Answer: <stranger --> (in /1 pub)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.900000
