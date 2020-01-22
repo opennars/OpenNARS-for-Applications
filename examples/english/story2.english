@@ -4,4 +4,4 @@ the person takes out the pizza
 the person eats the pizza
 the person feels satisfied
 who took out the pizza?
-//expected: Answer: <person --> (take /1 pizza)>. Truth: frequency=1.000000, confidence=0.460800
+//expected: Answer: <person --> (take /1 pizza)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.900000

@@ -115,12 +115,16 @@ INIT:
 #endif
                 //answer questions:
                 Truth best_truth = {0};
+                Truth best_truth_projected = {0};
                 Term best_term = {0};
+                long answerOccurrenceTime = OCCURRENCE_ETERNAL;
                 if(punctuation == '?')
                 {
                     fputs("Input: ", stdout);
                     Encode_PrintTerm(&term);
-                    puts("?"); fflush(stdout);
+                    fputs("?", stdout);
+                    puts(isEvent ? " :|:" : ""); 
+                    fflush(stdout);
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
@@ -138,10 +142,12 @@ INIT:
                             if(c->belief_spike.type != EVENT_TYPE_DELETED)
                             {
                                 Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
-                                if(Truth_Expectation(potential_best_truth) > Truth_Expectation(best_truth))
+                                if(Truth_Expectation(potential_best_truth) > Truth_Expectation(best_truth_projected))
                                 {
-                                    best_truth = potential_best_truth;
+                                    best_truth_projected = potential_best_truth;
+                                    best_truth = c->belief_spike.truth;
                                     best_term = c->belief_spike.term;
+                                    answerOccurrenceTime = c->belief_spike.occurrenceTime;
                                 }
                             }
                         }
@@ -167,6 +173,7 @@ INIT:
                     {
                         Encode_PrintTerm(&best_term);
                         fputs(". ", stdout);
+                        printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%d ", answerOccurrenceTime);
                         Truth_Print(&best_truth);
                     }
                     fflush(stdout);
