@@ -60,7 +60,7 @@ INIT:
             if(line[0] == '/' && line[1] == '/')
             {
                 fputs("Comment: ", stdout);
-                puts(&line[2]);
+                puts(&line[2]); fflush(stdout);
                 continue;
             }
             else
@@ -81,23 +81,23 @@ INIT:
             else
             if(!strcmp(line,"1000"))
             {
-                puts("performing 1000 inference steps:");
+                puts("performing 1000 inference steps:"); fflush(stdout);
                 YAN_Cycles(1000);
-                puts("done with 1000 additional inference steps.");
+                puts("done with 1000 additional inference steps."); fflush(stdout);
             }
             else
             if(!strcmp(line,"100"))
             {
-                puts("performing 100 inference steps:");
+                puts("performing 100 inference steps:"); fflush(stdout);
                 YAN_Cycles(100);
-                puts("done with 100 additional inference steps.");
+                puts("done with 100 additional inference steps."); fflush(stdout);
             }
             else
             if(!strcmp(line,"10"))
             {
-                puts("performing 10 inference steps:");
+                puts("performing 10 inference steps:"); fflush(stdout);
                 YAN_Cycles(10);
-                puts("done with 10 additional inference steps.");
+                puts("done with 10 additional inference steps."); fflush(stdout);
             }
             else
             {
@@ -120,7 +120,7 @@ INIT:
                 {
                     fputs("Input: ", stdout);
                     Encode_PrintTerm(&term);
-                    puts("?");
+                    puts("?"); fflush(stdout);
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
@@ -169,6 +169,7 @@ INIT:
                         fputs(". ", stdout);
                         Truth_Print(&best_truth);
                     }
+                    fflush(stdout);
                 }
                 //input beliefs and goals
                 else

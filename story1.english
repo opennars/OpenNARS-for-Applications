@@ -1,0 +1,7 @@
+*volume=0
+the cat leaves the forest
+the hunter sees an animal
+nars hears a boom
+the cat is dead
+who left the forest?
+//expected: Answer: <cat --> (leave /1 forest)>. Truth: frequency=1.000000, confidence=0.368640

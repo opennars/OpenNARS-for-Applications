@@ -5,6 +5,7 @@
 #pip install nltk
 import sys
 import thread
+import time
 from subprocess import Popen, PIPE, STDOUT
 import subprocess
 import nltk as nltk
@@ -71,12 +72,21 @@ def receive_thread(a):
             sys.stdout.flush()
        
 thread.start_new_thread(receive_thread,(1,))
-print("Welcome to the YAN NLP Shell")
 sys.stdout.flush()
+timeout = 0
 while True:
-    sentence = raw_input()
+    try:
+        sentence = raw_input()
+    except: #exit but let reasoning finish according to the steps in the file using pessmistic estimation:
+        time.sleep(1+timeout/100) #to not exit before: 100 steps per second should be doable! :)
+        exit(0) #eof from cat (TODO check in a better way, TODO timeout can be done in a better way as well)
     if sentence.strip().isdigit():
+        timeout += int(sentence.strip())
         proc.stdin.write(sentence.strip() + "\n")
+        continue
+    if sentence.strip().startswith("*") or sentence.strip().startswith("//"):
+        proc.stdin.write(sentence.strip() + "\n")
+        continue
     (words, wordtypes) = words_and_types(sentence + " and")
     punctuation = "?" if "?" in sentence else "."
     print("Word types: " + str(wordtypes))

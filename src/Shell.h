@@ -9,6 +9,7 @@
 //References//
 //----------//
 #include "YAN.h"
+#include <ctype.h> 
 
 //Methods//
 //-------//
