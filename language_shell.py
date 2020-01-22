@@ -125,7 +125,7 @@ while True:
             elif isWordType(word, 'VERB'):
                 predicate = word
             elif isWordType(word, 'CONJ') or isWordType(word, 'ADP'): #prepositions, conjs
-                if object == "": #use the new subject as object, and last subject as the subject, if object was not identified
+                if isWordType(word, 'CONJ') and object == "": #use the new subject as object, and last subject as the subject, if object was not identified
                     object = subject
                     object_modifiers = subject_modifiers.replace("_subject_","_object_")
                     subject_modifiers = subject = lastsubject
