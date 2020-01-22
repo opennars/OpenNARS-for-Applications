@@ -26,8 +26,16 @@ cd YAN
 
 **How to run an example file:**
 
+Narsese:
+
 ```
-cat example1.nal | ./YAN shell
+cat ./examples/nal/example1.nal | ./YAN shell
+```
+
+English:
+
+```
+cat ./examples/english/story1.english | python language_shell.py
 ```
 
 **Other**
