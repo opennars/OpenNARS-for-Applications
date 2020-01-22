@@ -35,7 +35,7 @@ cat ./examples/nal/example1.nal | ./YAN shell
 English:
 
 ```
-cat ./examples/english/story1.english | python language_shell.py
+cat ./examples/english/story1.english | python english_shell.py
 ```
 
 **Other**
