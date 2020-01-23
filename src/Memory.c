@@ -125,7 +125,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     if(Memory_FindConceptByTerm(&e->term, &concept_i))
     {
         Concept *c = concepts.items[concept_i].address;
-        if(e->type == EVENT_TYPE_BELIEF && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
+        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
@@ -147,7 +147,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
-        fputs(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
+        printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
         printf("Priority=%f ", priority);
         Truth_Print(truth);
     }

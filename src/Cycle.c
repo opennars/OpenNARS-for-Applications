@@ -306,6 +306,12 @@ void Cycle_Perform(long currentTime)
                     RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime, priority, true);
                 }
             }
+            for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
+            {
+                Implication *imp = &c->precondition_beliefs[0].array[i];
+                Stamp stamp = Stamp_make(&e->stamp, &imp->stamp);
+                RuleTable_Apply(e->term, imp->term, e->truth, imp->truth, e->occurrenceTime + imp->occurrenceTimeOffset, stamp, currentTime, priority, true);
+            }
         }
     }
 #endif
