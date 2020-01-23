@@ -224,8 +224,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 {
                     Concept *target_concept = concepts.items[target_concept_i].address;
                     Concept *source_concept = concepts.items[source_concept_i].address;
-                    Implication imp = { .term = subject,
-                                        .truth = eternal_event.truth,
+                    Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
                                         .sourceConcept = source_concept,
                                         .sourceConceptTerm = subject };
@@ -237,7 +236,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                         if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator
                         {
                             opi = atoi(&Encode_atomNames[(int) potential_op.atoms[0]-1][1]); //"^1" to integer 1
-                            imp.sourceConceptTerm = imp.term = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                            imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                             Memory_Conceptualize(&imp.term);
                             int new_source_concept_i;
                             if(Memory_FindConceptByTerm(&imp.term , &new_source_concept_i))
@@ -250,6 +249,9 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                             }
                         }
                     }
+                    imp.term.atoms[0] = Encode_AtomicTermIndex("$");
+                    Term_OverrideSubterm(&imp.term, 1, &subject);
+                    Term_OverrideSubterm(&imp.term, 2, &predicate);
                     Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
                     Memory_printAddedEvent(event, priority, input, derived, revised);
                 }
