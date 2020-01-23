@@ -173,7 +173,7 @@ INIT:
                     {
                         Encode_PrintTerm(&best_term);
                         fputs(". ", stdout);
-                        printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%d ", answerOccurrenceTime);
+                        printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", answerOccurrenceTime);
                         Truth_Print(&best_truth);
                     }
                     fflush(stdout);
