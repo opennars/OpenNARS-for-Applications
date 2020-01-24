@@ -158,12 +158,10 @@ void Memory_printAddedEvent(Event *event, double priority, bool input, bool deri
 
 void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised)
 {
-    char opstring[4];
-    sprintf(opstring, "^%d", operationID);
-    Term opterm = Encode_AtomicTerm(opstring);
     Term precon_op = operationID == 0 ? *precondition : (Term) {0};
     if(operationID > 0) //a to (a &/ ^op)
     {
+        Term opterm = Encode_AtomicTerm(Encode_operatorNames[operationID-1]);
         precon_op.atoms[0] = '+';
         Term_OverrideSubterm(&precon_op, 1, precondition);
         Term_OverrideSubterm(&precon_op, 2, &opterm);
@@ -229,7 +227,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
                         if(Encode_isOperator(potential_op.atoms[0])) //atom starts with ^, making it an operator
                         {
-                            opi = Encode_getOperatorID(potential_op.atoms[0]); //"^1" to integer 1
+                            opi = Encode_getOperatorID(potential_op.atoms[0]); //"^op" to index
                             imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                         }
                         else

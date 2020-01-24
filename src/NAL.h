@@ -79,9 +79,9 @@ R2( A, (A ==> B), |-, B, Truth_Deduction )
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 //Extensional set
-ReduceTerm( ({A} & {B}),   {A B} )
+ReduceTerm( ({A} & {B}), {A B} )
 //Intensional set
-ReduceTerm( ([A] & [B]),   [A B] )
+ReduceTerm( ([A] & [B]), [A B] )
 //Statement reductions (due to identities)
 ReduceStatement((S --> {P}), (S <-> {P}) )
 ReduceStatement(([S] --> P), ([S] <-> P) )

@@ -1,18 +1,18 @@
-//if a duck is seen, and stroke is executed, I feel good
-<(<duck --> [seen]> &/ ^1) =/> ({SELF} --> [good])>.
-//if a duck is seen, and run away is executed, I feel good
-<(<dog --> [seen]> &/ ^2) =/> ({SELF} --> [good])>.
+//if a duck is seen, and pick is executed, I feel good
+<(<duck --> [seen]> &/ ^pick) =/> ({SELF} --> [good])>.
+//if a wolf is seen, and go (run away) is executed, I feel good
+<(<wolf --> [seen]> &/ ^go) =/> ({SELF} --> [good])>.
 //tim is a duck
 <{tim} --> duck>.
 //sam is a dog
-<{sam} --> dog>.
+<{sam} --> wolf>.
 //tim is seen now
 <{tim} --> [seen]>. :|:
 //I want to be good now
 <{SELF} --> [good]>! :|:
-//expected: ^1 executed
+//expected: ^pick executed
 //sam is seen
 <{sam} --> [seen]>. :|:
 //I want to be good now
 <{SELF} --> [good]>! :|:
-//expected: ^2 executed
+//expected: ^go executed
