@@ -1,24 +1,44 @@
 #include "Shell.h"
 
-static void Shell_op_1()
+static void Shell_op_left()
 {
-    puts("^1 executed");
+    puts("^left executed");
 }
-static void Shell_op_2()
+static void Shell_op_right()
 {
-    puts("^2 executed");
+    puts("^right executed");
 }
-static void Shell_op_3()
+static void Shell_op_up()
 {
-    puts("^3 executed");
+    puts("^up executed");
 }
-static void Shell_op_4()
+static void Shell_op_down()
 {
-    puts("^4 executed");
+    puts("^down executed");
 }
-static void Shell_op_5()
+static void Shell_op_say()
 {
-    puts("^5 executed");
+    puts("^say executed");
+}
+static void Shell_op_pick()
+{
+    puts("^pick executed");
+}
+static void Shell_op_drop()
+{
+    puts("^drop executed");
+}
+static void Shell_op_go()
+{
+    puts("^go executed");
+}
+static void Shell_op_activate()
+{
+    puts("^activate executed");
+}
+static void Shell_op_deactivate()
+{
+    puts("^deactivate executed");
 }
 void Shell_Start()
 {
@@ -26,11 +46,16 @@ INIT:
     fflush(stdout);
     YAN_INIT();
     PRINT_DERIVATIONS = true;
-    YAN_AddOperation(Encode_AtomicTerm("^1"), Shell_op_1); 
-    YAN_AddOperation(Encode_AtomicTerm("^2"), Shell_op_2); 
-    YAN_AddOperation(Encode_AtomicTerm("^3"), Shell_op_3); 
-    YAN_AddOperation(Encode_AtomicTerm("^4"), Shell_op_4);
-    YAN_AddOperation(Encode_AtomicTerm("^5"), Shell_op_5);
+    YAN_AddOperation(Encode_AtomicTerm("^left"), Shell_op_left); 
+    YAN_AddOperation(Encode_AtomicTerm("^right"), Shell_op_right); 
+    YAN_AddOperation(Encode_AtomicTerm("^up"), Shell_op_up); 
+    YAN_AddOperation(Encode_AtomicTerm("^down"), Shell_op_down);
+    YAN_AddOperation(Encode_AtomicTerm("^say"), Shell_op_say);
+    YAN_AddOperation(Encode_AtomicTerm("^pick"), Shell_op_pick);
+    YAN_AddOperation(Encode_AtomicTerm("^drop"), Shell_op_drop);
+    YAN_AddOperation(Encode_AtomicTerm("^go"), Shell_op_go);
+    YAN_AddOperation(Encode_AtomicTerm("^activate"), Shell_op_activate);
+    YAN_AddOperation(Encode_AtomicTerm("^deactivate"), Shell_op_deactivate);
     OUTPUT = 0;
     INPUT = false;
     for(;;)
@@ -183,11 +208,11 @@ INIT:
                 {
                     if(punctuation == '!')
                     {
-                        YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0, !isEvent);
+                        YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, !isEvent);
                     }
                     else
                     {
-                        YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, 0, !isEvent);
+                        YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, !isEvent);
                     }
                 }
             }

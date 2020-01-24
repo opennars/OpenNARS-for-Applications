@@ -29,7 +29,11 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Implication) { .term = a->term, 
+    Term term = {0};
+    term.atoms[0] = Encode_AtomicTermIndex("$");
+    Term_OverrideSubterm(&term, 1, &a->term);
+    Term_OverrideSubterm(&term, 2, &b->term);
+    return (Implication) { .term = term, 
                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                            .stamp = conclusionStamp,
                            .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
@@ -64,7 +68,17 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
     DERIVATION_STAMP(component,compound)
-    return (Event) { .term = compound->term, 
+    //extract precondition: (plus unification once vars are there)
+    Term precondition = Term_ExtractSubterm(&compound->term, 1);
+    if(Encode_copulaEquals(precondition.atoms[0], '+'))
+    {
+        Term potential_op = Term_ExtractSubterm(&precondition, 2);
+        if(Encode_isOperator(potential_op.atoms[0]))
+        {
+            precondition = Term_ExtractSubterm(&precondition, 1);
+        }
+    }
+    return (Event) { .term = precondition, 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
@@ -76,6 +90,7 @@ Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
+    ret.occurrenceTime = currentTime;
     return ret;
 }
 

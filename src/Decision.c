@@ -11,7 +11,7 @@ void Decision_Execute(Decision *decision)
     decision->op = operations[decision->operationID-1];
     (*decision->op.action)();
     //and add operator feedback
-    YAN_AddInputBelief(decision->op.term, decision->operationID);
+    YAN_AddInputBelief(decision->op.term);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -134,6 +134,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
             Event *precondition = &current_prec->belief_spike; //a. :|:
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {
+                assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
                              .truth = { .frequency = 1.0, .confidence = 0.9 },

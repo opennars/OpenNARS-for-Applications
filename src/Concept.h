@@ -12,10 +12,6 @@
 #include "Table.h"
 #include "Usage.h"
 
-//Parameters//
-//----------//
-#define OPERATIONS_MAX 10
-
 //Data structure//
 //--------------//
 typedef struct {

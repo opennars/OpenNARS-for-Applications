@@ -64,7 +64,7 @@ void Memory_addConcept(Concept *concept, long currentTime);
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised);
 void Memory_addInputEvent(Event *event, long currentTime);
 //Add operation to memory
-void Memory_addOperation(Operation op);
+void Memory_addOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
 //print added implication

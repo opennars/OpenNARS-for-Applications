@@ -6,7 +6,6 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
-int operations_index = 0;
 
 static void Memory_ResetEvents()
 {
@@ -39,7 +38,6 @@ void Memory_INIT()
     {
         operations[i] = (Operation) {0};
     }
-    operations_index = 0;
     concept_id = 0;
 }
 
@@ -65,7 +63,7 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
 
 void Memory_Conceptualize(Term *term)
 {
-    if(Encode_atomNames[term->atoms[0]-1][0] == '^') //don't conceptualize operators
+    if(Encode_isOperator(term->atoms[0])) //don't conceptualize operators
     {
         return;
     }
@@ -117,7 +115,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     {
         return false;
     }
-    if(Encode_atomNames[e->term.atoms[0]-1][0] == '^')
+    if(Encode_isOperator(e->term.atoms[0]))
     {
         return true; //return true for printing purposes only, operators don't form events as well
     }
@@ -125,7 +123,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     if(Memory_FindConceptByTerm(&e->term, &concept_i))
     {
         Concept *c = concepts.items[concept_i].address;
-        if(e->type == EVENT_TYPE_BELIEF && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
+        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
@@ -147,7 +145,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
-        fputs(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: ", stdout);
+        printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
         printf("Priority=%f ", priority);
         Truth_Print(truth);
     }
@@ -160,12 +158,10 @@ void Memory_printAddedEvent(Event *event, double priority, bool input, bool deri
 
 void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised)
 {
-    char opstring[4];
-    sprintf(opstring, "^%d", operationID);
-    Term opterm = Encode_AtomicTerm(opstring);
     Term precon_op = operationID == 0 ? *precondition : (Term) {0};
     if(operationID > 0) //a to (a &/ ^op)
     {
+        Term opterm = Encode_AtomicTerm(Encode_operatorNames[operationID-1]);
         precon_op.atoms[0] = '+';
         Term_OverrideSubterm(&precon_op, 1, precondition);
         Term_OverrideSubterm(&precon_op, 2, &opterm);
@@ -216,44 +212,50 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 //get predicate and add the subject to precondition table as an implication
                 Term subject = Term_ExtractSubterm(&event->term, 1);
                 Term predicate = Term_ExtractSubterm(&event->term, 2);
-                Memory_Conceptualize(&subject);
                 Memory_Conceptualize(&predicate);
                 int target_concept_i;
-                int source_concept_i;
-                if(Memory_FindConceptByTerm(&predicate, &target_concept_i) && Memory_FindConceptByTerm(&subject, &source_concept_i))
+                if(Memory_FindConceptByTerm(&predicate, &target_concept_i)) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
                 {
                     Concept *target_concept = concepts.items[target_concept_i].address;
-                    Concept *source_concept = concepts.items[source_concept_i].address;
-                    Implication imp = { .term = subject,
-                                        .truth = eternal_event.truth,
+                    Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
-                                        .sourceConcept = source_concept,
                                         .sourceConceptTerm = subject };
                     //now extract operation id
                     int opi = 0;
                     if(Encode_copulaEquals(subject.atoms[0], '+'))
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
-                        if(Encode_atomNames[(int) Term_ExtractSubterm(&subject, 2).atoms[0]-1][0] == '^') //atom starts with ^, making it an operator
+                        if(Encode_isOperator(potential_op.atoms[0])) //atom starts with ^, making it an operator
                         {
-                            opi = atoi(&Encode_atomNames[(int) potential_op.atoms[0]-1][1]); //"^1" to integer 1
-                            imp.sourceConceptTerm = imp.term = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
-                            Memory_Conceptualize(&imp.term);
-                            int new_source_concept_i;
-                            if(Memory_FindConceptByTerm(&imp.term , &new_source_concept_i))
-                            {
-                                imp.sourceConcept = concepts.items[new_source_concept_i].address;
-                            }
-                            else
-                            {
-                                return; //failed to add, there was no space for these concepts
-                            }
+                            opi = Encode_getOperatorID(potential_op.atoms[0]); //"^op" to index
+                            imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                        }
+                        else
+                        {
+                            imp.sourceConceptTerm = subject;
                         }
                     }
+                    else
+                    {
+                        imp.sourceConceptTerm = subject;
+                    }
+                    Memory_Conceptualize(&imp.sourceConceptTerm);
+                    int source_concept_i;
+                    if(Memory_FindConceptByTerm(&imp.sourceConceptTerm , &source_concept_i))
+                    {
+                        imp.sourceConcept = concepts.items[source_concept_i].address;
+                    }
+                    else
+                    {
+                        return; //failed to add, there was no space for the implication's postcondition concept
+                    }
+                    imp.term.atoms[0] = Encode_AtomicTermIndex("$");
+                    Term_OverrideSubterm(&imp.term, 1, &subject);
+                    Term_OverrideSubterm(&imp.term, 2, &predicate);
                     Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
                     Memory_printAddedEvent(event, priority, input, derived, revised);
                 }
-                return;
+                return; //at this point, either the implication has been added or there was no space for its precondition concept
             }
             Memory_Conceptualize(&event->term);
             int concept_i;
@@ -299,10 +301,9 @@ void Memory_addConcept(Concept *concept, long currentTime)
     }
 }
 
-void Memory_addOperation(Operation op)
+void Memory_addOperation(int id, Operation op)
 {
-    operations[operations_index%OPERATIONS_MAX] = op;
-    operations_index++;
+    operations[id - 1] = op;
 }
 
 bool Memory_ImplicationValid(Implication *imp)
