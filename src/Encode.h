@@ -17,11 +17,14 @@
 #define TERMS_MAX 255
 #define ATOMIC_TERM_LEN_MAX 30
 #define NARSESE_LEN_MAX 1000
+#define OPERATIONS_MAX 10
+
 
 //Data structure//
 //--------------//
 //Atomic term names:
 Atom Encode_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+Atom Encode_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 
 //Methods//
 //-------//
@@ -39,6 +42,8 @@ Term Encode_Sequence(Term *a, Term *b);
 Term Encode_AtomicTerm(char *name);
 //Index of atomic term
 int Encode_AtomicTermIndex(char *name);
+//Index of operator
+int Encode_OperatorIndex(char *name);
 //Print an atom
 void Encode_PrintAtom(Atom atom);
 //Print a term

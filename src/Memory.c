@@ -6,7 +6,6 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
-int operations_index = 0;
 
 static void Memory_ResetEvents()
 {
@@ -39,7 +38,6 @@ void Memory_INIT()
     {
         operations[i] = (Operation) {0};
     }
-    operations_index = 0;
     concept_id = 0;
 }
 
@@ -305,10 +303,9 @@ void Memory_addConcept(Concept *concept, long currentTime)
     }
 }
 
-void Memory_addOperation(Operation op)
+void Memory_addOperation(int id, Operation op)
 {
-    operations[operations_index%OPERATIONS_MAX] = op;
-    operations_index++;
+    operations[id - 1] = op;
 }
 
 bool Memory_ImplicationValid(Implication *imp)

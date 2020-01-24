@@ -21,9 +21,13 @@ void YAN_Cycles(int cycles)
     }
 }
 
-Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eternal)
+Event YAN_AddInput(Term term, char type, Truth truth, bool eternal)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
+    if(Encode_isOperator(term.atoms[0]))
+    {
+        ev.operationID = Encode_OperatorIndex(Encode_atomNames[term.atoms[0]-1]);
+    }
     if(eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
@@ -51,26 +55,27 @@ Event YAN_AddInput(Term term, char type, Truth truth, int operationID, bool eter
             printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
         }
     }
-    ev.operationID = operationID;
     Memory_addInputEvent(&ev, 0);
     IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     YAN_Cycles(1);
     return ev;
 }
 
-Event YAN_AddInputBelief(Term term, int operationID)
+Event YAN_AddInputBelief(Term term)
 {
-    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, operationID, false);
+    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, false);
     return ret;
 }
 
 Event YAN_AddInputGoal(Term term)
 {
-    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, 0, false);
+    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, false);
 }
 
 void YAN_AddOperation(Term term, Action procedure)
 {
-    Memory_addOperation((Operation) {.term = term, .action = procedure});
+    char* term_name = Encode_atomNames[(int) term.atoms[0]-1];
+    assert(term_name[0] == '^', "This atom does not belong to an operator!");
+    Memory_addOperation(Encode_OperatorIndex(term_name), (Operation) {.term = term, .action = procedure});
 }
 

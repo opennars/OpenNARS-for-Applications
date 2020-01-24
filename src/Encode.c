@@ -233,6 +233,28 @@ char** Encode_PrefixTransform(char* narsese_expanded)
     return tokens;
 }
 
+int operator_index = 0;
+int Encode_OperatorIndex(char *name)
+{
+    int ret_index = -1;
+    for(int i=0; i<operator_index; i++)
+    {
+        if(!strcmp(Encode_operatorNames[i], name))
+        {
+            ret_index = i+1;
+            break;
+        }
+    }
+    if(ret_index == -1)
+    {
+        assert(operator_index < OPERATIONS_MAX, "Too many operators for YAN");
+        ret_index = operator_index+1;
+        strncpy(Encode_operatorNames[operator_index], name, ATOMIC_TERM_LEN_MAX);
+        operator_index++;
+    }
+    return ret_index;
+}
+
 int term_index = 0;
 //Returns the memoized index of an already seen atomic term
 int Encode_AtomicTermIndex(char *name)
@@ -246,9 +268,13 @@ int Encode_AtomicTermIndex(char *name)
             break;
         }
     }
+    if(name[0] == '^')
+    {
+        Encode_OperatorIndex(name);
+    }
     if(ret_index == -1)
     {
-        assert(term_index < 255, "Too many terms for YAN");
+        assert(term_index < TERMS_MAX, "Too many terms for YAN");
         ret_index = term_index+1;
         strncpy(Encode_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
         term_index++;
@@ -452,10 +478,14 @@ void Encode_PrintTerm(Term *term)
 
 void Encode_INIT()
 {
-    term_index = 0;
+    operator_index = term_index = 0;
     for(int i=0; i<TERMS_MAX; i++)
     {
         memset(&Encode_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
+    }
+    for(int i=0; i<OPERATIONS_MAX; i++)
+    {
+        memset(&Encode_operatorNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     //index the copulas at first, to make sure these will have same index on next run
     for(int i=0; i<(int) strlen(canonical_copulas); i++)
@@ -478,5 +508,5 @@ bool Encode_isOperator(Atom atom)
 int Encode_getOperatorID(Atom atom)
 {
     assert(Encode_isOperator(atom), "get operator was called on something not an operator!");
-    return atoi(&Encode_atomNames[(int) atom-1][1]);
+    return Encode_OperatorIndex(Encode_atomNames[(int) atom-1]);
 }

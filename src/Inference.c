@@ -90,6 +90,7 @@ Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
+    ret.occurrenceTime = currentTime;
     return ret;
 }
 
