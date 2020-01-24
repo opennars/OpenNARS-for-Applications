@@ -464,3 +464,19 @@ void Encode_INIT()
         Encode_AtomicTermIndex(cop);
     }
 }
+
+bool Encode_copulaEquals(Atom atom, char name)
+{
+    return Encode_atomNames[(int) atom-1][0] == name && Encode_atomNames[(int) atom-1][1] == 0;
+}
+
+bool Encode_isOperator(Atom atom)
+{
+    return Encode_atomNames[(int) atom-1][0] == '^';
+}
+
+int Encode_getOperatorID(Atom atom)
+{
+    assert(Encode_isOperator(atom), "get operator was called on something not an operator!");
+    return atoi(&Encode_atomNames[(int) atom-1][1]);
+}

@@ -70,10 +70,10 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
     DERIVATION_STAMP(component,compound)
     //extract precondition: (plus unification once vars are there)
     Term precondition = Term_ExtractSubterm(&compound->term, 1);
-    if(precondition.atoms[0] == '+')
+    if(Encode_copulaEquals(precondition.atoms[0], '+'))
     {
         Term potential_op = Term_ExtractSubterm(&precondition, 2);
-        if(Encode_atomNames[potential_op.atoms[0]-1][0] == '^')
+        if(Encode_isOperator(potential_op.atoms[0]))
         {
             precondition = Term_ExtractSubterm(&precondition, 1);
         }

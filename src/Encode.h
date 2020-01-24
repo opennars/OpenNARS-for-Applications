@@ -22,7 +22,6 @@
 //--------------//
 //Atomic term names:
 Atom Encode_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
-#define Encode_copulaEquals(atom,name) (Encode_atomNames[(int) atom-1][0] == name && Encode_atomNames[(int) atom-1][1] == 0)
 
 //Methods//
 //-------//
@@ -44,5 +43,11 @@ int Encode_AtomicTermIndex(char *name);
 void Encode_PrintAtom(Atom atom);
 //Print a term
 void Encode_PrintTerm(Term *term);
+//Whether it is a certain copula:
+bool Encode_copulaEquals(Atom atom, char name);
+//Whether it is an operator
+bool Encode_isOperator(Atom atom);
+//Get operator id
+int Encode_getOperatorID(Atom atom);
 
 #endif
