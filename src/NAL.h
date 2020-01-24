@@ -23,6 +23,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true);
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
+//macro for bidirectional transformation rules
+#define RTrans(rep1, _, rep2, truthFunction) R1( rep1, _, rep2, truthFunction ); R1( rep2, _, rep1, truthFunction );
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
@@ -59,14 +61,10 @@ R2( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
 R2( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
 R2( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
 //NAL4 rules
-R1( ((A * B) --> R), |-, (A --> (R /1 B)), Truth_StructuralDeduction )
-R1( ((A * B) --> R), |-, (B --> (R /2 A)), Truth_StructuralDeduction )
-R1( (R --> (A * B)), |-, ((R \\1 B) --> A), Truth_StructuralDeduction )
-R1( (R --> (A * B)), |-, ((R \\2 A) --> B), Truth_StructuralDeduction )
-R1( (A --> (R /1 B)), |-, ((A * B) --> R), Truth_StructuralDeduction )
-R1( (B --> (R /2 A)), |-, ((A * B) --> R), Truth_StructuralDeduction )
-R1( ((R \\1 B) --> A), |-, (R --> (A * B)), Truth_StructuralDeduction )
-R1( ((R \\2 A) --> B), |-, (R --> (A * B)), Truth_StructuralDeduction )
+RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
+RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
+RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
+RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //NAL5 rules:
 R2( A, (A ==> B), |-, B, Truth_Deduction )
 //other NAL7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
