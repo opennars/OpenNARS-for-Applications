@@ -56,29 +56,20 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
-    Implication ret = (Implication) { .term = a->term,
-                                      .truth = Truth_Revision(a->truth, b->truth),
-                                      .stamp = conclusionStamp, 
-                                      .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
-    strcpy(ret.debug, a->debug);
-    return ret;
+    return (Implication) { .term = a->term,
+                           .truth = Truth_Revision(a->truth, b->truth),
+                           .stamp = conclusionStamp, 
+                           .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
+    assert(Encode_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
-    //extract precondition: (plus unification once vars are there)
     Term precondition = Term_ExtractSubterm(&compound->term, 1);
-    if(Encode_copulaEquals(precondition.atoms[0], '+'))
-    {
-        Term potential_op = Term_ExtractSubterm(&precondition, 2);
-        if(Encode_isOperator(potential_op.atoms[0]))
-        {
-            precondition = Term_ExtractSubterm(&precondition, 1);
-        }
-    }
-    return (Event) { .term = precondition, 
+    //extract precondition: (plus unification once vars are there)
+    return (Event) { .term = Encode_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 

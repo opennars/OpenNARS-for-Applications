@@ -117,7 +117,7 @@ void Table_Test()
                         .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
                         .occurrenceTimeOffset = 10 };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
-    Table_AddAndRevise(&table, &imp, "");
+    Table_AddAndRevise(&table, &imp);
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
     puts("<<Table test successful");
 }

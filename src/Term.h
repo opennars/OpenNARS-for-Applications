@@ -8,8 +8,8 @@
 //Parameters//
 //----------//
 #define Atom char
-#define MAX_SEQUENCE_LEN 2
-#define COMPOUND_TERM_SIZE_MAX 32
+#define MAX_SEQUENCE_LEN 3
+#define COMPOUND_TERM_SIZE_MAX 64
 
 //Description//
 //-----------//

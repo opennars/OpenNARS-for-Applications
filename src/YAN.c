@@ -1,7 +1,6 @@
 #include "YAN.h"
 
 long currentTime = 1;
-bool INPUT = true;
 
 void YAN_INIT()
 {
@@ -24,39 +23,11 @@ void YAN_Cycles(int cycles)
 Event YAN_AddInput(Term term, char type, Truth truth, bool eternal)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
-    if(Encode_isOperator(term.atoms[0]))
-    {
-        ev.operationID = Encode_OperatorIndex(Encode_atomNames[term.atoms[0]-1]);
-    }
     if(eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
     }
-    int closest_concept_i=0;
-    if(Memory_FindConceptByTerm(&term, /*Term_Hash(&term),*/ &closest_concept_i))
-    {
-        Concept *c = concepts.items[closest_concept_i].address;
-        if(strlen(c->debug) == 0)
-        {
-            char debug[20];
-            //assign index as name to event and concept since concept has no name yet
-            sprintf(debug, "%d", c->id);
-            strcpy(ev.debug, debug);
-            strcpy(c->debug, debug);
-        }
-        else
-        {
-            //name event according to concept
-            strcpy(ev.debug, c->debug);
-        }
-        char* st = type == EVENT_TYPE_BELIEF ? "." : "!";
-        if(INPUT) //TODO, this was ANSNA/MSC's way to print input, not required anymore!
-        {
-            printf("Input: %s%s :|: %%%f;%f%%\n", c->debug, st, truth.frequency, truth.confidence);
-        }
-    }
     Memory_addInputEvent(&ev, 0);
-    IN_OUTPUT( fputs("INPUT ", stdout); Event_Print(&ev); )
     YAN_Cycles(1);
     return ev;
 }

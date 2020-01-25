@@ -476,6 +476,7 @@ void Encode_PrintTerm(Term *term)
     Encode_PrintTermPrettyRecursive(term, 1);
 }
 
+Atom SELF; //avoids strcmp for checking operator format
 void Encode_INIT()
 {
     operator_index = term_index = 0;
@@ -493,6 +494,7 @@ void Encode_INIT()
         char cop[2] = {canonical_copulas[i], 0};
         Encode_AtomicTermIndex(cop);
     }
+    SELF = Encode_AtomicTermIndex("SELF");
 }
 
 bool Encode_copulaEquals(Atom atom, char name)
@@ -505,8 +507,42 @@ bool Encode_isOperator(Atom atom)
     return Encode_atomNames[(int) atom-1][0] == '^';
 }
 
-int Encode_getOperatorID(Atom atom)
+bool Encode_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op
 {
-    assert(Encode_isOperator(atom), "get operator was called on something not an operator!");
-    return Encode_OperatorIndex(Encode_atomNames[(int) atom-1]);
+    return Encode_isOperator(term->atoms[0]) ||
+           (Encode_copulaEquals(term->atoms[0], ':') && Encode_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
+            Encode_isOperator(term->atoms[2]) && //^op
+            Encode_copulaEquals(term->atoms[3], '"') && term->atoms[7] == SELF); //  { SELF }
+}
+
+int Encode_getOperationID(Term *term)
+{
+    if(Encode_copulaEquals(term->atoms[0], '+')) //sequence
+    {
+        Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
+        assert(!Encode_copulaEquals(potential_operator.atoms[0], '+'), "Sequences should be left-nested encoded, never right-nested!!");
+        return Encode_getOperationID(&potential_operator);
+    }
+    if(Encode_isOperator(term->atoms[0])) //atomic operator
+    {
+        return Encode_OperatorIndex(Encode_atomNames[(int) term->atoms[0]-1]);
+    }
+    if(Encode_isOperation(term)) //an operation, we use the operator atom's index on the right side of the inheritance
+    {
+        return Encode_OperatorIndex(Encode_atomNames[(int) term->atoms[2]-1]);
+    }
+    return 0; //not an operation term
+}
+
+Term Encode_GetPreconditionWithoutOp(Term *precondition)
+{
+    if(Encode_copulaEquals(precondition->atoms[0], '+'))
+    {
+        Term potential_op = Term_ExtractSubterm(precondition, 2);
+        if(Encode_isOperation(&potential_op))
+        {
+            return Term_ExtractSubterm(precondition, 1);
+        }
+    }
+    return *precondition;
 }

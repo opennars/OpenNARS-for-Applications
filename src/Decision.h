@@ -34,6 +34,7 @@ typedef struct
     bool execute;
     int operationID;
     Operation op;
+    Term arguments;
 }Decision;
 
 //Methods//

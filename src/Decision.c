@@ -9,9 +9,20 @@ void Decision_Execute(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
-    (*decision->op.action)();
+    (*decision->op.action)(decision->arguments);
     //and add operator feedback
-    YAN_AddInputBelief(decision->op.term);
+    if(decision->arguments.atoms[0] > 0) //operation with args
+    {
+        Term operation = {0};
+        operation.atoms[0] = Encode_AtomicTermIndex("$"); //<args --> ^op>
+        Term_OverrideSubterm(&operation, 1, &decision->arguments);
+        Term_OverrideSubterm(&operation, 2, &decision->op.term);
+        YAN_AddInputBelief(operation);
+    }
+    else //atomic operation / operator
+    {
+        YAN_AddInputBelief(decision->op.term);
+    }
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -62,7 +73,9 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                 Implication imp = postc->precondition_beliefs[opi].array[j];
                 IN_DEBUG
                 (
-                    printf("CONSIDERED IMPLICATION: impTruth=(%f, %f) %s \n", imp.truth.frequency, imp.truth.confidence, imp.debug);
+                    printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp.truth.frequency, imp.truth.confidence);
+                    Encode_PrintTerm(&imp.term);
+                    puts("");
                     Term_Print(&imp.term);
                 )
                 //now look at how much the precondition is fulfilled
@@ -74,21 +87,28 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                     double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
                     IN_DEBUG
                     (
-                        printf("CONSIDERED PRECON: desire=%f %s\n", operationGoalTruthExpectation, current_prec->debug);
-                        fputs("CONSIDERED PRECON truth ", stdout);
+                        printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
+                        Encode_PrintTerm(&current_prec->term);
+                        fputs("\nCONSIDERED PRECON truth ", stdout);
                         Truth_Print(&precondition->truth);
                         fputs("CONSIDERED goal truth ", stdout);
                         Truth_Print(&goal->truth);
                         fputs("CONSIDERED imp truth ", stdout);
                         Truth_Print(&imp.truth);
                         printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                        Term_Print(&current_prec->term);
-                        Term_Print(&precondition->term);
+                        Encode_PrintTerm(&precondition->term); puts("");
                     )
                     if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
                         prec = current_prec;
                         bestImp = imp;
+                        //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
+                        Term operation = Term_ExtractSubterm(&imp.term, 4); //^op or [: args ^op]
+                        if(!Encode_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
+                        {
+                            assert(Encode_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
+                            decision.arguments = Term_ExtractSubterm(&imp.term, 9); 
+                        }
                         decision.operationID = opi;
                         decision.desire = operationGoalTruthExpectation;
                         bestTruthExpectation = operationGoalTruthExpectation;
@@ -100,13 +120,13 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
         {
             return decision;
         }
-        printf("decision expectation %f impTruth=(%f, %f): %s future=%ld\n", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.debug, bestImp.occurrenceTimeOffset);
+        printf("decision expectation %f impTruth=(%f, %f): future=%ld ", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+        Encode_PrintTerm(&bestImp.term); puts("");
         IN_DEBUG
         (
-            printf("%s %f,%f",bestImp.debug, bestImp.truth.frequency, bestImp.truth.confidence);
             puts("");
-            printf("SELECTED PRECON: %s\n", prec->debug);
-            puts(bestImp.debug); //++
+            fputs("SELECTED PRECON: ", stdout);
+            Encode_PrintTerm(&prec->term); puts(" ");
             printf(" YAN TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;
@@ -138,8 +158,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
                              .truth = { .frequency = 1.0, .confidence = 0.9 },
-                             .occurrenceTime = currentTime,
-                             .operationID = operationID };
+                             .occurrenceTime = currentTime };
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                 if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
@@ -149,9 +168,8 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                     Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
                     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
                     negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                    IN_DEBUG ( printf("ANTICIPATE %s, future=%ld \n", imp.debug, imp.occurrenceTimeOffset); )
                     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-                    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation, negative_confirmation.debug);
+                    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
                     if(added != NULL)
                     {
                         added->sourceConcept = negative_confirmation.sourceConcept;

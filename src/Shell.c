@@ -1,44 +1,45 @@
 #include "Shell.h"
 
-static void Shell_op_left()
+static void Shell_op_left(Term args)
 {
-    puts("^left executed");
+    fputs("^left executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    
 }
-static void Shell_op_right()
+static void Shell_op_right(Term args)
 {
-    puts("^right executed");
+    fputs("^right executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_up()
+static void Shell_op_up(Term args)
 {
-    puts("^up executed");
+    fputs("^up executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_down()
+static void Shell_op_down(Term args)
 {
-    puts("^down executed");
+    fputs("^down executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_say()
+static void Shell_op_say(Term args)
 {
-    puts("^say executed");
+    fputs("^say executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_pick()
+static void Shell_op_pick(Term args)
 {
-    puts("^pick executed");
+    fputs("^pick executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_drop()
+static void Shell_op_drop(Term args)
 {
-    puts("^drop executed");
+    fputs("^drop executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_go()
+static void Shell_op_go(Term args)
 {
-    puts("^go executed");
+    fputs("^go executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_activate()
+static void Shell_op_activate(Term args)
 {
-    puts("^activate executed");
+    fputs("^activate executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
-static void Shell_op_deactivate()
+static void Shell_op_deactivate(Term args)
 {
-    puts("^deactivate executed");
+    fputs("^deactivate executed with args ", stdout); Encode_PrintTerm(&args); puts("");
 }
 void Shell_Start()
 {
@@ -57,7 +58,6 @@ INIT:
     YAN_AddOperation(Encode_AtomicTerm("^activate"), Shell_op_activate);
     YAN_AddOperation(Encode_AtomicTerm("^deactivate"), Shell_op_deactivate);
     OUTPUT = 0;
-    INPUT = false;
     for(;;)
     {
         char line[1024] = {0};

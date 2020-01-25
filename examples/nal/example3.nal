@@ -1,7 +1,7 @@
 //if there is a pedestrian on the street, inform using op ^say
-<(<pedestrian --> (on /1 street)> &/ ^say) =/> <{SELF} --> [informative]>>.
+<(<pedestrian --> (on /1 street)> &/ <({SELF} * (pedestrian * jaywalking)) --> ^say>) =/> <{SELF} --> [informative]>>.
 //if a car has crashed, inform using op ^pick (till args are supported)
-<(<car --> [crashed]> &/ ^pick) =/> <{SELF} --> [informative]>>.
+<(<car --> [crashed]> &/ <({SELF} * (car * crashed)) --> ^say>) =/> <{SELF} --> [informative]>>.
 //pedestrian1 is a pedestrian
 <{pedestrian1} --> pedestrian>.
 //car1 is a car
@@ -11,10 +11,10 @@
 <{pedestrian1} --> (on /1 street)>. :|:
 //I want to be informative
 <{SELF} --> [informative]>! :|:
-//expected: ^say executed
+//expected: ^say executed with args ({SELF} * (pedestrian" * jaywalking))
 100
 //car1 crashed now!
 <{car1} --> [crashed]>. :|:
 //I want to be informative
 <{SELF} --> [informative]>! :|:
-//expected: ^pick executed
+//expected: ^say executed with args ({SELF} * (car * crashed))

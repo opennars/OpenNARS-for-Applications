@@ -22,10 +22,8 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long occurrenceTime;
-    int operationID; //automatically obtained from Term on input
     bool processed;
     bool propagated;
-    char debug[30];
 } Event;
 
 //Methods//

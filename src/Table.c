@@ -48,7 +48,7 @@ static void Table_SantiyCheck(Table *table)
     }
 }
 
-Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
+Implication *Table_AddAndRevise(Table *table, Implication *imp)
 {
     IN_DEBUG ( Table_SantiyCheck(table); )
     //1. find element with same Term
@@ -73,20 +73,14 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, char *debug)
         Implication revised = Inference_ImplicationRevision(&OldImp, imp);
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
-        strcpy(revised.debug, debug);
         Implication_SetTerm(&revised, imp->term);
-        //printf("AAA %s  %.02f,%.02f\n", revised.debug, revised.truth.frequency, revised.truth.confidence);
         Table_Remove(table, same_i);
-        //printf("REVISED\n");
         Implication *ret = Table_Add(table, &revised);
         assert(ret != NULL, "Deletion and re-addition should have succeeded");
         return ret;
     }
     else
     {
-        //3. add imp too:
-        strcpy(imp->debug, debug);
-        //printf("ADDED\n");
         return Table_Add(table, imp);
     }
     return NULL;

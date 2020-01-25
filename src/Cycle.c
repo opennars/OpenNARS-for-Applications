@@ -107,16 +107,17 @@ static Decision Cycle_PropagateSpikes(long currentTime)
 }
 
 //Reinforce link between concept a and b (creating it if non-existent)
-static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
+static void Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
         return;
     }
+    Term a_term_nop = Encode_GetPreconditionWithoutOp(&a->term);
     int AConceptIndex;
     int BConceptIndex;
-    if(Memory_FindConceptByTerm(&a->term, /*a->term_hash,*/ &AConceptIndex) &&
-       Memory_FindConceptByTerm(&b->term, /*b->term_hash,*/ &BConceptIndex))
+    if(Memory_FindConceptByTerm(&a_term_nop, /*a->term_hash,*/ &AConceptIndex) &&
+       Memory_FindConceptByTerm(&b->term,    /*b->term_hash,*/ &BConceptIndex))
     {
         Concept *A = concepts.items[AConceptIndex].address;
         Concept *B = concepts.items[BConceptIndex].address;
@@ -130,20 +131,16 @@ static void Cycle_ReinforceLink(Event *a, Event *b, int operationID)
                 precondition_implication.sourceConceptTerm = A->term;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    char debug[200];
-                    sprintf(debug, "<(&/,%s,^op%d(),+%ld) =/> %s>.",A->debug, operationID,precondition_implication.occurrenceTimeOffset ,B->debug);
-                    IN_DEBUG ( if(operationID != 0) { puts(debug); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
+                    int operationID = Encode_getOperationID(&a->term);
+                    IN_DEBUG ( if(operationID != 0) { Encode_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
-                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication, debug);
+                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
                     {
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptTerm = A->term;
                         /*IN_OUTPUT( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
-                        if(PRINT_DERIVATIONS)
-                        {
-                            Memory_printAddedImplication(&A->term, operationID, &B->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
-                        }
+                        Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
                     }
                 }
             }
@@ -173,9 +170,7 @@ void pushEvents(long currentTime)
 {
     for(int i=0; i<eventsSelected; i++)
     {
-        Event *e = &selectedEvents[i];
-        double priority = selectedEventsPriority[i] * EVENT_DURABILITY * (1.0 / sqrt(1.0 + ((double) Term_Complexity(&e->term))));
-        Memory_addEvent(e, currentTime, priority, false, false, true, false);
+        Memory_addEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
     }   
 }
 
@@ -190,50 +185,29 @@ void Cycle_Perform(long currentTime)
         for(int len=0; len<MAX_SEQUENCE_LEN; len++)
         {
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
-            if(toProcess != NULL && !toProcess->processed)
+            if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
+                assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
-                Decision_AssumptionOfFailure(postcondition.operationID, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
-                { 
-                    //build link between internal derivations to explain external events:
+                {
+                    int op_id = Encode_getOperationID(&postcondition.term);
+                    Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
+                    //build link between internal derivations and external event to explain it:
                     for(int k=0; k<eventsSelected; k++)
                     {
-                        Cycle_ReinforceLink(&selectedEvents[k], &postcondition, selectedEvents[k].operationID);
-                    }
-                    if(postcondition.operationID != 0)
-                    {
-                        return;
+                        Cycle_ReinforceLink(&selectedEvents[k], &postcondition);
                     }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
-                            if(precondition != NULL)
+                            if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                //if it's an operation find the real precondition and use the current one as action
-                                int operationID = precondition->operationID;
-                                if(operationID != 0) //also meaning len2==0
-                                {
-                                    for(int j=k+1; j<belief_events.itemsAmount; j++)
-                                    {
-                                        for(int len3=0; len3<MAX_SEQUENCE_LEN; len3++)
-                                        {
-                                            precondition = FIFO_GetKthNewestSequence(&belief_events, j, len3);
-                                            if(precondition != NULL && precondition->operationID == 0)
-                                            {
-                                                Cycle_ReinforceLink(precondition, &postcondition, operationID);
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    Cycle_ReinforceLink(precondition, &postcondition, operationID);
-                                }
+                                Cycle_ReinforceLink(precondition, &postcondition);
                             }
                         }
                     }
@@ -246,8 +220,9 @@ void Cycle_Perform(long currentTime)
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
-        if(!goal->processed)
+        if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
         {
+            assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
             decision[0] = Cycle_ProcessEvent(goal, currentTime);
             //allow reasoning into the future by propagating spikes from goals back to potential current events
             for(int i=0; i<PROPAGATION_ITERATIONS; i++)
