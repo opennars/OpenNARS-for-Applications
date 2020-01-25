@@ -198,7 +198,10 @@ void Cycle_Perform(long currentTime)
                     //build link between internal derivations and external event to explain it:
                     for(int k=0; k<eventsSelected; k++)
                     {
-                        Cycle_ReinforceLink(&selectedEvents[k], &postcondition);
+                        if(selectedEvents[k].occurrenceTime < postcondition.occurrenceTime)
+                        {
+                            Cycle_ReinforceLink(&selectedEvents[k], &postcondition);
+                        }
                     }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
