@@ -143,11 +143,16 @@ while True:
                         predicate = lastpredicate
                 lastsubject = subject_modifiers.replace("_subject_", subject)
                 lastpredicate = predicate_modifiers.replace("_predicate_", predicate)
+                if subject != "" and predicate !="" and object == "":
+                    object = subject
                 if subject != "" and predicate != "" and object != "": #output Narsese relation if all pieces are together, with a special case for be/Inheritance
                     if lastpredicate == "be":
                         output(("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation + " :|:").replace("_subject_", subject).replace("_object_", object))
                     else:
-                        output(("<" + subject_modifiers + " --> ( " + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
+                        if object == subject:
+                            output(("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate))
+                        else:
+                            output(("<" + subject_modifiers + " --> (" + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
                 if isWordType(word, 'ADP'): #identify prepositions in which case we keep the assignments
                     prep = word
                 else: #if not we are in a new sentence segement, reset variables
