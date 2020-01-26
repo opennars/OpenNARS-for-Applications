@@ -25,6 +25,7 @@
 //Atomic term names:
 Atom Encode_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
 Atom Encode_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
+extern Atom SELF;
 
 //Methods//
 //-------//
@@ -53,6 +54,11 @@ bool Encode_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Encode_isOperator(Atom atom);
 //Get operator id
-int Encode_getOperatorID(Atom atom);
+int Encode_getOperationID(Term *atom);
+//Is an operation
+bool Encode_isOperation(Term *term);
+//Get precondition without operation
+Term Encode_GetPreconditionWithoutOp(Term *precondition);
+
 
 #endif

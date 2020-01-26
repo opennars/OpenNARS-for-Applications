@@ -24,8 +24,6 @@ typedef struct {
     Event incoming_goal_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
-    //For debugging:
-    char debug[50];
 } Concept;
 
 //Methods//

@@ -24,11 +24,14 @@
 extern double PROPAGATION_THRESHOLD;
 #define PROPAGATION_ITERATIONS 5
 extern bool PRINT_DERIVATIONS;
+#define PRINT_INPUT_INITIAL true
+extern bool PRINT_INPUT;
 #define PRINT_DERIVATIONS_INITIAL false
 #define PRINT_CONTROL_INFO false
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.01
+#define EVENT_DURABILITY 0.9
 
 //Data structure//
 //--------------//
@@ -42,7 +45,7 @@ PriorityQueue cycling_events;
 //Input event buffers:
 FIFO belief_events;
 FIFO goal_events;
-typedef void (*Action)(void);
+typedef void (*Action)(Term);
 typedef struct
 {
     Term term;
@@ -68,7 +71,7 @@ void Memory_addOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
 //print added implication
-void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised);
+void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, bool revised);
 //print added event
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
 

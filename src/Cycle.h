@@ -14,10 +14,6 @@
 #include "Inference.h"
 #include "RuleTable.h"
 
-//Parameters//
-//----------//
-#define EVENT_DURABILITY 0.9
-
 //Methods//
 //-------//
 //Apply one operating cyle

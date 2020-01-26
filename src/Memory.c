@@ -2,6 +2,7 @@
 
 double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
 bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
+bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
@@ -63,7 +64,7 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
 
 void Memory_Conceptualize(Term *term)
 {
-    if(Encode_isOperator(term->atoms[0])) //don't conceptualize operators
+    if(Encode_isOperation(term)) //don't conceptualize operations
     {
         return;
     }
@@ -111,13 +112,10 @@ static bool Memory_containsEvent(Event *event)
 //called by addEvent for eternal knowledge
 static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
+    assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
     if(Memory_containsEvent(e))
     {
         return false;
-    }
-    if(Encode_isOperator(e->term.atoms[0]))
-    {
-        return true; //return true for printing purposes only, operators don't form events as well
     }
     int concept_i = 0;
     if(Memory_FindConceptByTerm(&e->term, &concept_i))
@@ -140,7 +138,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 
 static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double priority, bool input, bool derived, bool revised)
 {
-    if(PRINT_DERIVATIONS && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
+    if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Encode_PrintTerm(term);
@@ -156,25 +154,23 @@ void Memory_printAddedEvent(Event *event, double priority, bool input, bool deri
     Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, priority, input, derived, revised);
 }
 
-void Memory_printAddedImplication(Term *precondition, int operationID, Term *postcondition, Truth *truth, bool input, bool revised)
+void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, bool revised)
 {
-    Term precon_op = operationID == 0 ? *precondition : (Term) {0};
-    if(operationID > 0) //a to (a &/ ^op)
-    {
-        Term opterm = Encode_AtomicTerm(Encode_operatorNames[operationID-1]);
-        precon_op.atoms[0] = '+';
-        Term_OverrideSubterm(&precon_op, 1, precondition);
-        Term_OverrideSubterm(&precon_op, 2, &opterm);
-    }
-    Term implication = {0};
-    implication.atoms[0] = Encode_AtomicTermIndex("$");
-    Term_OverrideSubterm(&implication, 1, &precon_op); //MSC links always store the precondition!
-    Term_OverrideSubterm(&implication, 2, postcondition);
-    Memory_printAddedKnowledge(&implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
+    Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
+    if(readded) //readded events get durability applied, they already got complexity-penalized
+    {
+        priority *= EVENT_DURABILITY;
+    }
+    else
+    if(!revised) //input and derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
+    {
+        double complexity = Term_Complexity(&event->term);
+        priority *= (1.0 / log(1.0 + log2(complexity)));
+    }
     if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
     {
         return;
@@ -225,9 +221,9 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     if(Encode_copulaEquals(subject.atoms[0], '+'))
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
-                        if(Encode_isOperator(potential_op.atoms[0])) //atom starts with ^, making it an operator
+                        if(Encode_isOperation(&potential_op)) //atom starts with ^, making it an operator
                         {
-                            opi = Encode_getOperatorID(potential_op.atoms[0]); //"^op" to index
+                            opi = Encode_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                             imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                         }
                         else
@@ -252,7 +248,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     imp.term.atoms[0] = Encode_AtomicTermIndex("$");
                     Term_OverrideSubterm(&imp.term, 1, &subject);
                     Term_OverrideSubterm(&imp.term, 2, &predicate);
-                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, "");
+                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
                     Memory_printAddedEvent(event, priority, input, derived, revised);
                 }
                 return; //at this point, either the implication has been added or there was no space for its precondition concept
