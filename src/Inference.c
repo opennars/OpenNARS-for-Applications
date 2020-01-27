@@ -17,7 +17,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .term = Encode_Sequence(&a->term, &b->term),
+    return (Event) { .term = Narsese_Sequence(&a->term, &b->term),
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 
@@ -30,7 +30,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     Term term = {0};
-    term.atoms[0] = Encode_AtomicTermIndex("$");
+    term.atoms[0] = Narsese_AtomicTermIndex("$");
     Term_OverrideSubterm(&term, 1, &a->term);
     Term_OverrideSubterm(&term, 2, &b->term);
     return (Implication) { .term = term, 
@@ -65,11 +65,11 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound)
 {
-    assert(Encode_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
     Term precondition = Term_ExtractSubterm(&compound->term, 1);
     //extract precondition: (plus unification once vars are there)
-    return (Event) { .term = Encode_GetPreconditionWithoutOp(&precondition), 
+    return (Event) { .term = Narsese_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 

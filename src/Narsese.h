@@ -1,10 +1,11 @@
-#ifndef H_ENCODE
-#define H_ENCODE
+#ifndef H_NARSESE
+#define H_NARSESE
 
 /////////////////////
 // Narsese encoder //
 /////////////////////
 //Supports converting Narsese strings to compound terms
+//and dictates the format of the internal compound term encoding
 
 //References//
 //-----------//
@@ -23,42 +24,42 @@
 //Data structure//
 //--------------//
 //Atomic term names:
-Atom Encode_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
-Atom Encode_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
+Atom Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+Atom Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 
 //Methods//
 //-------//
 //Initializes encoder
-void Encode_INIT();
+void Narsese_INIT();
 //Expands Narsese into by strtok(str," ") tokenizable string with canonical copulas
-char* Encode_Expand(char *narsese);
+char* Narsese_Expand(char *narsese);
 //Tokenize expanded Narsese in prefix copula order
-char** Encode_PrefixTransform(char* narsese_expanded);
+char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
-Term Encode_Term(char *narsese);
+Term Narsese_Term(char *narsese);
 //Encodes a sequence
-Term Encode_Sequence(Term *a, Term *b);
+Term Narsese_Sequence(Term *a, Term *b);
 //Parses an atomic term string to a term
-Term Encode_AtomicTerm(char *name);
+Term Narsese_AtomicTerm(char *name);
 //Index of atomic term
-int Encode_AtomicTermIndex(char *name);
+int Narsese_AtomicTermIndex(char *name);
 //Index of operator
-int Encode_OperatorIndex(char *name);
+int Narsese_OperatorIndex(char *name);
 //Print an atom
-void Encode_PrintAtom(Atom atom);
+void Narsese_PrintAtom(Atom atom);
 //Print a term
-void Encode_PrintTerm(Term *term);
+void Narsese_PrintTerm(Term *term);
 //Whether it is a certain copula:
-bool Encode_copulaEquals(Atom atom, char name);
+bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
-bool Encode_isOperator(Atom atom);
+bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Encode_getOperationID(Term *atom);
+int Narsese_getOperationID(Term *atom);
 //Is an operation
-bool Encode_isOperation(Term *term);
+bool Narsese_isOperation(Term *term);
 //Get precondition without operation
-Term Encode_GetPreconditionWithoutOp(Term *precondition);
+Term Narsese_GetPreconditionWithoutOp(Term *precondition);
 
 
 #endif

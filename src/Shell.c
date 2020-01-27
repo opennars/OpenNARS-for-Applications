@@ -2,44 +2,44 @@
 
 static void Shell_op_left(Term args)
 {
-    fputs("^left executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^left executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
     
 }
 static void Shell_op_right(Term args)
 {
-    fputs("^right executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^right executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_up(Term args)
 {
-    fputs("^up executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^up executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_down(Term args)
 {
-    fputs("^down executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^down executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_say(Term args)
 {
-    fputs("^say executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^say executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_pick(Term args)
 {
-    fputs("^pick executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^pick executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_drop(Term args)
 {
-    fputs("^drop executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^drop executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_go(Term args)
 {
-    fputs("^go executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^go executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_activate(Term args)
 {
-    fputs("^activate executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^activate executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 static void Shell_op_deactivate(Term args)
 {
-    fputs("^deactivate executed with args ", stdout); Encode_PrintTerm(&args); puts("");
+    fputs("^deactivate executed with args ", stdout); Narsese_PrintTerm(&args); puts("");
 }
 void Shell_Start()
 {
@@ -47,16 +47,16 @@ INIT:
     fflush(stdout);
     YAN_INIT();
     PRINT_DERIVATIONS = true;
-    YAN_AddOperation(Encode_AtomicTerm("^left"), Shell_op_left); 
-    YAN_AddOperation(Encode_AtomicTerm("^right"), Shell_op_right); 
-    YAN_AddOperation(Encode_AtomicTerm("^up"), Shell_op_up); 
-    YAN_AddOperation(Encode_AtomicTerm("^down"), Shell_op_down);
-    YAN_AddOperation(Encode_AtomicTerm("^say"), Shell_op_say);
-    YAN_AddOperation(Encode_AtomicTerm("^pick"), Shell_op_pick);
-    YAN_AddOperation(Encode_AtomicTerm("^drop"), Shell_op_drop);
-    YAN_AddOperation(Encode_AtomicTerm("^go"), Shell_op_go);
-    YAN_AddOperation(Encode_AtomicTerm("^activate"), Shell_op_activate);
-    YAN_AddOperation(Encode_AtomicTerm("^deactivate"), Shell_op_deactivate);
+    YAN_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
+    YAN_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
+    YAN_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
+    YAN_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down);
+    YAN_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say);
+    YAN_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick);
+    YAN_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop);
+    YAN_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
+    YAN_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
+    YAN_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
     OUTPUT = 0;
     for(;;)
     {
@@ -133,7 +133,7 @@ INIT:
                 char punctuation = line[str_len-punctuation_offset];
                 assert(punctuation == '!' || punctuation == '?' || punctuation == '.', "Punctuation has to be belief . goal ! or question ?");
                 line[str_len-punctuation_offset] = 0; //we will only parse the term before it
-                Term term = Encode_Term(line);
+                Term term = Narsese_Term(line);
 #if STAGE==2
                 //apply reduction rules to term:
                 term = RuleTable_Reduce(term, false);
@@ -146,7 +146,7 @@ INIT:
                 if(punctuation == '?')
                 {
                     fputs("Input: ", stdout);
-                    Encode_PrintTerm(&term);
+                    Narsese_PrintTerm(&term);
                     fputs("?", stdout);
                     puts(isEvent ? " :|:" : ""); 
                     fflush(stdout);
@@ -157,7 +157,7 @@ INIT:
                         //TODO use unification approach as the generated RuleTable already uses.
                         for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
                         {
-                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && Encode_atomNames[term.atoms[j]-1][0] != '?')
+                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && Narsese_atomNames[term.atoms[j]-1][0] != '?')
                             {
                                 goto Continue;
                             }
@@ -196,7 +196,7 @@ INIT:
                     }
                     else
                     {
-                        Encode_PrintTerm(&best_term);
+                        Narsese_PrintTerm(&best_term);
                         fputs(". ", stdout);
                         printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", answerOccurrenceTime);
                         Truth_Print(&best_truth);

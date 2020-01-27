@@ -113,7 +113,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     {
         return;
     }
-    Term a_term_nop = Encode_GetPreconditionWithoutOp(&a->term);
+    Term a_term_nop = Narsese_GetPreconditionWithoutOp(&a->term);
     int AConceptIndex;
     int BConceptIndex;
     if(Memory_FindConceptByTerm(&a_term_nop, /*a->term_hash,*/ &AConceptIndex) &&
@@ -131,8 +131,8 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 precondition_implication.sourceConceptTerm = A->term;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    int operationID = Encode_getOperationID(&a->term);
-                    IN_DEBUG ( if(operationID != 0) { Encode_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
+                    int operationID = Narsese_getOperationID(&a->term);
+                    IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
@@ -193,7 +193,7 @@ void Cycle_Perform(long currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {
-                    int op_id = Encode_getOperationID(&postcondition.term);
+                    int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
                     //build link between internal derivations and external event to explain it:
                     for(int k=0; k<eventsSelected; k++)
@@ -275,10 +275,10 @@ void Cycle_Perform(long currentTime)
                     if(PRINT_CONTROL_INFO)
                     {
                         fputs("Apply rule table on ", stdout);
-                        Encode_PrintTerm(&e->term);
+                        Narsese_PrintTerm(&e->term);
                         printf(" Priority=%f\n", priority);
                         fputs(" and ", stdout);
-                        Encode_PrintTerm(&c->term);
+                        Narsese_PrintTerm(&c->term);
                         puts("");
                     }
                     RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime, priority, true);

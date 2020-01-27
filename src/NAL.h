@@ -10,7 +10,7 @@
 //----------//
 #include "Truth.h"
 #include "Stamp.h"
-#include "Encode.h"
+#include "Narsese.h"
 #include "Memory.h"
 
 //Methods//

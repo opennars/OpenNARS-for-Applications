@@ -6,7 +6,7 @@ void YAN_INIT()
 {
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
-    Encode_INIT();
+    Narsese_INIT();
     currentTime = 1; //reset time
 }
 
@@ -45,8 +45,8 @@ Event YAN_AddInputGoal(Term term)
 
 void YAN_AddOperation(Term term, Action procedure)
 {
-    char* term_name = Encode_atomNames[(int) term.atoms[0]-1];
+    char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
-    Memory_addOperation(Encode_OperatorIndex(term_name), (Operation) {.term = term, .action = procedure});
+    Memory_addOperation(Narsese_OperatorIndex(term_name), (Operation) {.term = term, .action = procedure});
 }
 
