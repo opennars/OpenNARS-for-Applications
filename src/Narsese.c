@@ -1,4 +1,4 @@
-#include "Encode.h"
+#include "Narsese.h"
 
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
@@ -135,7 +135,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
     return narsese_replaced;
 }
 
-char* Encode_Expand(char *narsese)
+char* Narsese_Expand(char *narsese)
 {
     //upper bound being 3* the multiplier of the previous upper bound
     static char narsese_expanded[EXPANSION_LEN]; 
@@ -188,7 +188,7 @@ int skipCompound(char** tokens, int i, int nt)
 }
 
 static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+";
-char** Encode_PrefixTransform(char* narsese_expanded)
+char** Narsese_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
@@ -234,12 +234,12 @@ char** Encode_PrefixTransform(char* narsese_expanded)
 }
 
 int operator_index = 0;
-int Encode_OperatorIndex(char *name)
+int Narsese_OperatorIndex(char *name)
 {
     int ret_index = -1;
     for(int i=0; i<operator_index; i++)
     {
-        if(!strcmp(Encode_operatorNames[i], name))
+        if(!strcmp(Narsese_operatorNames[i], name))
         {
             ret_index = i+1;
             break;
@@ -249,7 +249,7 @@ int Encode_OperatorIndex(char *name)
     {
         assert(operator_index < OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
         ret_index = operator_index+1;
-        strncpy(Encode_operatorNames[operator_index], name, ATOMIC_TERM_LEN_MAX);
+        strncpy(Narsese_operatorNames[operator_index], name, ATOMIC_TERM_LEN_MAX);
         operator_index++;
     }
     return ret_index;
@@ -257,12 +257,12 @@ int Encode_OperatorIndex(char *name)
 
 int term_index = 0;
 //Returns the memoized index of an already seen atomic term
-int Encode_AtomicTermIndex(char *name)
+int Narsese_AtomicTermIndex(char *name)
 {
     int ret_index = -1;
     for(int i=0; i<term_index; i++)
     {
-        if(!strcmp(Encode_atomNames[i], name))
+        if(!strcmp(Narsese_atomNames[i], name))
         {
             ret_index = i+1;
             break;
@@ -270,13 +270,13 @@ int Encode_AtomicTermIndex(char *name)
     }
     if(name[0] == '^')
     {
-        Encode_OperatorIndex(name);
+        Narsese_OperatorIndex(name);
     }
     if(ret_index == -1)
     {
         assert(term_index < TERMS_MAX, "Too many terms for YAN");
         ret_index = term_index+1;
-        strncpy(Encode_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
+        strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
         term_index++;
     }
     return ret_index;
@@ -292,7 +292,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         i1 = i1+2;
         //second argument has to be searched for
         int i2 = skipCompound(tokens_prefix, i1, nt);
-        bintree->atoms[tree_index-1] = Encode_AtomicTermIndex(tokens_prefix[icop]);
+        bintree->atoms[tree_index-1] = Narsese_AtomicTermIndex(tokens_prefix[icop]);
         if(i1<nt)
         {
             buildBinaryTree(bintree, tokens_prefix, i1, tree_index*2, nt); //left child of tree index
@@ -307,93 +307,93 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         assert(tree_index-1 < COMPOUND_TERM_SIZE_MAX, "COMPOUND_TERM_SIZE_MAX too small, consider increasing or split input into multiple statements!");
         if(!(tokens_prefix[i1][0] == ')' && tokens_prefix[i1][1] == 0))
         {
-            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex(tokens_prefix[i1]);
+            bintree->atoms[tree_index-1] = Narsese_AtomicTermIndex(tokens_prefix[i1]);
         }
         else
         {
-            bintree->atoms[tree_index-1] = Encode_AtomicTermIndex("@"); //just use "@" for second element as terminator, while "." acts for "deeper" sets than 2
+            bintree->atoms[tree_index-1] = Narsese_AtomicTermIndex("@"); //just use "@" for second element as terminator, while "." acts for "deeper" sets than 2
         }
     }
 }
 
-Term Encode_Term(char *narsese)
+Term Narsese_Term(char *narsese)
 {
     Term ret = {0};
-    char *narsese_expanded = Encode_Expand(narsese);
-    char** tokens_prefix = Encode_PrefixTransform(narsese_expanded);
+    char *narsese_expanded = Narsese_Expand(narsese);
+    char** tokens_prefix = Narsese_PrefixTransform(narsese_expanded);
     int nt = 0; for(;tokens_prefix[nt] != NULL; nt++){}
     buildBinaryTree(&ret, tokens_prefix, 0, 1, nt);
     return ret;
 }
 
-Term Encode_Sequence(Term *a, Term *b)
+Term Narsese_Sequence(Term *a, Term *b)
 {
     Term ret = {0};
-    ret.atoms[0] = Encode_AtomicTermIndex("+");
+    ret.atoms[0] = Narsese_AtomicTermIndex("+");
     Term_OverrideSubterm(&ret,1,a);
     Term_OverrideSubterm(&ret,2,b);
     return ret;
 }
 
-Term Encode_AtomicTerm(char *name)
+Term Narsese_AtomicTerm(char *name)
 {
-    int number = Encode_AtomicTermIndex(name);
+    int number = Narsese_AtomicTermIndex(name);
     Term ret = {0};
     ret.atoms[0] = number;
     return ret;
 }
 
-void Encode_PrintAtom(Atom atom)
+void Narsese_PrintAtom(Atom atom)
 {
     if(atom)
     {
-        if(Encode_copulaEquals(atom, ':'))
+        if(Narsese_copulaEquals(atom, ':'))
         {
             fputs("-->", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '$'))
+        if(Narsese_copulaEquals(atom, '$'))
         {
             fputs("=/>", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '+'))
+        if(Narsese_copulaEquals(atom, '+'))
         {
             fputs("&/", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, ';'))
+        if(Narsese_copulaEquals(atom, ';'))
         {
             fputs("&|", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '='))
+        if(Narsese_copulaEquals(atom, '='))
         {
             fputs("<->", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '/'))
+        if(Narsese_copulaEquals(atom, '/'))
         {
             fputs("/1", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '%'))
+        if(Narsese_copulaEquals(atom, '%'))
         {
             fputs("/2", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '\\'))
+        if(Narsese_copulaEquals(atom, '\\'))
         {
             fputs("\\1", stdout);
         }
         else
-        if(Encode_copulaEquals(atom, '#'))
+        if(Narsese_copulaEquals(atom, '#'))
         {
             fputs("\\2", stdout);
         }
         else
         {
-            fputs(Encode_atomNames[atom-1], stdout);
+            fputs(Narsese_atomNames[atom-1], stdout);
         }
     }
     else
@@ -402,7 +402,7 @@ void Encode_PrintAtom(Atom atom)
     }
 }
 
-void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1!
+void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=1!
 {
     Atom atom = term->atoms[index-1];
     if(!atom)
@@ -412,10 +412,10 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     int child1 = index*2;
     int child2 = index*2+1;
     bool hasLeftChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
-    bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Encode_copulaEquals(term->atoms[child2-1], '@');
-    bool isExtSet = Encode_copulaEquals(atom, '"');
-    bool isIntSet = Encode_copulaEquals(atom, '\'');
-    bool isStatement = Encode_copulaEquals(atom, '$') || Encode_copulaEquals(atom, ':') || Encode_copulaEquals(atom, '=');
+    bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], '@');
+    bool isExtSet = Narsese_copulaEquals(atom, '"');
+    bool isIntSet = Narsese_copulaEquals(atom, '\'');
+    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=');
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);
@@ -436,20 +436,20 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     }
     if(child1 < COMPOUND_TERM_SIZE_MAX)
     {
-        Encode_PrintTermPrettyRecursive(term, child1);
+        Narsese_PrintTermPrettyRecursive(term, child1);
     }
     if(hasRightChild)
     {
         fputs(hasLeftChild ? " " : "", stdout);
     }
-    if(!isExtSet && !isIntSet && !Encode_copulaEquals(atom, '@'))
+    if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, '@'))
     {
-        Encode_PrintAtom(atom);
+        Narsese_PrintAtom(atom);
         fputs(hasLeftChild ? " " : "", stdout);
     }
     if(child2 < COMPOUND_TERM_SIZE_MAX)
     {
-        Encode_PrintTermPrettyRecursive(term, child2);
+        Narsese_PrintTermPrettyRecursive(term, child2);
     }
     if(isExtSet)
     {
@@ -471,75 +471,75 @@ void Encode_PrintTermPrettyRecursive(Term *term, int index) //start with index=1
     }
 }
 
-void Encode_PrintTerm(Term *term)
+void Narsese_PrintTerm(Term *term)
 {
-    Encode_PrintTermPrettyRecursive(term, 1);
+    Narsese_PrintTermPrettyRecursive(term, 1);
 }
 
 Atom SELF; //avoids strcmp for checking operator format
-void Encode_INIT()
+void Narsese_INIT()
 {
     operator_index = term_index = 0;
     for(int i=0; i<TERMS_MAX; i++)
     {
-        memset(&Encode_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
+        memset(&Narsese_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
-        memset(&Encode_operatorNames[i], 0, ATOMIC_TERM_LEN_MAX);
+        memset(&Narsese_operatorNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     //index the copulas at first, to make sure these will have same index on next run
     for(int i=0; i<(int) strlen(canonical_copulas); i++)
     {
         char cop[2] = {canonical_copulas[i], 0};
-        Encode_AtomicTermIndex(cop);
+        Narsese_AtomicTermIndex(cop);
     }
-    SELF = Encode_AtomicTermIndex("SELF");
+    SELF = Narsese_AtomicTermIndex("SELF");
 }
 
-bool Encode_copulaEquals(Atom atom, char name)
+bool Narsese_copulaEquals(Atom atom, char name)
 {
-    return Encode_atomNames[(int) atom-1][0] == name && Encode_atomNames[(int) atom-1][1] == 0;
+    return Narsese_atomNames[(int) atom-1][0] == name && Narsese_atomNames[(int) atom-1][1] == 0;
 }
 
-bool Encode_isOperator(Atom atom)
+bool Narsese_isOperator(Atom atom)
 {
-    return Encode_atomNames[(int) atom-1][0] == '^';
+    return Narsese_atomNames[(int) atom-1][0] == '^';
 }
 
-bool Encode_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op
+bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op
 {
-    return Encode_isOperator(term->atoms[0]) ||
-           (Encode_copulaEquals(term->atoms[0], ':') && Encode_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
-            Encode_isOperator(term->atoms[2]) && //^op
-            Encode_copulaEquals(term->atoms[3], '"') && term->atoms[7] == SELF); //  { SELF }
+    return Narsese_isOperator(term->atoms[0]) ||
+           (Narsese_copulaEquals(term->atoms[0], ':') && Narsese_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
+            Narsese_isOperator(term->atoms[2]) && //^op
+            Narsese_copulaEquals(term->atoms[3], '"') && term->atoms[7] == SELF); //  { SELF }
 }
 
-int Encode_getOperationID(Term *term)
+int Narsese_getOperationID(Term *term)
 {
-    if(Encode_copulaEquals(term->atoms[0], '+')) //sequence
+    if(Narsese_copulaEquals(term->atoms[0], '+')) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Encode_copulaEquals(potential_operator.atoms[0], '+'), "Sequences should be left-nested encoded, never right-nested!!");
-        return Encode_getOperationID(&potential_operator);
+        assert(!Narsese_copulaEquals(potential_operator.atoms[0], '+'), "Sequences should be left-nested encoded, never right-nested!!");
+        return Narsese_getOperationID(&potential_operator);
     }
-    if(Encode_isOperator(term->atoms[0])) //atomic operator
+    if(Narsese_isOperator(term->atoms[0])) //atomic operator
     {
-        return Encode_OperatorIndex(Encode_atomNames[(int) term->atoms[0]-1]);
+        return Narsese_OperatorIndex(Narsese_atomNames[(int) term->atoms[0]-1]);
     }
-    if(Encode_isOperation(term)) //an operation, we use the operator atom's index on the right side of the inheritance
+    if(Narsese_isOperation(term)) //an operation, we use the operator atom's index on the right side of the inheritance
     {
-        return Encode_OperatorIndex(Encode_atomNames[(int) term->atoms[2]-1]);
+        return Narsese_OperatorIndex(Narsese_atomNames[(int) term->atoms[2]-1]);
     }
     return 0; //not an operation term
 }
 
-Term Encode_GetPreconditionWithoutOp(Term *precondition)
+Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 {
-    if(Encode_copulaEquals(precondition->atoms[0], '+'))
+    if(Narsese_copulaEquals(precondition->atoms[0], '+'))
     {
         Term potential_op = Term_ExtractSubterm(precondition, 2);
-        if(Encode_isOperation(&potential_op))
+        if(Narsese_isOperation(&potential_op))
         {
             return Term_ExtractSubterm(precondition, 1);
         }

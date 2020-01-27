@@ -11,7 +11,7 @@
 //-----------//
 #include "Inference.h"
 #include "Globals.h"
-#include "Encode.h"
+#include "Narsese.h"
 
 //Parameters//
 //----------//

@@ -64,7 +64,7 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
 
 void Memory_Conceptualize(Term *term)
 {
-    if(Encode_isOperation(term)) //don't conceptualize operations
+    if(Narsese_isOperation(term)) //don't conceptualize operations
     {
         return;
     }
@@ -141,7 +141,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
-        Encode_PrintTerm(term);
+        Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
         printf("Priority=%f ", priority);
@@ -203,7 +203,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 eternal_event.truth = Truth_Eternalize(event->truth);
             }
             //check if higher order now, implication "$"
-            if(Encode_copulaEquals(event->term.atoms[0], '$'))
+            if(Narsese_copulaEquals(event->term.atoms[0], '$'))
             {
                 //get predicate and add the subject to precondition table as an implication
                 Term subject = Term_ExtractSubterm(&event->term, 1);
@@ -218,12 +218,12 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                                         .sourceConceptTerm = subject };
                     //now extract operation id
                     int opi = 0;
-                    if(Encode_copulaEquals(subject.atoms[0], '+'))
+                    if(Narsese_copulaEquals(subject.atoms[0], '+'))
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
-                        if(Encode_isOperation(&potential_op)) //atom starts with ^, making it an operator
+                        if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
                         {
-                            opi = Encode_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
+                            opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                             imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                         }
                         else
@@ -245,7 +245,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     {
                         return; //failed to add, there was no space for the implication's postcondition concept
                     }
-                    imp.term.atoms[0] = Encode_AtomicTermIndex("$");
+                    imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
                     Term_OverrideSubterm(&imp.term, 1, &subject);
                     Term_OverrideSubterm(&imp.term, 2, &predicate);
                     Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);

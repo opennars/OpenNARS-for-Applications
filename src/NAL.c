@@ -6,7 +6,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
     if(atom)
     {
         //upper case atoms are treated as variables in the meta rule language
-        if(Encode_atomNames[atom-1][0] >= 'A' && Encode_atomNames[atom-1][0] <= 'Z')
+        if(Narsese_atomNames[atom-1][0] >= 'A' && Narsese_atomNames[atom-1][0] <= 'Z')
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
             printf("subtree = Term_ExtractSubterm(&term%d, %d);\n", premiseIndex, i);
@@ -25,7 +25,7 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
 {
     if(atom)
     {
-        if(Encode_atomNames[atom-1][0] >= 'A' && Encode_atomNames[atom-1][0] <= 'Z')
+        if(Narsese_atomNames[atom-1][0] >= 'A' && Narsese_atomNames[atom-1][0] <= 'Z')
         {
             //conclusion term gets variables substituted
             printf("if(!Term_OverrideSubterm(&conclusion,%d,&substitutions[%d])){ goto RULE_%d; }\n", i, atom, ruleID);
@@ -40,9 +40,9 @@ static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
 
 static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* conclusion, bool doublePremise)
 {
-    Term term1 = Encode_Term(premise1);
-    Term term2 = doublePremise ? Encode_Term(premise2) : (Term) {0};
-    Term conclusion_term = Encode_Term(conclusion);
+    Term term1 = Narsese_Term(premise1);
+    Term term2 = doublePremise ? Narsese_Term(premise2) : (Term) {0};
+    Term conclusion_term = Narsese_Term(conclusion);
     printf("RULE_%d:\n{\n", ruleID++);
     //skip double/single premise rule if single/double premise
     if(doublePremise) { printf("if(!doublePremise) { goto RULE_%d; }\n", ruleID); }
@@ -83,7 +83,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
 {
     NAL_GenerateConclusionTerm(premise1, NULL, conclusion, false);
-    puts("fputs(\"Reduced: \", stdout); Encode_PrintTerm(&term1); fputs(\" -> \", stdout); Encode_PrintTerm(&conclusion); puts(\"\"); \nreturn conclusion;\n}");
+    puts("fputs(\"Reduced: \", stdout); Narsese_PrintTerm(&term1); fputs(\" -> \", stdout); Narsese_PrintTerm(&conclusion); puts(\"\"); \nreturn conclusion;\n}");
 }
 
 void NAL_GenerateRuleTable()

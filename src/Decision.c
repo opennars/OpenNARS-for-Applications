@@ -14,7 +14,7 @@ void Decision_Execute(Decision *decision)
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
         Term operation = {0};
-        operation.atoms[0] = Encode_AtomicTermIndex("$"); //<args --> ^op>
+        operation.atoms[0] = Narsese_AtomicTermIndex("$"); //<args --> ^op>
         Term_OverrideSubterm(&operation, 1, &decision->arguments);
         Term_OverrideSubterm(&operation, 2, &decision->op.term);
         YAN_AddInputBelief(operation);
@@ -74,7 +74,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                 IN_DEBUG
                 (
                     printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp.truth.frequency, imp.truth.confidence);
-                    Encode_PrintTerm(&imp.term);
+                    Narsese_PrintTerm(&imp.term);
                     puts("");
                     Term_Print(&imp.term);
                 )
@@ -88,7 +88,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                     IN_DEBUG
                     (
                         printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
-                        Encode_PrintTerm(&current_prec->term);
+                        Narsese_PrintTerm(&current_prec->term);
                         fputs("\nCONSIDERED PRECON truth ", stdout);
                         Truth_Print(&precondition->truth);
                         fputs("CONSIDERED goal truth ", stdout);
@@ -96,7 +96,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         fputs("CONSIDERED imp truth ", stdout);
                         Truth_Print(&imp.truth);
                         printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                        Encode_PrintTerm(&precondition->term); puts("");
+                        Narsese_PrintTerm(&precondition->term); puts("");
                     )
                     if(operationGoalTruthExpectation > bestTruthExpectation)
                     {
@@ -104,9 +104,9 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         bestImp = imp;
                         //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
                         Term operation = Term_ExtractSubterm(&imp.term, 4); //^op or [: args ^op]
-                        if(!Encode_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
+                        if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
                         {
-                            assert(Encode_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
+                            assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
                             decision.arguments = Term_ExtractSubterm(&imp.term, 9); 
                         }
                         decision.operationID = opi;
@@ -121,12 +121,12 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
             return decision;
         }
         printf("decision expectation %f impTruth=(%f, %f): future=%ld ", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-        Encode_PrintTerm(&bestImp.term); puts("");
+        Narsese_PrintTerm(&bestImp.term); puts("");
         IN_DEBUG
         (
             puts("");
             fputs("SELECTED PRECON: ", stdout);
-            Encode_PrintTerm(&prec->term); puts(" ");
+            Narsese_PrintTerm(&prec->term); puts(" ");
             printf(" YAN TAKING ACTIVE CONTROL %d\n", decision.operationID);
         )
         decision.execute = true;
