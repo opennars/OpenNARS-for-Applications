@@ -47,7 +47,7 @@ static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* con
     //skip double/single premise rule if single/double premise
     if(doublePremise) { printf("if(!doublePremise) { goto RULE_%d; }\n", ruleID); }
     if(!doublePremise) { printf("if(doublePremise) { goto RULE_%d; }\n", ruleID); }
-    puts("Term substitutions[255] = {0}; Term subtree = {0};");
+    puts("Term substitutions[TERMS_MAX] = {0}; Term subtree = {0};");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         NAL_GeneratePremisesUnifier(i, term1.atoms[i], 1);
