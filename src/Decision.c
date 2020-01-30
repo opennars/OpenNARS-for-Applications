@@ -93,7 +93,6 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
-    //another source of implications is when the goal matches an existing concept with an independent variable
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *postc_general = concepts.items[concept_i].address;

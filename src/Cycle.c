@@ -44,15 +44,32 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *c = concepts.items[concept_i].address;
-        Substitution subs = Variable_Unify(&e->term, &c->term);
-        if(subs.success)
+        if(!Variable_hasVariable(&c->term, true, true, true)) //event potentially with variable, matched to whatever specific concept matches
         {
-            ecp.term = Variable_ApplySubstitute(e->term, subs);
-            Concept *c = concepts.items[concept_i].address;
-            Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
-            if(decision.execute && decision.desire >= best_decision.desire)
+            Substitution subs = Variable_Unify(&e->term, &c->term); 
+            if(subs.success)
             {
-                best_decision = decision;
+                ecp.term = Variable_ApplySubstitute(e->term, subs);
+                Concept *c = concepts.items[concept_i].address;
+                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                if(decision.execute && decision.desire >= best_decision.desire)
+                {
+                    best_decision = decision;
+                }
+            }
+        }
+        if(!Variable_hasVariable(&e->term, true, true, true))  //event without variable, matched to whatever potentially concept with variable matches
+        {
+            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+            if(subs.success)
+            {
+                ecp.term = e->term;
+                Concept *c = concepts.items[concept_i].address;
+                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                if(decision.execute && decision.desire >= best_decision.desire)
+                {
+                    best_decision = decision;
+                }
             }
         }
     }
@@ -83,10 +100,37 @@ static Decision Cycle_PropagateSpikes(long currentTime)
                             j--;
                             continue;
                         }
-                        Concept *pre = imp->sourceConcept;
-                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                        //no independent var, just send to source concept
+                        if(!Variable_hasVariable(&imp->term, true, false, false))
                         {
-                            pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
+                            Concept *pre = imp->sourceConcept;
+                            if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                            {
+                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                            }
+                        }
+                        //find proper source to send to!
+                        else
+                        {
+                            assert(Narsese_copulaEquals(imp->term.atoms[0], '$'), "Not an implication!");
+                            Term right_side = Term_ExtractSubterm(&imp->term, 2);
+                            Substitution subs = Variable_Unify(&right_side, &postc->goal_spike.term);
+                            assert(subs.success, "Implication and spike needs to be compatible!");
+                            Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
+                            Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
+                            Term left_side_substituted = Variable_ApplySubstitute(left_side, subs);
+                            for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+                            {
+                                Concept *pre = concepts.items[concept_i].address;
+                                if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                                {
+                                    if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                                    {
+                                        pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                                        pre->incoming_goal_spike.term = left_side_substituted; //set term as well, it's a specific goal now as it got specialized!
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -115,8 +115,8 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
         double confIncoming = Inference_EventUpdate(incoming_spike, currentTime).truth.confidence;
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
-        //if there is, apply choice, keeping the stronger one:
-        if(overlap)
+        //if there is or the terms aren't equal, apply choice, keeping the stronger one:
+        if(overlap || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {
