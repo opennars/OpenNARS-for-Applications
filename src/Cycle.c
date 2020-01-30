@@ -7,7 +7,7 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
     Event eMatch = *e;
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
-        c->usage = Usage_use(c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
+        c->usage = Usage_use(c->usage, currentTime);
         //add event as spike to the concept:
         if(eMatch.type == EVENT_TYPE_BELIEF)
         {
@@ -289,8 +289,8 @@ void Cycle_Perform(long currentTime)
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
                     Implication *imp = &c->precondition_beliefs[0].array[i];
-                    Stamp stamp = Stamp_make(&e->stamp, &imp->stamp);
-                    RuleTable_Apply(e->term, imp->term, e->truth, imp->truth, e->occurrenceTime == OCCURRENCE_ETERNAL ? OCCURRENCE_ETERNAL : e->occurrenceTime + imp->occurrenceTimeOffset, stamp, currentTime, priority, true);
+                    Event predicted = Inference_BeliefDeduction(e, imp);
+                    NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
                 }
             }
         }

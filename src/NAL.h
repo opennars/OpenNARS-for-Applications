@@ -65,9 +65,7 @@ RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
 RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
-//NAL5 rules:
-R2( A, (A ==> B), |-, B, Truth_Deduction )
-//other NAL7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
+//NAL5/7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
 
 #endif
 

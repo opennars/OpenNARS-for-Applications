@@ -157,7 +157,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
-                             .truth = { .frequency = 1.0, .confidence = 0.9 },
+                             .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime };
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
                 Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:

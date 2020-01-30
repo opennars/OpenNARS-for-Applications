@@ -148,10 +148,13 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
+    assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
-    return (Event) { .term = compound->term, 
+    Term postcondition = Term_ExtractSubterm(&compound->term, 2);
+    return (Event) { .term = postcondition, 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
+                                                                    OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset };
 }
