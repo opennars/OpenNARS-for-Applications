@@ -33,20 +33,30 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
-    Decision decision = {0};
+    Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term);
     e->processed = true;
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
-    int concept_i;
-    if(Memory_FindConceptByTerm(&e->term, /*e->term_hash,*/ &concept_i))
+    Event ecp = *e;
+    for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *c = concepts.items[concept_i].address;
-        decision = Cycle_ActivateConcept(c, e, currentTime);
+        Substitution subs = Variable_Unify(&e->term, &c->term);
+        if(subs.success)
+        {
+            ecp.term = Variable_ApplySubstitute(e->term, subs);
+            Concept *c = concepts.items[concept_i].address;
+            Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+            if(decision.desire > best_decision.desire)
+            {
+                best_decision = decision;
+            }
+        }
     }
-    return decision;
+    return best_decision;
 }
 
 //Propagate spikes for subgoal processing, generating anticipations and decisions

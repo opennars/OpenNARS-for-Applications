@@ -2,7 +2,10 @@
 
 bool Variable_isVariable(Atom atom)
 {
-    return Narsese_atomNames[(int) atom-1][0] == '$' && Narsese_atomNames[(int) atom-1][1] != 0;
+    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 &&
+          (Narsese_atomNames[(int) atom-1][0] == '$' || 
+           Narsese_atomNames[(int) atom-1][0] == '#' ||
+           Narsese_atomNames[(int) atom-1][0] == '?');
 }
 
 bool Variable_hasVariable(Term *term)
@@ -24,14 +27,24 @@ Substitution Variable_Unify(Term *general, Term *specific)
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general->atoms[i];
-        if(Variable_isVariable(general_atom))
+        if(general_atom)
         {
-            Term subtree = Term_ExtractSubterm(specific, i);
-            if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree))
+            if(Variable_isVariable(general_atom))
             {
-                return substitution;
+                Term subtree = Term_ExtractSubterm(specific, i);
+                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree))
+                {
+                    return substitution;
+                }
+                substitution.map[(int) general_atom] = subtree;
             }
-            substitution.map[(int) general_atom] = subtree;
+            else
+            {
+                if(general_atom != specific->atoms[i])
+                {
+                    return substitution;
+                }
+            }
         }
     }
     substitution.success = true;
