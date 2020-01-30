@@ -50,7 +50,7 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
             ecp.term = Variable_ApplySubstitute(e->term, subs);
             Concept *c = concepts.items[concept_i].address;
             Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
-            if(decision.desire > best_decision.desire)
+            if(decision.execute && decision.desire >= best_decision.desire)
             {
                 best_decision = decision;
             }
