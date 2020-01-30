@@ -1,19 +1,31 @@
 #include "Variable.h"
 
-bool Variable_isVariable(Atom atom)
+bool Variable_isIndependentVariable(Atom atom)
 {
-    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 &&
-          (Narsese_atomNames[(int) atom-1][0] == '$' || 
-           Narsese_atomNames[(int) atom-1][0] == '#' ||
-           Narsese_atomNames[(int) atom-1][0] == '?');
+    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '$';
 }
 
-bool Variable_hasVariable(Term *term)
+bool Variable_isDependentVariable(Atom atom)
+{
+    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '#';
+}
+
+bool Variable_isQueryVariable(Atom atom)
+{
+    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '?';
+}
+
+bool Variable_isVariable(Atom atom)
+{
+    return Variable_isIndependentVariable(atom) || Variable_isDependentVariable(atom) || Variable_isQueryVariable(atom);
+}
+
+bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query)
 {
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = term->atoms[i];
-        if(Variable_isVariable(atom))
+        if((independent && Variable_isIndependentVariable(atom)) || (dependent && Variable_isDependentVariable(atom)) || (query && Variable_isQueryVariable(atom)))
         {
             return true;
         }

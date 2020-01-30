@@ -20,8 +20,11 @@ typedef struct {
 
 //Methods//
 //-------//
+bool Variable_isIndependentVariable(Atom atom);
+bool Variable_isDependentVariable(Atom atom);
+bool Variable_isQueryVariable(Atom atom);
 bool Variable_isVariable(Atom atom);
-bool Variable_hasVariable(Term *term);
+bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query);
 Substitution Variable_Unify(Term *general, Term *specific);
 Term Variable_ApplySubstitute(Term term, Substitution substitution);
 

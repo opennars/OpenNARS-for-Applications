@@ -45,6 +45,49 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, Implication *DebugBestImp)
+{
+    Decision decision = (Decision) {0};
+    IN_DEBUG
+    (
+        printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp->truth.frequency, imp->truth.confidence);
+        Narsese_PrintTerm(&imp->term);
+        puts("");
+    )
+    //now look at how much the precondition is fulfilled
+    Concept *prec = imp->sourceConcept;
+    Event *precondition = &prec->belief_spike; //a. :|:
+    if(precondition != NULL)
+    {
+        Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
+        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        IN_DEBUG
+        (
+            printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
+            Narsese_PrintTerm(&prec->term);
+            fputs("\nCONSIDERED PRECON truth ", stdout);
+            Truth_Print(&precondition->truth);
+            fputs("CONSIDERED goal truth ", stdout);
+            Truth_Print(&goal->truth);
+            fputs("CONSIDERED imp truth ", stdout);
+            Truth_Print(&imp->truth);
+            printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
+            Narsese_PrintTerm(&precondition->term); puts("");
+        )
+        *DebugBestImp = *imp;
+        //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
+        Term operation = Term_ExtractSubterm(&imp->term, 4); //^op or [: args ^op]
+        if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
+        {
+            assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
+            decision.arguments = Term_ExtractSubterm(&imp->term, 9); 
+        }
+        decision.operationID = considered_opi;
+        decision.desire = operationGoalTruthExpectation;
+    }
+    return decision;
+}
+
 int stampID = -1;
 Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
@@ -53,82 +96,30 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
     if(Memory_FindConceptByTerm(&goal->term, /*goal->term_hash,*/ &closest_postc_i))
     {
         Concept *postc = concepts.items[closest_postc_i].address;
-        double bestTruthExpectation = 0;
         Implication bestImp = {0};
-        Concept *prec;
-        for(int opi=1; opi<OPERATIONS_MAX; opi++)
+        for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
         {
-            if(operations[opi-1].action == 0)
-            {
-                break;
-            }
             for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
             {
                 if(!Memory_ImplicationValid(&postc->precondition_beliefs[opi].array[j]))
                 {
-                    Table_Remove(&postc->precondition_beliefs[opi], j);
-                    j--;
+                    Table_Remove(&postc->precondition_beliefs[opi], j--);
                     continue;
                 }
                 Implication imp = postc->precondition_beliefs[opi].array[j];
-                IN_DEBUG
-                (
-                    printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp.truth.frequency, imp.truth.confidence);
-                    Narsese_PrintTerm(&imp.term);
-                    puts("");
-                    Term_Print(&imp.term);
-                )
-                //now look at how much the precondition is fulfilled
-                Concept *current_prec = imp.sourceConcept;
-                Event *precondition = &current_prec->belief_spike; //a. :|:
-                if(precondition != NULL)
+                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
+                if(considered.desire > decision.desire)
                 {
-                    Event ContextualOperation = Inference_GoalDeduction(goal, &imp); //(&/,a,op())! :\:
-                    double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
-                    IN_DEBUG
-                    (
-                        printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
-                        Narsese_PrintTerm(&current_prec->term);
-                        fputs("\nCONSIDERED PRECON truth ", stdout);
-                        Truth_Print(&precondition->truth);
-                        fputs("CONSIDERED goal truth ", stdout);
-                        Truth_Print(&goal->truth);
-                        fputs("CONSIDERED imp truth ", stdout);
-                        Truth_Print(&imp.truth);
-                        printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-                        Narsese_PrintTerm(&precondition->term); puts("");
-                    )
-                    if(operationGoalTruthExpectation > bestTruthExpectation)
-                    {
-                        prec = current_prec;
-                        bestImp = imp;
-                        //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
-                        Term operation = Term_ExtractSubterm(&imp.term, 4); //^op or [: args ^op]
-                        if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
-                        {
-                            assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
-                            decision.arguments = Term_ExtractSubterm(&imp.term, 9); 
-                        }
-                        decision.operationID = opi;
-                        decision.desire = operationGoalTruthExpectation;
-                        bestTruthExpectation = operationGoalTruthExpectation;
-                    }
+                    decision = considered;
                 }
             }
         }
-        if(bestTruthExpectation < DECISION_THRESHOLD)
+        if(decision.desire < DECISION_THRESHOLD)
         {
             return decision;
         }
-        printf("decision expectation %f impTruth=(%f, %f): future=%ld ", bestTruthExpectation, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+        printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
         Narsese_PrintTerm(&bestImp.term); puts("");
-        IN_DEBUG
-        (
-            puts("");
-            fputs("SELECTED PRECON: ", stdout);
-            Narsese_PrintTerm(&prec->term); puts(" ");
-            printf(" YAN TAKING ACTIVE CONTROL %d\n", decision.operationID);
-        )
         decision.execute = true;
 
     }
