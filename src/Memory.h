@@ -30,7 +30,7 @@ extern bool PRINT_INPUT;
 #define PRINT_CONTROL_INFO false
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
 #define MIN_CONFIDENCE 0.01
-#define MIN_PRIORITY 0.01
+#define MIN_PRIORITY 0.0001
 #define EVENT_DURABILITY 0.9
 
 //Data structure//

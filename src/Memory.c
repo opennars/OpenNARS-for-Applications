@@ -169,7 +169,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     if(!revised) //input and derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
-        priority *= (1.0 / log(1.0 + log2(complexity)));
+        priority *= 1.0 / log2(1.0 + complexity);
     }
     if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
     {
