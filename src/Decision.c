@@ -92,37 +92,56 @@ int stampID = -1;
 Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
-    int closest_postc_i;
-    if(Memory_FindConceptByTerm(&goal->term, /*goal->term_hash,*/ &closest_postc_i))
+    Implication bestImp = {0};
+    //another source of implications is when the goal matches an existing concept with an independent variable
+    for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
-        Concept *postc = concepts.items[closest_postc_i].address;
-        Implication bestImp = {0};
-        for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        Concept *postc_general = concepts.items[concept_i].address;
+        //if(Variable_hasVariable(&postc_general->term, true, true, false)) //has independent or dependent variable?
         {
-            for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
+            Substitution subs = Variable_Unify(&postc_general->term, &goal->term);
+            if(subs.success)
             {
-                if(!Memory_ImplicationValid(&postc->precondition_beliefs[opi].array[j]))
+                for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
                 {
-                    Table_Remove(&postc->precondition_beliefs[opi], j--);
-                    continue;
-                }
-                Implication imp = postc->precondition_beliefs[opi].array[j];
-                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
-                if(considered.desire > decision.desire)
-                {
-                    decision = considered;
+                    for(int j=0; j<postc_general->precondition_beliefs[opi].itemsAmount; j++)
+                    {
+                        if(!Memory_ImplicationValid(&postc_general->precondition_beliefs[opi].array[j]))
+                        {
+                            Table_Remove(&postc_general->precondition_beliefs[opi], j--);
+                            continue;
+                        }
+                        Implication imp = postc_general->precondition_beliefs[opi].array[j];
+                        imp.term = Variable_ApplySubstitute(imp.term, subs);
+                        assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
+                        Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
+                        Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
+                        for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
+                        {
+                            Concept *cmatch = concepts.items[cmatch_k].address;
+                            if(Variable_Unify(&left_side, &cmatch->term).success)
+                            {
+                                imp.sourceConcept = cmatch;
+                                imp.sourceConceptTerm = cmatch->term;
+                                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
+                                if(considered.desire > decision.desire)
+                                {
+                                    decision = considered;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-        if(decision.desire < DECISION_THRESHOLD)
-        {
-            return decision;
-        }
-        printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-        Narsese_PrintTerm(&bestImp.term); puts("");
-        decision.execute = true;
-
     }
+    if(decision.desire < DECISION_THRESHOLD)
+    {
+        return decision;
+    }
+    printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+    Narsese_PrintTerm(&bestImp.term); puts("");
+    decision.execute = true;
     return decision;
 }
 
