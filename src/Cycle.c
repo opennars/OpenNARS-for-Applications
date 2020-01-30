@@ -289,8 +289,14 @@ void Cycle_Perform(long currentTime)
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
                     Implication *imp = &c->precondition_beliefs[0].array[i];
-                    Event predicted = Inference_BeliefDeduction(e, imp);
-                    NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
+                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                    Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                    Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                    if(Term_Equal(&e->term, &precondition))
+                    {
+                        Event predicted = Inference_BeliefDeduction(e, imp);
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
+                    }
                 }
             }
         }
