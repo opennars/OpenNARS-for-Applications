@@ -258,7 +258,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
                 Concept *c = concepts.items[concept_i].address;
-                if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+                if(event->occurrenceTime == currentTime)
                 {
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
                 }
