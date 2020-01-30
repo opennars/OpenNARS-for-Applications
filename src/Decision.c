@@ -97,37 +97,34 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *postc_general = concepts.items[concept_i].address;
-        //if(Variable_hasVariable(&postc_general->term, true, true, false)) //has independent or dependent variable?
+        Substitution subs = Variable_Unify(&postc_general->term, &goal->term);
+        if(subs.success)
         {
-            Substitution subs = Variable_Unify(&postc_general->term, &goal->term);
-            if(subs.success)
+            for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
             {
-                for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+                for(int j=0; j<postc_general->precondition_beliefs[opi].itemsAmount; j++)
                 {
-                    for(int j=0; j<postc_general->precondition_beliefs[opi].itemsAmount; j++)
+                    if(!Memory_ImplicationValid(&postc_general->precondition_beliefs[opi].array[j]))
                     {
-                        if(!Memory_ImplicationValid(&postc_general->precondition_beliefs[opi].array[j]))
+                        Table_Remove(&postc_general->precondition_beliefs[opi], j--);
+                        continue;
+                    }
+                    Implication imp = postc_general->precondition_beliefs[opi].array[j];
+                    imp.term = Variable_ApplySubstitute(imp.term, subs);
+                    assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
+                    Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
+                    Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
+                    for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
+                    {
+                        Concept *cmatch = concepts.items[cmatch_k].address;
+                        if(Variable_Unify(&left_side, &cmatch->term).success)
                         {
-                            Table_Remove(&postc_general->precondition_beliefs[opi], j--);
-                            continue;
-                        }
-                        Implication imp = postc_general->precondition_beliefs[opi].array[j];
-                        imp.term = Variable_ApplySubstitute(imp.term, subs);
-                        assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
-                        Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
-                        Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                        for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
-                        {
-                            Concept *cmatch = concepts.items[cmatch_k].address;
-                            if(Variable_Unify(&left_side, &cmatch->term).success)
+                            imp.sourceConcept = cmatch;
+                            imp.sourceConceptTerm = cmatch->term;
+                            Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
+                            if(considered.desire > decision.desire)
                             {
-                                imp.sourceConcept = cmatch;
-                                imp.sourceConceptTerm = cmatch->term;
-                                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
-                                if(considered.desire > decision.desire)
-                                {
-                                    decision = considered;
-                                }
+                                decision = considered;
                             }
                         }
                     }
