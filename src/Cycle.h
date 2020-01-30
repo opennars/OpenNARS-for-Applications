@@ -13,6 +13,7 @@
 #include "Decision.h"
 #include "Inference.h"
 #include "RuleTable.h"
+#include "Variable.h"
 
 //Methods//
 //-------//

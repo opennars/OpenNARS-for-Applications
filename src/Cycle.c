@@ -292,9 +292,12 @@ void Cycle_Perform(long currentTime)
                     assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
                     Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
                     Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                    if(Term_Equal(&e->term, &precondition))
+                    Substitution subs = Variable_Unify(&precondition, &e->term);
+                    if(subs.success)
                     {
-                        Event predicted = Inference_BeliefDeduction(e, imp);
+                        Implication updated_imp = *imp;
+                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
+                        Event predicted = Inference_BeliefDeduction(e, &updated_imp);
                         NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
                     }
                 }
