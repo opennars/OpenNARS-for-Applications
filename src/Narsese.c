@@ -63,6 +63,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
+            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
+            {
+                narsese_replaced[j] = ';';
+                i+=2; j++;
+            }
+            else
             if(narsese[i] == '/' && narsese[i+1] == '1') // /1 becomes /
             {
                 narsese_replaced[j] = '/';
@@ -110,6 +116,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes $
                 {
                     narsese_replaced[j] = '$';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] != '>') // -- becomes !
+                {
+                    narsese_replaced[j] = '!';
                     i+=3; j++;
                 }
                 else
@@ -187,7 +199,7 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+";
+static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+!";
 char** Narsese_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars

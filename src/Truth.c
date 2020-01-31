@@ -75,7 +75,7 @@ void Truth_Print(Truth *truth)
 Truth Truth_Exemplification(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = 1.0, .confidence = Truth_w2c(f1 * f2 * c1 * c2)};
+    return (Truth) { .frequency = 1.0, .confidence = Truth_w2c(f1 * f2 * c1 * c2) };
 }
 
 static inline double or(double a, double b)
@@ -87,36 +87,42 @@ Truth Truth_Comparison(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
     double f0 = or(f1, f2);
-    return (Truth) { .frequency = (f0 == 0.0) ? 0.0 : ((f1*f2) / f0), .confidence = Truth_w2c(f0 * c1 * c2)};
+    return (Truth) { .frequency = (f0 == 0.0) ? 0.0 : ((f1*f2) / f0), .confidence = Truth_w2c(f0 * c1 * c2) };
 }
 
 Truth Truth_Analogy(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 * f2};
+    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 * f2 };
 }
 
 Truth Truth_Resemblance(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 * or(f1, f2)};
+    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 * or(f1, f2) };
 }
 
 Truth Truth_Union(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = or(f1, f2), .confidence = c1 * c2};
+    return (Truth) { .frequency = or(f1, f2), .confidence = c1 * c2 };
 }
 
 Truth Truth_Difference(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1 * (1.0 - f2), .confidence = c1 * c2};
+    return (Truth) { .frequency = f1 * (1.0 - f2), .confidence = c1 * c2 };
 }
 
 Truth Truth_Conversion(Truth v1, Truth v2)
 {
-    return (Truth) { .frequency = 1.0, .confidence = Truth_w2c(v1.frequency * v1.confidence)};
+    return (Truth) { .frequency = 1.0, .confidence = Truth_w2c(v1.frequency * v1.confidence) };
+}
+
+Truth Truth_Negation(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    return (Truth) { .frequency = 1.0-f1, .confidence = c1 };
 }
 
 Truth Truth_StructuralDeduction(Truth v1, Truth v2)
