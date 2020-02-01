@@ -1,0 +1,10 @@
+<(&/,<(*,$1,plastic) --> made_of>,<(*,{SELF},$1) --> ^left>) =/> <$1 --> [heated]>>.
+<<$1 --> [heated]> =/> <$1 --> [melted]>>.
+<<$1 --> [melted]> =/> <$1 --> [pliable]>>.
+<(&/,<$1 --> [pliable]>,<(*,{SELF},$1) --> ^right>) =/> <$1 --> [hardened]>>.
+<<$1 --> [hardened]> =/> <$1 --> [unscrewing]>>.
+<(&/,<$1 --> [hardened]>,<(*,{SELF},$1) --> ^down>) =/> <$1 --> [unscrewing]>>.
+//let's try an example:
+<(*,toothbrush,plastic) --> made_of>. :|:
+<#1 --> [unscrewing]>! :|:
+//expected: ^left executed with args ({SELF} * toothbrush)
