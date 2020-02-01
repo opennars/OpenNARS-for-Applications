@@ -8,3 +8,12 @@
 <(*,toothbrush,plastic) --> made_of>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^left executed with args ({SELF} * toothbrush)
+100
+//some time later:
+<toothbrush --> [pliable]>. :|:
+<#1 --> [unscrewing]>! :|:
+//expected: ^right executed with args ({SELF} * toothbrush)
+//some time later:
+<toothbrush --> [hardened]>. :|:
+<#1 --> [unscrewing]>! :|:
+//expected: ^down executed with args ({SELF} * toothbrush)

@@ -59,7 +59,9 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     return (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
                            .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
+                           .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
+                           .sourceConcept = a->sourceConcept,
+                           .sourceConceptTerm = a->sourceConceptTerm };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
