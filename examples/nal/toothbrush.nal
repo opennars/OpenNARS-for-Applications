@@ -13,8 +13,8 @@
 <toothbrush --> [pliable]>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^right executed with args ({SELF} * toothbrush)
-//some time later:
 10
+//some time later:
 <toothbrush --> [hardened]>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^down executed with args ({SELF} * toothbrush)
