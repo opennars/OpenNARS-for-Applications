@@ -44,12 +44,12 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *c = concepts.items[concept_i].address;
-        if(!Variable_hasVariable(&c->term, true, true, true)) //event potentially with variable, matched to whatever specific concept matches
+        if(!Variable_hasVariable(&e->term, true, true, true))  //concept matched to the event which doesn't have variables
         {
-            Substitution subs = Variable_Unify(&e->term, &c->term); 
+            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
             if(subs.success)
             {
-                ecp.term = Variable_ApplySubstitute(e->term, subs);
+                ecp.term = e->term;
                 Concept *c = concepts.items[concept_i].address;
                 Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
                 if(decision.execute && decision.desire >= best_decision.desire)
@@ -58,12 +58,12 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
                 }
             }
         }
-        if(!Variable_hasVariable(&e->term, true, true, true))  //event without variable, matched to whatever potentially concept with variable matches
+        else
         {
-            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+            Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
             if(subs.success)
             {
-                ecp.term = e->term;
+                ecp.term = Variable_ApplySubstitute(e->term, subs);
                 Concept *c = concepts.items[concept_i].address;
                 Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
                 if(decision.execute && decision.desire >= best_decision.desire)
@@ -100,8 +100,8 @@ static Decision Cycle_PropagateSpikes(long currentTime)
                             j--;
                             continue;
                         }
-                        //no independent var, just send to source concept
-                        if(!Variable_hasVariable(&imp->term, true, false, false))
+                        //no var, just send to source concept
+                        if(!Variable_hasVariable(&imp->term, true, true, true))
                         {
                             Concept *pre = imp->sourceConcept;
                             if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)

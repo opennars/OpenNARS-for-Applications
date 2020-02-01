@@ -69,7 +69,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution)
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general.atoms[i];
-        if(Variable_isVariable(general_atom) && substitution.map[(int) general_atom].atoms[0] != 0)
+        if(substitution.map[(int) general_atom].atoms[0] != 0)
         {
             Term_OverrideSubterm(&general, i, &substitution.map[(int) general_atom]);
         }

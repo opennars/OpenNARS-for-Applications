@@ -14,7 +14,7 @@ void Decision_Execute(Decision *decision)
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
         Term operation = {0};
-        operation.atoms[0] = Narsese_AtomicTermIndex("$"); //<args --> ^op>
+        operation.atoms[0] = Narsese_AtomicTermIndex(":"); //<args --> ^op>
         Term_OverrideSubterm(&operation, 1, &decision->arguments);
         Term_OverrideSubterm(&operation, 2, &decision->op.term);
         YAN_AddInputBelief(operation);
@@ -116,14 +116,20 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
                         Concept *cmatch = concepts.items[cmatch_k].address;
-                        if(Variable_Unify(&left_side, &cmatch->term).success)
+                        if(!Variable_hasVariable(&cmatch->term, true, true, true))
                         {
-                            imp.sourceConcept = cmatch;
-                            imp.sourceConceptTerm = cmatch->term;
-                            Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &imp, &bestImp);
-                            if(considered.desire > decision.desire)
+                            Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
+                            if(subs2.success)
                             {
-                                decision = considered;
+                                Implication specific_imp = imp; //can only be completely specific
+                                specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2);
+                                imp.sourceConcept = cmatch;
+                                imp.sourceConceptTerm = cmatch->term;
+                                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
+                                if(considered.desire > decision.desire)
+                                {
+                                    decision = considered;
+                                }
                             }
                         }
                     }
