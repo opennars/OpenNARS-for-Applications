@@ -218,7 +218,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                                         .sourceConceptTerm = subject };
                     //now extract operation id
                     int opi = 0;
-                    if(Narsese_copulaEquals(subject.atoms[0], '+'))
+                    if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
                         if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator

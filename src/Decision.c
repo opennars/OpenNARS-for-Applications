@@ -123,8 +123,8 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                             {
                                 Implication specific_imp = imp; //can only be completely specific
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2);
-                                imp.sourceConcept = cmatch;
-                                imp.sourceConceptTerm = cmatch->term;
+                                specific_imp.sourceConcept = cmatch;
+                                specific_imp.sourceConceptTerm = cmatch->term;
                                 Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
                                 if(considered.desire > decision.desire)
                                 {

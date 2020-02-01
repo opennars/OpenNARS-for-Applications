@@ -14,7 +14,7 @@
 //--------------//
 //Substitution, mapping variable atoms to terms
 typedef struct {
-    Term map[255];
+    Term map[TERMS_MAX];
     bool success;
 } Substitution;
 
@@ -27,5 +27,6 @@ bool Variable_isVariable(Atom atom);
 bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query);
 Substitution Variable_Unify(Term *general, Term *specific);
 Term Variable_ApplySubstitute(Term term, Substitution substitution);
+Term IntroduceImplicationVariables(Term implication);
 
 #endif

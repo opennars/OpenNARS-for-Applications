@@ -185,6 +185,11 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 precondition_implication.sourceConceptTerm = A->term;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
+                    Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term);
+                    if(Variable_hasVariable(&general_implication_term, true, true, false))
+                    {
+                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1);
+                    }
                     int operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )

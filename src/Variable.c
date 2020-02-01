@@ -76,3 +76,78 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution)
     }
     return general;
 }
+
+//Search for variables which appear twice extensionally, if also appearing in the right side of the implication
+//then introduce as independent variable, else as dependent variable
+static void countExtensionTerms(Term *cur_inheritance, int *appearing)
+{
+    if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':')) //inheritance
+    {
+        Term subject = Term_ExtractSubterm(cur_inheritance, 1);
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_IsNonCopulaAtom(subject.atoms[i]))
+            {
+                appearing[(int) subject.atoms[i]] += 1;
+            }
+        }
+    }
+}
+
+Term IntroduceImplicationVariables(Term implication)
+{
+    assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
+    Term left_side = Term_ExtractSubterm(&implication, 1);
+    Term right_side = Term_ExtractSubterm(&implication, 2);
+    bool right_contains[TERMS_MAX] = {0};
+    int appearing[TERMS_MAX] = {0};
+    if(Narsese_copulaEquals(right_side.atoms[0], ':')) //inheritance
+    {
+        Term subject = Term_ExtractSubterm(&right_side, 1);
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            Atom atom = subject.atoms[i];
+            if(Narsese_IsNonCopulaAtom(atom))
+            {
+                right_contains[(int) atom] = true;
+                appearing[(int) atom] += 1;
+            }
+        }
+    }
+    while(Narsese_copulaEquals(left_side.atoms[0], '+')) //sequence
+    {
+        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
+        countExtensionTerms(&potential_inheritance, appearing);
+        left_side = Term_ExtractSubterm(&left_side, 1);
+    }
+    countExtensionTerms(&left_side, appearing);
+    Substitution subs = { .success = true };
+    int depvar_i = 1;
+    int indepvar_i = 1;
+    bool already_handled[TERMS_MAX] = {0};
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = implication.atoms[i];
+        if(!already_handled[(int) atom] && appearing[(int) atom] > 1)
+        {
+            if(right_contains[(int) atom])
+            {
+                assert(indepvar_i <= 9, "More than 9 variables being introduced? That's not supported.");
+                char varname[3] = "$1";
+                varname[1] = (char) ('0' + indepvar_i);
+                subs.map[(int) atom] = Narsese_AtomicTerm(varname);
+                indepvar_i++;
+            }
+            else
+            {
+                assert(depvar_i <= 9, "More than 9 variables being introduced? That's not supported.");
+                char varname[3] = "#1";
+                varname[1] = (char) ('0' + depvar_i);
+                subs.map[(int) atom] = Narsese_AtomicTerm(varname);
+                depvar_i++;
+            }
+        }
+        already_handled[(int) atom] = true;
+    }
+    return Variable_ApplySubstitute(implication, subs);
+}
