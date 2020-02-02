@@ -87,6 +87,7 @@ while True:
     if sentence.strip().startswith("*") or sentence.strip().startswith("//"):
         proc.stdin.write(sentence.strip() + "\n")
         continue
+    print("Input sentence: " + sentence)
     (words, wordtypes) = words_and_types(sentence + " and")
     punctuation = "?" if "?" in sentence else "."
     print("Word types: " + str(wordtypes))
@@ -101,12 +102,6 @@ while True:
     prep_object_modifiers = "_prep_object_"
     lastsubject = ""
     lastpredicate = ""
-    if len(words) == 4: #"sam likes tim" special case to circumvent postag issues
-        if words[1] == "be":
-            output("<" + words[0] + " --> " + words[2] + ">" + punctuation + " :|:")
-        else:
-            output("<" + words[0] + " --> (" + words[1] + " /1 " + words[2] + ")>" + punctuation + " :|:")
-        continue
     for i in range(len(words)):
         word = words[i]
         if prep != "":
@@ -145,7 +140,7 @@ while True:
                 lastpredicate = predicate_modifiers.replace("_predicate_", predicate)
                 if subject != "" and predicate !="" and object == "":
                     object = subject
-                if subject != "" and predicate != "" and object != "": #output Narsese relation if all pieces are together, with a special case for be/Inheritance
+                if subject != "" and predicate != "" and object != "" and not (subject in questionwords and object in questionwords): #output Narsese relation if all pieces are together, with a special case for be/Inheritance
                     if lastpredicate == "be":
                         output(("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation + " :|:").replace("_subject_", subject).replace("_object_", object))
                     else:
