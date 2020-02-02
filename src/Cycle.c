@@ -188,7 +188,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term);
                     if(Variable_hasVariable(&general_implication_term, true, true, false))
                     {
-                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1);
+                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1);
                     }
                     int operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -321,16 +321,27 @@ void Cycle_Perform(long currentTime)
         double priority = selectedEventsPriority[i];
         Term dummy_term = {0};
         Truth dummy_truth = {0};
-        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, false); 
+        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
             if(c->belief.type != EVENT_TYPE_DELETED)
             {
-                if(!Stamp_checkOverlap(&e->stamp, &c->belief.stamp))
+                Event project_belief = c->belief_spike;
+                Event* belief = &c->belief;
+                if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED) //take event as belief if it's stronger
                 {
-                    Stamp stamp = Stamp_make(&e->stamp, &c->belief.stamp);
+                    project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
+                    project_belief.occurrenceTime = e->occurrenceTime;
+                    if(project_belief.truth.confidence > c->belief.truth.confidence)
+                    {
+                        belief = &project_belief;
+                    }
+                }
+                if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                {
+                    Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
                     if(PRINT_CONTROL_INFO)
                     {
                         fputs("Apply rule table on ", stdout);
@@ -340,7 +351,7 @@ void Cycle_Perform(long currentTime)
                         Narsese_PrintTerm(&c->term);
                         puts("");
                     }
-                    RuleTable_Apply(e->term, c->term, e->truth, c->belief.truth, e->occurrenceTime, stamp, currentTime, priority, true);
+                    RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
                 }
             }
             if(e->type == EVENT_TYPE_BELIEF)
@@ -357,13 +368,19 @@ void Cycle_Perform(long currentTime)
                         Implication updated_imp = *imp;
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
                         Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, 1.0);
                     }
                 }
             }
         }
     }
 #endif
+    //Apply concept forgetting:
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        c->priority *= CONCEPT_DURABILITY;
+    }
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_events);

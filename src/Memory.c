@@ -62,11 +62,11 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
     return false;
 }
 
-void Memory_Conceptualize(Term *term)
+Concept* Memory_Conceptualize(Term *term)
 {
     if(Narsese_isOperation(term)) //don't conceptualize operations
     {
-        return;
+        return NULL;
     }
     //Term_HASH_TYPE hash = Term_Hash(term);
     if(!Memory_FindConceptByTerm(term, /*hash,*/ NULL))
@@ -81,8 +81,10 @@ void Memory_Conceptualize(Term *term)
             Concept_SetTerm(addedConcept, *term);
             addedConcept->id = concept_id;
             concept_id++;
+            return addedConcept;
         }
     }
+    return NULL;
 }
 
 Event selectedEvents[EVENT_SELECTIONS]; //better to be global
@@ -166,7 +168,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
         priority *= EVENT_DURABILITY;
     }
     else
-    if(!revised) //input and derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
+    if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
         priority *= 1.0 / log2(1.0 + complexity);
@@ -253,7 +255,11 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 }
                 return; //at this point, either the implication has been added or there was no space for its precondition concept
             }
-            Memory_Conceptualize(&event->term);
+            Concept *c_conceptualized =  Memory_Conceptualize(&event->term);
+            if(c_conceptualized != NULL)
+            {
+                c_conceptualized->priority = MAX(c_conceptualized->priority, priority);
+            }
             int concept_i;
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {

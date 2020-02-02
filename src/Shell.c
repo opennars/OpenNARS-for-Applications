@@ -167,7 +167,7 @@ INIT:
                             if(c->belief_spike.type != EVENT_TYPE_DELETED)
                             {
                                 Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
-                                if(Truth_Expectation(potential_best_truth) > Truth_Expectation(best_truth_projected))
+                                if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
                                 {
                                     best_truth_projected = potential_best_truth;
                                     best_truth = c->belief_spike.truth;
@@ -180,7 +180,7 @@ INIT:
                         {
                             if(c->belief.type != EVENT_TYPE_DELETED)
                             {
-                                if(Truth_Expectation(c->belief.truth) > Truth_Expectation(best_truth))
+                                if(Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
                                 {
                                     best_truth = c->belief.truth;
                                     best_term = c->belief.term;

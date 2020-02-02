@@ -32,6 +32,7 @@ extern bool PRINT_INPUT;
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.0001
 #define EVENT_DURABILITY 0.9
+#define CONCEPT_DURABILITY 0.99
 
 //Data structure//
 //--------------//
@@ -60,7 +61,7 @@ void Memory_INIT();
 //Find a concept
 bool Memory_FindConceptByTerm(Term *term, /*Term_HASH_TYPE term_hash,*/ int *returnIndex);
 //Create a new concept
-void Memory_Conceptualize(Term *term);
+Concept* Memory_Conceptualize(Term *term);
 //Add an already existing concept to memory that was taken out from the concept priority queue
 void Memory_addConcept(Concept *concept, long currentTime);
 //Add event to memory

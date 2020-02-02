@@ -24,6 +24,7 @@ typedef struct {
     Event incoming_goal_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];
+    double priority;
 } Concept;
 
 //Methods//
