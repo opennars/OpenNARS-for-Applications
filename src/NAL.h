@@ -65,17 +65,26 @@ RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
 RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
-//NAL5 rules:
-R2( A, (A ==> B), |-, B, Truth_Deduction )
-//other NAL7/8 temporal induction and detachment is handled by MSC links, see Inference.h!
+//NAL5 rules
+R1( (! A), |-, A, Truth_Negation )
+R1( (&& A B), |-, A, Truth_StructuralDeduction )
+R1( (&& A B), |-, B, Truth_StructuralDeduction )
+//NAL6 variable introduction
+R2( (M --> A), (M --> B), |-, (($1 --> A) ==> ($1 --> B)), Truth_Induction )
+R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
+R2( (A --> M), (B --> M), |-, ((A --> $1) ==> (B --> $1)), Truth_Induction )
+R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
+R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction )
+//NAL5/7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
 
 #endif
 
 #ifdef H_NAL_REDUCTIONS
 
-//Extensional intersection and union
+//Extensional intersection, union, conjunction
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
+ReduceStatement( (A && A), A )
 //Extensional set
 ReduceTerm( ({A} & {B}), {A B} )
 //Intensional set

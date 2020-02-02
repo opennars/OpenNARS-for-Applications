@@ -7,7 +7,7 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
     Event eMatch = *e;
     if(eMatch.truth.confidence > MIN_CONFIDENCE)
     {
-        c->usage = Usage_use(c->usage, currentTime);          //given its new role it should be doable to add a priorization mechanism to it
+        c->usage = Usage_use(c->usage, currentTime);
         //add event as spike to the concept:
         if(eMatch.type == EVENT_TYPE_BELIEF)
         {
@@ -33,20 +33,47 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
-    Decision decision = {0};
+    Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term);
     e->processed = true;
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
-    int concept_i;
-    if(Memory_FindConceptByTerm(&e->term, /*e->term_hash,*/ &concept_i))
+    Event ecp = *e;
+    for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *c = concepts.items[concept_i].address;
-        decision = Cycle_ActivateConcept(c, e, currentTime);
+        if(!Variable_hasVariable(&e->term, true, true, true))  //concept matched to the event which doesn't have variables
+        {
+            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+            if(subs.success)
+            {
+                ecp.term = e->term;
+                Concept *c = concepts.items[concept_i].address;
+                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                if(decision.execute && decision.desire >= best_decision.desire)
+                {
+                    best_decision = decision;
+                }
+            }
+        }
+        else
+        {
+            Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+            if(subs.success)
+            {
+                ecp.term = Variable_ApplySubstitute(e->term, subs);
+                Concept *c = concepts.items[concept_i].address;
+                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                if(decision.execute && decision.desire >= best_decision.desire)
+                {
+                    best_decision = decision;
+                }
+            }
+        }
     }
-    return decision;
+    return best_decision;
 }
 
 //Propagate spikes for subgoal processing, generating anticipations and decisions
@@ -73,10 +100,37 @@ static Decision Cycle_PropagateSpikes(long currentTime)
                             j--;
                             continue;
                         }
-                        Concept *pre = imp->sourceConcept;
-                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                        //no var, just send to source concept
+                        if(!Variable_hasVariable(&imp->term, true, true, true))
                         {
-                            pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, &postc->precondition_beliefs[opi].array[j]);
+                            Concept *pre = imp->sourceConcept;
+                            if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                            {
+                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                            }
+                        }
+                        //find proper source to send to!
+                        else
+                        {
+                            assert(Narsese_copulaEquals(imp->term.atoms[0], '$'), "Not an implication!");
+                            Term right_side = Term_ExtractSubterm(&imp->term, 2);
+                            Substitution subs = Variable_Unify(&right_side, &postc->goal_spike.term);
+                            assert(subs.success, "Implication and spike needs to be compatible!");
+                            Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
+                            Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
+                            Term left_side_substituted = Variable_ApplySubstitute(left_side, subs);
+                            for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+                            {
+                                Concept *pre = concepts.items[concept_i].address;
+                                if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                                {
+                                    if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                                    {
+                                        pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                                        pre->incoming_goal_spike.term = left_side_substituted; //set term as well, it's a specific goal now as it got specialized!
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -131,6 +185,11 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 precondition_implication.sourceConceptTerm = A->term;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
+                    Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term);
+                    if(Variable_hasVariable(&general_implication_term, true, true, false))
+                    {
+                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1);
+                    }
                     int operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                     IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
@@ -289,8 +348,17 @@ void Cycle_Perform(long currentTime)
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
                     Implication *imp = &c->precondition_beliefs[0].array[i];
-                    Stamp stamp = Stamp_make(&e->stamp, &imp->stamp);
-                    RuleTable_Apply(e->term, imp->term, e->truth, imp->truth, e->occurrenceTime == OCCURRENCE_ETERNAL ? OCCURRENCE_ETERNAL : e->occurrenceTime + imp->occurrenceTimeOffset, stamp, currentTime, priority, true);
+                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                    Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                    Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                    Substitution subs = Variable_Unify(&precondition, &e->term);
+                    if(subs.success)
+                    {
+                        Implication updated_imp = *imp;
+                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
+                        Event predicted = Inference_BeliefDeduction(e, &updated_imp);
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority);
+                    }
                 }
             }
         }

@@ -169,7 +169,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     if(!revised) //input and derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
-        priority *= (1.0 / log(1.0 + log2(complexity)));
+        priority *= 1.0 / log2(1.0 + complexity);
     }
     if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
     {
@@ -218,7 +218,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                                         .sourceConceptTerm = subject };
                     //now extract operation id
                     int opi = 0;
-                    if(Narsese_copulaEquals(subject.atoms[0], '+'))
+                    if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
                     {
                         Term potential_op = Term_ExtractSubterm(&subject, 2);
                         if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
@@ -258,7 +258,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             if(Memory_FindConceptByTerm(&event->term, &concept_i))
             {
                 Concept *c = concepts.items[concept_i].address;
-                if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+                if(event->occurrenceTime == currentTime)
                 {
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
                 }

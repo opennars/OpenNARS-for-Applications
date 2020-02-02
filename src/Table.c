@@ -2,6 +2,7 @@
 
 Implication *Table_Add(Table *table, Implication *imp)
 {
+    assert(imp->sourceConcept != NULL, "Attempted to add an implication without source concept!");
     double impTruthExp = Truth_Expectation(imp->truth);
     for(int i=0; i<TABLE_SIZE; i++)
     {
@@ -83,5 +84,4 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     {
         return Table_Add(table, imp);
     }
-    return NULL;
 }

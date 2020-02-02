@@ -99,13 +99,15 @@ void PriorityQueue_Test()
 void Table_Test()
 {
     puts(">>Table test start");
+    Concept sourceConcept = {0};
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
         Implication imp = { .term = Narsese_AtomicTerm("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                             .stamp = { .evidentalBase = { i } },
-                            .occurrenceTimeOffset = 10 };
+                            .occurrenceTimeOffset = 10,
+                            .sourceConcept = &sourceConcept };
         Table_Add(&table, &imp);
     }
     for(int i=0; i<TABLE_SIZE; i++)
@@ -115,7 +117,8 @@ void Table_Test()
     Implication imp = { .term = Narsese_AtomicTerm("test"), 
                         .truth = { .frequency = 1.0, .confidence = 0.9},
                         .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
-                        .occurrenceTimeOffset = 10 };
+                        .occurrenceTimeOffset = 10,
+                        .sourceConcept = &sourceConcept };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");
     Table_AddAndRevise(&table, &imp);
     assert(table.array[0].truth.confidence>0.5, "The revision result should be more confident than the table element that existed.");
@@ -1352,11 +1355,11 @@ int main(int argc, char *argv[])
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);
     srand(1337);
-    YAN_INIT();
     if(argc == 2) //pong
     {
         if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
         {
+            YAN_INIT();
             NAL_GenerateRuleTable();
             exit(0);
         }
@@ -1382,6 +1385,7 @@ int main(int argc, char *argv[])
         }
     }
     OUTPUT = 0;
+    YAN_INIT();
     //Term_Test();
     Stamp_Test();
     FIFO_Test();

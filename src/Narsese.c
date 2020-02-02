@@ -63,6 +63,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
+            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
+            {
+                narsese_replaced[j] = ';';
+                i+=2; j++;
+            }
+            else
             if(narsese[i] == '/' && narsese[i+1] == '1') // /1 becomes /
             {
                 narsese_replaced[j] = '/';
@@ -110,6 +116,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes $
                 {
                     narsese_replaced[j] = '$';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] != '>') // -- becomes !
+                {
+                    narsese_replaced[j] = '!';
                     i+=3; j++;
                 }
                 else
@@ -187,7 +199,7 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+";
+static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+!";
 char** Narsese_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
@@ -495,6 +507,8 @@ void Narsese_INIT()
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
+    Narsese_AtomicTermIndex("$1");
+    Narsese_AtomicTermIndex("$2");
 }
 
 bool Narsese_copulaEquals(Atom atom, char name)
@@ -545,4 +559,11 @@ Term Narsese_GetPreconditionWithoutOp(Term *precondition)
         }
     }
     return *precondition;
+}
+
+bool Narsese_IsNonCopulaAtom(Atom atom)
+{
+    return (Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
+           (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
+           (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9');
 }

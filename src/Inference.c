@@ -59,7 +59,9 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     return (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
                            .stamp = conclusionStamp, 
-                           .occurrenceTimeOffset = occurrenceTimeOffsetAvg };
+                           .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
+                           .sourceConcept = a->sourceConcept,
+                           .sourceConceptTerm = a->sourceConceptTerm };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
@@ -115,8 +117,8 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
         double confIncoming = Inference_EventUpdate(incoming_spike, currentTime).truth.confidence;
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
-        //if there is, apply choice, keeping the stronger one:
-        if(overlap)
+        //if there is or the terms aren't equal, apply choice, keeping the stronger one:
+        if(overlap || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {
@@ -148,10 +150,13 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
+    assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
-    return (Event) { .term = compound->term, 
+    Term postcondition = Term_ExtractSubterm(&compound->term, 2);
+    return (Event) { .term = postcondition, 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime + compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
+                                                                    OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset };
 }

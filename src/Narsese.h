@@ -60,6 +60,7 @@ int Narsese_getOperationID(Term *atom);
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
-
+//Get whether something is a true atom, not a copula
+bool Narsese_IsNonCopulaAtom(Atom atom);
 
 #endif
