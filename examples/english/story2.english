@@ -9,4 +9,4 @@ who took out the pizza?
 the burger is in the oven
 100
 the person takes out what?
-//Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1006 Truth: frequency=0.982343, confidence=0.079573
+//expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1006 Truth: frequency=0.982343, confidence=0.079573
