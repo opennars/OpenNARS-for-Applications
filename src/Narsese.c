@@ -345,12 +345,9 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
     destTv->frequency = YAN_DEFAULT_FREQUENCY;
     destTv->confidence = YAN_DEFAULT_CONFIDENCE;
     int len = strlen(narsese);
+    assert(len > 1, "Parsing error: Narsese string too short!");
     assert(len < NARSESE_LEN_MAX, "Parsing error: Narsese string too long!"); //< because of '0' terminated strings
     memcpy(narseseInplace, narsese, len);
-    if(len == 0)
-    {
-        return;
-    }
     //tv is present if last letter is '}'
     if(len>=2 && narseseInplace[len-1] == '}')
     {
