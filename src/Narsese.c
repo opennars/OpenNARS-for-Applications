@@ -339,7 +339,8 @@ Term Narsese_Term(char *narsese)
     return ret;
 }
 
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv) {
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv)
+{
     char narseseInplace[NARSESE_LEN_MAX] = {0};
     destTv->frequency = YAN_DEFAULT_FREQUENCY;
     destTv->confidence = YAN_DEFAULT_CONFIDENCE;
