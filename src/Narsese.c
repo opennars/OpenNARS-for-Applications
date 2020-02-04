@@ -353,13 +353,7 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
     {
         //scan for opening '{'
         int openingIdx;
-        for(openingIdx=len-2; openingIdx>=0; openingIdx--)
-        {
-            if(narseseInplace[openingIdx] == '{') //truth value opener found?
-            {
-                break; //found
-            }
-        }
+        for(openingIdx=len-2; openingIdx>=0 && narseseInplace[openingIdx] != '{'; openingIdx--);
         assert(narseseInplace[openingIdx] == '{', "Parsing error: Truth value opener not found!");
         double conf, freq;
         sscanf(&narseseInplace[openingIdx], "{%lf %lf}", &freq, &conf);
