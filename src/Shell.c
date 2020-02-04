@@ -130,7 +130,7 @@ INIT:
                 Truth tv;
                 char punctuation;
                 bool isEvent;
-                Narsese_TermPunctEventTv(line, &term, &punctuation, &isEvent, &tv);
+                Narsese_Sentence(line, &term, &punctuation, &isEvent, &tv);
 #if STAGE==2
                 //apply reduction rules to term:
                 term = RuleTable_Reduce(term, false);
