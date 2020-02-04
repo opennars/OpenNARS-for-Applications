@@ -153,11 +153,9 @@ INIT:
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
-                        //now match the concept term, for now just supporting one question var
-                        //TODO use unification approach as the generated RuleTable already uses.
                         for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
                         {
-                            if(term.atoms[j] != 0 && c->term.atoms[j] != term.atoms[j] && Narsese_atomNames[term.atoms[j]-1][0] != '?')
+                            if(!Variable_Unify(&term, &c->term).success)
                             {
                                 goto Continue;
                             }
