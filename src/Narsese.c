@@ -1,4 +1,5 @@
 #include "Narsese.h"
+#include "YAN.h"
 
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
@@ -336,6 +337,65 @@ Term Narsese_Term(char *narsese)
     int nt = 0; for(;tokens_prefix[nt] != NULL; nt++){}
     buildBinaryTree(&ret, tokens_prefix, 0, 1, nt);
     return ret;
+}
+
+void Narsese_TermPunctEventTv(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv) {
+    char narseseInplace[NARSESE_LEN_MAX];
+
+    destTv->frequency = YAN_DEFAULT_FREQUENCY;
+    destTv->confidence = YAN_DEFAULT_CONFIDENCE;
+
+    memcpy(narseseInplace, narsese, NARSESE_LEN_MAX);
+    
+    int len = strlen(narseseInplace);
+    if (len == 0)
+    {
+        return;
+    }
+
+    len = MIN(len, NARSESE_LEN_MAX); //avoid
+
+    //tv is present if last letter is '}'
+    if (narseseInplace[len-1] == '}')
+    {
+        //scan for opening '{'
+        int openingIdx;
+        for(openingIdx=len-2;openingIdx>=0;openingIdx--)
+        {
+            if (narseseInplace[openingIdx] == '{')
+            {
+                break; //found
+            }
+        }
+        if (narseseInplace[openingIdx] == '{')
+        { //was found?
+            //parse TV
+            double conf, freq;
+            sscanf(&narseseInplace[openingIdx], "{%lf %lf}", &freq, &conf);
+            destTv->frequency = freq;
+            destTv->confidence = conf;
+
+            narseseInplace[openingIdx] = 0; //cut it away for further parsing of term
+        }
+        else {
+            //parsing error
+            //we don't have a way to signal parsing error, so we pretend that nothing happened
+        }
+    }
+    
+    //parse event marker, punctuation, and finally the term:
+    int str_len = strlen(narseseInplace);
+    *isEvent = str_len >= 3 && narseseInplace[str_len-1] == ':' && narseseInplace[str_len-2] == '|' && narseseInplace[str_len-3] == ':'; 
+    int punctuation_offset = *isEvent ? 5 : 1;
+    *punctuation = narseseInplace[str_len-punctuation_offset];
+    assert(*punctuation == '!' || *punctuation == '?' || *punctuation == '.', "Punctuation has to be belief . goal ! or question ?");
+    narseseInplace[str_len-punctuation_offset] = 0; //we will only parse the term before it
+    
+    if (*punctuation != '.' && *punctuation != '?' && *punctuation != '!') {
+        *punctuation = '.'; //no way to signal parsing error, force it to be a judgement as a fallback
+    }
+
+    *destTerm = Narsese_Term(narseseInplace);
 }
 
 Term Narsese_Sequence(Term *a, Term *b)
