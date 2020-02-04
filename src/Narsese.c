@@ -344,14 +344,14 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
     destTv->frequency = YAN_DEFAULT_FREQUENCY;
     destTv->confidence = YAN_DEFAULT_CONFIDENCE;
     int len = strlen(narsese);
-    assert(len < NARSESE_LEN_MAX, "Narsese string too long!"); //< because of '0' terminated strings
+    assert(len < NARSESE_LEN_MAX, "Parsing error: Narsese string too long!"); //< because of '0' terminated strings
     memcpy(narseseInplace, narsese, len);
     if(len == 0)
     {
         return;
     }
     //tv is present if last letter is '}'
-    if(narseseInplace[len-1] == '}')
+    if(len>=2 && narseseInplace[len-1] == '}')
     {
         //scan for opening '{'
         int openingIdx;
@@ -367,19 +367,16 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
         sscanf(&narseseInplace[openingIdx], "{%lf %lf}", &freq, &conf);
         destTv->frequency = freq;
         destTv->confidence = conf;
-        narseseInplace[openingIdx] = 0; //cut it away for further parsing of term
+        assert(narseseInplace[openingIdx-1] == ' ', "Parsing error: Space before truth value required!");
+        narseseInplace[openingIdx-1] = 0; //cut it away for further parsing of term
     }
     //parse event marker, punctuation, and finally the term:
     int str_len = strlen(narseseInplace);
     *isEvent = str_len >= 3 && narseseInplace[str_len-1] == ':' && narseseInplace[str_len-2] == '|' && narseseInplace[str_len-3] == ':'; 
     int punctuation_offset = *isEvent ? 5 : 1;
     *punctuation = narseseInplace[str_len-punctuation_offset];
-    assert(*punctuation == '!' || *punctuation == '?' || *punctuation == '.', "Punctuation has to be belief . goal ! or question ?");
+    assert(*punctuation == '!' || *punctuation == '?' || *punctuation == '.', "Parsing error: Punctuation has to be belief . goal ! or question ?");
     narseseInplace[str_len-punctuation_offset] = 0; //we will only parse the term before it
-    if(*punctuation != '.' && *punctuation != '?' && *punctuation != '!')
-    {
-        *punctuation = '.'; //no way to signal parsing error, force it to be a judgement as a fallback
-    }
     *destTerm = Narsese_Term(narseseInplace);
 }
 
