@@ -142,6 +142,7 @@ INIT:
                 long answerOccurrenceTime = OCCURRENCE_ETERNAL;
                 if(punctuation == '?')
                 {
+                    bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
                     fputs("Input: ", stdout);
                     Narsese_PrintTerm(&term);
                     fputs("?", stdout);
@@ -150,13 +151,31 @@ INIT:
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
-                        for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+                        //compare the predicate of implication, or if it's not an implication, the term
+                        Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
+                        if(!Variable_Unify(&toCompare, &c->term).success)
                         {
-                            if(!Variable_Unify(&term, &c->term).success)
+                            goto Continue;
+                        }
+                        if(isImplication)
+                        {
+                            Term subject = Term_ExtractSubterm(&term, 1);
+                            int op_k = Narsese_getOperationID(&subject);
+                            for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                             {
-                                goto Continue;
+                                Implication *imp = &c->precondition_beliefs[op_k].array[j];
+                                if(!Variable_Unify(&term, imp).success)
+                                {
+                                    continue;
+                                }
+                                if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                                {
+                                    best_truth = imp->truth;
+                                    best_term = imp->term;
+                                }
                             }
                         }
+                        else
                         if(isEvent)
                         {
                             if(c->belief_spike.type != EVENT_TYPE_DELETED)

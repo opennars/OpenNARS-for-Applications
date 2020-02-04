@@ -57,7 +57,7 @@ bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Narsese_getOperationID(Term *atom);
+int Narsese_getOperationID(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation
