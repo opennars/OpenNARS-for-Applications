@@ -157,5 +157,4 @@ while True:
                     predicate_modifiers = "_predicate_"
                     object_modifiers = "_object_"
             else:
-                print("unknown word type: " + word)
                 sys.stdout.flush()
