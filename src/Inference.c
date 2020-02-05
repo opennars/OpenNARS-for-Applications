@@ -1,7 +1,8 @@
 #include "Inference.h"
 #include "Term.h"
 
-#define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp);
+#define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp); \
+                              long creationTime = MAX(a->creationTime, b->creationTime);
 #define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
                 long conclusionTime = b->occurrenceTime; \
                 Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
@@ -21,7 +22,8 @@ Event Inference_BeliefIntersection(Event *a, Event *b)
                      .type = EVENT_TYPE_BELIEF,
                      .truth = Truth_Intersection(truthA, truthB),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = conclusionTime };
+                     .occurrenceTime = conclusionTime,
+                     .creationTime = creationTime };
 }
 
 //{Event a., Event b., after(b,a)} |- Implication <a =/> b>.
@@ -36,7 +38,8 @@ Implication Inference_BeliefInduction(Event *a, Event *b)
     return (Implication) { .term = term, 
                            .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
                            .stamp = conclusionStamp,
-                           .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime };
+                           .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
+                           .creationTime = creationTime };
 }
 
 //{Event a., Event a.} |- Event a.
@@ -48,7 +51,8 @@ static Event Inference_EventRevision(Event *a, Event *b)
                      .type = a->type,
                      .truth = Truth_Revision(truthA, truthB),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = conclusionTime };
+                     .occurrenceTime = conclusionTime,
+                     .creationTime = creationTime };
 }
 
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
@@ -61,7 +65,8 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .stamp = conclusionStamp, 
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
-                           .sourceConceptTerm = a->sourceConceptTerm };
+                           .sourceConceptTerm = a->sourceConceptTerm,
+                           .creationTime = creationTime };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
@@ -75,7 +80,8 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset };
+                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .creationTime = creationTime };
 }
 
 //{Event a.} |- Event a. updated to currentTime
@@ -97,7 +103,8 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = compound->occurrenceTime };
+                     .occurrenceTime = compound->occurrenceTime,
+                     .creationTime = creationTime };
 }
 
 //{Event a!, Event a!} |- Event a! (revision and choice)
@@ -158,5 +165,6 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
-                                                                    OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset };
+                                                                    OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset,
+                     .creationTime = creationTime };
 }

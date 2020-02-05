@@ -24,6 +24,7 @@ typedef struct {
     long occurrenceTime;
     bool processed;
     bool propagated;
+    long creationTime;
 } Event;
 
 //Methods//

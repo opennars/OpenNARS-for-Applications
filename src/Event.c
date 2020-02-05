@@ -15,7 +15,8 @@ Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
-                     .occurrenceTime = currentTime };
+                     .occurrenceTime = currentTime,
+                     .creationTime = currentTime };
 }
 
 void Event_INIT()

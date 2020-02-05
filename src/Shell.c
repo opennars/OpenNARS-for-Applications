@@ -140,6 +140,7 @@ INIT:
                 Truth best_truth_projected = {0};
                 Term best_term = {0};
                 long answerOccurrenceTime = OCCURRENCE_ETERNAL;
+                long answerCreationTime = 0;
                 if(punctuation == '?')
                 {
                     bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
@@ -164,7 +165,7 @@ INIT:
                             for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                             {
                                 Implication *imp = &c->precondition_beliefs[op_k].array[j];
-                                if(!Variable_Unify(&term, imp).success)
+                                if(!Variable_Unify(&term, &imp->term).success)
                                 {
                                     continue;
                                 }
@@ -172,6 +173,7 @@ INIT:
                                 {
                                     best_truth = imp->truth;
                                     best_term = imp->term;
+                                    answerCreationTime = imp->creationTime;
                                 }
                             }
                         }
@@ -187,18 +189,17 @@ INIT:
                                     best_truth = c->belief_spike.truth;
                                     best_term = c->belief_spike.term;
                                     answerOccurrenceTime = c->belief_spike.occurrenceTime;
+                                    answerCreationTime = c->belief_spike.creationTime;
                                 }
                             }
                         }
                         else
                         {
-                            if(c->belief.type != EVENT_TYPE_DELETED)
+                            if(c->belief.type != EVENT_TYPE_DELETED && Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
                             {
-                                if(Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
-                                {
-                                    best_truth = c->belief.truth;
-                                    best_term = c->belief.term;
-                                }
+                                best_truth = c->belief.truth;
+                                best_term = c->belief.term;
+                                answerCreationTime = c->belief.creationTime;
                             }
                         }
                         Continue:;
@@ -211,8 +212,14 @@ INIT:
                     else
                     {
                         Narsese_PrintTerm(&best_term);
-                        fputs(". ", stdout);
-                        printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", answerOccurrenceTime);
+                        if(answerOccurrenceTime == OCCURRENCE_ETERNAL)
+                        {
+                            printf(". creationTime=%ld ", answerCreationTime);
+                        }
+                        else
+                        {
+                            printf(". :|: occurrenceTime=%ld creationTime=%ld ", answerOccurrenceTime, answerCreationTime);
+                        }
                         Truth_Print(&best_truth);
                     }
                     fflush(stdout);

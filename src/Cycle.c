@@ -196,6 +196,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
                     {
+                        revised_precon->creationTime = currentTime; //for evaluation
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptTerm = A->term;
                         /*IN_OUTPUT( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
@@ -230,7 +231,7 @@ void pushEvents(long currentTime)
     for(int i=0; i<eventsSelected; i++)
     {
         Memory_addEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
-    }   
+    }
 }
 
 void Cycle_Perform(long currentTime)
