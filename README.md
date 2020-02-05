@@ -32,6 +32,8 @@ cd YAN
 python3 evaluation.py
 ```
 
+For the current output, see [Evaluation results](https://github.com/patham9/YAN/wiki/Evaluation-(Test-results,-metrics))
+
 **How to run an example file:**
 
 Narsese:
