@@ -38,6 +38,8 @@ char* Narsese_Expand(char *narsese);
 char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Narsese_Term(char *narsese);
+//Parses a Narsese string to a compound term and a tv, tv is default if not present
+void Narsese_TermPunctEventTv(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b);
 //Parses an atomic term string to a term

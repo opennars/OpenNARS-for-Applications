@@ -126,14 +126,11 @@ INIT:
             }
             else
             {
-                //parse event marker, punctuation, and finally the term:
-                int str_len = strlen(line);
-                bool isEvent = str_len >= 3 && line[str_len-1] == ':' && line[str_len-2] == '|' && line[str_len-3] == ':'; 
-                int punctuation_offset = isEvent ? 5 : 1;
-                char punctuation = line[str_len-punctuation_offset];
-                assert(punctuation == '!' || punctuation == '?' || punctuation == '.', "Punctuation has to be belief . goal ! or question ?");
-                line[str_len-punctuation_offset] = 0; //we will only parse the term before it
-                Term term = Narsese_Term(line);
+                Term term;
+                Truth tv;
+                char punctuation;
+                bool isEvent;
+                Narsese_TermPunctEventTv(line, &term, &punctuation, &isEvent, &tv);
 #if STAGE==2
                 //apply reduction rules to term:
                 term = RuleTable_Reduce(term, false);
@@ -210,7 +207,7 @@ INIT:
                     }
                     else
                     {
-                        YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, !isEvent);
+                        YAN_AddInput(term, EVENT_TYPE_BELIEF, tv, !isEvent);
                     }
                 }
             }
