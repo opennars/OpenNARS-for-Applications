@@ -107,6 +107,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
-                .occurrenceTime = conclusionOccurrence };
+                .occurrenceTime = conclusionOccurrence ,
+                .creationTime = currentTime };
     Memory_addEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
 }

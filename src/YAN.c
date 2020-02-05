@@ -27,7 +27,7 @@ Event YAN_AddInput(Term term, char type, Truth truth, bool eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
     }
-    Memory_addInputEvent(&ev, 0);
+    Memory_addInputEvent(&ev, currentTime);
     YAN_Cycles(1);
     return ev;
 }

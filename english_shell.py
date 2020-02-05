@@ -64,7 +64,6 @@ def isWordType(word, wordtype):
         return wordtype == wordtypes[word]
 
 def receive_thread(a):
-    global cnt
     while True:
         newstr = proc.stdout.readline().strip()
         if newstr != "":
