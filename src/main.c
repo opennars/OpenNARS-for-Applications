@@ -282,7 +282,7 @@ void YAN_Follow_Test()
             break;
         YAN_Cycles(10);
     }
-    printf("<<YAN Follow test successful goods=%d bads=%d\n",goods,bads);
+    printf("<<YAN Follow test successful goods=%d bads=%d ratio=%f\n",goods,bads, (((float) goods)/(((float) goods) + ((float) bads))));
 }
 
 bool YAN_Pong_Left_executed = false;

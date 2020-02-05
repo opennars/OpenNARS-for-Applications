@@ -11,7 +11,7 @@
 <{pedestrian1} --> (on /1 street)>. :|:
 //I want to be informative
 <{SELF} --> [informative]>! :|:
-//expected: ^say executed with args ({SELF} * (pedestrian" * jaywalking))
+//expected: ^say executed with args ({SELF} * (pedestrian * jaywalking))
 100
 //car1 crashed now!
 <{car1} --> [crashed]>. :|:
