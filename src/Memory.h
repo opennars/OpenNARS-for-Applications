@@ -31,7 +31,8 @@ extern bool PRINT_INPUT;
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
 #define MIN_CONFIDENCE 0.01
 #define MIN_PRIORITY 0.0001
-#define EVENT_DURABILITY 0.9
+#define EVENT_DURABILITY 1.0 //generally applied event decay, makes sure processing doesn't "lack behind recent events" even when slowly processed
+#define EVENT_DURABILITY_ON_USAGE 0.9 //applied when event is returned after usage
 #define CONCEPT_DURABILITY 0.99
 
 //Data structure//

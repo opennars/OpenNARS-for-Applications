@@ -165,7 +165,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
-        priority *= EVENT_DURABILITY;
+        priority *= EVENT_DURABILITY_ON_USAGE;
     }
     else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation

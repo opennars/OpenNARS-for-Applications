@@ -376,6 +376,11 @@ void Cycle_Perform(long currentTime)
         }
     }
 #endif
+    //Apply event forgetting:
+    for(int i=0; i<cycling_events.itemsAmount; i++)
+    {
+        cycling_events.items[i].priority *= EVENT_DURABILITY;
+    }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {
