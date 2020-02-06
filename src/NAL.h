@@ -75,6 +75,7 @@ R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
 R2( (A --> M), (B --> M), |-, ((A --> $1) ==> (B --> $1)), Truth_Induction )
 R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
 R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction )
+R2( (((A * B) | (B * C)) --> R), ((A * C) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction )
 //NAL5/7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
 
 #endif

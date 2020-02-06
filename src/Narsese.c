@@ -543,6 +543,7 @@ void Narsese_INIT()
     SELF = Narsese_AtomicTermIndex("SELF");
     Narsese_AtomicTermIndex("$1");
     Narsese_AtomicTermIndex("$2");
+    Narsese_AtomicTermIndex("#1");
 }
 
 bool Narsese_copulaEquals(Atom atom, char name)
