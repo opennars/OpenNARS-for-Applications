@@ -1,5 +1,5 @@
-#ifndef PARAMETERS_H
-#define PARAMETERS_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 /*-------------------------*/
 /* Anticipation parameters */
