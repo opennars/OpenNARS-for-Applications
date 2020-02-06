@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include "Truth.h"
 #include "Config.h"
+#include <string.h>
 
 //Data structure//
 //--------------//

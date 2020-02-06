@@ -17,14 +17,7 @@ void Term_Print(Term *term)
 
 bool Term_Equal(Term *a, Term *b)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-    {
-        if(a->atoms[i] != b->atoms[i])
-        {
-            return false;
-        }
-    }
-    return true;
+    return memcmp(a, b, sizeof(Term)) == 0;
 }
 
 static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
