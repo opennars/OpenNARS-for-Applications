@@ -57,7 +57,6 @@ INIT:
     YAN_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
     YAN_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
     YAN_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
-    OUTPUT = 0;
     for(;;)
     {
         char line[1024] = {0};

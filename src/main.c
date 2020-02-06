@@ -223,7 +223,6 @@ void YAN_Follow_Test_Right()
 }
 void YAN_Follow_Test()
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Follow test start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Follow_Test_Left); 
@@ -302,7 +301,6 @@ void YAN_Pong_Stop()
 }
 void YAN_Pong2(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
@@ -447,7 +445,6 @@ void YAN_Pong2(long iterations)
 //int t=0;
 void YAN_Pong(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
@@ -590,7 +587,6 @@ void YAN_Multistep_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>YAN Multistep test start");
-    OUTPUT = 0;
     YAN_INIT();
     YAN_AddOperation(Narsese_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
     YAN_AddOperation(Narsese_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
@@ -623,7 +619,6 @@ void YAN_Multistep2_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>YAN Multistep2 test start");
-    OUTPUT = 0;
     YAN_INIT();
     YAN_AddOperation(Narsese_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
     YAN_AddOperation(Narsese_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
@@ -711,7 +706,6 @@ void YAN_TestChamber()
 {
     TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
     ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
-    OUTPUT = 0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     YAN_AddOperation(Narsese_AtomicTerm("^goto_s0"), YAN_TestChamber_goto_s0); 
@@ -1177,7 +1171,6 @@ void op_3()
 }
 void Sequence_Test()
 {
-    OUTPUT=0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
@@ -1287,7 +1280,6 @@ void YAN_Alien_Shoot()
 }
 void YAN_Alien(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Alien1 start");
     YAN_AddOperation(Narsese_Term("^left"), YAN_Alien_Left); 
@@ -1401,7 +1393,6 @@ int main(int argc, char *argv[])
             Shell_Start();
         }
     }
-    OUTPUT = 0;
     YAN_INIT();
     //Term_Test();
     Stamp_Test();

@@ -8,11 +8,10 @@
 //References//
 //-----------//
 #include "Cycle.h"
+#include "Config.h"
 
 //Parameters//
 //----------//
-#define YAN_DEFAULT_FREQUENCY  1.0
-#define YAN_DEFAULT_CONFIDENCE 0.9
 #define YAN_DEFAULT_TRUTH ((Truth) { .frequency = YAN_DEFAULT_FREQUENCY, .confidence = YAN_DEFAULT_CONFIDENCE })
 extern long currentTime;
 

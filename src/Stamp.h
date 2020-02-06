@@ -10,15 +10,12 @@
 //----------//
 #include <stdbool.h>
 #include <stdio.h>
-
-//Parameters//
-//----------//
-#define STAMP_SIZE 20
-#define STAMP_FREE 0
+#include "Config.h"
 
 //Data structure//
 //--------------//
-//Stamp as implemented by all NARS implementations 
+//Stamp as implemented by all NARS implementations
+#define STAMP_FREE 0
 typedef struct {
     //EvidentalBase of stamp
     long evidentalBase[STAMP_SIZE];

@@ -12,14 +12,7 @@
 #include <string.h>
 #include "Term.h"
 #include "Globals.h"
-
-//Parameters//
-//----------//
-#define TERMS_MAX 255
-#define ATOMIC_TERM_LEN_MAX 30
-#define NARSESE_LEN_MAX 1000
-#define OPERATIONS_MAX 10
-
+#include "Config.h"
 
 //Data structure//
 //--------------//

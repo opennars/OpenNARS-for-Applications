@@ -12,10 +12,7 @@
 #include "Inference.h"
 #include "Globals.h"
 #include "Narsese.h"
-
-//Parameters//
-//----------//
-#define FIFO_SIZE 20
+#include "Config.h"
 
 //Data structure//
 //--------------//

@@ -11,10 +11,7 @@
 #include "Inference.h"
 #include "Globals.h"
 #include <string.h>
-
-//Parameters//
-//----------//
-#define TABLE_SIZE 20
+#include "Config.h"
 
 //Data structure//
 //--------------//
