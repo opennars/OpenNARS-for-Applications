@@ -22,7 +22,6 @@
 
 //Data structure//
 //--------------//
-#define Atom char
 typedef struct
 {
     Atom atoms[COMPOUND_TERM_SIZE_MAX];

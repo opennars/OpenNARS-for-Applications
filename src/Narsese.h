@@ -17,8 +17,8 @@
 //Data structure//
 //--------------//
 //Atomic term names:
-Atom Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
-Atom Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 
 //Methods//

@@ -60,8 +60,10 @@
 #define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
-//Maximum amount of atomic terms
+//Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define TERMS_MAX 256
+//The type of an atom
+#define Atom char
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 30
 //Maximum size of Narsese input in terms of characters
