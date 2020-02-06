@@ -3,16 +3,20 @@ import subprocess
 import glob
 
 #YAN C tests & metrics, only print fully output on failure, always print the metrics:
-def ctests():
-    result = run(['./YAN'], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+def ctests(Example, Args, DoneAfterMetric):
+    result = run(Args.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)
     if result.returncode != 0:
         print(result.stdout, result.stderr)
         exit(result.returncode)
-    for line in result.stdout.split("\n"):
-        if "goods=" in line:
-            print(line)
-    print("\nSystem tests successful!")
-ctests()
+    for line in reversed(result.stdout.split("\n")):
+        if "ratio=" in line:
+            if DoneAfterMetric:
+                print(Example + " metrics: " + line)
+                return
+            else:
+                print(line)
+    print("\n" + Example + " successful!")
+ctests("System tests", "./YAN", False)
 
 #Q&A metrics for the Narsese and English files:
 TimeCntGlobal = 0
@@ -93,3 +97,10 @@ if TimeCntGlobal > 0:
     print("Average answer time = " + str(TimeSumGlobal/TimeCntGlobal))
     print("Average answer confidence = " + str(ConfidenceSumGlobal/ConfidenceCntGlobal))
     print("Combined loss = " + str((1.0 - ConfidenceSumGlobal/ConfidenceCntGlobal) * (TimeSumGlobal/TimeCntGlobal)))
+
+#Print procedure learning metrics:
+print("\nNow running procedure learning examples for 10K iterations each:")
+ctests("Pong", "./YAN pong 10000", True)
+ctests("Pong2", "./YAN pong2 10000", True)
+ctests("Alien", "./YAN alien 10000", True)
+print("\nProcedure learning metrics done");

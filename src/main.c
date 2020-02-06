@@ -300,7 +300,7 @@ void YAN_Pong_Stop()
 {
     YAN_Pong_Stop_executed = true;
 }
-void YAN_Pong2()
+void YAN_Pong2(long iterations)
 {
     OUTPUT = 0;
     YAN_INIT();
@@ -323,6 +323,10 @@ void YAN_Pong2()
     while(1)
     {
         t++;
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
@@ -435,13 +439,13 @@ void YAN_Pong2()
             batVX = 0;
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
         nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         //YAN_Cycles(10);
     }
 }
 //int t=0;
-void YAN_Pong()
+void YAN_Pong(long iterations)
 {
     OUTPUT = 0;
     YAN_INIT();
@@ -459,9 +463,13 @@ void YAN_Pong()
     int vY = 1;
     int hits = 0;
     int misses = 0;
+    int t=0;
     while(1)
     {
-        //t++;
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
@@ -560,7 +568,7 @@ void YAN_Pong()
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
         nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         //YAN_Cycles(10);
     }
@@ -1277,7 +1285,7 @@ void YAN_Alien_Shoot()
     puts("YAN invoked shoot");
     YAN_Alien_Shoot_executed = true;
 }
-void YAN_Alien()
+void YAN_Alien(long iterations)
 {
     OUTPUT = 0;
     YAN_INIT();
@@ -1293,6 +1301,10 @@ void YAN_Alien()
     int t=0;
     while(1)
     {
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         if(t++%10000 == 0)
         {
             getchar();
@@ -1334,7 +1346,7 @@ void YAN_Alien()
             YAN_Alien_Right_executed = false;
             defenderX = MIN(1.0, defenderX+0.1);
         }
-        printf("shots=%d hits=%d percenta=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
+        printf("shots=%d hits=%d ratio=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
         //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
         //YAN_Cycles(10);
     }
@@ -1352,10 +1364,15 @@ void RuleTable_Test()
 
 int main(int argc, char *argv[])
 {
+    long iterations = -1;
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);
     srand(1337);
-    if(argc == 2) //pong
+    if(argc == 3)
+    {
+        iterations = atol(argv[2]);
+    }
+    if(argc >= 2)
     {
         if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
         {
@@ -1365,11 +1382,11 @@ int main(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"pong"))
         {
-            YAN_Pong();
+            YAN_Pong(iterations);
         }
         if(!strcmp(argv[1],"pong2"))
         {
-            YAN_Pong2();
+            YAN_Pong2(iterations);
         }
         if(!strcmp(argv[1],"testchamber"))
         {
@@ -1377,7 +1394,7 @@ int main(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"alien"))
         {
-            YAN_Alien();
+            YAN_Alien(iterations);
         }
         if(!strcmp(argv[1],"shell"))
         {
