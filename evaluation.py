@@ -83,12 +83,12 @@ def Test(Example, outputString):
 
 #Evaluate tests & performance on all Narsese examples:
 for filename in glob.glob("./examples/nal/*.nal"):
-    Test(filename, subprocess.getoutput("cat " + filename + " | ./YAN shell"))
+    Test(filename, subprocess.getoutput("./YAN shell < " + filename))
 print("\nNarsese integration tests successful!")
 
 #Evaluate tests & performance English examples:
 for filename in glob.glob('./examples/english/*.english'):
-    Test(filename, subprocess.getoutput("cat " + filename + " | python2 english_shell.py"))
+    Test(filename, subprocess.getoutput("python2 english_shell.py < " + filename))
 print("\nEnglish integration tests successful!")
 
 #Print global metrics:

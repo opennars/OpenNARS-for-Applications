@@ -39,13 +39,13 @@ For the current output, see [Evaluation results](https://github.com/patham9/YAN/
 Narsese:
 
 ```
-cat ./examples/nal/example1.nal | ./YAN shell
+./YAN shell < ./examples/nal/example1.nal
 ```
 
 English: (will be updated to Python3 at some point as well...)
 
 ```
-cat ./examples/english/story1.english | python2 english_shell.py
+python2 english_shell.py < ./examples/english/story1.english
 ```
 
 **Other**
