@@ -109,7 +109,7 @@ INIT:
                 sscanf(line, "%u", &steps);
                 printf("performing %u inference steps:\n", steps); fflush(stdout);
                 YAN_Cycles(steps);
-                puts("done with %u additional inference steps.\n", steps); fflush(stdout);
+                printf("done with %u additional inference steps.\n", steps); fflush(stdout);
             }
             else
             {
