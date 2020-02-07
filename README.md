@@ -14,6 +14,11 @@ cd YAN
 ./build.sh
 ```
 
+***How to set the amount of threads the system should run with:***
+```
+export OMP_NUM_THREADS=8
+```
+
 ***How to run the interactive Narsese shell:***
 
 ```

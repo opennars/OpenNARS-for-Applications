@@ -69,7 +69,8 @@ Concept* Memory_Conceptualize(Term *term)
         return NULL;
     }
     //Term_HASH_TYPE hash = Term_Hash(term);
-    if(!Memory_FindConceptByTerm(term, /*hash,*/ NULL))
+    int concept_i;
+    if(!Memory_FindConceptByTerm(term, /*hash,*/ &concept_i))
     {
         Concept *addedConcept = NULL;
         //try to add it, and if successful add to voting structure
@@ -83,6 +84,10 @@ Concept* Memory_Conceptualize(Term *term)
             concept_id++;
             return addedConcept;
         }
+    }
+    else
+    {
+        return concepts.items[concept_i].address;
     }
     return NULL;
 }
@@ -210,11 +215,9 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 //get predicate and add the subject to precondition table as an implication
                 Term subject = Term_ExtractSubterm(&event->term, 1);
                 Term predicate = Term_ExtractSubterm(&event->term, 2);
-                Memory_Conceptualize(&predicate);
-                int target_concept_i;
-                if(Memory_FindConceptByTerm(&predicate, &target_concept_i)) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
+                Concept *target_concept = Memory_Conceptualize(&predicate);
+                if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
                 {
-                    Concept *target_concept = concepts.items[target_concept_i].address;
                     Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
                                         .sourceConceptTerm = subject,
@@ -238,33 +241,23 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     {
                         imp.sourceConceptTerm = subject;
                     }
-                    Memory_Conceptualize(&imp.sourceConceptTerm);
-                    int source_concept_i;
-                    if(Memory_FindConceptByTerm(&imp.sourceConceptTerm , &source_concept_i))
+                    Concept *sourceConcept = Memory_Conceptualize(&imp.sourceConceptTerm);
+                    if(sourceConcept != NULL)
                     {
-                        imp.sourceConcept = concepts.items[source_concept_i].address;
+                        imp.sourceConcept = sourceConcept;
+                        imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
+                        Term_OverrideSubterm(&imp.term, 1, &subject);
+                        Term_OverrideSubterm(&imp.term, 2, &predicate);
+                        Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                        Memory_printAddedEvent(event, priority, input, derived, revised);
                     }
-                    else
-                    {
-                        return; //failed to add, there was no space for the implication's postcondition concept
-                    }
-                    imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
-                    Term_OverrideSubterm(&imp.term, 1, &subject);
-                    Term_OverrideSubterm(&imp.term, 2, &predicate);
-                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
-                    Memory_printAddedEvent(event, priority, input, derived, revised);
                 }
                 return; //at this point, either the implication has been added or there was no space for its precondition concept
             }
-            Concept *c_conceptualized =  Memory_Conceptualize(&event->term);
-            if(c_conceptualized != NULL)
+            Concept *c = Memory_Conceptualize(&event->term);
+            if(c != NULL)
             {
-                c_conceptualized->priority = MAX(c_conceptualized->priority, priority);
-            }
-            int concept_i;
-            if(Memory_FindConceptByTerm(&event->term, &concept_i))
-            {
-                Concept *c = concepts.items[concept_i].address;
+                c->priority = MAX(c->priority, priority);
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL) 
                 {
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);

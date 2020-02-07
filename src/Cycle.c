@@ -320,6 +320,7 @@ void Cycle_Perform(long currentTime)
         Truth dummy_truth = {0};
         RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+        #pragma omp parallel for
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
