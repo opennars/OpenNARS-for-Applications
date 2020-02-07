@@ -26,7 +26,7 @@ Truth Truth_Revision(Truth v1, Truth v2)
     double w2 = Truth_c2w(c2);
     double w = w1 + w2;
     return (Truth) { .frequency = MIN(1.0, (w1 * f1 + w2 * f2) / w), 
-                     .confidence = MIN(1.0-TRUTH_EPSILON, MAX(MAX(Truth_w2c(w), c1), c2)) };
+                     .confidence = MIN(MAX_CONFIDENCE, MAX(MAX(Truth_w2c(w), c1), c2)) };
 }
 
 Truth Truth_Deduction(Truth v1, Truth v2)

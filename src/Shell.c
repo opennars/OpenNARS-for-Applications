@@ -57,7 +57,6 @@ INIT:
     YAN_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
     YAN_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
     YAN_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
-    OUTPUT = 0;
     for(;;)
     {
         char line[1024] = {0};
@@ -130,7 +129,7 @@ INIT:
                 Truth tv;
                 char punctuation;
                 bool isEvent;
-                Narsese_TermPunctEventTv(line, &term, &punctuation, &isEvent, &tv);
+                Narsese_Sentence(line, &term, &punctuation, &isEvent, &tv);
 #if STAGE==2
                 //apply reduction rules to term:
                 term = RuleTable_Reduce(term, false);
@@ -140,8 +139,10 @@ INIT:
                 Truth best_truth_projected = {0};
                 Term best_term = {0};
                 long answerOccurrenceTime = OCCURRENCE_ETERNAL;
+                long answerCreationTime = 0;
                 if(punctuation == '?')
                 {
+                    bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
                     fputs("Input: ", stdout);
                     Narsese_PrintTerm(&term);
                     fputs("?", stdout);
@@ -150,13 +151,32 @@ INIT:
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
-                        for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+                        //compare the predicate of implication, or if it's not an implication, the term
+                        Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
+                        if(!Variable_Unify(&toCompare, &c->term).success)
                         {
-                            if(!Variable_Unify(&term, &c->term).success)
+                            goto Continue;
+                        }
+                        if(isImplication)
+                        {
+                            Term subject = Term_ExtractSubterm(&term, 1);
+                            int op_k = Narsese_getOperationID(&subject);
+                            for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                             {
-                                goto Continue;
+                                Implication *imp = &c->precondition_beliefs[op_k].array[j];
+                                if(!Variable_Unify(&term, &imp->term).success)
+                                {
+                                    continue;
+                                }
+                                if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                                {
+                                    best_truth = imp->truth;
+                                    best_term = imp->term;
+                                    answerCreationTime = imp->creationTime;
+                                }
                             }
                         }
+                        else
                         if(isEvent)
                         {
                             if(c->belief_spike.type != EVENT_TYPE_DELETED)
@@ -168,18 +188,17 @@ INIT:
                                     best_truth = c->belief_spike.truth;
                                     best_term = c->belief_spike.term;
                                     answerOccurrenceTime = c->belief_spike.occurrenceTime;
+                                    answerCreationTime = c->belief_spike.creationTime;
                                 }
                             }
                         }
                         else
                         {
-                            if(c->belief.type != EVENT_TYPE_DELETED)
+                            if(c->belief.type != EVENT_TYPE_DELETED && Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
                             {
-                                if(Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
-                                {
-                                    best_truth = c->belief.truth;
-                                    best_term = c->belief.term;
-                                }
+                                best_truth = c->belief.truth;
+                                best_term = c->belief.term;
+                                answerCreationTime = c->belief.creationTime;
                             }
                         }
                         Continue:;
@@ -192,8 +211,14 @@ INIT:
                     else
                     {
                         Narsese_PrintTerm(&best_term);
-                        fputs(". ", stdout);
-                        printf(answerOccurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", answerOccurrenceTime);
+                        if(answerOccurrenceTime == OCCURRENCE_ETERNAL)
+                        {
+                            printf(". creationTime=%ld ", answerCreationTime);
+                        }
+                        else
+                        {
+                            printf(". :|: occurrenceTime=%ld creationTime=%ld ", answerOccurrenceTime, answerCreationTime);
+                        }
                         Truth_Print(&best_truth);
                     }
                     fflush(stdout);

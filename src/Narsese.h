@@ -12,20 +12,13 @@
 #include <string.h>
 #include "Term.h"
 #include "Globals.h"
-
-//Parameters//
-//----------//
-#define TERMS_MAX 255
-#define ATOMIC_TERM_LEN_MAX 30
-#define NARSESE_LEN_MAX 1000
-#define OPERATIONS_MAX 10
-
+#include "Config.h"
 
 //Data structure//
 //--------------//
 //Atomic term names:
-Atom Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
-Atom Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 
 //Methods//
@@ -39,7 +32,7 @@ char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Narsese_Term(char *narsese);
 //Parses a Narsese string to a compound term and a tv, tv is default if not present
-void Narsese_TermPunctEventTv(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv);
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b);
 //Parses an atomic term string to a term
@@ -57,7 +50,7 @@ bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Narsese_getOperationID(Term *atom);
+int Narsese_getOperationID(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation

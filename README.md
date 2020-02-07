@@ -20,11 +20,19 @@ cd YAN
 ./YAN shell
 ```
 
-***How to run the tests and then receive instructions how to run the current example programs:***
+***How to run the C tests and then receive instructions how to run the current example programs:***
 
 ```
 ./YAN
 ```
+
+***How to run all C tests, and all Narsese and English examples as integration tests, and collect metrics across all examples:***
+
+```
+python3 evaluation.py
+```
+
+For the current output, see [Evaluation results](https://github.com/patham9/YAN/wiki/Evaluation-Results-(Tests,-metrics))
 
 **How to run an example file:**
 
@@ -34,10 +42,10 @@ Narsese:
 cat ./examples/nal/example1.nal | ./YAN shell
 ```
 
-English:
+English: (will be updated to Python3 at some point as well...)
 
 ```
-cat ./examples/english/story1.english | python english_shell.py
+cat ./examples/english/story1.english | python2 english_shell.py
 ```
 
 **Other**

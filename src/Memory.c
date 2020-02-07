@@ -165,7 +165,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
-        priority *= EVENT_DURABILITY;
+        priority *= EVENT_DURABILITY_ON_USAGE;
     }
     else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
@@ -217,7 +217,8 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     Concept *target_concept = concepts.items[target_concept_i].address;
                     Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
-                                        .sourceConceptTerm = subject };
+                                        .sourceConceptTerm = subject,
+                                        .creationTime = currentTime };
                     //now extract operation id
                     int opi = 0;
                     if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
@@ -267,9 +268,11 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL) 
                 {
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
+                    c->belief_spike.creationTime = currentTime; //for metrics
                 }
                 bool revision_happened = false;
                 c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
+                c->belief.creationTime = currentTime; //for metrics
                 if(revision_happened)
                 {
                     Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);

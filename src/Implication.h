@@ -24,6 +24,7 @@ typedef struct {
     void *sourceConcept;
     Term sourceConceptTerm; //to check whether it's still the same
     //Term_HASH_TYPE sourceConceptTermHash;
+    long creationTime;
 } Implication;
 
 //Methods//

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Globals.h"
+#include "Config.h"
 
 //Data structure//
 //--------------//
@@ -23,13 +24,10 @@ typedef struct {
 
 //Parameters//
 //----------//
-#define TRUTH_EVIDENTAL_HORIZON_INITIAL 1.0
 extern double TRUTH_EVIDENTAL_HORIZON;
-#define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 extern double TRUTH_PROJECTION_DECAY;
-#define TRUTH_EPSILON 0.01
 #define OCCURRENCE_ETERNAL -1
-#define STRUCTURAL_TRUTH (Truth) { .frequency = 1.0, .confidence = 0.9 }
+#define STRUCTURAL_TRUTH (Truth) { .frequency = 1.0, .confidence = RELIANCE }
 
 //Methods//
 //-------//

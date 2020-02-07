@@ -80,82 +80,78 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 static Decision Cycle_PropagateSpikes(long currentTime)
 {
     Decision decision = {0};
-    //process spikes
-    if(PROPAGATE_GOAL_SPIKES)
+    //pass goal spikes on to the next
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
-        //pass goal spikes on to the next
-        for(int i=0; i<concepts.itemsAmount; i++)
+        Concept *postc = concepts.items[i].address;
+        if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
         {
-            Concept *postc = concepts.items[i].address;
-            if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
+            for(int opi=0; opi<OPERATIONS_MAX; opi++)
             {
-                for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
                 {
-                    for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
+                    Implication *imp = &postc->precondition_beliefs[opi].array[j];
+                    if(!Memory_ImplicationValid(imp))
                     {
-                        Implication *imp = &postc->precondition_beliefs[opi].array[j];
-                        if(!Memory_ImplicationValid(imp))
+                        Table_Remove(&postc->precondition_beliefs[opi], j);
+                        j--;
+                        continue;
+                    }
+                    //no var, just send to source concept
+                    if(!Variable_hasVariable(&imp->term, true, true, true))
+                    {
+                        Concept *pre = imp->sourceConcept;
+                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                         {
-                            Table_Remove(&postc->precondition_beliefs[opi], j);
-                            j--;
-                            continue;
+                            pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
                         }
-                        //no var, just send to source concept
-                        if(!Variable_hasVariable(&imp->term, true, true, true))
+                    }
+                    //find proper source to send to!
+                    else
+                    {
+                        assert(Narsese_copulaEquals(imp->term.atoms[0], '$'), "Not an implication!");
+                        Term right_side = Term_ExtractSubterm(&imp->term, 2);
+                        Substitution subs = Variable_Unify(&right_side, &postc->goal_spike.term);
+                        assert(subs.success, "Implication and spike needs to be compatible!");
+                        Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
+                        Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
+                        Term left_side_substituted = Variable_ApplySubstitute(left_side, subs);
+                        for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
                         {
-                            Concept *pre = imp->sourceConcept;
-                            if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                            Concept *pre = concepts.items[concept_i].address;
+                            if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                             {
-                                pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
-                            }
-                        }
-                        //find proper source to send to!
-                        else
-                        {
-                            assert(Narsese_copulaEquals(imp->term.atoms[0], '$'), "Not an implication!");
-                            Term right_side = Term_ExtractSubterm(&imp->term, 2);
-                            Substitution subs = Variable_Unify(&right_side, &postc->goal_spike.term);
-                            assert(subs.success, "Implication and spike needs to be compatible!");
-                            Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
-                            Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
-                            Term left_side_substituted = Variable_ApplySubstitute(left_side, subs);
-                            for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
-                            {
-                                Concept *pre = concepts.items[concept_i].address;
-                                if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                                if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
                                 {
-                                    if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
-                                    {
-                                        pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
-                                        pre->incoming_goal_spike.term = left_side_substituted; //set term as well, it's a specific goal now as it got specialized!
-                                    }
+                                    pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                                    pre->incoming_goal_spike.term = left_side_substituted; //set term as well, it's a specific goal now as it got specialized!
                                 }
                             }
                         }
                     }
                 }
             }
-            postc->goal_spike.propagated = true;
         }
-        //process incoming goal spikes, invoking potential operations
-        for(int i=0; i<concepts.itemsAmount; i++)
+        postc->goal_spike.propagated = true;
+    }
+    //process incoming goal spikes, invoking potential operations
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
         {
-            Concept *c = concepts.items[i].address;
-            if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
+            c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
+            Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
+            if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
             {
-                c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
-                Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
-                if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
+                Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
+                if(decision.execute)
                 {
-                    Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
-                    if(decision.execute)
-                    {
-                        return decision;
-                    }
+                    return decision;
                 }
             }
-            c->incoming_goal_spike = (Event) {0};
         }
+        c->incoming_goal_spike = (Event) {0};
     }
     return decision;
 }
@@ -192,13 +188,14 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     }
                     int operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
-                    IN_OUTPUT( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
+                    IN_DEBUG( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
                     {
+                        revised_precon->creationTime = currentTime; //for evaluation
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptTerm = A->term;
-                        /*IN_OUTPUT( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
+                        /*IN_DEBUG( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
                         Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
                     }
                 }
@@ -230,7 +227,7 @@ void pushEvents(long currentTime)
     for(int i=0; i<eventsSelected; i++)
     {
         Memory_addEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
-    }   
+    }
 }
 
 void Cycle_Perform(long currentTime)
@@ -375,6 +372,11 @@ void Cycle_Perform(long currentTime)
         }
     }
 #endif
+    //Apply event forgetting:
+    for(int i=0; i<cycling_events.itemsAmount; i++)
+    {
+        cycling_events.items[i].priority *= EVENT_DURABILITY;
+    }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {

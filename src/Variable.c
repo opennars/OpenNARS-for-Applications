@@ -44,7 +44,11 @@ Substitution Variable_Unify(Term *general, Term *specific)
             if(Variable_isVariable(general_atom))
             {
                 Term subtree = Term_ExtractSubterm(specific, i);
-                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree))
+                if(Variable_isQueryVariable(general_atom) && Variable_isVariable(subtree.atoms[0])) //not valid to substitute a variable for a question var
+                {
+                    return substitution;
+                }
+                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
                 {
                     return substitution;
                 }
@@ -52,7 +56,7 @@ Substitution Variable_Unify(Term *general, Term *specific)
             }
             else
             {
-                if(general_atom != specific->atoms[i])
+                if(general_atom != specific->atoms[i]) //inequality since specific atom differs
                 {
                     return substitution;
                 }

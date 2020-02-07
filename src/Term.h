@@ -5,12 +5,6 @@
 //   Term        //
 ///////////////////
 
-//Parameters//
-//----------//
-#define Atom char
-#define MAX_SEQUENCE_LEN 3
-#define COMPOUND_TERM_SIZE_MAX 64
-
 //Description//
 //-----------//
 //An Term is an blocksay of a specific number of 128 bit blocks
@@ -23,6 +17,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "Truth.h"
+#include "Config.h"
+#include <string.h>
 
 //Data structure//
 //--------------//

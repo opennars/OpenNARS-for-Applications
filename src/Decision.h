@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "Memory.h"
 #include "YAN.h"
+#include "Config.h"
 
 ////////////////////
 //  YAN Decision  //
@@ -15,15 +16,9 @@
 
 //Parameters//
 //----------//
-//truth expectation needed for executions
-#define DECISION_THRESHOLD_INITIAL 0.501
 extern double DECISION_THRESHOLD;
-#define ANTICIPATION_THRESHOLD_INITIAL 0.501
 extern double ANTICIPATION_THRESHOLD;
-#define ANTICIPATION_CONFIDENCE_INITIAL 0.005
 extern double ANTICIPATION_CONFIDENCE;
-//motor babbling chance
-#define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 extern double MOTOR_BABBLING_CHANCE;
 
 //Data structure//

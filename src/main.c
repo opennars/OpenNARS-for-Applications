@@ -223,7 +223,6 @@ void YAN_Follow_Test_Right()
 }
 void YAN_Follow_Test()
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Follow test start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Follow_Test_Left); 
@@ -282,7 +281,7 @@ void YAN_Follow_Test()
             break;
         YAN_Cycles(10);
     }
-    printf("<<YAN Follow test successful goods=%d bads=%d\n",goods,bads);
+    printf("<<YAN Follow test successful goods=%d bads=%d ratio=%f\n",goods,bads, (((float) goods)/(((float) goods) + ((float) bads))));
 }
 
 bool YAN_Pong_Left_executed = false;
@@ -300,9 +299,8 @@ void YAN_Pong_Stop()
 {
     YAN_Pong_Stop_executed = true;
 }
-void YAN_Pong2()
+void YAN_Pong2(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
@@ -323,6 +321,10 @@ void YAN_Pong2()
     while(1)
     {
         t++;
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
@@ -435,15 +437,17 @@ void YAN_Pong2()
             batVX = 0;
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
-        nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
+        if(iterations == -1)
+        {
+            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        }
         //YAN_Cycles(10);
     }
 }
 //int t=0;
-void YAN_Pong()
+void YAN_Pong(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Pong start");
     YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
@@ -459,9 +463,13 @@ void YAN_Pong()
     int vY = 1;
     int hits = 0;
     int misses = 0;
+    int t=0;
     while(1)
     {
-        //t++;
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
@@ -560,8 +568,11 @@ void YAN_Pong()
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) misses)), currentTime);
-        nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
+        if(iterations == -1)
+        {
+            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+        }
         //YAN_Cycles(10);
     }
 }
@@ -582,7 +593,6 @@ void YAN_Multistep_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>YAN Multistep test start");
-    OUTPUT = 0;
     YAN_INIT();
     YAN_AddOperation(Narsese_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
     YAN_AddOperation(Narsese_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
@@ -615,7 +625,6 @@ void YAN_Multistep2_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>YAN Multistep2 test start");
-    OUTPUT = 0;
     YAN_INIT();
     YAN_AddOperation(Narsese_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
     YAN_AddOperation(Narsese_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
@@ -703,7 +712,6 @@ void YAN_TestChamber()
 {
     TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
     ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
-    OUTPUT = 0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     YAN_AddOperation(Narsese_AtomicTerm("^goto_s0"), YAN_TestChamber_goto_s0); 
@@ -1169,7 +1177,6 @@ void op_3()
 }
 void Sequence_Test()
 {
-    OUTPUT=0;
     YAN_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
@@ -1277,9 +1284,8 @@ void YAN_Alien_Shoot()
     puts("YAN invoked shoot");
     YAN_Alien_Shoot_executed = true;
 }
-void YAN_Alien()
+void YAN_Alien(long iterations)
 {
-    OUTPUT = 0;
     YAN_INIT();
     puts(">>YAN Alien1 start");
     YAN_AddOperation(Narsese_Term("^left"), YAN_Alien_Left); 
@@ -1293,6 +1299,10 @@ void YAN_Alien()
     int t=0;
     while(1)
     {
+        if(iterations != -1 && t++ > iterations)
+        {
+            exit(0);
+        }
         if(t++%10000 == 0)
         {
             getchar();
@@ -1334,7 +1344,7 @@ void YAN_Alien()
             YAN_Alien_Right_executed = false;
             defenderX = MIN(1.0, defenderX+0.1);
         }
-        printf("shots=%d hits=%d percenta=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
+        printf("shots=%d hits=%d ratio=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
         //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
         //YAN_Cycles(10);
     }
@@ -1352,10 +1362,15 @@ void RuleTable_Test()
 
 int main(int argc, char *argv[])
 {
+    long iterations = -1;
     //printf("sizeof concept %d\n",(int) sizeof(Concept));
     //exit(0);
     srand(1337);
-    if(argc == 2) //pong
+    if(argc == 3)
+    {
+        iterations = atol(argv[2]);
+    }
+    if(argc >= 2)
     {
         if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
         {
@@ -1365,11 +1380,11 @@ int main(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"pong"))
         {
-            YAN_Pong();
+            YAN_Pong(iterations);
         }
         if(!strcmp(argv[1],"pong2"))
         {
-            YAN_Pong2();
+            YAN_Pong2(iterations);
         }
         if(!strcmp(argv[1],"testchamber"))
         {
@@ -1377,14 +1392,13 @@ int main(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"alien"))
         {
-            YAN_Alien();
+            YAN_Alien(iterations);
         }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
         }
     }
-    OUTPUT = 0;
     YAN_INIT();
     //Term_Test();
     Stamp_Test();
