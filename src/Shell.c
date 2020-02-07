@@ -103,25 +103,13 @@ INIT:
                 PRINT_DERIVATIONS = true;
             }
             else
-            if(!strcmp(line,"1000"))
+            if(strspn(line, "0123456789"))
             {
-                puts("performing 1000 inference steps:"); fflush(stdout);
-                YAN_Cycles(1000);
-                puts("done with 1000 additional inference steps."); fflush(stdout);
-            }
-            else
-            if(!strcmp(line,"100"))
-            {
-                puts("performing 100 inference steps:"); fflush(stdout);
-                YAN_Cycles(100);
-                puts("done with 100 additional inference steps."); fflush(stdout);
-            }
-            else
-            if(!strcmp(line,"10"))
-            {
-                puts("performing 10 inference steps:"); fflush(stdout);
-                YAN_Cycles(10);
-                puts("done with 10 additional inference steps."); fflush(stdout);
+                unsigned int steps;
+                sscanf(line, "%u", &steps);
+                printf("performing %u inference steps:\n", steps); fflush(stdout);
+                YAN_Cycles(steps);
+                printf("done with %u additional inference steps.\n", steps); fflush(stdout);
             }
             else
             {
