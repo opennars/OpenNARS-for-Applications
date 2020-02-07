@@ -109,5 +109,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .stamp = stamp,
                 .occurrenceTime = conclusionOccurrence ,
                 .creationTime = currentTime };
-    Memory_addEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
+    #pragma omp critical
+    {
+        Memory_addEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
+    }
 }

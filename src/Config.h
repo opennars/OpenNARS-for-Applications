@@ -47,7 +47,7 @@
 //Maximum amount of concepts
 #define CONCEPTS_MAX 16384
 //Maximum amount of events attention buffer holds
-#define CYCLING_EVENTS_MAX 8192
+#define CYCLING_EVENTS_MAX 20
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
