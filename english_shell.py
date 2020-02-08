@@ -141,7 +141,8 @@ while True:
                     object = subject
                 if subject != "" and predicate != "" and object != "" and not (subject in questionwords and object in questionwords): #output Narsese relation if all pieces are together, with a special case for be/Inheritance
                     if lastpredicate == "be":
-                        output(("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation + " :|:").replace("_subject_", subject).replace("_object_", object))
+                        if subject_modifiers.replace("_subject_", subject) != object_modifiers.replace("_object_", object):
+                            output(("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation + " :|:").replace("_subject_", subject).replace("_object_", object))
                     else:
                         if object == subject:
                             output(("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate))

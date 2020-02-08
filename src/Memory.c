@@ -272,7 +272,8 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 }
             }
         }
-        if(Memory_addCyclingEvent(event, priority, currentTime) && !readded) //task gets replaced with revised one, more radical than OpenNARS!!
+        Memory_addCyclingEvent(event, priority, currentTime);
+        if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);
         }

@@ -266,7 +266,16 @@ void Cycle_Perform(long currentTime)
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
+                                Term precond = Narsese_GetPreconditionWithoutOp(&precondition->term);  //a or (&/,a,op)
+                                for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+                                {
+                                    if(Narsese_isOperator(precond.atoms[i]))
+                                    {
+                                        goto NoReinforce; //if there is an op in a, then a longer sequ has also, try different k
+                                    }
+                                }
                                 Cycle_ReinforceLink(precondition, &postcondition);
+                                NoReinforce:;
                             }
                         }
                     }
@@ -328,14 +337,12 @@ void Cycle_Perform(long currentTime)
             {
                 Event project_belief = c->belief_spike;
                 Event* belief = &c->belief;
-                if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED) //take event as belief if it's stronger
+                if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+                   abs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                 {
                     project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
                     project_belief.occurrenceTime = e->occurrenceTime;
-                    if(project_belief.truth.confidence > c->belief.truth.confidence)
-                    {
-                        belief = &project_belief;
-                    }
+                    belief = &project_belief;
                 }
                 if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                 {
@@ -366,7 +373,7 @@ void Cycle_Perform(long currentTime)
                         Implication updated_imp = *imp;
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
                         Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, 1.0);
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, 1);
                     }
                 }
             }

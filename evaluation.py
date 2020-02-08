@@ -39,9 +39,12 @@ def Test(Example, outputString):
             isAnswerCondition = line.startswith(expect_condition_answer)
             isExecutionCondition = line.startswith(expect_condition_execution)
             if isAnswerCondition:
-                TruthValue = line.split("Truth:")[1]
-                ConfidenceExpected = float(TruthValue.split("confidence=")[1])
-                ExpectedOutput = line.split(expect_condition_answer)[1].split("Truth:")[0]
+                ConfidenceExpected = 0
+                ExpectedOutput = line.split(expect_condition_answer)[1].strip() + " "
+                if "Truth:" in line:
+                    ExpectedOutput = ExpectedOutput.split("Truth:")[0]
+                    TruthValue = line.split("Truth:")[1]
+                    ConfidenceExpected = float(TruthValue.split("confidence=")[1])
                 FoundOutput = False
                 ConfidenceObtainedMax = 0
                 CreationTimeOfMax = 0

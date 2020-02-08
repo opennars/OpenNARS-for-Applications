@@ -40,6 +40,9 @@
 #define MIN_CONFIDENCE 0.01
 //Minimum priority to accept events
 #define MIN_PRIORITY 0.0001
+//Occurrence time distance in which case event belief is preferred over eternal 
+#define EVENT_BELIEF_DISTANCE 20 
+//TRUTH_PROJECTION_DECAY_INITIAL^EVENT_BELIEF_DISTANCE>=MIN_CONFIDENCE should be satisfied!
 
 /*------------------*/
 /* Space parameters */
