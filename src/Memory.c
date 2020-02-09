@@ -62,7 +62,7 @@ bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
     return false;
 }
 
-Concept* Memory_Conceptualize(Term *term)
+Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
     if(Narsese_isOperation(term)) //don't conceptualize operations
     {
@@ -74,13 +74,14 @@ Concept* Memory_Conceptualize(Term *term)
     {
         Concept *addedConcept = NULL;
         //try to add it, and if successful add to voting structure
-        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 0.0);
+        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 1);
         if(feedback.added)
         {
             addedConcept = feedback.addedItem.address;
             *addedConcept = (Concept) {0};
             Concept_SetTerm(addedConcept, *term);
             addedConcept->id = concept_id;
+            addedConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
             concept_id++;
             return addedConcept;
         }
@@ -215,7 +216,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 //get predicate and add the subject to precondition table as an implication
                 Term subject = Term_ExtractSubterm(&event->term, 1);
                 Term predicate = Term_ExtractSubterm(&event->term, 2);
-                Concept *target_concept = Memory_Conceptualize(&predicate);
+                Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
                 if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
                 {
                     Implication imp = { .truth = eternal_event.truth,
@@ -241,7 +242,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                     {
                         imp.sourceConceptTerm = subject;
                     }
-                    Concept *sourceConcept = Memory_Conceptualize(&imp.sourceConceptTerm);
+                    Concept *sourceConcept = Memory_Conceptualize(&imp.sourceConceptTerm, currentTime);
                     if(sourceConcept != NULL)
                     {
                         imp.sourceConcept = sourceConcept;
@@ -254,14 +255,19 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 }
                 return; //at this point, either the implication has been added or there was no space for its precondition concept
             }
-            Concept *c = Memory_Conceptualize(&event->term);
+            Concept *c = Memory_Conceptualize(&event->term, currentTime);
             if(c != NULL)
             {
                 c->priority = MAX(c->priority, priority);
-                if(event->occurrenceTime != OCCURRENCE_ETERNAL) 
+                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
                 {
                     c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
                     c->belief_spike.creationTime = currentTime; //for metrics
+                }
+                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
+                {
+                    c->predicted_belief = Inference_IncreasedActionPotential(&c->predicted_belief, event, currentTime, NULL);
+                    c->predicted_belief.creationTime = currentTime;
                 }
                 bool revision_happened = false;
                 c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
@@ -287,17 +293,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_addInputEvent(Event *event, long currentTime)
 {
-    Memory_addEvent(event, currentTime, Truth_Expectation(event->truth), true, false, false, false);
-}
-
-void Memory_addConcept(Concept *concept, long currentTime)
-{
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, Usage_usefulness(concept->usage, currentTime));
-    if(feedback.added)
-    {
-        Concept *toRecyle = feedback.addedItem.address;
-        *toRecyle = *concept;
-    }
+    Memory_addEvent(event, currentTime, 1, true, false, false, false);
 }
 
 void Memory_addOperation(int id, Operation op)

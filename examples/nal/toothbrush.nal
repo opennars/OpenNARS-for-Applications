@@ -1,3 +1,4 @@
+*volume=0
 <(&/,<(*,$1,plastic) --> made_of>,<(*,{SELF},$1) --> ^left>) =/> <$1 --> [heated]>>.
 <<$1 --> [heated]> =/> <$1 --> [melted]>>.
 <<$1 --> [melted]> =/> <$1 --> [pliable]>>.

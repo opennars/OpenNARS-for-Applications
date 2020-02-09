@@ -35,7 +35,7 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
 {
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
-    Memory_Conceptualize(&e->term);
+    Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
@@ -335,8 +335,19 @@ void Cycle_Perform(long currentTime)
             Concept *c = concepts.items[j].address;
             if(c->belief.type != EVENT_TYPE_DELETED)
             {
-                Event project_belief = c->belief_spike;
+                //use eternal belief as belief
                 Event* belief = &c->belief;
+                Event future_belief = c->predicted_belief;
+                //but if there is a predicted one in the event's window, use this one
+                if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
+                   abs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                {
+                    future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
+                    future_belief.occurrenceTime = e->occurrenceTime;
+                    belief = &future_belief;
+                }
+                //unless there is an actual belief which falls into the event's window
+                Event project_belief = c->belief_spike;
                 if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
                    abs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                 {
@@ -344,6 +355,7 @@ void Cycle_Perform(long currentTime)
                     project_belief.occurrenceTime = e->occurrenceTime;
                     belief = &project_belief;
                 }
+                //Check for overlap and apply inference rules
                 if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                 {
                     Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
@@ -373,7 +385,7 @@ void Cycle_Perform(long currentTime)
                         Implication updated_imp = *imp;
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
                         Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, 1);
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth));
                     }
                 }
             }
@@ -390,6 +402,7 @@ void Cycle_Perform(long currentTime)
     {
         Concept *c = concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
+        concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);

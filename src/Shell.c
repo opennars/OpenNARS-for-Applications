@@ -179,6 +179,18 @@ INIT:
                                     answerCreationTime = c->belief_spike.creationTime;
                                 }
                             }
+                            if(c->predicted_belief.type != EVENT_TYPE_DELETED)
+                            {
+                                Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
+                                if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
+                                {
+                                    best_truth_projected = potential_best_truth;
+                                    best_truth = c->predicted_belief.truth;
+                                    best_term = c->predicted_belief.term;
+                                    answerOccurrenceTime = c->predicted_belief.occurrenceTime;
+                                    answerCreationTime = c->predicted_belief.creationTime;
+                                }
+                            }
                         }
                         else
                         {

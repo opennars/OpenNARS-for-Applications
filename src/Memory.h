@@ -46,9 +46,7 @@ void Memory_INIT();
 //Find a concept
 bool Memory_FindConceptByTerm(Term *term, /*Term_HASH_TYPE term_hash,*/ int *returnIndex);
 //Create a new concept
-Concept* Memory_Conceptualize(Term *term);
-//Add an already existing concept to memory that was taken out from the concept priority queue
-void Memory_addConcept(Concept *concept, long currentTime);
+Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
 void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised);
 void Memory_addInputEvent(Event *event, long currentTime);

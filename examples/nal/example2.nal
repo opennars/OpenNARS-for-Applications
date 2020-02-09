@@ -1,3 +1,4 @@
+*volume=0
 //if a duck is seen, and pick is executed, I feel good
 <(<duck --> [seen]> &/ <({SELF} * duck) --> ^pick>) =/> ({SELF} --> [good])>.
 //if a wolf is seen, and go (run away) is executed, I feel good

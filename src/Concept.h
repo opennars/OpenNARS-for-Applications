@@ -21,6 +21,7 @@ typedef struct {
     //Term_HASH_TYPE term_hash;
     Event belief; //the highest confident eternal belief
     Event belief_spike;
+    Event predicted_belief;
     Event incoming_goal_spike;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX];

@@ -125,7 +125,7 @@ Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incom
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {

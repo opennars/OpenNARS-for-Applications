@@ -136,7 +136,7 @@ void Memory_Test()
     Memory_addInputEvent(&e, 0);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     int returnIndex;
-    Memory_Conceptualize(&e.term);
+    Memory_Conceptualize(&e.term, 1);
     int concept_i;
     assert(Memory_FindConceptByTerm(&e.term, /*Term_Hash(&e.term),*/ &concept_i), "Concept should have been created!");
     Concept *c = concepts.items[concept_i].address;
@@ -149,7 +149,7 @@ void Memory_Test()
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
     Memory_addInputEvent(&e2, 0);
-    Memory_Conceptualize(&e2.term);
+    Memory_Conceptualize(&e2.term, 1);
     assert(Memory_FindConceptByTerm(&e2.term, /*Term_Hash(&e2.term),*/ &concept_i), "Concept should have been created!");
     Concept *c2 = concepts.items[concept_i].address;
     Concept_Print(c2);
