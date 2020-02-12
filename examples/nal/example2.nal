@@ -1,8 +1,8 @@
 *volume=0
 //if a duck is seen, and pick is executed, I feel good
-<(<duck --> [seen]> &/ <({SELF} * duck) --> ^pick>) =/> ({SELF} --> [good])>.
+<(<duck --> [seen]> &/ <({SELF} * duck) --> ^pick>) =/> <{SELF} --> [good]>>.
 //if a wolf is seen, and go (run away) is executed, I feel good
-<(<wolf --> [seen]> &/ <({SELF} * away) --> ^go>) =/> ({SELF} --> [good])>.
+<(<wolf --> [seen]> &/ <({SELF} * away) --> ^go>) =/> <{SELF} --> [good]>>.
 //tim is a duck
 <{tim} --> duck>.
 //sam is a dog

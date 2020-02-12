@@ -13,9 +13,9 @@
 //--------------//
 typedef struct {
     //use_count, how often it was used in total
-    int useCount;
+    long useCount;
     //age, how many cycles ago it was last used
-    int lastUsed;
+    long lastUsed;
 } Usage;
 
 //Methods//

@@ -89,11 +89,11 @@ def Test(Example, outputString):
                         else:
                             break
     if AnswerRatioTest:
-        if QuestionsAnswered > 0:
+        if QuestionsTotal > 0:
             print("\nQ&A stress test results for test " + Example)
             print("Total questions = " + str(QuestionsTotal))
             print("Correctly answered ones = " + str(QuestionsAnswered))
-            print("Answer ratio = " + str(QuestionsTotal / QuestionsAnswered))
+            print("Answer ratio = " + str(QuestionsAnswered / QuestionsTotal))
     else:
         if TimeCnt > 0 and ConfidenceCnt > 0:
             print("\nQ&A metrics for test " + Example)

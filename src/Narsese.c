@@ -459,6 +459,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     int child2 = index*2+1;
     bool hasLeftChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
     bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], '@');
+    bool isNegation = Narsese_copulaEquals(atom, '!');
     bool isExtSet = Narsese_copulaEquals(atom, '"');
     bool isIntSet = Narsese_copulaEquals(atom, '\'');
     bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=');
@@ -479,6 +480,11 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     else
     {
         fputs(hasLeftChild ? "(" : "", stdout);
+        if(isNegation)
+        {
+            Narsese_PrintAtom(atom);
+            fputs(" ", stdout);
+        }
     }
     if(child1 < COMPOUND_TERM_SIZE_MAX)
     {
@@ -490,8 +496,11 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     }
     if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, '@'))
     {
-        Narsese_PrintAtom(atom);
-        fputs(hasLeftChild ? " " : "", stdout);
+        if(!isNegation)
+        {
+            Narsese_PrintAtom(atom);
+            fputs(hasLeftChild ? " " : "", stdout);
+        }
     }
     if(child2 < COMPOUND_TERM_SIZE_MAX)
     {

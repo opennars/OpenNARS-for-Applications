@@ -73,7 +73,7 @@
 <({shape3} * {shape7}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & rectangle) --> (leftOf /1 {shape7})>. :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape7})>. :|:
 
 //NEW EXAMPLE
 //shape6 is a rectangle
@@ -123,7 +123,7 @@
 <({shape13} * {shape12}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & trapezoid) --> (leftOf /1 {shape12})>. :|:
+//expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape12})>. :|:
 
 //NEW EXAMPLE
 //shape91 is a rectangle
@@ -199,7 +199,7 @@
 <({shape93} * {shape97}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & rectangle) --> (leftOf /1 {shape97})>. :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape97})>. :|:
 
 //NEW EXAMPLE
 //shape56 is a rectangle
@@ -249,7 +249,7 @@
 <({shape913} * {shape912}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & trapezoid) --> (leftOf /1 {shape912})>. :|:
+//expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape912})>. :|:
 
 //NEW EXAMPLE
 //form1 is a rectangle
@@ -325,7 +325,7 @@
 <({form3} * {form7}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & rectangle) --> (leftOf /1 {form7})>. :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form7})>. :|:
 
 //NEW EXAMPLE
 //form6 is a rectangle
@@ -375,7 +375,7 @@
 <({form13} * {form12}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & trapezoid) --> (leftOf /1 {form12})>. :|:
+//expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form12})>. :|:
 
 //NEW EXAMPLE
 //form91 is a rectangle
@@ -451,7 +451,7 @@
 <({form93} * {form97}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & rectangle) --> (leftOf /1 {form97})>. :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form97})>. :|:
 
 //NEW EXAMPLE
 //form56 is a rectangle
@@ -501,4 +501,4 @@
 <({form913} * {form912}) --> leftOf>. :|:
 51
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: <([filled] & trapezoid) --> (leftOf /1 {form912})>. :|:
+//expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form912})>. :|:

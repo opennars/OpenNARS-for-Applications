@@ -2,8 +2,8 @@
 
 double Usage_usefulness(Usage usage, long currentTime)
 {
-    double age = currentTime - usage.lastUsed;
-    double usefulnessToNormalize = ((double) usage.useCount) / (age + 1.0);
+    double recency = currentTime - usage.lastUsed;
+    double usefulnessToNormalize = ((double) usage.useCount) / (recency + 1.0);
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }
 
@@ -15,5 +15,5 @@ Usage Usage_use(Usage usage, long currentTime)
 
 void Usage_Print(Usage *usage)
 {
-    printf("Usage: useCount=%d lastUsed=%d\n", usage->useCount, usage->lastUsed);
+    printf("Usage: useCount=%ld lastUsed=%ld\n", usage->useCount, usage->lastUsed);
 }
