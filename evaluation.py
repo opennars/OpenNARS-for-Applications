@@ -88,6 +88,8 @@ def Test(Example, outputString):
                             print("Failure for " + line + " in "+ Example)
                             exit(0)
                         else:
+                            QuestionsAnswered += 1.0
+                            QuestionsAnsweredGlobal += 1.0
                             break
     if AnswerRatioTest:
         if QuestionsTotal > 0:
