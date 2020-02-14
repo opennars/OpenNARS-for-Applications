@@ -7,6 +7,7 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
+double conceptPriorityThreshold = 0.0;
 
 static void Memory_ResetEvents()
 {
@@ -33,6 +34,7 @@ static void Memory_ResetConcepts()
 int concept_id = 0;
 void Memory_INIT()
 {
+    conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();
     for(int i=0; i<OPERATIONS_MAX; i++)

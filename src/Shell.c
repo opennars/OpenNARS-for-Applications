@@ -62,6 +62,7 @@ INIT:
         char line[1024] = {0};
         if(fgets(line, 1024, stdin) == NULL)
         {
+            Stats_Print(currentTime);
             exit(0);
         }
         //trim string, for IRC etc. convenience
@@ -96,6 +97,16 @@ INIT:
             if(!strcmp(line,"*volume=0"))
             {
                 PRINT_DERIVATIONS = false;
+            }
+            else
+            if(!strcmp(line,"*stats"))
+            {
+                Stats_Print(currentTime);
+            }
+            else
+            if(!strcmp(line,"quit"))
+            {
+                exit(0);
             }
             else
             if(!strcmp(line,"*volume=100"))

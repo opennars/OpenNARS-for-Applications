@@ -321,19 +321,77 @@ void Cycle_Perform(long currentTime)
     }
     //Inferences
 #if STAGE==2
+    long countConceptsMatched = 0;
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
+        Term subterms_of_e[6] = {0}; //subterms up to level 2
+        for(int j=0; j<5; j++)
+        {
+            subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
+        }
         double priority = selectedEventsPriority[i];
         Term dummy_term = {0};
         Truth dummy_truth = {0};
         RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+        //Adjust dynamic firing threshold: (proportional "self"-control)
+        double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
+        long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
+        double set_point = BELIEF_CONCEPT_MATCH_TARGET;
+        double process_value = countConceptsMatchedAverage; 
+        double error = process_value - set_point;
+        double increment = error*CONCEPT_THRESHOLD_ADAPTATION;
+        conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
+        //printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold);
+        //Main inference loop:
         #pragma omp parallel for
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
-            if(c->belief.type != EVENT_TYPE_DELETED)
+            if(c->priority < conceptPriorityThresholdCurrent)
+            {
+                continue;
+            }
+            //first filter based on common term (semantic relationship)
+            bool has_common_term = false;
+            for(int k=0; k<5; k++)
+            {
+                Term current = Term_ExtractSubterm(&c->term, k+1);
+                for(int h=0; h<5; h++)
+                {
+                    if(current.atoms[0] != 0 && subterms_of_e[h].atoms[0] != 0)
+                    {
+                        if(Term_Equal(&current, &subterms_of_e[h]))
+                        {
+                            has_common_term = true;
+                            goto PROCEED;
+                        }
+                    }
+                }
+            }
+            PROCEED:;
+            //second  filter based on precondition implication (temporal relationship)
+            bool is_temporally_related = false;
+            for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
+            {
+                Implication imp = c->precondition_beliefs[0].array[k];
+                Term subject = Term_ExtractSubterm(&imp.term, 1);
+                if(Variable_Unify(&subject, &e->term).success)
+                {
+                    is_temporally_related = true;
+                    break;
+                }
+            }
+            if(has_common_term)
+            {
+                #pragma omp critical
+                {
+                    countConceptsMatched++;
+                    Stats_countConceptsMatchedTotal++;
+                }
+            }
+            if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
             {
                 //use eternal belief as belief
                 Event* belief = &c->belief;
@@ -371,7 +429,7 @@ void Cycle_Perform(long currentTime)
                     RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
                 }
             }
-            if(e->type == EVENT_TYPE_BELIEF)
+            if(is_temporally_related && e->type == EVENT_TYPE_BELIEF)
             {
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
@@ -389,6 +447,10 @@ void Cycle_Perform(long currentTime)
                     }
                 }
             }
+        }
+        if(countConceptsMatched > Stats_countConceptsMatchedMax)
+        {
+            Stats_countConceptsMatchedMax = countConceptsMatched;
         }
     }
 #endif

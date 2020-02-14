@@ -10,6 +10,7 @@
 //----------//
 #include "YAN.h"
 #include <ctype.h> 
+#include "Stats.h"
 
 //Methods//
 //-------//
