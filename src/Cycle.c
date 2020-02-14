@@ -335,10 +335,24 @@ void Cycle_Perform(long currentTime)
         Truth dummy_truth = {0};
         RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+        //Adjust dynamic firing threshold: (proportional "self"-control)
+        double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
+        long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
+        double set_point = BELIEF_CONCEPT_MATCH_TARGET;
+        double process_value = countConceptsMatchedAverage; 
+        double error = process_value - set_point;
+        double increment = error*CONCEPT_THRESHOLD_ADAPTATION;
+        conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
+        //printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold);
+        //Main inference loop:
         #pragma omp parallel for
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
+            if(c->priority < conceptPriorityThresholdCurrent)
+            {
+                continue;
+            }
             //first filter based on common term (semantic relationship)
             bool has_common_term = false;
             for(int k=0; k<5; k++)
@@ -374,11 +388,10 @@ void Cycle_Perform(long currentTime)
             }
             if(has_common_term)
             {
-                countConceptsMatched++;
-                Stats_countConceptsMatchedTotal++;
-                if(countConceptsMatched > Stats_countConceptsMatchedMax)
+                #pragma omp critical
                 {
-                    Stats_countConceptsMatchedMax = countConceptsMatched;
+                    countConceptsMatched++;
+                    Stats_countConceptsMatchedTotal++;
                 }
             }
             if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
@@ -437,6 +450,10 @@ void Cycle_Perform(long currentTime)
                     }
                 }
             }
+        }
+        if(countConceptsMatched > Stats_countConceptsMatchedMax)
+        {
+            Stats_countConceptsMatchedMax = countConceptsMatched;
         }
     }
 #endif

@@ -42,6 +42,10 @@
 #define MIN_PRIORITY 0.0001
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
+//Amount of belief concepts to select to be matched to the selected event
+#define BELIEF_CONCEPT_MATCH_TARGET 60
+//Adaptation speed of the concept priority threshold to meet the match target
+#define CONCEPT_THRESHOLD_ADAPTATION 0.000001
 
 /*------------------*/
 /* Space parameters */
