@@ -321,6 +321,7 @@ void Cycle_Perform(long currentTime)
     }
     //Inferences
 #if STAGE==2
+    long countConceptsMatched = 0;
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
@@ -349,12 +350,21 @@ void Cycle_Perform(long currentTime)
                         if(Term_Equal(&current, &subterms_of_e[h]))
                         {
                             has_common_term = true;
-                            goto HAS_COMMON_TERM;
+                            goto PROCEED;
                         }
                     }
                 }
             }
-            HAS_COMMON_TERM:
+            PROCEED:
+            if(has_common_term)
+            {
+                countConceptsMatched++;
+                Stats_countConceptsMatchedTotal++;
+                if(countConceptsMatched > Stats_countConceptsMatchedMax)
+                {
+                    Stats_countConceptsMatchedMax = countConceptsMatched;
+                }
+            }
             if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
             {
                 //use eternal belief as belief

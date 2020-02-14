@@ -14,6 +14,7 @@
 #include "Inference.h"
 #include "RuleTable.h"
 #include "Variable.h"
+#include "Stats.h"
 
 //Methods//
 //-------//
