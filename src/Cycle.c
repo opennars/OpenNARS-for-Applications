@@ -429,7 +429,7 @@ void Cycle_Perform(long currentTime)
                     RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
                 }
             }
-            if(is_temporally_related && e->type == EVENT_TYPE_BELIEF)
+            if(is_temporally_related)
             {
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
