@@ -339,6 +339,7 @@ void Cycle_Perform(long currentTime)
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
+            //first filter based on common term (semantic relationship)
             bool has_common_term = false;
             for(int k=0; k<5; k++)
             {
@@ -355,7 +356,22 @@ void Cycle_Perform(long currentTime)
                     }
                 }
             }
-            PROCEED:
+            PROCEED:;
+            //second  filter based on precondition implication (temporal relationship)
+            bool is_temporally_related = false;
+            if(is_temporally_related)
+            {
+                for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
+                {
+                    Implication imp = c->precondition_beliefs[0].array[k];
+                    Term subject = Term_ExtractSubterm(&imp.term, 1);
+                    if(Variable_Unify(&subject, &e->term).success)
+                    {
+                        is_temporally_related = true;
+                        break;
+                    }
+                }
+            }
             if(has_common_term)
             {
                 countConceptsMatched++;
@@ -403,7 +419,7 @@ void Cycle_Perform(long currentTime)
                     RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
                 }
             }
-            if(has_common_term && e->type == EVENT_TYPE_BELIEF)
+            if(is_temporally_related && e->type == EVENT_TYPE_BELIEF)
             {
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
