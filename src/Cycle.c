@@ -324,6 +324,11 @@ void Cycle_Perform(long currentTime)
     for(int i=0; i<eventsSelected; i++)
     {
         Event *e = &selectedEvents[i];
+        Term subterms_of_e[6] = {0}; //subterms up to level 2
+        for(int j=0; j<5; j++)
+        {
+            subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
+        }
         double priority = selectedEventsPriority[i];
         Term dummy_term = {0};
         Truth dummy_truth = {0};
@@ -333,7 +338,24 @@ void Cycle_Perform(long currentTime)
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
-            if(c->belief.type != EVENT_TYPE_DELETED)
+            bool has_common_term = false;
+            for(int k=0; k<5; k++)
+            {
+                Term current = Term_ExtractSubterm(&c->term, k+1);
+                for(int h=0; h<5; h++)
+                {
+                    if(current.atoms[0] != 0 && subterms_of_e[h].atoms[0] != 0)
+                    {
+                        if(Term_Equal(&current, &subterms_of_e[h]))
+                        {
+                            has_common_term = true;
+                            goto HAS_COMMON_TERM;
+                        }
+                    }
+                }
+            }
+            HAS_COMMON_TERM:
+            if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
             {
                 //use eternal belief as belief
                 Event* belief = &c->belief;
@@ -371,7 +393,7 @@ void Cycle_Perform(long currentTime)
                     RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
                 }
             }
-            if(e->type == EVENT_TYPE_BELIEF)
+            if(has_common_term && e->type == EVENT_TYPE_BELIEF)
             {
                 for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                 {
