@@ -79,6 +79,7 @@ def Test(Example, outputString):
                     ConfidenceSum += ConfidenceObtainedMax
                     ConfidenceCnt += 1.0
             if isExecutionCondition:
+                AnswerRatioTest = False
                 Message = line.split(expect_condition)[1]
                 for j in reversed(range(i)):
                     line_before = lines[j].strip()

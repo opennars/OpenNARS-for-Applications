@@ -373,17 +373,14 @@ void Cycle_Perform(long currentTime)
             PROCEED:;
             //second  filter based on precondition implication (temporal relationship)
             bool is_temporally_related = false;
-            if(is_temporally_related)
+            for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
             {
-                for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
+                Implication imp = c->precondition_beliefs[0].array[k];
+                Term subject = Term_ExtractSubterm(&imp.term, 1);
+                if(Variable_Unify(&subject, &e->term).success)
                 {
-                    Implication imp = c->precondition_beliefs[0].array[k];
-                    Term subject = Term_ExtractSubterm(&imp.term, 1);
-                    if(Variable_Unify(&subject, &e->term).success)
-                    {
-                        is_temporally_related = true;
-                        break;
-                    }
+                    is_temporally_related = true;
+                    break;
                 }
             }
             if(has_common_term)
