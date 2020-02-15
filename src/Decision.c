@@ -196,16 +196,17 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
 
 Decision Decision_Suggest(Event *goal, long currentTime)
 {
-    Decision decision = {0};
+    Decision babble_decision = {0};
     //try motor babbling with a certain chance
-    if(!decision.execute && rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
     {
-        decision = Decision_MotorBabbling();
+        babble_decision = Decision_MotorBabbling();
     }
     //try matching op if didn't motor babble
-    if(!decision.execute)
+    Decision decision_suggested = Decision_BestCandidate(goal, currentTime);
+    if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
     {
-        decision = Decision_BestCandidate(goal, currentTime);
+       return decision_suggested;
     }
-    return decision;
+    return babble_decision;
 }
