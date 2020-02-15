@@ -134,7 +134,7 @@ INIT:
                 term = RuleTable_Reduce(term, false);
 #endif
                 //answer questions:
-                Truth best_truth = {0};
+                Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
                 Truth best_truth_projected = {0};
                 Term best_term = {0};
                 long answerOccurrenceTime = OCCURRENCE_ETERNAL;
