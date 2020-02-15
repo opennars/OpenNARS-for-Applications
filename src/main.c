@@ -8,6 +8,7 @@
 #include "YAN.h"
 #include "NAL.h"
 #include "Shell.h"
+#include "Stack.h"
 
 void FIFO_Test()
 {
@@ -135,28 +136,18 @@ void Memory_Test()
                                1337);
     Memory_addInputEvent(&e, 0);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
-    int returnIndex;
     Memory_Conceptualize(&e.term, 1);
-    int concept_i;
-    assert(Memory_FindConceptByTerm(&e.term, /*Term_Hash(&e.term),*/ &concept_i), "Concept should have been created!");
-    Concept *c = concepts.items[concept_i].address;
-    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
-    assert(c == concepts.items[returnIndex].address, "e should match to c!");
-    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
-    assert(c == concepts.items[returnIndex].address, "e should match to c!");
+    Concept *c1 = Memory_FindConceptByTerm(&e.term);
+    assert(c1 != NULL, "Concept should have been created!");
     Event e2 = Event_InputEvent(Narsese_AtomicTerm("b"), 
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
     Memory_addInputEvent(&e2, 0);
     Memory_Conceptualize(&e2.term, 1);
-    assert(Memory_FindConceptByTerm(&e2.term, /*Term_Hash(&e2.term),*/ &concept_i), "Concept should have been created!");
-    Concept *c2 = concepts.items[concept_i].address;
+    Concept *c2 = Memory_FindConceptByTerm(&e2.term);
+    assert(c2 != NULL, "Concept should have been created!");
     Concept_Print(c2);
-    assert(Memory_FindConceptByTerm(&e2.term, /*e2.term_hash,*/ &returnIndex), "Concept should be found!");
-    assert(c2 == concepts.items[returnIndex].address, "e2 should closest-match to c2!");
-    assert(Memory_FindConceptByTerm(&e.term, /*e.term_hash,*/ &returnIndex), "Concept should be found!");
-    assert(c == concepts.items[returnIndex].address, "e should closest-match to c!");
     puts("<<Memory test successful");
 }
 
@@ -1357,7 +1348,79 @@ void RuleTable_Test()
     YAN_AddInput(Narsese_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, true);
     YAN_AddInput(Narsese_Term("<animal --> being>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, true);
     YAN_Cycles(1);
-    puts(">>RuleTable Test successul");
+    puts(">>RuleTable test successul");
+}
+
+void Stack_Test()
+{
+    puts(">>Stack test start");
+    Stack stack = {0};
+    Concept c1 = {0};
+    Concept c2 = {0};
+    VMItem item1 = { .value = &c1 };
+    VMItem item2 = { .value = &c2 };
+    Stack_Push(&stack, &item1);
+    assert(stack.stackpointer == 1, "Stackpointer wasn't incremented");
+    assert(stack.items[0]->value == &c1, "Item should point to c1");
+    assert(!Stack_IsEmpty(&stack), "Stack should not be empty");
+    VMItem *item1_popped = Stack_Pop(&stack);
+    assert(stack.stackpointer == 0, "Stackpointer wasn't decremented");
+    assert(item1_popped->value == &c1, "Popped item1 should point to c1 (1)");
+    Stack_Push(&stack, &item1);
+    Stack_Push(&stack, &item2);
+    assert(stack.stackpointer == 2, "Stackpointer wrong");
+    VMItem *item2_popped = Stack_Pop(&stack);
+    assert(item2_popped->value == &c2, "Popped item2 should point to c2");
+    VMItem *item1_popped_again = Stack_Pop(&stack);
+    assert(item1_popped_again->value == &c1, "Popped item1 should point to c1 (2)");
+    assert(Stack_IsEmpty(&stack), "Stack should be empty");
+    puts(">>Stack test successul");
+}
+
+void HashTable_Test()
+{
+    puts(">>HashTable test start");
+    HashTable_Init(&HTconcepts);
+    assert(HTconcepts.VMStack.stackpointer == CONCEPTS_MAX, "The stack should be full!");
+    //Insert a first concept:
+    Term term1 = Narsese_Term("<a --> b>");
+    Concept c1 = { .id = 1, .term = term1 };
+    Concept_SetTerm(&c1, term1);
+    HashTable_Set(&HTconcepts, &c1);
+    assert(HTconcepts.VMStack.stackpointer == CONCEPTS_MAX-1, "One item should be taken off of the stack");
+    assert(HTconcepts.HT[c1.term_hash] != NULL, "Item didn't go in right place");
+    //Return it
+    Concept *c1_returned = HashTable_Get(&HTconcepts, &term1);
+    assert(c1_returned != NULL, "Returned item is null (1)");
+    assert(Term_Equal(&c1.term, &c1_returned->term), "Hashtable Get led to different term than we put into (1)");
+    //insert another with the same hash:
+    Term term2 = Narsese_Term("<c --> d>");
+    Concept c2 = { .id = 2, .term = term2, .term_hash = c1.term_hash }; //use different term but same hash, hash collision!
+    HashTable_Set(&HTconcepts, &c2);
+    //get first one:
+    Concept *c1_returned_again = HashTable_Get(&HTconcepts, &term1);
+    assert(c1_returned_again != NULL, "Returned item is null (2)");
+    assert(Term_Equal(&c1.term, &c1_returned_again->term), "Hashtable Get led to different term than we put into (2)");
+    Term term3 = Narsese_Term("<e --> f>");
+    Concept c3 = { .id = 3, .term = term3, .term_hash = c1.term_hash }; //use different term but same hash, hash collision!
+    HashTable_Set(&HTconcepts, &c3);
+    //there should be a chain of 3 concepts now at the hash position:
+    assert(Term_Equal(&HTconcepts.HT[c1.term_hash]->value->term, &c1.term), "c1 not there! (1)");
+    assert(Term_Equal(&((VMItem*)HTconcepts.HT[c1.term_hash]->next)->value->term, &c2.term), "c2 not there! (1)");
+    assert(Term_Equal(&((VMItem*)((VMItem*)HTconcepts.HT[c1.term_hash]->next)->next)->value->term, &c3.term), "c3 not there! (1)");
+    //Delete the middle one, c2
+    HashTable_Delete(&HTconcepts, &c2);
+    assert(((VMItem*)HTconcepts.HT[c1.term_hash]->next)->value->id == 3, "c3 not there according to id! (2)");
+    assert(Term_Equal(&HTconcepts.HT[c1.term_hash]->value->term, &c1.term), "c1 not there! (2)");
+    assert(Term_Equal(&((VMItem*)HTconcepts.HT[c1.term_hash]->next)->value->term, &c3.term), "c3 not there! (2)");
+    //Delete the last one, c3
+    HashTable_Delete(&HTconcepts, &c3);
+    assert(Term_Equal(&HTconcepts.HT[c1.term_hash]->value->term, &c1.term), "c1 not there! (3)");
+    //Delete the first one, which is the last one left, c1
+    HashTable_Delete(&HTconcepts, &c1);
+    assert(HTconcepts.HT[c1.term_hash] == NULL, "Hash table at hash position must be null");
+    assert(HTconcepts.VMStack.stackpointer == CONCEPTS_MAX, "All elements should be free now");
+    puts(">>HashTable test successul");
 }
 
 int main(int argc, char *argv[])
@@ -1414,6 +1477,8 @@ int main(int argc, char *argv[])
     Sequence_Test();
     Parser_Test();
     RuleTable_Test();
+    Stack_Test();
+    HashTable_Test();
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
     puts("YAN pong (starts Pong example)");
     puts("YAN pong2 (starts Pong2 example)");

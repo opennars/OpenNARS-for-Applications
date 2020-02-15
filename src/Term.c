@@ -73,3 +73,22 @@ int Term_Complexity(Term *term)
     }
     return s;
 }
+
+TERM_HASH_TYPE Term_Hash(Term *term)
+{
+    int pieces = TERM_ATOMS_SIZE / TERM_HASH_TYPE_SIZE;
+    assert(TERM_HASH_TYPE_SIZE*pieces == TERM_ATOMS_SIZE, "Not a multiple, issue in hash calculation");
+    TERM_HASH_TYPE *pt = (TERM_HASH_TYPE*) &term->atoms;
+    TERM_HASH_TYPE hash = 0;
+    for(int i=0; i<pieces; i++, pt++)
+    {
+        hash ^= *pt;
+        hash += ~(hash << 15);
+        hash ^=  (hash >> 10);
+        hash +=  (hash << 3);
+        hash ^=  (hash >> 6);
+        hash += ~(hash << 11);
+        hash ^=  (hash >> 16);
+    }
+    return hash;
+}
