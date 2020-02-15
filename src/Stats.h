@@ -8,7 +8,7 @@
 //References//
 //----------//
 #include <stdio.h>
-//#include "Memory.h"
+#include "Memory.h"
 
 //Global vars//
 //-----------//

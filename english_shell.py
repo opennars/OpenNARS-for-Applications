@@ -1,5 +1,5 @@
 #YAN NLP Shell
-#can "parse" anything with roughly the structure:  
+#Can "parse" English with roughly the structure:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
 #pip install nltk
