@@ -83,6 +83,12 @@ TERM_HASH_TYPE Term_Hash(Term *term)
     for(int i=0; i<pieces; i++, pt++)
     {
         hash ^= *pt;
+        hash += ~(hash << 15);
+        hash ^=  (hash >> 10);
+        hash +=  (hash << 3);
+        hash ^=  (hash >> 6);
+        hash += ~(hash << 11);
+        hash ^=  (hash >> 16);
     }
     return hash;
 }
