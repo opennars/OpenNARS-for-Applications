@@ -13,7 +13,6 @@ void Stats_Print(long currentTime)
     printf("currentTime:\t\t\t%ld\n", currentTime);
     printf("total concepts:\t\t\t%d\n", concepts.itemsAmount);
     int maxlen = 0;
-    
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
         VMItem *item = HTconcepts.HT[i];
