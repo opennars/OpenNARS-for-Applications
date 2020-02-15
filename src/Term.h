@@ -22,6 +22,9 @@
 
 //Data structure//
 //--------------//
+#define TERM_HASH_TYPE long
+#define TERM_HASH_TYPE_SIZE sizeof(TERM_HASH_TYPE)
+#define TERM_ATOMS_SIZE (sizeof(Atom)*COMPOUND_TERM_SIZE_MAX)
 typedef struct
 {
     Atom atoms[COMPOUND_TERM_SIZE_MAX];
@@ -39,5 +42,7 @@ bool Term_OverrideSubterm(Term *term, int i, Term *subterm);
 Term Term_ExtractSubterm(Term *term, int j);
 //The complexity of a term
 int Term_Complexity(Term *term);
+//Hash of a term (needed by the term->concept HashTable)
+TERM_HASH_TYPE Term_Hash(Term *term);
 
 #endif

@@ -11,6 +11,7 @@
 #include "Concept.h"
 #include "PriorityQueue.h"
 #include "Config.h"
+#include "HashTable.h"
 
 //Parameters//
 //----------//
@@ -29,6 +30,8 @@ extern int eventsSelected;
 PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_events;
+//Hashtable of concepts used for fast retrieval of concepts via term:
+HashTable HTconcepts;
 //Input event buffers:
 FIFO belief_events;
 FIFO goal_events;
@@ -45,7 +48,7 @@ Operation operations[OPERATIONS_MAX];
 //Init memory
 void Memory_INIT();
 //Find a concept
-bool Memory_FindConceptByTerm(Term *term, /*Term_HASH_TYPE term_hash,*/ int *returnIndex);
+Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory

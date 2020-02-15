@@ -4,7 +4,7 @@ void Concept_SetTerm(Concept *concept, Term term)
 {
     concept->term = term;
     //Generate hash too:
-    //concept->term_hash = Term_Hash(&term);
+    concept->term_hash = Term_Hash(&term) % CONCEPTS_MAX;
 }
 
 void Concept_Print(Concept *concept)

@@ -34,6 +34,7 @@ static void Memory_ResetConcepts()
 int concept_id = 0;
 void Memory_INIT()
 {
+    HashTable_Init(&HTconcepts);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();
@@ -44,24 +45,9 @@ void Memory_INIT()
     concept_id = 0;
 }
 
-bool Memory_FindConceptByTerm(Term *term, int *returnIndex)
+Concept *Memory_FindConceptByTerm(Term *term)
 {
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *existing = concepts.items[i].address;
-        //if(!USE_HASHING || existing->term_hash == term_hash)
-        {
-            if(Term_Equal(&existing->term, term))
-            {
-                if(returnIndex != NULL)
-                {
-                    *returnIndex = i;
-                }
-                return true;
-            }
-        }
-    }
-    return false;
+    return HashTable_Get(&HTconcepts, term);
 }
 
 Concept* Memory_Conceptualize(Term *term, long currentTime)
@@ -70,27 +56,38 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
     {
         return NULL;
     }
-    //Term_HASH_TYPE hash = Term_Hash(term);
-    int concept_i;
-    if(!Memory_FindConceptByTerm(term, /*hash,*/ &concept_i))
+    Concept *ret = Memory_FindConceptByTerm(term);
+    if(ret == NULL)
     {
-        Concept *addedConcept = NULL;
+        Concept *recycleConcept = NULL;
         //try to add it, and if successful add to voting structure
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 1);
         if(feedback.added)
         {
-            addedConcept = feedback.addedItem.address;
-            *addedConcept = (Concept) {0};
-            Concept_SetTerm(addedConcept, *term);
-            addedConcept->id = concept_id;
-            addedConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
+            recycleConcept = feedback.addedItem.address;
+            //if something was evicted in the adding process delete from hashmap first
+            if(feedback.evicted)
+            {
+                IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to delete does not exist!"); )
+                HashTable_Delete(&HTconcepts, recycleConcept);
+                IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to delete was not deleted!"); )
+            }
+            //proceed with recycling of the concept in the priority queue
+            *recycleConcept = (Concept) {0};
+            Concept_SetTerm(recycleConcept, *term);
+            recycleConcept->id = concept_id;
+            recycleConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
             concept_id++;
-            return addedConcept;
+            //also add added concept to HashMap:
+            IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to add already exists!"); )
+            HashTable_Set(&HTconcepts, recycleConcept);
+            IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to add was not added!"); )
+            return recycleConcept;
         }
     }
     else
     {
-        return concepts.items[concept_i].address;
+        return ret;
     }
     return NULL;
 }
@@ -127,10 +124,9 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     {
         return false;
     }
-    int concept_i = 0;
-    if(Memory_FindConceptByTerm(&e->term, &concept_i))
+    Concept *c = Memory_FindConceptByTerm(&e->term);
+    if(c != NULL)
     {
-        Concept *c = concepts.items[concept_i].address;
         if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
