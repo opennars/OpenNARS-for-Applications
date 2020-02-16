@@ -105,6 +105,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
             }
         }
     }
+    *success = true;
     return general;
 }
 
