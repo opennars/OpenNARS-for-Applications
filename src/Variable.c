@@ -94,6 +94,7 @@ Substitution Variable_Unify(Term *general, Term *specific)
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
 {
     assert(substitution.success, "A substitution from unsuccessful unification cannot be used to substitute variables!");
+    *success = true;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general.atoms[i];
@@ -105,7 +106,6 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
             }
         }
     }
-    *success = true;
     return general;
 }
 
