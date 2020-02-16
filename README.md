@@ -1,4 +1,4 @@
-<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/74610074-d3d76e80-50e7-11ea-9f7b-0460851bbf47.png" height="250"></div>
+<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/74610093-f7021e00-50e7-11ea-8499-8bd200363f78.png" height="250"></div>
 
 This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA, and the control model from ALANN. The system is written in C and is extremely capable. 
 
