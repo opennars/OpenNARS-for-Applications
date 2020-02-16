@@ -26,7 +26,7 @@
 #define H_CYCLE
 
 ///////////////////////////////////
-//  YAN Control Cycle            //
+//  NAR Control Cycle            //
 ///////////////////////////////////
 //A FIFO-like structure, that only supports put in and overwrites
 //the oldest task when full

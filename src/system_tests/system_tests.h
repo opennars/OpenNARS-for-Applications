@@ -35,10 +35,10 @@
 
 void Run_System_Tests()
 {
-    YAN_Alphabet_Test();
-    YAN_Procedure_Test();
-    YAN_Follow_Test();
-    YAN_Multistep_Test();
-    YAN_Multistep2_Test();
+    NAR_Alphabet_Test();
+    NAR_Procedure_Test();
+    NAR_Follow_Test();
+    NAR_Multistep_Test();
+    NAR_Multistep2_Test();
     Sequence_Test();
 }

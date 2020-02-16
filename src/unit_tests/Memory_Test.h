@@ -24,7 +24,7 @@
 
 void Memory_Test()
 {
-    YAN_INIT();
+    NAR_INIT();
     puts(">>Memory test start");
     Event e = Event_InputEvent(Narsese_AtomicTerm("a"), 
                                EVENT_TYPE_BELIEF, 

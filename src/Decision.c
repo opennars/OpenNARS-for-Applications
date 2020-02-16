@@ -41,11 +41,11 @@ void Decision_Execute(Decision *decision)
         operation.atoms[0] = Narsese_AtomicTermIndex(":"); //<args --> ^op>
         Term_OverrideSubterm(&operation, 1, &decision->arguments);
         Term_OverrideSubterm(&operation, 2, &decision->op.term);
-        YAN_AddInputBelief(operation);
+        NAR_AddInputBelief(operation);
     }
     else //atomic operation / operator
     {
-        YAN_AddInputBelief(decision->op.term);
+        NAR_AddInputBelief(decision->op.term);
     }
 }
 
@@ -62,7 +62,7 @@ static Decision Decision_MotorBabbling()
     {
         decision.operationID = 1+(rand() % (n_ops));
         IN_DEBUG (
-            printf(" YAN BABBLE %d\n", decision.operationID);
+            printf(" NAR BABBLE %d\n", decision.operationID);
         )
         decision.execute = true;
     }

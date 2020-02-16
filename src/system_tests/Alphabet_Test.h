@@ -22,21 +22,21 @@
  * THE SOFTWARE.
  */
 
-void YAN_Alphabet_Test()
+void NAR_Alphabet_Test()
 {
-    YAN_INIT();
-    puts(">>YAN Alphabet test start");
-    YAN_AddInput(Narsese_AtomicTerm("a"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, false);
+    NAR_INIT();
+    puts(">>NAR Alphabet test start");
+    NAR_AddInput(Narsese_AtomicTerm("a"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false);
     for(int i=0; i<50; i++)
     {
         int k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};
-            YAN_AddInput(Narsese_AtomicTerm(c), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, false);
+            NAR_AddInput(Narsese_AtomicTerm(c), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false);
         }
-        YAN_Cycles(1);
+        NAR_Cycles(1);
         puts("TICK");
     }
-    puts("<<YAN Alphabet test successful");
+    puts("<<NAR Alphabet test successful");
 }

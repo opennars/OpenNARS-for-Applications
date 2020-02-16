@@ -30,60 +30,60 @@ static bool goto_l0 = false;
 static bool goto_l1 = false;
 static bool activate = false;
 static bool deactivate = false;
-void YAN_TestChamber_goto_s0()
+void NAR_TestChamber_goto_s0()
 {
     goto_s0 = true;
-    puts("YAN goto s0");
+    puts("NAR goto s0");
 }
-void YAN_TestChamber_goto_s1()
+void NAR_TestChamber_goto_s1()
 {
     goto_s1 = true;
-    puts("YAN goto s1");
+    puts("NAR goto s1");
 }
-void YAN_TestChamber_goto_s2()
+void NAR_TestChamber_goto_s2()
 {
     goto_s2 = true;
-    puts("YAN goto s2");
+    puts("NAR goto s2");
 }
-void YAN_TestChamber_goto_s3()
+void NAR_TestChamber_goto_s3()
 {
     goto_s3 = true;
-    puts("YAN goto s3");
+    puts("NAR goto s3");
 }
-void YAN_TestChamber_goto_l0()
+void NAR_TestChamber_goto_l0()
 {
     goto_l0 = true;
-    puts("YAN goto l0");
+    puts("NAR goto l0");
 }
-void YAN_TestChamber_goto_l1()
+void NAR_TestChamber_goto_l1()
 {
     goto_l1 = true;
-    puts("YAN goto l1");
+    puts("NAR goto l1");
 }
-void YAN_TestChamber_activate()
+void NAR_TestChamber_activate()
 {
     activate = true;
-    puts("YAN activate");
+    puts("NAR activate");
 }
-void YAN_TestChamber_deactivate()
+void NAR_TestChamber_deactivate()
 {
     deactivate = true;
-    puts("YAN deactivate");
+    puts("NAR deactivate");
 }
-void YAN_TestChamber()
+void NAR_TestChamber()
 {
     TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
     ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
-    YAN_INIT();
+    NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0;
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_s0"), YAN_TestChamber_goto_s0); 
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_s1"), YAN_TestChamber_goto_s1); 
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_s2"), YAN_TestChamber_goto_s2); 
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_s3"), YAN_TestChamber_goto_s3); 
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_l0"), YAN_TestChamber_goto_l0); 
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_l1"), YAN_TestChamber_goto_l1); 
-    YAN_AddOperation(Narsese_AtomicTerm("^activate"), YAN_TestChamber_activate); 
-    YAN_AddOperation(Narsese_AtomicTerm("^deactivate"), YAN_TestChamber_deactivate); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_s0"), NAR_TestChamber_goto_s0); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_s1"), NAR_TestChamber_goto_s1); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_s2"), NAR_TestChamber_goto_s2); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_s3"), NAR_TestChamber_goto_s3); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_l0"), NAR_TestChamber_goto_l0); 
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_l1"), NAR_TestChamber_goto_l1); 
+    NAR_AddOperation(Narsese_AtomicTerm("^activate"), NAR_TestChamber_activate); 
+    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), NAR_TestChamber_deactivate); 
     int size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
@@ -108,7 +108,7 @@ void YAN_TestChamber()
     bool l1 = false;
     bool door = false; //door closed
     puts("at_s0");
-    YAN_AddInputBelief(Narsese_AtomicTerm("at_s0"));
+    NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
     char lastchar = 'a';
     while(1)
     {
@@ -152,98 +152,98 @@ void YAN_TestChamber()
         {
             s1 = false;
             puts("s1_is_0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s1_is_0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_0"));
             //s1 also closes the door:
             door = false;
             puts("door_is_closed.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("door_is_closed"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("door_is_closed"));
         }
         else
         if(pos == pos_s2 && deactivate)
         {
             s2 = false;
             puts("s2_is_0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s2_is_0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_0"));
             //s2 also deactivates l0:
             l0 = false;
             puts("l0_is_0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("l0_is_0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_0"));
         }
         else
         if(pos == pos_s3 && deactivate)
         {
             s3 = false;
             puts("s3_is_0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s3_is_0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_0"));
             //s3 also deactivates l1
             l1 = false;
             puts("l1_is_0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("l1_is_0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_0"));
         }
         else
         if(pos == pos_s1 && activate)
         {
             s1 = true;
             puts("s1_is_1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s1_is_1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_1"));
             //s1 also opens the door:
             door = true;
             puts("door_is_open.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("door_is_open"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("door_is_open"));
         }
         else
         if(pos == pos_s2 && activate)
         {
             s2 = true;
             puts("s2_is_1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s2_is_1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_1"));
             //s2 also activates l0:
             l0 = true;
             puts("l0_is_1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("l0_is_1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_1"));
         }
         else
         if(pos == pos_s3 && activate)
         {
             s3 = true;
             puts("s3_is_1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("s3_is_1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_1"));
             //s3 also activates l1
             l1 = true;
             puts("l1_is_1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("l1_is_1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_1"));
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
-        //inform YAN about current location
+        //inform NAR about current location
         if(pos == pos_s0)
         {
             puts("at_s0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_s0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
         }
         if(pos == pos_s1)
         {
             puts("at_s1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_s1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_s1"));
         }
         if(pos == pos_s2)
         {
             puts("at_s2.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_s2"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_s2"));
         }
         if(pos == pos_s3)
         {
             puts("at_s3.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_s3"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_s3"));
         }
         if(pos == pos_l0)
         {
             puts("at_l0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_l0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_l0"));
         }
         if(pos == pos_l1)
         {
             puts("at_l1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("at_l1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("at_l1"));
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -367,156 +367,156 @@ void YAN_TestChamber()
         {
             goto_s0 = true;
             puts("^goto_s0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_s0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s0"));
         }
         if(c == 'b')
         {
             goto_s1 = true;
             puts("^goto_s1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_s1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s1"));
         }
         if(c == 'c')
         {
             goto_s2 = true;
             puts("^goto_s2.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_s2"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s2"));
         }
         if(c == 'd')
         {
             goto_s3 = true;
             puts("^goto_s3.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_s3"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s3"));
         }
         if(c == 'e')
         {
             goto_l0 = true;
             puts("^goto_l0.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_l0"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_l0"));
         }
         if(c == 'f')
         {
             goto_l1 = true;
             puts("^goto_l1.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^goto_l1"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^goto_l1"));
         }
         if(c == 'g')
         {
             activate = true;
             puts("^activate.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^activate"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^activate"));
         }
         if(c == 'h')
         {
             deactivate = true;
             puts("^deactivate.");
-            YAN_AddInputBelief(Narsese_AtomicTerm("^deactivate"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("^deactivate"));
         }
         if(c == 'i')
         {
             puts("door_is_open!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("door_is_open"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("door_is_open"));
             //door should be open
         }
         if(c == 'j')
         {
             puts("door_is_closed!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("door_is_closed"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("door_is_closed"));
             //door should be closed
         }
         if(c == 'k')
         {
             puts("s1_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s1_is_1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_1"));
             //s1 should be 1
         }
         if(c == 'l')
         {
             puts("s1_is_0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s1_is_0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_0"));
             //s1 should be 0
         }
         if(c == 'm')
         {
             puts("s2_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s2_is_1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_1"));
             //s2 should be 1
         }
         if(c == 'n')
         {
             puts("s2_is_0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s2_is_0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_0"));
             //s2 should be 0
         }
         if(c == 'o')
         {
             puts("s3_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s3_is_1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_1"));
             //s3 should be 1
         }
         if(c == 'p')
         {
             puts("s3_is_0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("s3_is_0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_0"));
             //s3 should be 0
         }
         if(c == 'q')
         {
             puts("l0_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("l0_is_1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_1"));
             //l0 should be 1
         }
         if(c == 'r')
         {
             puts("l0_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("l0_is_0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_0"));
             //l0 should be 0
         }
         if(c == 's')
         {
             puts("l1_is_1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("l1_is_1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_1"));
             //l1 should be 1
         }
         if(c == 't')
         {
             puts("l1_is_0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("l1_is_0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_0"));
             //l1 should be 0
         }
         if(c == 'u')
         {
             puts("at_s0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_s0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_s0"));
             //you should be at s0!
         }
         if(c == 'v')
         {
             puts("at_s1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_s1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_s1"));
             //you should be at s1!
         }
         if(c == 'w')
         {
             puts("at_s2!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_s2"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_s2"));
             //you should be at s2!
         }
         if(c == 'x')
         {
             puts("at_s3!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_s3"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_s3"));
             //you should be at s3!
         }
         if(c == 'y')
         {
             puts("at_l0!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_l0"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_l0"));
             //you should be at l0!
         }
         if(c == 'z')
         {
             puts("at_l1!");
-            YAN_AddInputGoal(Narsese_AtomicTerm("at_l1"));
+            NAR_AddInputGoal(Narsese_AtomicTerm("at_l1"));
             //you should be at l1!
         }
     }

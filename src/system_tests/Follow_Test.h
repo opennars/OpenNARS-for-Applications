@@ -22,24 +22,24 @@
  * THE SOFTWARE.
  */
 
-bool YAN_Follow_Test_Left_executed = false;
-void YAN_Follow_Test_Left()
+bool NAR_Follow_Test_Left_executed = false;
+void NAR_Follow_Test_Left()
 {
-    puts("left executed by YAN");
-    YAN_Follow_Test_Left_executed = true;
+    puts("left executed by NAR");
+    NAR_Follow_Test_Left_executed = true;
 }
-bool YAN_Follow_Test_Right_executed = false;
-void YAN_Follow_Test_Right()
+bool NAR_Follow_Test_Right_executed = false;
+void NAR_Follow_Test_Right()
 {
-    puts("right executed by YAN");
-    YAN_Follow_Test_Right_executed = true;
+    puts("right executed by NAR");
+    NAR_Follow_Test_Right_executed = true;
 }
-void YAN_Follow_Test()
+void NAR_Follow_Test()
 {
-    YAN_INIT();
-    puts(">>YAN Follow test start");
-    YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Follow_Test_Left); 
-    YAN_AddOperation(Narsese_AtomicTerm("^right"), YAN_Follow_Test_Right); 
+    NAR_INIT();
+    puts(">>NAR Follow test start");
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Follow_Test_Left); 
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Follow_Test_Right); 
     int simsteps = 1000000;
     int LEFT = 0;
     int RIGHT = 1;
@@ -50,13 +50,13 @@ void YAN_Follow_Test()
     for(int i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
-        YAN_AddInputBelief(BALL == LEFT ? Narsese_AtomicTerm("ball_left") : Narsese_AtomicTerm("ball_right"));
-        YAN_AddInputGoal(Narsese_AtomicTerm("good_yan"));
-        if(YAN_Follow_Test_Right_executed)
+        NAR_AddInputBelief(BALL == LEFT ? Narsese_AtomicTerm("ball_left") : Narsese_AtomicTerm("ball_right"));
+        NAR_AddInputGoal(Narsese_AtomicTerm("good_yan"));
+        if(NAR_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                YAN_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -67,13 +67,13 @@ void YAN_Follow_Test()
                 score--;
                 bads++;
             }
-            YAN_Follow_Test_Right_executed = false;
+            NAR_Follow_Test_Right_executed = false;
         }
-        if(YAN_Follow_Test_Left_executed)
+        if(NAR_Follow_Test_Left_executed)
         {        
             if(BALL == LEFT)
             {
-                YAN_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -84,7 +84,7 @@ void YAN_Follow_Test()
                 score--;
                 bads++;
             }
-            YAN_Follow_Test_Left_executed = false;
+            NAR_Follow_Test_Left_executed = false;
         }
         BALL = rand() % 2;
         printf("Score %i step%d=\n", score,i);
@@ -92,7 +92,7 @@ void YAN_Follow_Test()
         assert(bads < 500, "too many wrong trials");
         if(score >= 500)
             break;
-        YAN_Cycles(10);
+        NAR_Cycles(10);
     }
-    printf("<<YAN Follow test successful goods=%d bads=%d ratio=%f\n",goods,bads, (((float) goods)/(((float) goods) + ((float) bads))));
+    printf("<<NAR Follow test successful goods=%d bads=%d ratio=%f\n",goods,bads, (((float) goods)/(((float) goods) + ((float) bads))));
 }

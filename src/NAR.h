@@ -22,11 +22,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef YAN_H
-#define YAN_H
+#ifndef NAR_H
+#define NAR_H
 
 //////////////////////////////
-//  YAN - Yet Another NARS  //
+//  NAR - Yet Another NARS  //
 //////////////////////////////
 
 //References//
@@ -36,7 +36,7 @@
 
 //Parameters//
 //----------//
-#define YAN_DEFAULT_TRUTH ((Truth) { .frequency = YAN_DEFAULT_FREQUENCY, .confidence = YAN_DEFAULT_CONFIDENCE })
+#define NAR_DEFAULT_TRUTH ((Truth) { .frequency = NAR_DEFAULT_FREQUENCY, .confidence = NAR_DEFAULT_CONFIDENCE })
 extern long currentTime;
 
 //Callback function types//
@@ -46,14 +46,14 @@ extern long currentTime;
 //Methods//
 //-------//
 //Init/Reset system
-void YAN_INIT();
+void NAR_INIT();
 //Run the system for a certain amount of cycles
-void YAN_Cycles(int cycles);
+void NAR_Cycles(int cycles);
 //Add input
-Event YAN_AddInput(Term term, char type, Truth truth, bool eternal);
-Event YAN_AddInputBelief(Term term);
-Event YAN_AddInputGoal(Term term);
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal);
+Event NAR_AddInputBelief(Term term);
+Event NAR_AddInputGoal(Term term);
 //Add an operation
-void YAN_AddOperation(Term term, Action procedure);
+void NAR_AddOperation(Term term, Action procedure);
 
 #endif

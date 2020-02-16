@@ -69,18 +69,18 @@ void Shell_Start()
 {
 INIT:
     fflush(stdout);
-    YAN_INIT();
+    NAR_INIT();
     PRINT_DERIVATIONS = true;
-    YAN_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
-    YAN_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
-    YAN_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
-    YAN_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down);
-    YAN_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say);
-    YAN_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick);
-    YAN_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop);
-    YAN_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
-    YAN_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
-    YAN_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
+    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
+    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down);
+    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say);
+    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick);
+    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop);
+    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
+    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
+    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
     for(;;)
     {
         char line[1024] = {0};
@@ -101,7 +101,7 @@ INIT:
         int size = strlen(line);
         if(size==0)
         {
-            YAN_Cycles(1);
+            NAR_Cycles(1);
         }
         else
         {
@@ -143,7 +143,7 @@ INIT:
                 unsigned int steps;
                 sscanf(line, "%u", &steps);
                 printf("performing %u inference steps:\n", steps); fflush(stdout);
-                YAN_Cycles(steps);
+                NAR_Cycles(steps);
                 printf("done with %u additional inference steps.\n", steps); fflush(stdout);
             }
             else
@@ -263,11 +263,11 @@ INIT:
                 {
                     if(punctuation == '!')
                     {
-                        YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, !isEvent);
+                        NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, !isEvent);
                     }
                     else
                     {
-                        YAN_AddInput(term, EVENT_TYPE_BELIEF, tv, !isEvent);
+                        NAR_AddInput(term, EVENT_TYPE_BELIEF, tv, !isEvent);
                     }
                 }
             }

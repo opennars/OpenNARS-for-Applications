@@ -22,41 +22,41 @@
  * THE SOFTWARE.
  */
 
-void YAN_Multistep2_Test()
+void NAR_Multistep2_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
-    puts(">>YAN Multistep2 test start");
-    YAN_INIT();
-    YAN_AddOperation(Narsese_AtomicTerm("^goto_switch"), YAN_Lightswitch_GotoSwitch); 
-    YAN_AddOperation(Narsese_AtomicTerm("^activate_switch"), YAN_Lightswitch_ActivateSwitch); 
+    puts(">>NAR Multistep2 test start");
+    NAR_INIT();
+    NAR_AddOperation(Narsese_AtomicTerm("^goto_switch"), NAR_Lightswitch_GotoSwitch); 
+    NAR_AddOperation(Narsese_AtomicTerm("^activate_switch"), NAR_Lightswitch_ActivateSwitch); 
     for(int i=0; i<5; i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("start_at"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^goto_switch"));
-        YAN_Cycles(1);
-        YAN_AddInputBelief(Narsese_AtomicTerm("switch_at"));
-        YAN_Cycles(10);
+        NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^goto_switch"));
+        NAR_Cycles(1);
+        NAR_AddInputBelief(Narsese_AtomicTerm("switch_at"));
+        NAR_Cycles(10);
     }
-    YAN_Cycles(1000);
+    NAR_Cycles(1000);
     for(int i=0; i<5; i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("switch_at"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^activate_switch"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("switch_active"));
-        YAN_Cycles(1);
-        YAN_AddInputBelief(Narsese_AtomicTerm("light_active"));
-        YAN_Cycles(10);
+        NAR_AddInputBelief(Narsese_AtomicTerm("switch_at"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^activate_switch"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("switch_active"));
+        NAR_Cycles(1);
+        NAR_AddInputBelief(Narsese_AtomicTerm("light_active"));
+        NAR_Cycles(10);
     }
-    YAN_Cycles(10);
-    YAN_AddInputBelief(Narsese_AtomicTerm("start_at"));
-    YAN_AddInputGoal(Narsese_AtomicTerm("light_active"));
-    YAN_Cycles(10);
-    assert(YAN_Lightswitch_GotoSwitch_executed && !YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to go to the switch first (2)");
-    YAN_Lightswitch_GotoSwitch_executed = false;
-    puts("YAN arrived at the switch");
-    YAN_AddInputBelief(Narsese_AtomicTerm("switch_at"));
-    YAN_AddInputGoal(Narsese_AtomicTerm("light_active"));
-    assert(!YAN_Lightswitch_GotoSwitch_executed && YAN_Lightswitch_ActivateSwitch_executed, "YAN needs to activate the switch (2)");
-    YAN_Lightswitch_ActivateSwitch_executed = false;
-    puts("<<YAN Multistep2 test successful");
+    NAR_Cycles(10);
+    NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));
+    NAR_AddInputGoal(Narsese_AtomicTerm("light_active"));
+    NAR_Cycles(10);
+    assert(NAR_Lightswitch_GotoSwitch_executed && !NAR_Lightswitch_ActivateSwitch_executed, "NAR needs to go to the switch first (2)");
+    NAR_Lightswitch_GotoSwitch_executed = false;
+    puts("NAR arrived at the switch");
+    NAR_AddInputBelief(Narsese_AtomicTerm("switch_at"));
+    NAR_AddInputGoal(Narsese_AtomicTerm("light_active"));
+    assert(!NAR_Lightswitch_GotoSwitch_executed && NAR_Lightswitch_ActivateSwitch_executed, "NAR needs to activate the switch (2)");
+    NAR_Lightswitch_ActivateSwitch_executed = false;
+    puts("<<NAR Multistep2 test successful");
 }

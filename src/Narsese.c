@@ -23,7 +23,7 @@
  */
 
 #include "Narsese.h"
-#include "YAN.h"
+#include "NAR.h"
 
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
@@ -311,7 +311,7 @@ int Narsese_AtomicTermIndex(char *name)
     }
     if(ret_index == -1)
     {
-        assert(term_index < TERMS_MAX, "Too many terms for YAN");
+        assert(term_index < TERMS_MAX, "Too many terms for NAR");
         ret_index = term_index+1;
         strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
         term_index++;
@@ -366,8 +366,8 @@ Term Narsese_Term(char *narsese)
 void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv)
 {
     char narseseInplace[NARSESE_LEN_MAX] = {0};
-    destTv->frequency = YAN_DEFAULT_FREQUENCY;
-    destTv->confidence = YAN_DEFAULT_CONFIDENCE;
+    destTv->frequency = NAR_DEFAULT_FREQUENCY;
+    destTv->confidence = NAR_DEFAULT_CONFIDENCE;
     int len = strlen(narsese);
     assert(len > 1, "Parsing error: Narsese string too short!");
     assert(len < NARSESE_LEN_MAX, "Parsing error: Narsese string too long!"); //< because of '0' terminated strings

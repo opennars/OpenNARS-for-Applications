@@ -22,32 +22,32 @@
  * THE SOFTWARE.
  */
 
-bool YAN_Procedure_Test_Op_executed = false;
-void YAN_Procedure_Test_Op()
+bool NAR_Procedure_Test_Op_executed = false;
+void NAR_Procedure_Test_Op()
 {
-    puts("op executed by YAN");
-    YAN_Procedure_Test_Op_executed = true;
+    puts("op executed by NAR");
+    NAR_Procedure_Test_Op_executed = true;
 }
-void YAN_Procedure_Test()
+void NAR_Procedure_Test()
 {
-    YAN_INIT();
-    puts(">>YAN Procedure test start");
-    YAN_AddOperation(Narsese_AtomicTerm("^op"), YAN_Procedure_Test_Op); 
-    YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-    YAN_Cycles(1);
+    NAR_INIT();
+    puts(">>NAR Procedure test start");
+    NAR_AddOperation(Narsese_AtomicTerm("^op"), NAR_Procedure_Test_Op); 
+    NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+    NAR_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Narsese_AtomicTerm("^op"));
-    YAN_Cycles(1);
+    NAR_AddInputBelief(Narsese_AtomicTerm("^op"));
+    NAR_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Narsese_AtomicTerm("result"));
-    YAN_Cycles(1);
+    NAR_AddInputBelief(Narsese_AtomicTerm("result"));
+    NAR_Cycles(1);
     puts("---------------");
-    YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-    YAN_Cycles(1);
+    NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+    NAR_Cycles(1);
     puts("---------------");
-    YAN_AddInputGoal(Narsese_AtomicTerm("result"));
-    YAN_Cycles(1);
+    NAR_AddInputGoal(Narsese_AtomicTerm("result"));
+    NAR_Cycles(1);
     puts("---------------");
-    assert(YAN_Procedure_Test_Op_executed, "YAN should have executed op!");
-    puts("<<YAN Procedure test successful");
+    assert(NAR_Procedure_Test_Op_executed, "NAR should have executed op!");
+    puts("<<NAR Procedure test successful");
 }

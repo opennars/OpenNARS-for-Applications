@@ -105,9 +105,9 @@
 /* Truth parameters */
 /*------------------*/
 //Default frequency for input events
-#define YAN_DEFAULT_FREQUENCY  1.0
+#define NAR_DEFAULT_FREQUENCY  1.0
 //Default confidence for input events
-#define YAN_DEFAULT_CONFIDENCE 0.9
+#define NAR_DEFAULT_CONFIDENCE 0.9
 //Default confidence for analytical premise
 #define RELIANCE 0.9
 //NAL evidental horizon

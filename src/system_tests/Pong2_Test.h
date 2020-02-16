@@ -22,28 +22,28 @@
  * THE SOFTWARE.
  */
 
-bool YAN_Pong_Left_executed = false;
-void YAN_Pong_Left()
+bool NAR_Pong_Left_executed = false;
+void NAR_Pong_Left()
 {
-    YAN_Pong_Left_executed = true;
+    NAR_Pong_Left_executed = true;
 }
-bool YAN_Pong_Right_executed = false;
-void YAN_Pong_Right()
+bool NAR_Pong_Right_executed = false;
+void NAR_Pong_Right()
 {
-    YAN_Pong_Right_executed = true;
+    NAR_Pong_Right_executed = true;
 }
-bool YAN_Pong_Stop_executed = false;
-void YAN_Pong_Stop()
+bool NAR_Pong_Stop_executed = false;
+void NAR_Pong_Stop()
 {
-    YAN_Pong_Stop_executed = true;
+    NAR_Pong_Stop_executed = true;
 }
-void YAN_Pong2(long iterations)
+void NAR_Pong2(long iterations)
 {
-    YAN_INIT();
-    puts(">>YAN Pong start");
-    YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
-    YAN_AddOperation(Narsese_AtomicTerm("^right"), YAN_Pong_Right); 
-    YAN_AddOperation(Narsese_AtomicTerm("^stop"), YAN_Pong_Stop); 
+    NAR_INIT();
+    puts(">>NAR Pong start");
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
+    NAR_AddOperation(Narsese_AtomicTerm("^stop"), NAR_Pong_Stop); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -103,18 +103,18 @@ void YAN_Pong2(long iterations)
         }
         if(batX <= ballX - batWidth)
         {
-            YAN_AddInputBelief(Narsese_AtomicTerm("ball_right"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("ball_right"));
         }
         else
         if(ballX + batWidth < batX)
         {
-            YAN_AddInputBelief(Narsese_AtomicTerm("ball_left"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("ball_left"));
         }
         else
         {
-            YAN_AddInputBelief(Narsese_AtomicTerm("ball_equal"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("ball_equal"));
         }
-        YAN_AddInputGoal(Narsese_AtomicTerm("good_yan"));
+        NAR_AddInputGoal(Narsese_AtomicTerm("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -140,7 +140,7 @@ void YAN_Pong2(long iterations)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                YAN_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
                 puts("good");
                 hits++;
             }
@@ -156,21 +156,21 @@ void YAN_Pong2(long iterations)
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
         }
-        if(YAN_Pong_Left_executed)
+        if(NAR_Pong_Left_executed)
         {
-            YAN_Pong_Left_executed = false;
+            NAR_Pong_Left_executed = false;
             puts("Exec: op_left");
             batVX = -3;
         }
-        if(YAN_Pong_Right_executed)
+        if(NAR_Pong_Right_executed)
         {
-            YAN_Pong_Right_executed = false;
+            NAR_Pong_Right_executed = false;
             puts("Exec: op_right");
             batVX = 3;
         }
-        if(YAN_Pong_Stop_executed)
+        if(NAR_Pong_Stop_executed)
         {
-            YAN_Pong_Stop_executed = false;
+            NAR_Pong_Stop_executed = false;
             puts("Exec: op_stop");
             batVX = 0;
         }
@@ -180,6 +180,6 @@ void YAN_Pong2(long iterations)
         {
             nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         }
-        //YAN_Cycles(10);
+        //NAR_Cycles(10);
     }
 }

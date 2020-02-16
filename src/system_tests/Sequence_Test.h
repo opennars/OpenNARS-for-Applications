@@ -39,60 +39,60 @@ void op_3()
 }
 void Sequence_Test()
 {
-    YAN_INIT();
+    NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
-    YAN_AddOperation(Narsese_AtomicTerm("^1"), op_1); 
-    YAN_AddOperation(Narsese_AtomicTerm("^2"), op_2); 
-    YAN_AddOperation(Narsese_AtomicTerm("^3"), op_3); 
+    NAR_AddOperation(Narsese_AtomicTerm("^1"), op_1); 
+    NAR_AddOperation(Narsese_AtomicTerm("^2"), op_2); 
+    NAR_AddOperation(Narsese_AtomicTerm("^3"), op_3); 
     for(int i=0;i<5;i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("a")); //0 2 4 5
-        YAN_AddInputBelief(Narsese_AtomicTerm("b"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^1"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("g"));
-        YAN_Cycles(100);
+        NAR_AddInputBelief(Narsese_AtomicTerm("a")); //0 2 4 5
+        NAR_AddInputBelief(Narsese_AtomicTerm("b"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^1"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("g"));
+        NAR_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^1"));
-        YAN_Cycles(100);
+        NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^1"));
+        NAR_Cycles(100);
     }
     for(int i=0;i<100;i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("b"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^1"));
-        YAN_Cycles(100);
+        NAR_AddInputBelief(Narsese_AtomicTerm("b"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^1"));
+        NAR_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("b"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^2"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("g"));
-        YAN_Cycles(100);
+        NAR_AddInputBelief(Narsese_AtomicTerm("b"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^2"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("g"));
+        NAR_Cycles(100);
     }
     for(int i=0;i<2;i++)
     {
-        YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("^3"));
-        YAN_AddInputBelief(Narsese_AtomicTerm("g"));
-        YAN_Cycles(100);
+        NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("^3"));
+        NAR_AddInputBelief(Narsese_AtomicTerm("g"));
+        NAR_Cycles(100);
     }
-    YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-    YAN_AddInputBelief(Narsese_AtomicTerm("b"));
-    YAN_AddInputGoal(Narsese_AtomicTerm("g"));
+    NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+    NAR_AddInputBelief(Narsese_AtomicTerm("b"));
+    NAR_AddInputGoal(Narsese_AtomicTerm("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
     //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
-    YAN_Cycles(100);
-    YAN_AddInputBelief(Narsese_AtomicTerm("b"));
-    YAN_AddInputGoal(Narsese_AtomicTerm("g"));
+    NAR_Cycles(100);
+    NAR_AddInputBelief(Narsese_AtomicTerm("b"));
+    NAR_AddInputGoal(Narsese_AtomicTerm("g"));
     assert(!op_1_executed && op_2_executed && !op_3_executed, "Expected op2 execution"); //b here
     op_1_executed = op_2_executed = op_3_executed = false;
-    YAN_Cycles(100);
-    YAN_AddInputBelief(Narsese_AtomicTerm("a"));
-    YAN_AddInputGoal(Narsese_AtomicTerm("g"));
+    NAR_Cycles(100);
+    NAR_AddInputBelief(Narsese_AtomicTerm("a"));
+    NAR_AddInputGoal(Narsese_AtomicTerm("g"));
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;

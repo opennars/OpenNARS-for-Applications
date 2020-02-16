@@ -30,11 +30,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "Memory.h"
-#include "YAN.h"
+#include "NAR.h"
 #include "Config.h"
 
 ////////////////////
-//  YAN Decision  //
+//  NAR Decision  //
 ////////////////////
 //Realization of goals
 
@@ -62,7 +62,7 @@ typedef struct
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_AssumptionOfFailure(int operationID, long currentTime);
-//YAN decision making rule applying when goal is an operation
+//NAR decision making rule applying when goal is an operation
 Decision Decision_Suggest(Event *goal, long currentTime);
 
 #endif

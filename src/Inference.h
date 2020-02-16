@@ -30,7 +30,7 @@
 ///////////////////
 //Support for NAL inference on Term's
 //But only a limited set:
-//the commented derivations are all that need to happen in YAN.
+//the commented derivations are all that need to happen in NAR.
 
 //References//
 //-----------//

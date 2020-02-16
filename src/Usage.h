@@ -26,7 +26,7 @@
 #define USEFULNESSVALUE_H
 
 /////////////////////////////
-//  YAN usefulness value //
+//  NAR usefulness value //
 /////////////////////////////
 
 //References//

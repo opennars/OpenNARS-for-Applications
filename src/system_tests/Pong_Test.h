@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-void YAN_Pong(long iterations)
+void NAR_Pong(long iterations)
 {
-    YAN_INIT();
-    puts(">>YAN Pong start");
-    YAN_AddOperation(Narsese_AtomicTerm("^left"), YAN_Pong_Left); 
-    YAN_AddOperation(Narsese_AtomicTerm("^right"), YAN_Pong_Right); 
+    NAR_INIT();
+    puts(">>NAR Pong start");
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -86,13 +86,13 @@ void YAN_Pong(long iterations)
         }
         if(batX < ballX)
         {
-            YAN_AddInputBelief(Narsese_AtomicTerm("ball_right"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("ball_right"));
         }
         if(ballX < batX)
         {
-            YAN_AddInputBelief(Narsese_AtomicTerm("ball_left"));
+            NAR_AddInputBelief(Narsese_AtomicTerm("ball_left"));
         }
-        YAN_AddInputGoal(Narsese_AtomicTerm("good_yan"));
+        NAR_AddInputGoal(Narsese_AtomicTerm("good_yan"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -115,7 +115,7 @@ void YAN_Pong(long iterations)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                YAN_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
                 puts("good");
                 hits++;
             }
@@ -131,15 +131,15 @@ void YAN_Pong(long iterations)
             ballX = rand()%szX;
             vX = rand()%2 == 0 ? 1 : -1;
         }
-        if(YAN_Pong_Left_executed)
+        if(NAR_Pong_Left_executed)
         {
-            YAN_Pong_Left_executed = false;
+            NAR_Pong_Left_executed = false;
             puts("Exec: op_left");
             batVX = -2;
         }
-        if(YAN_Pong_Right_executed)
+        if(NAR_Pong_Right_executed)
         {
-            YAN_Pong_Right_executed = false;
+            NAR_Pong_Right_executed = false;
             puts("Exec: op_right");
             batVX = 2;
         }
@@ -149,6 +149,6 @@ void YAN_Pong(long iterations)
         {
             nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
         }
-        //YAN_Cycles(10);
+        //NAR_Cycles(10);
     }
 }

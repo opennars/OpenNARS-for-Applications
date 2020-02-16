@@ -25,9 +25,9 @@
 void RuleTable_Test()
 {
     puts(">>RuleTable test start");
-    YAN_INIT();
-    YAN_AddInput(Narsese_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, true);
-    YAN_AddInput(Narsese_Term("<animal --> being>"), EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, true);
-    YAN_Cycles(1);
+    NAR_INIT();
+    NAR_AddInput(Narsese_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true);
+    NAR_AddInput(Narsese_Term("<animal --> being>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true);
+    NAR_Cycles(1);
     puts(">>RuleTable test successul");
 }

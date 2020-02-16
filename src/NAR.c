@@ -22,11 +22,11 @@
  * THE SOFTWARE.
  */
 
-#include "YAN.h"
+#include "NAR.h"
 
 long currentTime = 1;
 
-void YAN_INIT()
+void NAR_INIT()
 {
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
     Memory_INIT(); //clear data structures
@@ -35,7 +35,7 @@ void YAN_INIT()
     currentTime = 1; //reset time
 }
 
-void YAN_Cycles(int cycles)
+void NAR_Cycles(int cycles)
 {
     for(int i=0; i<cycles; i++)
     {
@@ -45,7 +45,7 @@ void YAN_Cycles(int cycles)
     }
 }
 
-Event YAN_AddInput(Term term, char type, Truth truth, bool eternal)
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal)
 {
     Event ev = Event_InputEvent(term, type, truth, currentTime);
     if(eternal)
@@ -53,22 +53,22 @@ Event YAN_AddInput(Term term, char type, Truth truth, bool eternal)
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
     }
     Memory_addInputEvent(&ev, currentTime);
-    YAN_Cycles(1);
+    NAR_Cycles(1);
     return ev;
 }
 
-Event YAN_AddInputBelief(Term term)
+Event NAR_AddInputBelief(Term term)
 {
-    Event ret = YAN_AddInput(term, EVENT_TYPE_BELIEF, YAN_DEFAULT_TRUTH, false);
+    Event ret = NAR_AddInput(term, EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false);
     return ret;
 }
 
-Event YAN_AddInputGoal(Term term)
+Event NAR_AddInputGoal(Term term)
 {
-    return YAN_AddInput(term, EVENT_TYPE_GOAL, YAN_DEFAULT_TRUTH, false);
+    return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false);
 }
 
-void YAN_AddOperation(Term term, Action procedure)
+void NAR_AddOperation(Term term, Action procedure)
 {
     char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");

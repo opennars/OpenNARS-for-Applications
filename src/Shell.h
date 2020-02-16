@@ -28,11 +28,11 @@
 /////////////
 //  Shell  //
 /////////////
-//The shell for interaction with YAN
+//The shell for interaction with NAR
 
 //References//
 //----------//
-#include "YAN.h"
+#include "NAR.h"
 #include <ctype.h> 
 #include "Stats.h"
 

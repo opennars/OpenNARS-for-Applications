@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "YAN.h"
+#include "NAR.h"
 #include "./unit_tests/unit_tests.h"
 #include "./system_tests/system_tests.h"
 #include "Shell.h"
@@ -43,25 +43,25 @@ void Process_Args(int argc, char *argv[])
     {
         if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
         {
-            YAN_INIT();
+            NAR_INIT();
             NAL_GenerateRuleTable();
             exit(0);
         }
         if(!strcmp(argv[1],"pong"))
         {
-            YAN_Pong(iterations);
+            NAR_Pong(iterations);
         }
         if(!strcmp(argv[1],"pong2"))
         {
-            YAN_Pong2(iterations);
+            NAR_Pong2(iterations);
         }
         if(!strcmp(argv[1],"testchamber"))
         {
-            YAN_TestChamber();
+            NAR_TestChamber();
         }
         if(!strcmp(argv[1],"alien"))
         {
-            YAN_Alien(iterations);
+            NAR_Alien(iterations);
         }
         if(!strcmp(argv[1],"shell"))
         {
@@ -73,18 +73,18 @@ void Process_Args(int argc, char *argv[])
 void Display_Help()
 {
     puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
-    puts("YAN pong (starts Pong example)");
-    puts("YAN pong2 (starts Pong2 example)");
-    puts("YAN testchamber (starts Test Chamber multistep procedure learning example)");
-    puts("YAN alien (starts the alien example)");
-    puts("YAN shell (starts the interactive NAL shell)");
+    puts("NAR pong (starts Pong example)");
+    puts("NAR pong2 (starts Pong2 example)");
+    puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
+    puts("NAR alien (starts the alien example)");
+    puts("NAR shell (starts the interactive NAL shell)");
 }
 
 int main(int argc, char *argv[])
 {
     srand(1337);
     Process_Args(argc, argv);
-    YAN_INIT();
+    NAR_INIT();
     Run_Unit_Tests();
     Run_System_Tests();
     Display_Help();

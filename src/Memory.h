@@ -26,9 +26,9 @@
 #define MEMORY_H
 
 /////////////////
-//  YAN Memory //
+//  NAR Memory //
 /////////////////
-//The concept-based memory of YAN
+//The concept-based memory of NAR
 
 //References//
 //////////////
