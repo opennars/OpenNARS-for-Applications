@@ -22,8 +22,7 @@ typedef struct {
     long occurrenceTimeOffset;
     //for efficient spike propagation:
     void *sourceConcept;
-    Term sourceConceptTerm; //to check whether it's still the same
-    //Term_HASH_TYPE sourceConceptTermHash;
+    long sourceConceptId; //to check whether it's still the same
     long creationTime;
 } Implication;
 

@@ -219,8 +219,8 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 {
                     Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
-                                        .sourceConceptTerm = subject,
                                         .creationTime = currentTime };
+                    Term sourceConceptTerm = subject;
                     //now extract operation id
                     int opi = 0;
                     if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
@@ -229,18 +229,19 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                         if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
                         {
                             opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
-                            imp.sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                            sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                         }
                         else
                         {
-                            imp.sourceConceptTerm = subject;
+                            sourceConceptTerm = subject;
                         }
                     }
                     else
                     {
-                        imp.sourceConceptTerm = subject;
+                        sourceConceptTerm = subject;
                     }
-                    Concept *sourceConcept = Memory_Conceptualize(&imp.sourceConceptTerm, currentTime);
+                    Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+                    imp.sourceConceptId = sourceConcept->id;
                     if(sourceConcept != NULL)
                     {
                         imp.sourceConcept = sourceConcept;
@@ -301,5 +302,5 @@ void Memory_addOperation(int id, Operation op)
 
 bool Memory_ImplicationValid(Implication *imp)
 {
-    return Term_Equal(&imp->sourceConceptTerm, &((Concept*) imp->sourceConcept)->term);
+    return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
 }

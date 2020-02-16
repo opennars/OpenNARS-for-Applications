@@ -15,7 +15,7 @@
 //Data structure//
 //--------------//
 typedef struct {
-    int id;
+    long id;
     Usage usage;
     Term term;
     TERM_HASH_TYPE term_hash;

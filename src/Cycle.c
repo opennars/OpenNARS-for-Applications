@@ -173,13 +173,13 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
         {
             Implication precondition_implication = Inference_BeliefInduction(a, b);
             precondition_implication.sourceConcept = A;
-            precondition_implication.sourceConceptTerm = A->term;
+            precondition_implication.sourceConceptId = A->id;
             if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
             {
                 Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term);
                 if(Variable_hasVariable(&general_implication_term, true, true, false))
                 {
-                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1);
+                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, NULL, 0);
                 }
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -189,7 +189,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 {
                     revised_precon->creationTime = currentTime; //for evaluation
                     revised_precon->sourceConcept = A;
-                    revised_precon->sourceConceptTerm = A->term;
+                    revised_precon->sourceConceptId = A->id;
                     /*IN_DEBUG( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
                     Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
                 }
@@ -327,7 +327,7 @@ void Cycle_Perform(long currentTime)
         double priority = selectedEventsPriority[i];
         Term dummy_term = {0};
         Truth dummy_truth = {0};
-        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false); 
+        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
         IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
         //Adjust dynamic firing threshold: (proportional "self"-control)
         double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
@@ -343,6 +343,7 @@ void Cycle_Perform(long currentTime)
         for(int j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
+            long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
             if(c->priority < conceptPriorityThresholdCurrent)
             {
                 continue;
@@ -420,7 +421,7 @@ void Cycle_Perform(long currentTime)
                         Narsese_PrintTerm(&c->term);
                         puts("");
                     }
-                    RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true);
+                    RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                 }
             }
             if(is_temporally_related)
@@ -437,7 +438,7 @@ void Cycle_Perform(long currentTime)
                         Implication updated_imp = *imp;
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
                         Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth));
+                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), c, validation_cid);
                     }
                 }
             }

@@ -65,7 +65,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .stamp = conclusionStamp, 
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
-                           .sourceConceptTerm = a->sourceConceptTerm,
+                           .sourceConceptId = a->sourceConceptId,
                            .creationTime = creationTime };
 }
 

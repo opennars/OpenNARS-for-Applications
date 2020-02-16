@@ -124,7 +124,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                                 Implication specific_imp = imp; //can only be completely specific
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2);
                                 specific_imp.sourceConcept = cmatch;
-                                specific_imp.sourceConceptTerm = cmatch->term;
+                                specific_imp.sourceConceptId = cmatch->id;
                                 Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
                                 if(considered.desire > decision.desire)
                                 {
@@ -185,7 +185,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                     if(added != NULL)
                     {
                         added->sourceConcept = negative_confirmation.sourceConcept;
-                        added->sourceConceptTerm = negative_confirmation.sourceConceptTerm;
+                        added->sourceConceptId = negative_confirmation.sourceConceptId;
                     }                                
                     stampID--;
                 }
