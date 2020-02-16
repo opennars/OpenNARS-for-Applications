@@ -1,4 +1,4 @@
-#YAN NLP Shell
+#NAR NLP Shell
 #Can "parse" English with roughly the structure:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
@@ -18,7 +18,7 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('universal_tagset')
 nltk.download('wordnet')
-proc = subprocess.Popen(["./YAN","shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+proc = subprocess.Popen(["./NAR","shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
 #convert universal tag set to the wordnet word types
 def wordnet_tag(tag):
