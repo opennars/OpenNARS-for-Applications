@@ -2,7 +2,7 @@ from subprocess import PIPE, run
 import subprocess
 import glob
 
-#YAN C tests & metrics, only print fully output on failure, always print the metrics:
+#NAR C tests & metrics, only print fully output on failure, always print the metrics:
 def ctests(Example, Args, DoneAfterMetric):
     result = run(Args.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)
     if result.returncode != 0:
@@ -16,7 +16,7 @@ def ctests(Example, Args, DoneAfterMetric):
             else:
                 print(line)
     print("\n" + Example + " successful!")
-ctests("System tests", "./YAN", False)
+ctests("System tests", "./NAR", False)
 
 #Q&A metrics for the Narsese and English files:
 TimeCntGlobal = 0
@@ -111,7 +111,7 @@ def Test(Example, outputString):
 #Evaluate tests & performance on all Narsese examples:
 print("\nNow running Q&A experiments:")
 for filename in glob.glob("./examples/nal/*.nal"):
-    Test(filename, subprocess.getoutput("./YAN shell < " + filename))
+    Test(filename, subprocess.getoutput("./NAR shell < " + filename))
 print("\nNarsese integration tests successful!")
 
 #Evaluate tests & performance English examples:
@@ -134,7 +134,7 @@ print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")
-ctests("Pong", "./YAN pong 10000", True)
-ctests("Pong2", "./YAN pong2 10000", True)
-ctests("Alien", "./YAN alien 10000", True)
+ctests("Pong", "./NAR pong 10000", True)
+ctests("Pong2", "./NAR pong2 10000", True)
+ctests("Alien", "./NAR alien 10000", True)
 print("\nProcedure learning metrics done");

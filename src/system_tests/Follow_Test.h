@@ -51,12 +51,12 @@ void NAR_Follow_Test()
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
         NAR_AddInputBelief(BALL == LEFT ? Narsese_AtomicTerm("ball_left") : Narsese_AtomicTerm("ball_right"));
-        NAR_AddInputGoal(Narsese_AtomicTerm("good_yan"));
+        NAR_AddInputGoal(Narsese_AtomicTerm("good_nar"));
         if(NAR_Follow_Test_Right_executed)
         {
             if(BALL == RIGHT)
             {
-                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_nar"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;
@@ -73,7 +73,7 @@ void NAR_Follow_Test()
         {        
             if(BALL == LEFT)
             {
-                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_nar"));
                 printf("(ball=%d) good\n",BALL);
                 score++;
                 goods++;

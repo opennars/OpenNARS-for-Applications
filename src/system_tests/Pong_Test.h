@@ -92,7 +92,7 @@ void NAR_Pong(long iterations)
         {
             NAR_AddInputBelief(Narsese_AtomicTerm("ball_left"));
         }
-        NAR_AddInputGoal(Narsese_AtomicTerm("good_yan"));
+        NAR_AddInputGoal(Narsese_AtomicTerm("good_nar"));
         if(ballX <= 0)
         {
             vX = 1;
@@ -115,7 +115,7 @@ void NAR_Pong(long iterations)
         {
             if(abs(ballX-batX) <= batWidth)
             {
-                NAR_AddInputBelief(Narsese_AtomicTerm("good_yan"));
+                NAR_AddInputBelief(Narsese_AtomicTerm("good_nar"));
                 puts("good");
                 hits++;
             }
