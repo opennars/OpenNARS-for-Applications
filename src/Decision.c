@@ -133,26 +133,34 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         continue;
                     }
                     Implication imp = postc_general->precondition_beliefs[opi].array[j];
-                    imp.term = Variable_ApplySubstitute(imp.term, subs);
-                    assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
-                    Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
-                    Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                    for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
+                    bool success;
+                    imp.term = Variable_ApplySubstitute(imp.term, subs, &success);
+                    if(success)
                     {
-                        Concept *cmatch = concepts.items[cmatch_k].address;
-                        if(!Variable_hasVariable(&cmatch->term, true, true, true))
+                        assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
+                        Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
+                        Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
+                        for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                         {
-                            Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
-                            if(subs2.success)
+                            Concept *cmatch = concepts.items[cmatch_k].address;
+                            if(!Variable_hasVariable(&cmatch->term, true, true, true))
                             {
-                                Implication specific_imp = imp; //can only be completely specific
-                                specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2);
-                                specific_imp.sourceConcept = cmatch;
-                                specific_imp.sourceConceptId = cmatch->id;
-                                Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
-                                if(considered.desire > decision.desire)
+                                Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
+                                if(subs2.success)
                                 {
-                                    decision = considered;
+                                    Implication specific_imp = imp; //can only be completely specific
+                                    bool success;
+                                    specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
+                                    if(success)
+                                    {
+                                        specific_imp.sourceConcept = cmatch;
+                                        specific_imp.sourceConceptId = cmatch->id;
+                                        Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
+                                        if(considered.desire > decision.desire)
+                                        {
+                                            decision = considered;
+                                        }
+                                    }
                                 }
                             }
                         }

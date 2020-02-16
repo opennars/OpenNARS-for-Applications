@@ -50,7 +50,7 @@ bool Variable_isQueryVariable(Atom atom);
 bool Variable_isVariable(Atom atom);
 bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query);
 Substitution Variable_Unify(Term *general, Term *specific);
-Term Variable_ApplySubstitute(Term term, Substitution substitution);
-Term IntroduceImplicationVariables(Term implication);
+Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
+Term IntroduceImplicationVariables(Term implication, bool *success);
 
 #endif

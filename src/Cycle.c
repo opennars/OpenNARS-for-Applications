@@ -87,12 +87,16 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
             Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
             if(subs.success)
             {
-                ecp.term = Variable_ApplySubstitute(e->term, subs);
-                Concept *c = concepts.items[concept_i].address;
-                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire)
+                bool success;
+                ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
+                if(success)
                 {
-                    best_decision = decision;
+                    Concept *c = concepts.items[concept_i].address;
+                    Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                    if(decision.execute && decision.desire >= best_decision.desire)
+                    {
+                        best_decision = decision;
+                    }
                 }
             }
         }
@@ -139,8 +143,9 @@ static Decision Cycle_PropagateSpikes(long currentTime)
                         assert(subs.success, "Implication and spike needs to be compatible!");
                         Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
                         Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
-                        Term left_side_substituted = Variable_ApplySubstitute(left_side, subs);
-                        for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+                        bool success;
+                        Term left_side_substituted = Variable_ApplySubstitute(left_side, subs, &success);
+                        for(int concept_i=0; success && concept_i<concepts.itemsAmount; concept_i++)
                         {
                             Concept *pre = concepts.items[concept_i].address;
                             if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
@@ -200,8 +205,9 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
             precondition_implication.sourceConceptId = A->id;
             if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
             {
-                Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term);
-                if(Variable_hasVariable(&general_implication_term, true, true, false))
+                bool success;
+                Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
+                if(success && Variable_hasVariable(&general_implication_term, true, true, false))
                 {
                     NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, NULL, 0);
                 }
@@ -460,9 +466,13 @@ void Cycle_Perform(long currentTime)
                     if(subs.success)
                     {
                         Implication updated_imp = *imp;
-                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs);
-                        Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                        NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), c, validation_cid);
+                        bool success;
+                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                        if(success)
+                        {
+                            Event predicted = Inference_BeliefDeduction(e, &updated_imp);
+                            NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), c, validation_cid);
+                        }
                     }
                 }
             }

@@ -91,7 +91,7 @@ Substitution Variable_Unify(Term *general, Term *specific)
     return substitution;
 }
 
-Term Variable_ApplySubstitute(Term general, Substitution substitution)
+Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
 {
     assert(substitution.success, "A substitution from unsuccessful unification cannot be used to substitute variables!");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -99,7 +99,10 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution)
         Atom general_atom = general.atoms[i];
         if(substitution.map[(int) general_atom].atoms[0] != 0)
         {
-            Term_OverrideSubterm(&general, i, &substitution.map[(int) general_atom]);
+            if(!Term_OverrideSubterm(&general, i, &substitution.map[(int) general_atom]))
+            {
+                *success = false;
+            }
         }
     }
     return general;
@@ -122,7 +125,7 @@ static void countExtensionTerms(Term *cur_inheritance, int *appearing)
     }
 }
 
-Term IntroduceImplicationVariables(Term implication)
+Term IntroduceImplicationVariables(Term implication, bool *success)
 {
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
@@ -177,5 +180,5 @@ Term IntroduceImplicationVariables(Term implication)
         }
         already_handled[(int) atom] = true;
     }
-    return Variable_ApplySubstitute(implication, subs);
+    return Variable_ApplySubstitute(implication, subs, success);
 }
