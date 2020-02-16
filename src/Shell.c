@@ -239,7 +239,7 @@ INIT:
                         Continue:;
                     }
                     fputs("Answer: ", stdout);
-                    if(best_truth.confidence == 0)
+                    if(best_truth.confidence == 1.0)
                     {
                         puts("None.");
                     }
