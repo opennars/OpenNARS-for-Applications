@@ -32,6 +32,7 @@
 #include "Testchamber_Test.h"
 #include "Sequence_Test.h"
 #include "Alien_Test.h"
+#include "UDPNAR_Test.h"
 
 void Run_System_Tests()
 {
@@ -41,4 +42,5 @@ void Run_System_Tests()
     NAR_Multistep_Test();
     NAR_Multistep2_Test();
     NAR_Sequence_Test();
+    NAR_UDPNAR_Test();
 }

@@ -22,27 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
-
-void Run_Unit_Tests()
+void NAR_UDPNAR_Test()
 {
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    puts(">>UDPNAR test start");
+    
+    puts(">>UDPNAR test successul");
 }

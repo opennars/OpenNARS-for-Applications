@@ -26,7 +26,7 @@
 
 bool Stopped = false;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-void* Reasoner_Thread(void* timestep_address)
+void* Reasoner_Thread_Run(void* timestep_address)
 {
     long timestep = *((long*) timestep_address);
     assert(timestep >= 0, "Nonsensical timestep for UDPNAR!");
@@ -43,7 +43,7 @@ void* Reasoner_Thread(void* timestep_address)
     return NULL;
 }
 
-void* Receive_Thread(void *sockfd_address)
+void* Receive_Thread_Run(void *sockfd_address)
 {
     int sockfd = *((int*) sockfd_address);
     for(;;)
@@ -68,13 +68,13 @@ void* Receive_Thread(void *sockfd_address)
 void UDPNAR_Start(char *ip, int port, long timestep)
 {
     int sockfd = UDP_INIT_Receiver(ip, port);
-    pthread_t thread_id_reasoner, thread_id_receiver;
-    pthread_create(&thread_id_reasoner, NULL, Reasoner_Thread, &timestep);
-    pthread_create(&thread_id_receiver, NULL, Receive_Thread, &sockfd);
+    pthread_t thread_reasoner, thread_receiver;
+    pthread_create(&thread_reasoner, NULL, Reasoner_Thread_Run, &timestep);
+    pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &sockfd);
     puts("UDPNAR started, for cancellation press any key!");
     getchar();
     Stopped = true;
-    pthread_cancel(thread_id_receiver); //reasoner thread doesn't block
-    pthread_join(thread_id_reasoner, NULL);
-    pthread_join(thread_id_receiver, NULL);
+    pthread_cancel(thread_receiver); //reasoner thread doesn't block
+    pthread_join(thread_reasoner, NULL);
+    pthread_join(thread_receiver, NULL);
 }
