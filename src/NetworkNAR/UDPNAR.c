@@ -43,14 +43,13 @@ void* Reasoner_Thread(void* timestep_address)
     return NULL;
 }
 
-void* Receive_Thread(void *sockfd_and_port)
+void* Receive_Thread(void *sockfd_address)
 {
-    int sockfd = ((int*) sockfd_and_port)[0];
-    int port = ((int*) sockfd_and_port)[1];
+    int sockfd = *((int*) sockfd_address);
     for(;;)
     {
         char buffer[NARSESE_LEN_MAX];
-        UDP_GetData(sockfd, buffer, NARSESE_LEN_MAX);
+        UDP_ReceiveData(sockfd, buffer, NARSESE_LEN_MAX);
         Term term;
         Truth tv;
         char punctuation;
@@ -68,10 +67,10 @@ void* Receive_Thread(void *sockfd_and_port)
 
 void UDPNAR_Start(char *ip, int port, long timestep)
 {
-    int sockfd_and_port[] = { UDP_INIT(ip, port), port };
+    int sockfd = UDP_INIT_Receiver(ip, port);
     pthread_t thread_id_reasoner, thread_id_receiver;
     pthread_create(&thread_id_reasoner, NULL, Reasoner_Thread, &timestep);
-    pthread_create(&thread_id_receiver, NULL, Receive_Thread, sockfd_and_port);
+    pthread_create(&thread_id_receiver, NULL, Receive_Thread, &sockfd);
     puts("UDPNAR started, for cancellation press any key!");
     getchar();
     Stopped = true;

@@ -42,7 +42,13 @@
 
 //Methods//
 //-------//
-int UDP_INIT(char *ip, int port);
-void UDP_GetData(int sockfd, char *buffer, int buffersize);
+//Inits a UDP receive socket, returns the socketfd
+int UDP_INIT_Receiver(char *ip, int port);
+//Inits an UDP send socket, returns a socketfd
+int UDP_INIT_Sender();
+//Receives data from socket into buffer, up to buffersize bytes
+void UDP_ReceiveData(int sockfd, char *buffer, int buffersize);
+//Sends buffer content to target using the socket
+void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize);
 
 #endif

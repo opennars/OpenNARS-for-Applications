@@ -24,12 +24,11 @@
 
 #include "UDP.h"
 
-int UDP_INIT(char *ip, int port)
+int UDP_INIT_Receiver(char *ip, int port)
 {
     int sockfd;
-    struct sockaddr_in address_me;
+    struct sockaddr_in address_me = {0};
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    memset(&address_me, '\0', sizeof(address_me));
     address_me.sin_family = AF_INET;
     address_me.sin_port = htons(port);
     address_me.sin_addr.s_addr = inet_addr(ip);
@@ -37,10 +36,24 @@ int UDP_INIT(char *ip, int port)
     return sockfd;
 }
 
-void UDP_GetData(int sockfd, char *buffer, int buffersize)
+int UDP_INIT_Sender()
+{
+    return socket(PF_INET, SOCK_DGRAM, 0);
+}
+
+void UDP_ReceiveData(int sockfd, char *buffer, int buffersize)
 {
     struct sockaddr_in address_other;
     socklen_t addr_size = sizeof(address_other);
     recvfrom(sockfd, buffer, buffersize, 0, (struct sockaddr*)& address_other, &addr_size);
     printf("//UDP Data received: %s", buffer);
+}
+
+void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize)
+{
+    struct sockaddr_in address_destination = {0};
+    address_destination.sin_family = AF_INET;
+    address_destination.sin_port = htons(port);
+    address_destination.sin_addr.s_addr = inet_addr(ip);
+    sendto(sockfd, buffer, buffersize, 0, (struct sockaddr*)&address_destination, sizeof(address_destination));
 }
