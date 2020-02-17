@@ -39,8 +39,8 @@ int UDP_INIT(char *ip, int port)
 
 void UDP_GetData(int sockfd, char *buffer, int buffersize)
 {
-	struct sockaddr_in address_other;
-	socklen_t addr_size = sizeof(address_other);
+    struct sockaddr_in address_other;
+    socklen_t addr_size = sizeof(address_other);
     recvfrom(sockfd, buffer, buffersize, 0, (struct sockaddr*)& address_other, &addr_size);
     printf("//UDP Data received: %s", buffer);
 }
