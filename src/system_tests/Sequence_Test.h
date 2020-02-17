@@ -37,7 +37,7 @@ void op_3()
 {
     op_3_executed = true;
 }
-void Sequence_Test()
+void NAR_Sequence_Test()
 {
     NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0;

@@ -40,5 +40,5 @@ void Run_System_Tests()
     NAR_Follow_Test();
     NAR_Multistep_Test();
     NAR_Multistep2_Test();
-    Sequence_Test();
+    NAR_Sequence_Test();
 }
