@@ -70,9 +70,9 @@ void Process_Args(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep
         {
-			char *ip = argv[2];
-			int port = atoi(argv[3]);
-			long timestep = atol(argv[4]);
+            char *ip = argv[2];
+            int port = atoi(argv[3]);
+            long timestep = atol(argv[4]);
             UDPNAR_Start(ip, port, timestep);
         }
     }
