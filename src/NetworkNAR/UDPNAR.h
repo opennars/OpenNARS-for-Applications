@@ -22,27 +22,28 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
+#ifndef UDPNAR_H
+#define UDPNAR_H
 
-void Run_Unit_Tests()
-{
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
-}
+//////////////
+//  UDPNAR  //
+//////////////
+//A networking NAR using UDP to receive Narsese
+
+//References//
+//----------//
+#include "UDP.h"
+#include "./../NAR.h"
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <unistd.h>
+#include <pthread.h> 
+
+//Methods//
+//-------//
+//Starts the UDPNAR with a reasoning speed given by timestep, example: 10000000L = 10ms
+void UDPNAR_Start(char *ip, int port, long timestep);
+//Stops the UDPNAR, cancelling its threads
+void UDPNAR_Stop();
+
+#endif

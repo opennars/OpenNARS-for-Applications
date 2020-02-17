@@ -22,27 +22,38 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
+#include "UDP.h"
 
-void Run_Unit_Tests()
+int UDP_INIT_Receiver(char *ip, int port)
 {
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    int sockfd;
+    struct sockaddr_in address_me = {0};
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    address_me.sin_family = AF_INET;
+    address_me.sin_port = htons(port);
+    address_me.sin_addr.s_addr = inet_addr(ip);
+    bind(sockfd, (struct sockaddr*)&address_me, sizeof(address_me));
+    return sockfd;
+}
+
+int UDP_INIT_Sender()
+{
+    return socket(PF_INET, SOCK_DGRAM, 0);
+}
+
+void UDP_ReceiveData(int sockfd, char *buffer, int buffersize)
+{
+    struct sockaddr_in address_other;
+    socklen_t addr_size = sizeof(address_other);
+    recvfrom(sockfd, buffer, buffersize, 0, (struct sockaddr*)& address_other, &addr_size);
+    printf("//UDP Data received: %s\n", buffer);
+}
+
+void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize)
+{
+    struct sockaddr_in address_destination = {0};
+    address_destination.sin_family = AF_INET;
+    address_destination.sin_port = htons(port);
+    address_destination.sin_addr.s_addr = inet_addr(ip);
+    sendto(sockfd, buffer, buffersize, 0, (struct sockaddr*)&address_destination, sizeof(address_destination));
 }

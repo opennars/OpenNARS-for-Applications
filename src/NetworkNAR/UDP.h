@@ -22,27 +22,33 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
+#ifndef H_UDP
+#define H_UDP
 
-void Run_Unit_Tests()
-{
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
-}
+////////////////////
+// UDP networking //
+////////////////////
+//Support for UDP packet transfer
+
+//References//
+//-----------//
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+//Methods//
+//-------//
+//Inits a UDP receive socket, returns the socketfd
+int UDP_INIT_Receiver(char *ip, int port);
+//Inits an UDP send socket, returns a socketfd
+int UDP_INIT_Sender();
+//Receives data from socket into buffer, up to buffersize bytes
+void UDP_ReceiveData(int sockfd, char *buffer, int buffersize);
+//Sends buffer content to target using the socket
+void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize);
+
+#endif

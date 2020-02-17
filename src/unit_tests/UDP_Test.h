@@ -22,27 +22,31 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
+#include "./../NetworkNAR/UDP.h"
+#include <pthread.h>
 
-void Run_Unit_Tests()
+void *Receiver_Test_Thread_Run(void *sockfd_receiver_address)
 {
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    int sockfd_receiver = *((int*) sockfd_receiver_address);
+    int receive_size = 1024;
+    char receive_data[receive_size];
+    UDP_ReceiveData(sockfd_receiver, receive_data, receive_size);
+    assert(!strcmp(receive_data, "<(a &/ ^left) =/> g>."), "We didn't receive what we sent!");
+    return NULL;
+}
+
+void UDP_Test()
+{
+    puts(">>UDP test start");
+    char *ip = "127.0.0.1";
+    int port = 50000;
+    int sockfd_receiver = UDP_INIT_Receiver(ip, port);
+    pthread_t thread_receiver;
+    pthread_create(&thread_receiver, NULL, Receiver_Test_Thread_Run, &sockfd_receiver);
+    nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //wait for 10ms
+    int sockfd_sender = UDP_INIT_Sender();
+    char *send_data = "<(a &/ ^left) =/> g>.";
+    UDP_SendData(sockfd_sender, ip, port, send_data, strlen(send_data)+1);
+    pthread_join(thread_receiver, NULL);
+    puts(">>UDP test successul");
 }

@@ -22,27 +22,31 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashMap_Test.h"
-#include "UDP_Test.h"
+#include "./../NetworkNAR/UDPNAR.h"
 
-void Run_Unit_Tests()
+bool NAR_UDPNAR_Test_op_left_executed = false;
+void NAR_UDPNAR_Test_op_left()
 {
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    NAR_UDPNAR_Test_op_left_executed = true;
+}
+
+void NAR_UDPNAR_Test()
+{
+    puts(">>UDPNAR test start");
+    char *ip = "127.0.0.1";
+    int port = 50001;
+    long timestep = 10000000L; //10ms
+    UDPNAR_Start(ip, port, timestep);
+    NAR_AddOperation(Narsese_Term("^tutu"), NAR_UDPNAR_Test_op_left);
+    int sockfd_sender = UDP_INIT_Sender();
+    char *send_data1 = "<(a &/ ^tutu) =/> g>.";
+    UDP_SendData(sockfd_sender, ip, port, send_data1, strlen(send_data1)+1);
+    char *send_data2 = "a. :|:";
+    UDP_SendData(sockfd_sender, ip, port, send_data2, strlen(send_data2)+1);
+    char *send_data3 = "g! :|:";
+    UDP_SendData(sockfd_sender, ip, port, send_data3, strlen(send_data3)+1);
+    nanosleep((struct timespec[]){{0, timestep}}, NULL); //wait another timestep
+    assert(NAR_UDPNAR_Test_op_left_executed, "UDPNAR operation wasn't executed!!");
+    UDPNAR_Stop();
+    puts(">>UDPNAR test successul");
 }
