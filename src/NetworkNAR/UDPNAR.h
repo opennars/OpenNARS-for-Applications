@@ -43,5 +43,7 @@
 //-------//
 //Starts the UDPNAR with a reasoning speed given by timestep, example: 10000000L = 10ms
 void UDPNAR_Start(char *ip, int port, long timestep);
+//Stops the UDPNAR, cancelling its threads
+void UDPNAR_Stop();
 
 #endif

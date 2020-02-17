@@ -32,6 +32,7 @@
 //References//
 //-----------//
 #include "Cycle.h"
+#include "Narsese.h"
 #include "Config.h"
 
 //Parameters//
@@ -55,5 +56,7 @@ Event NAR_AddInputBelief(Term term);
 Event NAR_AddInputGoal(Term term);
 //Add an operation
 void NAR_AddOperation(Term term, Action procedure);
+//Add an Narsese sentence:
+void NAR_AddInputNarsese(char *narsese_sentence);
 
 #endif

@@ -25,10 +25,13 @@
 #include "UDPNAR.h"
 
 bool Stopped = false;
+volatile bool reasoner_thread_started = false, receive_thread_started = false;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void* Reasoner_Thread_Run(void* timestep_address)
 {
     long timestep = *((long*) timestep_address);
+    reasoner_thread_started = true;
     assert(timestep >= 0, "Nonsensical timestep for UDPNAR!");
     while(!Stopped)
     {
@@ -46,33 +49,35 @@ void* Reasoner_Thread_Run(void* timestep_address)
 void* Receive_Thread_Run(void *sockfd_address)
 {
     int sockfd = *((int*) sockfd_address);
+    receive_thread_started = true;
     for(;;)
     {
         char buffer[NARSESE_LEN_MAX];
         UDP_ReceiveData(sockfd, buffer, NARSESE_LEN_MAX);
-        Term term;
-        Truth tv;
-        char punctuation;
-        bool isEvent;
-        Narsese_Sentence(buffer, &term, &punctuation, &isEvent, &tv);    
-#if STAGE==2
-        term = RuleTable_Reduce(term, false);
-#endif
         pthread_mutex_lock(&mutex);
-        NAR_AddInput(term, punctuation, tv, isEvent);
+        NAR_AddInputNarsese(buffer);
         pthread_mutex_unlock(&mutex);
     }
     return NULL;
 }
 
+pthread_t thread_reasoner, thread_receiver;
+bool started = false;
 void UDPNAR_Start(char *ip, int port, long timestep)
 {
+    NAR_INIT();
+    assert(!Stopped, "UDPNAR was already started!");
     int sockfd = UDP_INIT_Receiver(ip, port);
-    pthread_t thread_reasoner, thread_receiver;
     pthread_create(&thread_reasoner, NULL, Reasoner_Thread_Run, &timestep);
     pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &sockfd);
-    puts("UDPNAR started, for cancellation press any key!");
-    getchar();
+    while(!receive_thread_started || !reasoner_thread_started); //busy wait :)
+    puts("//UDPNAR started!");
+    started = true;
+}
+
+void UDPNAR_Stop()
+{
+    assert(started, "UDPNAR not started, call UDPNAR_Start first!");
     Stopped = true;
     pthread_cancel(thread_receiver); //reasoner thread doesn't block
     pthread_join(thread_reasoner, NULL);

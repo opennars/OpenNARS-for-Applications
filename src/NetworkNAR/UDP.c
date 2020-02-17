@@ -46,6 +46,7 @@ void UDP_ReceiveData(int sockfd, char *buffer, int buffersize)
     struct sockaddr_in address_other;
     socklen_t addr_size = sizeof(address_other);
     recvfrom(sockfd, buffer, buffersize, 0, (struct sockaddr*)& address_other, &addr_size);
+    printf("//UDP Data received: %s\n", buffer);
 }
 
 void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize)

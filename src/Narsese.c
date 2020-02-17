@@ -29,6 +29,10 @@
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
 //size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
 #define EXPANSION_LEN REPLACEMENT_LEN*3
+//whether the package is initialized
+static bool initialized = false;
+//SELF atom, avoids strcmp for checking operator format
+Atom SELF; 
 
 //Replace copulas with canonical single-char copulas, including sets and set elements!
 char* replaceWithCanonicalCopulas(char *narsese, int n)
@@ -355,6 +359,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
 
 Term Narsese_Term(char *narsese)
 {
+    assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
     Term ret = {0};
     char *narsese_expanded = Narsese_Expand(narsese);
     char** tokens_prefix = Narsese_PrefixTransform(narsese_expanded);
@@ -365,6 +370,7 @@ Term Narsese_Term(char *narsese)
 
 void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv)
 {
+    assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
     char narseseInplace[NARSESE_LEN_MAX] = {0};
     destTv->frequency = NAR_DEFAULT_FREQUENCY;
     destTv->confidence = NAR_DEFAULT_CONFIDENCE;
@@ -555,7 +561,6 @@ void Narsese_PrintTerm(Term *term)
     Narsese_PrintTermPrettyRecursive(term, 1);
 }
 
-Atom SELF; //avoids strcmp for checking operator format
 void Narsese_INIT()
 {
     operator_index = term_index = 0;
@@ -577,6 +582,7 @@ void Narsese_INIT()
     Narsese_AtomicTermIndex("$1");
     Narsese_AtomicTermIndex("$2");
     Narsese_AtomicTermIndex("#1");
+    initialized = true;
 }
 
 bool Narsese_copulaEquals(Atom atom, char name)
