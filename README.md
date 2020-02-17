@@ -51,3 +51,16 @@ English: (will be updated to Python3 at some point as well...)
 ```
 python2 english_shell.py < ./examples/english/story1.english
 ```
+
+**How to run an UDPNAR:**
+
+```
+./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
+./NAR UDPNAR 127.0.0.1 50000 10000000 true
+```
+
+where the output can be logged simply by appending
+
+```
+> output.log
+```
