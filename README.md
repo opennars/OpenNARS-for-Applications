@@ -13,7 +13,7 @@ cd OpenNARS-for-Applications
 ./build.sh
 ```
 
-***How to set the amount of threads the system should run with: (experimental, compile with ./build.sh -fopenmp)***
+***How to set the amount of threads the system should run with: (to be tested more, compile with ./build.sh -fopenmp)***
 ```
 export OMP_NUM_THREADS=8
 ```
