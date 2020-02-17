@@ -74,8 +74,10 @@ void Process_Args(int argc, char *argv[])
             int port = atoi(argv[3]);
             long timestep = atol(argv[4]);
             UDPNAR_Start(ip, port, timestep);
+            puts("//press any key and enter to quit!");
             getchar();
             UDPNAR_Stop();
+            exit(0);
         }
     }
 }
