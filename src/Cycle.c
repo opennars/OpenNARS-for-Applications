@@ -28,22 +28,21 @@
 static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
-    Event eMatch = *e;
-    if(eMatch.truth.confidence > MIN_CONFIDENCE)
+    if(e->truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(c->usage, currentTime);
         //add event as spike to the concept:
-        if(eMatch.type == EVENT_TYPE_BELIEF)
+        if(e->type == EVENT_TYPE_BELIEF)
         {
-            c->belief_spike = eMatch;
+            c->belief_spike = *e;
         }
         else
         {
             //pass spike if the concept doesn't have a satisfying motor command
-            decision = Decision_Suggest(&eMatch, currentTime);
+            decision = Decision_Suggest(e, currentTime);
             if(!decision.execute)
             {
-                c->incoming_goal_spike = eMatch;
+                c->incoming_goal_spike = *e;
             }
             else
             {
@@ -104,8 +103,8 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
     return best_decision;
 }
 
-//Propagate spikes for subgoal processing, generating anticipations and decisions
-static Decision Cycle_PropagateSpikes(long currentTime)
+//Propagate subgoals, generating anticipations and decisions
+static Decision Cycle_PropagateSubgoals(long currentTime)
 {
     Decision decision = {0};
     //pass goal spikes on to the next
@@ -228,8 +227,9 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void popEvents()
+void Cycle_PopEvents()
 {
+    eventsSelected = 0;
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
         Event *e;
@@ -254,10 +254,8 @@ void pushEvents(long currentTime)
     }
 }
 
-void Cycle_Perform(long currentTime)
-{   
-    eventsSelected = 0;
-    popEvents();
+void Cycle_ProcessInputBeliefEvents(long currentTime)
+{
     //1. process newest event
     if(belief_events.itemsAmount > 0)
     {
@@ -307,6 +305,10 @@ void Cycle_Perform(long currentTime)
             }
         }
     }
+}
+
+void Cycle_ProcessInputGoalEvents(long currentTime)
+{
     //process goals
     Decision decision[PROPAGATION_ITERATIONS + 1] = {0};
     if(goal_events.itemsAmount > 0)
@@ -319,7 +321,7 @@ void Cycle_Perform(long currentTime)
             //allow reasoning into the future by propagating spikes from goals back to potential current events
             for(int i=0; i<PROPAGATION_ITERATIONS; i++)
             {
-                decision[i+1] = Cycle_PropagateSpikes(currentTime);
+                decision[i+1] = Cycle_PropagateSubgoals(currentTime);
             }
         }
     }
@@ -343,6 +345,10 @@ void Cycle_Perform(long currentTime)
         c->incoming_goal_spike = (Event) {0};
         c->goal_spike = (Event) {0};
     }
+}
+
+void Cycle_Inference(long currentTime)
+{
     //Inferences
 #if STAGE==2
     long countConceptsMatched = 0;
@@ -483,6 +489,10 @@ void Cycle_Perform(long currentTime)
         }
     }
 #endif
+}
+
+void Cycle_RelativeForgetting(long currentTime)
+{
     //Apply event forgetting:
     for(int i=0; i<cycling_events.itemsAmount; i++)
     {
@@ -498,6 +508,20 @@ void Cycle_Perform(long currentTime)
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_events);
-    //push selected events back to the queue as well
+}
+
+void Cycle_Perform(long currentTime)
+{   
+    //1. Retrieve EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+    Cycle_PopEvents(currentTime);
+    //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
+    Cycle_ProcessInputBeliefEvents(currentTime);
+    //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
+    Cycle_ProcessInputGoalEvents(currentTime);
+    //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
+    Cycle_Inference(currentTime);
+    //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
+    Cycle_RelativeForgetting(currentTime);
+    //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
     pushEvents(currentTime);
 }

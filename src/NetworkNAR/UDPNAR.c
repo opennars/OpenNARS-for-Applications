@@ -55,7 +55,7 @@ void* Receive_Thread_Run(void *sockfd_address)
     pthread_cond_signal(&start_cond);
     pthread_mutex_unlock(&start_mutex);
     int sockfd = *((int*) sockfd_address);
-    for(;;)
+    while(!Stopped)
     {
         char buffer[NARSESE_LEN_MAX];
         UDP_ReceiveData(sockfd, buffer, NARSESE_LEN_MAX);
@@ -67,31 +67,32 @@ void* Receive_Thread_Run(void *sockfd_address)
 }
 
 pthread_t thread_reasoner, thread_receiver;
-bool started = false;
+bool Started = false;
+int receiver_sockfd; 
 void UDPNAR_Start(char *ip, int port, long timestep)
 {
-    NAR_INIT();
     assert(!Stopped, "UDPNAR was already started!");
-    int sockfd = UDP_INIT_Receiver(ip, port);
+    NAR_INIT();
+    receiver_sockfd = UDP_INIT_Receiver(ip, port);
     //Create reasoner thread and wait for its creation
     pthread_create(&thread_reasoner, NULL, Reasoner_Thread_Run, &timestep);
     pthread_mutex_lock(&start_mutex);
     pthread_cond_wait(&start_cond, &start_mutex);
     pthread_mutex_unlock(&start_mutex);
     //Create receive thread and wait for its creation
-    pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &sockfd);
+    pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &receiver_sockfd);
     pthread_mutex_lock(&start_mutex);
     pthread_cond_wait(&start_cond, &start_mutex);
     pthread_mutex_unlock(&start_mutex);
     puts("//UDPNAR started!");
-    started = true;
+    Started = true;
 }
 
 void UDPNAR_Stop()
 {
-    assert(started, "UDPNAR not started, call UDPNAR_Start first!");
+    assert(Started, "UDPNAR not started, call UDPNAR_Start first!");
     Stopped = true;
-    //Cancel isn't used because platforms such as Android don't support it
-    //Instead we simply enforce that UDPNAR_Start cannot be called again after UDPNAR_Stop
-    //so that used resources cannot accumulate and exit of the program will clean up everything.
+    shutdown(receiver_sockfd, SHUT_RDWR);
+    pthread_join(thread_reasoner, NULL);
+    pthread_join(thread_receiver, NULL);
 }

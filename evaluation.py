@@ -113,11 +113,15 @@ print("\nNow running Q&A experiments:")
 for filename in glob.glob("./examples/nal/*.nal"):
     Test(filename, subprocess.getoutput("./NAR shell < " + filename))
 print("\nNarsese integration tests successful!")
+QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
 for filename in glob.glob('./examples/english/*.english'):
     Test(filename, subprocess.getoutput("python2 english_shell.py < " + filename))
-print("\nEnglish integration tests successful!")
+if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
+    print("\nEnglish integration tests skipped, install python2 and nltk to include them in the evaluation!")
+else:
+    print("\nEnglish integration tests successful!")
 
 #Print global metrics:
 if TimeCntGlobal > 0:
