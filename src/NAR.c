@@ -90,15 +90,15 @@ void NAR_AddInputNarsese(char *narsese_sentence)
 #if STAGE==2
     //apply reduction rules to term:
     term = RuleTable_Reduce(term, false);
-#endif
-    //answer questions:
-    Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
-    Truth best_truth_projected = {0};
-    Term best_term = {0};
-    long answerOccurrenceTime = OCCURRENCE_ETERNAL;
-    long answerCreationTime = 0;
+#endif    
     if(punctuation == '?')
     {
+        //answer questions:
+        Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
+        Truth best_truth_projected = {0};
+        Term best_term = {0};
+        long answerOccurrenceTime = OCCURRENCE_ETERNAL;
+        long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
