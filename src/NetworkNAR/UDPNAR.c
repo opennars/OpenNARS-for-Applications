@@ -55,10 +55,14 @@ void* Receive_Thread_Run(void *sockfd_address)
     pthread_cond_signal(&start_cond);
     pthread_mutex_unlock(&start_mutex);
     int sockfd = *((int*) sockfd_address);
-    while(!Stopped)
+    for(;;)
     {
         char buffer[NARSESE_LEN_MAX];
         UDP_ReceiveData(sockfd, buffer, NARSESE_LEN_MAX);
+        if(Stopped)
+        {
+            break;
+        }
         pthread_mutex_lock(&nar_mutex);
         NAR_AddInputNarsese(buffer);
         pthread_mutex_unlock(&nar_mutex);
