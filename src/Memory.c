@@ -287,16 +287,16 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 c->priority = MAX(c->priority, priority);
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
                 {
-                    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
+                    c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                     c->belief_spike.creationTime = currentTime; //for metrics
                 }
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
                 {
-                    c->predicted_belief = Inference_IncreasedActionPotential(&c->predicted_belief, event, currentTime, NULL);
+                    c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
                     c->predicted_belief.creationTime = currentTime;
                 }
                 bool revision_happened = false;
-                c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
+                c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
                 c->belief.creationTime = currentTime; //for metrics
                 if(revision_happened)
                 {

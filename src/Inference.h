@@ -57,7 +57,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound);
 //{Event (&/,a,op())!, Event a.} |- Event op()! Truth_Deduction
 Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime);
 //{Event a!, Event a!} |- Event a! Truth_Revision or Choice (dependent on evidental overlap)
-Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised);
+Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised);
 //{Event a., Implication <a =/> b>.} |- Event b.  Truth_Deduction
 Event Inference_BeliefDeduction(Event *component, Implication *compound);
 

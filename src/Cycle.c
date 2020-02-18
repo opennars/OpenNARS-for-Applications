@@ -168,7 +168,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         Concept *c = concepts.items[i].address;
         if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
         {
-            c->goal_spike = Inference_IncreasedActionPotential(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
+            c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
             Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
             if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
             {
