@@ -59,7 +59,7 @@ void* Receive_Thread_Run(void *sockfd_address)
     {
         char buffer[NARSESE_LEN_MAX];
         UDP_ReceiveData(sockfd, buffer, NARSESE_LEN_MAX);
-        if(Stopped)
+        if(Stopped) //avoids problematic buffer states due to socket shutdown, most portable solution!
         {
             break;
         }
