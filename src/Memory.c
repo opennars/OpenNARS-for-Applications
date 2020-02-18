@@ -241,6 +241,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                 Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
                 if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
                 {
+                    target_concept->usage = Usage_use(target_concept->usage, currentTime);
                     Implication imp = { .truth = eternal_event.truth,
                                         .stamp = eternal_event.stamp,
                                         .creationTime = currentTime };
@@ -265,9 +266,10 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
                         sourceConceptTerm = subject;
                     }
                     Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
-                    imp.sourceConceptId = sourceConcept->id;
                     if(sourceConcept != NULL)
                     {
+                        sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
+                        imp.sourceConceptId = sourceConcept->id;
                         imp.sourceConcept = sourceConcept;
                         imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
                         Term_OverrideSubterm(&imp.term, 1, &subject);
@@ -281,6 +283,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
             Concept *c = Memory_Conceptualize(&event->term, currentTime);
             if(c != NULL)
             {
+                c->usage = Usage_use(c->usage, currentTime);
                 c->priority = MAX(c->priority, priority);
                 if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
                 {
