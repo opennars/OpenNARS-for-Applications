@@ -246,7 +246,7 @@ void Cycle_PopEvents()
     }
 }
 
-void pushEvents(long currentTime)
+void Cycle_PushEvents(long currentTime)
 {
     for(int i=0; i<eventsSelected; i++)
     {
@@ -523,5 +523,5 @@ void Cycle_Perform(long currentTime)
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
-    pushEvents(currentTime);
+    Cycle_PushEvents(currentTime);
 }
