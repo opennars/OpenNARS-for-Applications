@@ -25,7 +25,7 @@
 #include "Cycle.h"
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
+static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
@@ -54,7 +54,7 @@ static Decision Cycle_ActivateConcept(Concept *c, Event *e, long currentTime)
 }
 
 //Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessEvent(Event *e, long currentTime)
+static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
 {
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
@@ -74,7 +74,7 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
             {
                 ecp.term = e->term;
                 Concept *c = concepts.items[concept_i].address;
-                Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                 if(decision.execute && decision.desire >= best_decision.desire)
                 {
                     best_decision = decision;
@@ -91,7 +91,7 @@ static Decision Cycle_ProcessEvent(Event *e, long currentTime)
                 if(success)
                 {
                     Concept *c = concepts.items[concept_i].address;
-                    Decision decision = Cycle_ActivateConcept(c, &ecp, currentTime);
+                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                     if(decision.execute && decision.desire >= best_decision.desire)
                     {
                         best_decision = decision;
@@ -172,7 +172,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
             if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
             {
-                Decision decision = Cycle_ProcessEvent(&c->goal_spike, currentTime);
+                Decision decision = Cycle_ProcessSensorimotorEvent(&c->goal_spike, currentTime);
                 if(decision.execute)
                 {
                     return decision;
@@ -266,7 +266,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessEvent(toProcess, currentTime);
+                Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
@@ -317,7 +317,7 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
         if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
         {
             assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
-            decision[0] = Cycle_ProcessEvent(goal, currentTime);
+            decision[0] = Cycle_ProcessSensorimotorEvent(goal, currentTime);
             //allow reasoning into the future by propagating spikes from goals back to potential current events
             for(int i=0; i<PROPAGATION_ITERATIONS; i++)
             {
