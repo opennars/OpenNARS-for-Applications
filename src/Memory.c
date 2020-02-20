@@ -258,13 +258,13 @@ bool Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, false, false, true);
             }
         }
     }
 }
 
-void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -321,12 +321,12 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_addInputEvent(Event *event, long currentTime)
+void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_addEvent(event, currentTime, 1, true, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false);
 }
 
-void Memory_addOperation(int id, Operation op)
+void Memory_AddOperation(int id, Operation op)
 {
     operations[id - 1] = op;
 }

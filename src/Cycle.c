@@ -250,7 +250,7 @@ void Cycle_PushEvents(long currentTime)
 {
     for(int i=0; i<eventsSelected; i++)
     {
-        Memory_addEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
+        Memory_AddEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
     }
 }
 
