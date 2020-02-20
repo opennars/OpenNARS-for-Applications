@@ -587,12 +587,12 @@ void Narsese_INIT()
 
 bool Narsese_copulaEquals(Atom atom, char name)
 {
-    return Narsese_atomNames[(int) atom-1][0] == name && Narsese_atomNames[(int) atom-1][1] == 0;
+    return atom>0 && Narsese_atomNames[(int) atom-1][0] == name && Narsese_atomNames[(int) atom-1][1] == 0;
 }
 
 bool Narsese_isOperator(Atom atom)
 {
-    return Narsese_atomNames[(int) atom-1][0] == '^';
+    return atom>0 && Narsese_atomNames[(int) atom-1][0] == '^';
 }
 
 bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op

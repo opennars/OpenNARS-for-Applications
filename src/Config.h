@@ -95,7 +95,7 @@
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define TERMS_MAX 256
 //The type of an atom
-#define Atom char
+#define Atom unsigned char
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 30
 //Maximum size of Narsese input in terms of characters

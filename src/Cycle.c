@@ -513,7 +513,7 @@ void Cycle_RelativeForgetting(long currentTime)
 void Cycle_Perform(long currentTime)
 {   
     //1. Retrieve EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
-    Cycle_PopEvents(currentTime);
+    Cycle_PopEvents();
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold

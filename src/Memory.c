@@ -182,7 +182,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-bool Memory_ProcessNewEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool isImplication)
+void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
