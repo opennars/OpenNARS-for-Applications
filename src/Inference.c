@@ -132,7 +132,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
 }
 
 //{Event a!, Event a!} |- Event a! (revision and choice)
-Event Inference_IncreasedActionPotential(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised)
+Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised)
 {
     if(revised != NULL)
     {

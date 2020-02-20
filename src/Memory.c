@@ -129,13 +129,6 @@ static bool Memory_containsEvent(Event *event)
             return true;
         }
     }
-    for(int i=0; i<eventsSelected; i++)
-    {
-        if(Event_Equal(event, &selectedEvents[i]))
-        {
-            return true;
-        }
-    }
     return false;
 }
 
@@ -189,7 +182,89 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_addEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
+void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool isImplication)
+{
+    Event eternal_event = *event;
+    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    {
+        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+        eternal_event.truth = Truth_Eternalize(event->truth);
+    }
+    if(isImplication)
+    {
+        //get predicate and add the subject to precondition table as an implication
+        Term subject = Term_ExtractSubterm(&event->term, 1);
+        Term predicate = Term_ExtractSubterm(&event->term, 2);
+        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
+        if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
+        {
+            target_concept->usage = Usage_use(target_concept->usage, currentTime);
+            Implication imp = { .truth = eternal_event.truth,
+                                .stamp = eternal_event.stamp,
+                                .creationTime = currentTime };
+            Term sourceConceptTerm = subject;
+            //now extract operation id
+            int opi = 0;
+            if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
+            {
+                Term potential_op = Term_ExtractSubterm(&subject, 2);
+                if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
+                {
+                    opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
+                    sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                }
+                else
+                {
+                    sourceConceptTerm = subject;
+                }
+            }
+            else
+            {
+                sourceConceptTerm = subject;
+            }
+            Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            if(sourceConcept != NULL)
+            {
+                sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
+                imp.sourceConceptId = sourceConcept->id;
+                imp.sourceConcept = sourceConcept;
+                imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
+                Term_OverrideSubterm(&imp.term, 1, &subject);
+                Term_OverrideSubterm(&imp.term, 2, &predicate);
+                Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                Memory_printAddedEvent(event, priority, input, derived, revised);
+            }
+        }
+    }
+    else
+    {
+        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        if(c != NULL)
+        {
+            c->usage = Usage_use(c->usage, currentTime);
+            c->priority = MAX(c->priority, priority);
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
+            {
+                c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
+                c->belief_spike.creationTime = currentTime; //for metrics
+            }
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
+            {
+                c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
+                c->predicted_belief.creationTime = currentTime;
+            }
+            bool revision_happened = false;
+            c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
+            c->belief.creationTime = currentTime; //for metrics
+            if(revision_happened)
+            {
+                Memory_AddEvent(&c->belief, currentTime, priority, false, false, false, true);
+            }
+        }
+    }
+}
+
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool readded, bool revised)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -201,7 +276,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
         double complexity = Term_Complexity(&event->term);
         priority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY)
     {
         return;
     }
@@ -226,79 +301,11 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     {
         if(!readded)
         {
-            Event eternal_event = *event;
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+            bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+            Memory_ProcessNewEvent(event, currentTime, priority, input, derived, revised, isImplication);
+            if(isImplication)
             {
-                eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-                eternal_event.truth = Truth_Eternalize(event->truth);
-            }
-            //check if higher order now, implication "$"
-            if(Narsese_copulaEquals(event->term.atoms[0], '$'))
-            {
-                //get predicate and add the subject to precondition table as an implication
-                Term subject = Term_ExtractSubterm(&event->term, 1);
-                Term predicate = Term_ExtractSubterm(&event->term, 2);
-                Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
-                if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
-                {
-                    Implication imp = { .truth = eternal_event.truth,
-                                        .stamp = eternal_event.stamp,
-                                        .creationTime = currentTime };
-                    Term sourceConceptTerm = subject;
-                    //now extract operation id
-                    int opi = 0;
-                    if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
-                    {
-                        Term potential_op = Term_ExtractSubterm(&subject, 2);
-                        if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
-                        {
-                            opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
-                            sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
-                        }
-                        else
-                        {
-                            sourceConceptTerm = subject;
-                        }
-                    }
-                    else
-                    {
-                        sourceConceptTerm = subject;
-                    }
-                    Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
-                    imp.sourceConceptId = sourceConcept->id;
-                    if(sourceConcept != NULL)
-                    {
-                        imp.sourceConcept = sourceConcept;
-                        imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
-                        Term_OverrideSubterm(&imp.term, 1, &subject);
-                        Term_OverrideSubterm(&imp.term, 2, &predicate);
-                        Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
-                        Memory_printAddedEvent(event, priority, input, derived, revised);
-                    }
-                }
-                return; //at this point, either the implication has been added or there was no space for its precondition concept
-            }
-            Concept *c = Memory_Conceptualize(&event->term, currentTime);
-            if(c != NULL)
-            {
-                c->priority = MAX(c->priority, priority);
-                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
-                {
-                    c->belief_spike = Inference_IncreasedActionPotential(&c->belief_spike, event, currentTime, NULL);
-                    c->belief_spike.creationTime = currentTime; //for metrics
-                }
-                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
-                {
-                    c->predicted_belief = Inference_IncreasedActionPotential(&c->predicted_belief, event, currentTime, NULL);
-                    c->predicted_belief.creationTime = currentTime;
-                }
-                bool revision_happened = false;
-                c->belief = Inference_IncreasedActionPotential(&c->belief, &eternal_event, currentTime, &revision_happened);
-                c->belief.creationTime = currentTime; //for metrics
-                if(revision_happened)
-                {
-                    Memory_addEvent(&c->belief, currentTime, priority, false, false, false, true);
-                }
+                return;
             }
         }
         Memory_addCyclingEvent(event, priority, currentTime);
@@ -314,12 +321,12 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_addInputEvent(Event *event, long currentTime)
+void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_addEvent(event, currentTime, 1, true, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false);
 }
 
-void Memory_addOperation(int id, Operation op)
+void Memory_AddOperation(int id, Operation op)
 {
     operations[id - 1] = op;
 }

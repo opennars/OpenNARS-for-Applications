@@ -56,7 +56,7 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
     }
-    Memory_addInputEvent(&ev, currentTime);
+    Memory_AddInputEvent(&ev, currentTime);
     NAR_Cycles(1);
     return ev;
 }
@@ -77,7 +77,7 @@ void NAR_AddOperation(Term term, Action procedure)
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
-    Memory_addOperation(Narsese_OperatorIndex(term_name), (Operation) { .term = term, .action = procedure });
+    Memory_AddOperation(Narsese_OperatorIndex(term_name), (Operation) { .term = term, .action = procedure });
 }
 
 void NAR_AddInputNarsese(char *narsese_sentence)
@@ -90,15 +90,15 @@ void NAR_AddInputNarsese(char *narsese_sentence)
 #if STAGE==2
     //apply reduction rules to term:
     term = RuleTable_Reduce(term, false);
-#endif
-    //answer questions:
-    Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
-    Truth best_truth_projected = {0};
-    Term best_term = {0};
-    long answerOccurrenceTime = OCCURRENCE_ETERNAL;
-    long answerCreationTime = 0;
+#endif    
     if(punctuation == '?')
     {
+        //answer questions:
+        Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
+        Truth best_truth_projected = {0};
+        Term best_term = {0};
+        long answerOccurrenceTime = OCCURRENCE_ETERNAL;
+        long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
