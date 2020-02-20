@@ -129,13 +129,6 @@ static bool Memory_containsEvent(Event *event)
             return true;
         }
     }
-    for(int i=0; i<eventsSelected; i++)
-    {
-        if(Event_Equal(event, &selectedEvents[i]))
-        {
-            return true;
-        }
-    }
     return false;
 }
 
@@ -283,7 +276,7 @@ void Memory_addEvent(Event *event, long currentTime, double priority, bool input
         double complexity = Term_Complexity(&event->term);
         priority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || priority < MIN_PRIORITY)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY)
     {
         return;
     }

@@ -61,5 +61,5 @@ void Event_Print(Event *event)
 
 bool Event_Equal(Event *event, Event *existing)
 {
-    return Term_Equal(&event->term, &existing->term) && Truth_Equal(&event->truth, &existing->truth);
+    return Truth_Equal(&event->truth, &existing->truth) && Term_Equal(&event->term, &existing->term);
 }
