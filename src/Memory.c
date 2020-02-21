@@ -99,9 +99,9 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
             //proceed with recycling of the concept in the priority queue
             *recycleConcept = (Concept) {0};
             Concept_SetTerm(recycleConcept, *term);
+            concept_id++; //concept id's start with 1
             recycleConcept->id = concept_id;
             recycleConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
-            concept_id++;
             //also add added concept to HashMap:
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to add already exists!"); )
             HashTable_Set(&HTconcepts, recycleConcept);
@@ -132,31 +132,53 @@ static bool Memory_containsEvent(Event *event)
     return false;
 }
 
+pthread_mutex_t concepts_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t events_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+static void Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
-    if(Memory_containsEvent(e))
+    Concept *c = NULL;
+    long c_validation_id = 0;
+    pthread_mutex_lock(&concepts_mutex);
     {
-        return false;
-    }
-    Concept *c = Memory_FindConceptByTerm(&e->term);
-    if(c != NULL)
-    {
-        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
+        c = Memory_FindConceptByTerm(&e->term);
+        if(c != NULL)
         {
-            return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
-        }   //more radical than OpenNARS!
+            c_validation_id = c->id;
+        }
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
-    if(feedback.added)
+    pthread_mutex_unlock(&concepts_mutex);
+    pthread_mutex_lock(&events_mutex);
     {
-        Event *toRecyle = feedback.addedItem.address;
-        *toRecyle = *e;
-        return true;
+        if(!Memory_containsEvent(e))
+        {
+            bool AddEvent = true;
+            if(c != NULL && c->belief.type != EVENT_TYPE_DELETED)
+            {
+                if((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || 
+                   (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence))
+                {
+                    if(c->id == c_validation_id) //concept was not recycled while we checked the belief
+                    {
+                        AddEvent = false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
+                    }
+                }   //more radical than OpenNARS!
+            }
+            if(AddEvent)
+            {
+                PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
+                if(feedback.added)
+                {
+                    Event *toRecyle = feedback.addedItem.address;
+                    *toRecyle = *e;
+                }
+            }
+        }
     }
-    return false;
+    pthread_mutex_unlock(&events_mutex);
 }
 
 static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double priority, bool input, bool derived, bool revised)
@@ -195,13 +217,26 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
-        if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
+        Concept *target_concept = NULL;
+        long target_validation_id = 0;
+        pthread_mutex_lock(&concepts_mutex);
         {
-            target_concept->usage = Usage_use(target_concept->usage, currentTime);
-            Implication imp = { .truth = eternal_event.truth,
+            target_concept = Memory_Conceptualize(&predicate, currentTime);
+            if(target_concept != NULL)
+            {
+                target_concept->usage = Usage_use(target_concept->usage, currentTime);
+                target_validation_id = target_concept->id;
+            }
+        }
+        pthread_mutex_unlock(&concepts_mutex);
+        if(target_concept != NULL)
+        {
+            Implication imp = { .truth = eternal_event.truth, //<subject =/> predicate>
                                 .stamp = eternal_event.stamp,
                                 .creationTime = currentTime };
+            imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
+            Term_OverrideSubterm(&imp.term, 1, &subject);
+            Term_OverrideSubterm(&imp.term, 2, &predicate);
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
@@ -222,44 +257,59 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
             {
                 sourceConceptTerm = subject;
             }
-            Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
-            if(sourceConcept != NULL)
+            bool printEvent = false;
+            pthread_mutex_lock(&concepts_mutex);
             {
-                sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
-                imp.sourceConceptId = sourceConcept->id;
-                imp.sourceConcept = sourceConcept;
-                imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
-                Term_OverrideSubterm(&imp.term, 1, &subject);
-                Term_OverrideSubterm(&imp.term, 2, &predicate);
-                Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+                if(sourceConcept != NULL && target_concept->id == target_validation_id)
+                {
+                    sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
+                    imp.sourceConceptId = sourceConcept->id;
+                    imp.sourceConcept = sourceConcept;
+                    Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                    printEvent = true;
+                }
+            }
+            pthread_mutex_unlock(&concepts_mutex);
+            if(printEvent)
+            {
                 Memory_printAddedEvent(event, priority, input, derived, revised);
             }
         }
     }
     else
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime);
-        if(c != NULL)
+        bool revision_happened = false;
+        Event c_belief = {0};
+        pthread_mutex_lock(&concepts_mutex);
         {
-            c->usage = Usage_use(c->usage, currentTime);
-            c->priority = MAX(c->priority, priority);
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
+            Concept *c = Memory_Conceptualize(&event->term, currentTime);
+            if(c != NULL)
             {
-                c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
-                c->belief_spike.creationTime = currentTime; //for metrics
+                c->usage = Usage_use(c->usage, currentTime);
+                c->priority = MAX(c->priority, priority);
+                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
+                {
+                    c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
+                    c->belief_spike.creationTime = currentTime; //for metrics
+                }
+                if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
+                {
+                    c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
+                    c->predicted_belief.creationTime = currentTime;
+                }
+                c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
+                c->belief.creationTime = currentTime; //for metrics
+                if(revision_happened)
+                {
+                    c_belief = c->belief; //copy for the revised belief to be added to memory as an event
+                }
             }
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
-            {
-                c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
-                c->predicted_belief.creationTime = currentTime;
-            }
-            bool revision_happened = false;
-            c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
-            c->belief.creationTime = currentTime; //for metrics
-            if(revision_happened)
-            {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, false, false, true);
-            }
+        }
+        pthread_mutex_unlock(&concepts_mutex);
+        if(revision_happened)
+        {
+            Memory_AddEvent(&c_belief, currentTime, priority, false, false, false, true);
         }
     }
 }

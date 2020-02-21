@@ -125,7 +125,6 @@ void NAL_GenerateRuleTable()
     printf("RULE_%d:;\nreturn term1;\n}\n\n", ruleID);
 }
 
-pthread_mutex_t memory_mutex = PTHREAD_MUTEX_INITIALIZER;
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, Concept *validation_concept, long validation_cid)
 {
     Event e = { .term = conclusionTerm,
@@ -134,10 +133,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .stamp = stamp,
                 .occurrenceTime = conclusionOccurrence ,
                 .creationTime = currentTime };
-    pthread_mutex_lock(&memory_mutex);
     if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
     {
         Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
     }
-    pthread_mutex_unlock(&memory_mutex);
 }
