@@ -54,6 +54,8 @@
 /*----------------------*/
 /* Attention parameters */
 /*----------------------*/
+//Amount of threads
+#define THREADS 1
 //Event selections per cycle for inference
 #define EVENT_SELECTIONS 1
 //Event priority decay of events per cycle

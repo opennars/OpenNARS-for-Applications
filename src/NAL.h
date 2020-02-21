@@ -36,6 +36,7 @@
 #include "Stamp.h"
 #include "Narsese.h"
 #include "Memory.h"
+#include <pthread.h>
 
 //Methods//
 //-------//

@@ -79,13 +79,19 @@ void UDPNAR_Start(char *ip, int port, long timestep)
     NAR_INIT();
     receiver_sockfd = UDP_INIT_Receiver(ip, port);
     //Create reasoner thread and wait for its creation
-    pthread_create(&thread_reasoner, NULL, Reasoner_Thread_Run, &timestep);
     pthread_mutex_lock(&start_mutex);
+    if(!pthread_create(&thread_reasoner, NULL, Reasoner_Thread_Run, &timestep))
+    {
+        assert(false, "UDPNAR Error on reasoner thread creation!");
+    }
     pthread_cond_wait(&start_cond, &start_mutex);
     pthread_mutex_unlock(&start_mutex);
     //Create receive thread and wait for its creation
-    pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &receiver_sockfd);
     pthread_mutex_lock(&start_mutex);
+    if(pthread_create(&thread_receiver, NULL, Receive_Thread_Run, &receiver_sockfd))
+    {
+        assert(false, "UDPNAR Error on receiver thread creation!");
+    }
     pthread_cond_wait(&start_cond, &start_mutex);
     pthread_mutex_unlock(&start_mutex);
     puts("//UDPNAR started!");
