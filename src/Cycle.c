@@ -63,11 +63,12 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
+    bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     Event ecp = *e;
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *c = concepts.items[concept_i].address;
-        if(!Variable_hasVariable(&e->term, true, true, true))  //concept matched to the event which doesn't have variables
+        if(!e_hasVariable)  //concept matched to the event which doesn't have variables
         {
             Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
             if(subs.success)
@@ -310,12 +311,14 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 void Cycle_ProcessInputGoalEvents(long currentTime)
 {
     //process goals
+    bool hadGoal = false;
     Decision decision[PROPAGATION_ITERATIONS + 1] = {0};
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
         {
+            hadGoal = true;
             assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
             decision[0] = Cycle_ProcessSensorimotorEvent(goal, currentTime);
             //allow reasoning into the future by propagating spikes from goals back to potential current events
@@ -324,6 +327,10 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
                 decision[i+1] = Cycle_PropagateSubgoals(currentTime);
             }
         }
+    }
+    if(!hadGoal)
+    {
+        return;
     }
     //inject the best action if there was one
     Decision best_decision = {0};
@@ -342,8 +349,8 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
-        c->incoming_goal_spike = (Event) {0};
-        c->goal_spike = (Event) {0};
+        c->incoming_goal_spike.type = EVENT_TYPE_DELETED;
+        c->goal_spike.type = EVENT_TYPE_DELETED;
     }
 }
 
