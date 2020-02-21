@@ -342,8 +342,8 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
-        c->incoming_goal_spike = (Event) {0};
-        c->goal_spike = (Event) {0};
+        c->incoming_goal_spike.type = EVENT_TYPE_DELETED;
+        c->goal_spike.type = EVENT_TYPE_DELETED;
     }
 }
 
