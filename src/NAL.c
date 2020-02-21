@@ -133,7 +133,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .stamp = stamp,
                 .occurrenceTime = conclusionOccurrence ,
                 .creationTime = currentTime };
-    #pragma omp critical
+    #pragma omp critical(derivation)
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
