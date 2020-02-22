@@ -348,13 +348,6 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     {
         Decision_Execute(&best_decision);
     }
-    //end of iterations, remove spikes
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *c = concepts.items[i].address;
-        c->incoming_goal_spike.type = EVENT_TYPE_DELETED;
-        c->goal_spike.type = EVENT_TYPE_DELETED;
-    }
 }
 
 void Cycle_Inference(long currentTime)
