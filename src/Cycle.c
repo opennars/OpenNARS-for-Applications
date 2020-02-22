@@ -378,8 +378,8 @@ void Cycle_Inference(long currentTime)
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
             Event *e = &selectedEvents[i];
-            Term subterms_of_e[6] = {0}; //subterms up to level 2
-            for(int j=0; j<6; j++)
+            Term subterms_of_e[2] = {0}; //subterms up to level 1
+            for(int j=0; j<2; j++)
             {
                 subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
             }
@@ -401,10 +401,10 @@ void Cycle_Inference(long currentTime)
                 fired[j] = true;
                 //first filter based on common term (semantic relationship)
                 bool has_common_term = false;
-                for(int k=0; k<5; k++)
+                for(int k=0; k<2; k++)
                 {
                     Term current = Term_ExtractSubterm(&c->term, k+1);
-                    for(int h=0; h<5; h++)
+                    for(int h=0; h<2; h++)
                     {
                         if(current.atoms[0] != 0 && subterms_of_e[h].atoms[0] != 0)
                         {
