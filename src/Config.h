@@ -57,7 +57,7 @@
 //Event selections per cycle for inference
 #define EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
-#define EVENT_DURABILITY 1.0
+#define EVENT_DURABILITY 0.995
 //Additional event priority decay of an event which was selected
 #define EVENT_DURABILITY_ON_USAGE 0.0
 //Concept priority decay of events per cycle
