@@ -21,29 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
-#ifndef H_CYCLE
-#define H_CYCLE
 
-///////////////////////////////////
-//  NAR Control Cycle            //
-///////////////////////////////////
-//A FIFO-like structure, that only supports put in and overwrites
-//the oldest task when full
+#include <stdio.h> 
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-//References//
-//-----------//
-#include "Globals.h"
-#include "Decision.h"
-#include "Inference.h"
-#include "RuleTable.h"
-#include "Variable.h"
-#include "Stats.h"
-#include "./NetworkNAR/Metric.h"
+#include "Metric.h"
 
-//Methods//
-//-------//
-//Apply one operating cyle
-void Cycle_Perform(long currentTime);
+static int graphite_sockfd = 0;
 
-#endif
+void Metric_send( const char* path, int value)
+{
+    char message[GRAPHITE_MAX_MSG_LEN];
+    if(graphite_sockfd == 0)
+    {
+        graphite_sockfd = UDP_INIT_Sender();
+    }
+    sprintf(message, "%s:%d|c", path, value);
+    assert(strlen(message) < GRAPHITE_MAX_MSG_LEN, "Metric Graphite msg too long!");
+    UDP_SendData(graphite_sockfd, 
+                 GRAPHITE_IP_ADDRESS, 
+                 GRAPHITE_STATSD_PORT, 
+                 message, 
+                 GRAPHITE_MAX_MSG_LEN);
+}

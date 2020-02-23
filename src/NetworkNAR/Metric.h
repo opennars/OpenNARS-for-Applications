@@ -21,29 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
-#ifndef H_CYCLE
-#define H_CYCLE
 
-///////////////////////////////////
-//  NAR Control Cycle            //
-///////////////////////////////////
-//A FIFO-like structure, that only supports put in and overwrites
-//the oldest task when full
+#ifndef H_METRIC
+#define H_METRIC
 
-//References//
-//-----------//
-#include "Globals.h"
-#include "Decision.h"
-#include "Inference.h"
-#include "RuleTable.h"
-#include "Variable.h"
-#include "Stats.h"
-#include "./NetworkNAR/Metric.h"
+#include <sys/types.h>
 
-//Methods//
-//-------//
-//Apply one operating cyle
-void Cycle_Perform(long currentTime);
+#include "UDP.h"
+
+#define GRAPHITE_IP_ADDRESS "127.00.1"
+#define GRAPHITE_STATSD_PORT 8125
+#define GRAPHITE_MAX_MSG_LEN 130
+
+// sends metrics to a graphite statsd server <metricname>:<value>|<type> example: "foo:1|c" 
+
+void Metric_send(const char* path, int value);
 
 #endif
