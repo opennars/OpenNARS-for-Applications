@@ -526,7 +526,7 @@ void Cycle_RelativeForgetting(long currentTime)
 
 void Cycle_Perform(long currentTime)
 {   
-    metric_send("NARNode.Cycle", 1);
+    Metric_send("NARNode.Cycle", 1);
     //1. Retrieve EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents();
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.

@@ -35,6 +35,6 @@
 
 // sends metrics to a graphite statsd server <metricname>:<value>|<type> example: "foo:1|c" 
 
-void metric_send(const char* path, int value);
+void Metric_send(const char* path, int value);
 
 #endif

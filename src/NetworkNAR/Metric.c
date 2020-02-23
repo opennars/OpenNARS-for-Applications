@@ -36,7 +36,7 @@
 
 static int graphite_sockfd = 0;
 
-void metric_send( const char* path, int value)
+void Metric_send( const char* path, int value)
 {
     char message[GRAPHITE_MAX_MSG_LEN];
     if(graphite_sockfd == 0)
