@@ -77,6 +77,7 @@ Truth Truth_Union(Truth v1, Truth v2);
 Truth Truth_Difference(Truth v1, Truth v2);
 Truth Truth_Conversion(Truth v1, Truth v2);
 Truth Truth_Negation(Truth v1, Truth v2);
+Truth Truth_Identity(Truth v1, Truth v2);
 bool Truth_Equal(Truth *v1, Truth *v2);
 
 #endif
