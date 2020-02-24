@@ -77,6 +77,7 @@ void Process_Args(int argc, char *argv[])
             PRINT_DERIVATIONS = printDerivations;
             UDPNAR_Start(ip, port, timestep);
             puts("//press any key and enter to quit!");
+            fflush(stdout);
             getchar();
             UDPNAR_Stop();
             exit(0);

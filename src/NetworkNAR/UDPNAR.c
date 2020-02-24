@@ -89,6 +89,7 @@ void UDPNAR_Start(char *ip, int port, long timestep)
     pthread_cond_wait(&start_cond, &start_mutex);
     pthread_mutex_unlock(&start_mutex);
     puts("//UDPNAR started!");
+    flush(stdout);
     Started = true;
 }
 
