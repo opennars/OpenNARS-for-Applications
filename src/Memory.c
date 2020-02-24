@@ -169,7 +169,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
         printf("Priority=%f ", priority);
         Truth_Print(truth);
-        flush(stdout);
+        fflush(stdout);
     }
 }
 
