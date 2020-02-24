@@ -26,6 +26,7 @@
 
 long Stats_countConceptsMatchedTotal = 0;
 long Stats_countConceptsMatchedMax = 0;
+double Stats_minimumConceptPriority = 0.0;
 
 void Stats_Print(long currentTime)
 {

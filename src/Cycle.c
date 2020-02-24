@@ -513,10 +513,15 @@ void Cycle_RelativeForgetting(long currentTime)
         cycling_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
+    Stats_minimumConceptPriority = 1.0;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
+        if(c->priority < Stats_minimumConceptPriority)
+        {
+            Stats_minimumConceptPriority = c->priority;
+        }
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
     //Re-sort queues

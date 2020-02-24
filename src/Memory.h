@@ -36,6 +36,7 @@
 #include "PriorityQueue.h"
 #include "Config.h"
 #include "HashTable.h"
+#include "Stats.h"
 
 //Parameters//
 //----------//

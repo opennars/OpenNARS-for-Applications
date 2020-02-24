@@ -38,6 +38,7 @@
 //-----------//
 extern long Stats_countConceptsMatchedTotal;
 extern long Stats_countConceptsMatchedMax;
+extern double Stats_minimumConceptPriority;
 
 //Methods//
 //-------//

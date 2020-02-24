@@ -183,7 +183,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool isImplication)
+void Memory_ProcessNewEvent(bool createNewConcepts, Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -196,7 +196,15 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
+        Concept *target_concept;
+        if(createNewConcepts)
+        {
+            target_concept = Memory_Conceptualize(&predicate, currentTime);
+        }
+        else
+        {
+            target_concept = Memory_FindConceptByTerm(&predicate);
+        }
         if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
         {
             target_concept->usage = Usage_use(target_concept->usage, currentTime);
@@ -223,7 +231,15 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
             {
                 sourceConceptTerm = subject;
             }
-            Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            Concept *sourceConcept;
+            if(createNewConcepts)
+            {
+                sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            }
+            else
+            {
+                sourceConcept = Memory_FindConceptByTerm(&sourceConceptTerm);
+            }
             if(sourceConcept != NULL)
             {
                 sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
@@ -239,7 +255,15 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, boo
     }
     else
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        Concept *c;
+        if(createNewConcepts)
+        {
+            c = Memory_Conceptualize(&event->term, currentTime);
+        }
+        else
+        {
+            c = Memory_FindConceptByTerm(&event->term);
+        }
         if(c != NULL)
         {
             c->usage = Usage_use(c->usage, currentTime);
@@ -300,16 +324,17 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        bool added = Memory_addCyclingEvent(event, priority, currentTime);
-        if(!readded && added)
+        bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+        if(!readded)
         {
-            bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewEvent(event, currentTime, priority, input, derived, revised, isImplication);
+            bool createNewConcepts = priority >= Stats_minimumConceptPriority;
+            Memory_ProcessNewEvent(createNewConcepts, event, currentTime, priority, input, derived, revised, isImplication);
             if(isImplication)
             {
                 return;
             }
         }
+        Memory_addCyclingEvent(event, priority, currentTime);
         if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);
