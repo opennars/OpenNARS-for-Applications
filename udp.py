@@ -1,6 +1,8 @@
 import socket
 
-line = "<a-->b>."
+#./NAR UDPNAR 127.0.0.1 50000 100000 true
+
+line = "//justcomment"
 
 ip = "127.0.0.1"
 port = 50000
