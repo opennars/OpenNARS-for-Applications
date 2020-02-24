@@ -45,4 +45,5 @@ void Stats_Print(long currentTime)
         maxlen = MAX(maxlen, cnt);
     }
     printf("Maximum chain length in concept hashtable = %d\n", maxlen);
+    fflush(stdout);
 }

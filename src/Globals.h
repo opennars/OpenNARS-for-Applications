@@ -53,8 +53,6 @@
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
 void assert(bool b, char* message);
-//trim a string, standard library "extension"
-void strtrim(char *line);
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
