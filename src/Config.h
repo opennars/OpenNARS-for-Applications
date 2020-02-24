@@ -100,6 +100,8 @@
 #define ATOMIC_TERM_LEN_MAX 30
 //Maximum size of Narsese input in terms of characters
 #define NARSESE_LEN_MAX 1000
+//Maximum size of derivation buffer
+#define DERIVATION_BUFFER_SIZE 10000
 
 /*------------------*/
 /* Truth parameters */

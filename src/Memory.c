@@ -322,6 +322,36 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
+Event derivations[DERIVATION_BUFFER_SIZE];
+double derivationPriorities[DERIVATION_BUFFER_SIZE];
+int derivationCounter = 0;
+
+void Memory_accumulateDerivation(Event *event, double priority)
+{
+    #pragma omp critical
+    {
+        if(derivationCounter < DERIVATION_BUFFER_SIZE)
+        { 
+            derivations[derivationCounter] = *event;
+            derivationPriorities[derivationCounter] = priority;
+            derivationCounter++;
+        }
+    }
+}
+
+void Memory_addAccumulatedDerivations(long currentTime)
+{
+    //#pragma omp parallel for
+    for(int i=0; i<derivationCounter; i++)
+    {
+        //#pragma omp critical
+        {
+            Memory_AddEvent(&derivations[i], currentTime, derivationPriorities[i], false, true, false, false);
+        }
+    }
+    derivationCounter = 0;
+}
+
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, true, false, false, false);

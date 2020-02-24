@@ -502,6 +502,7 @@ void Cycle_Inference(long currentTime)
             }
         }
     }
+    Memory_addAccumulatedDerivations(currentTime);
 #endif
 }
 
