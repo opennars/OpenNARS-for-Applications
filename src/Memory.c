@@ -300,7 +300,8 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!readded)
+        bool added = Memory_addCyclingEvent(event, priority, currentTime);
+        if(!readded && added)
         {
             bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
             Memory_ProcessNewEvent(event, currentTime, priority, input, derived, revised, isImplication);
@@ -309,7 +310,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                 return;
             }
         }
-        Memory_addCyclingEvent(event, priority, currentTime);
         if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);
