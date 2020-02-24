@@ -35,3 +35,15 @@ void assert(bool b, char* message)
         exit(1);
     }
 }
+
+void strtrim(char *line)
+{
+    for(int i=strlen(line)-1; i>=0; i--)
+    {
+        if(!isspace(line[i]))
+        {
+            break;
+        }
+        line[i] = 0;
+    }
+}

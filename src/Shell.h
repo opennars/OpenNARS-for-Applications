@@ -33,7 +33,6 @@
 //References//
 //----------//
 #include "NAR.h"
-#include <ctype.h> 
 #include "Stats.h"
 
 //Methods//
