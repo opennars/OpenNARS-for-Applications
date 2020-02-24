@@ -1,8 +1,13 @@
 import subprocess
 import socket
-import time
-import os
 
+ip = "127.0.0.1"
+port = 50000
+
+# Set up socket for UDPNAR
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Read in toothbrush file and extract expected statements
 contents = []
 expected = set()
 with open("examples/nal/toothbrush.nal") as input_file:
@@ -11,11 +16,6 @@ with open("examples/nal/toothbrush.nal") as input_file:
             expected.add(line.split("//expected: ")[1].rstrip())
         contents.append(line)
 
-ip = "127.0.0.1"
-port = 50000
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
 # ./NAR UDPNAR IP PORT  timestep(ns per cycle) printDerivations
 process_cmd = ["./NAR", "UDPNAR", ip, str(port), "10000000", "true"]
 process = subprocess.Popen(process_cmd,
@@ -23,8 +23,9 @@ process = subprocess.Popen(process_cmd,
                            universal_newlines=True)
 out_file = process.stdout
 
+# Iterate lines of input file, read from NARS when //expected is seen
 for line in contents:
-    # If NARS expected to provide action, don't proceed until seen
+    # If NARS expected to execute op, pause until seen
     if "//expected:" in line:
         target = line.split("//expected: ")[1].rstrip()
         print("LOOKING FOR STRING: " + target)
@@ -33,14 +34,16 @@ for line in contents:
             next_line = out_file.readline()
             print(next_line)
             to_remove = None
-            # Check against all expected statements in case it derives one of the future requirements early
+            # For each line, check against all expected statements
+            # in case NARS derives one of the future expected statements early
             for expected_elem in expected:
                 if expected_elem in next_line:
                     to_remove = expected_elem
                     #print(next_line)
             if to_remove:
                 expected.remove(to_remove)
-    # Doing live run, don't specify cycles, currently does not handle comments or settings
+    # Doing live run, don't specify cycles
+    # UDPNAR currently does not handle comments or settings
     if line[:-1].isnumeric() or line[0] == "*" or line[0] == "/":
         continue
     # If no statement expected, provide next input
