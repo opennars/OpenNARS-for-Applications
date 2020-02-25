@@ -90,14 +90,7 @@ INIT:
             exit(0);
         }
         //trim string, for IRC etc. convenience
-        for(int i=strlen(line)-1; i>=0; i--)
-        {
-            if(!isspace(line[i]))
-            {
-                break;
-            }
-            line[i] = 0;
-        }
+        strtrim(line);
         int size = strlen(line);
         if(size==0)
         {
