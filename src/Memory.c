@@ -31,6 +31,8 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_EVENTS_MAX];
+Event cycling_predicted_event_storage[CYCLING_EVENTS_MAX];
+Item cycling_predicted_event_items_storage[CYCLING_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 
 static void Memory_ResetEvents()
@@ -42,6 +44,12 @@ static void Memory_ResetEvents()
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
+    }
+    PriorityQueue_RESET(&cycling_predicted_events, cycling_predicted_event_items_storage, CYCLING_EVENTS_MAX);
+    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
+    {
+        cycling_predicted_event_storage[i] = (Event) {0};
+        cycling_predicted_events.items[i] = (Item) { .address = &(cycling_predicted_event_storage[i]) };
     }
 }
 

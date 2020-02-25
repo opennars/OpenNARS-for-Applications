@@ -212,7 +212,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
                 if(success && Variable_hasVariable(&general_implication_term, true, true, false))
                 {
-                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                    NAL_DerivedEvent(&cycling_belief_events, general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                 }
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -379,7 +379,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedEventsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
+            RuleTable_Apply(&cycling_belief_events, e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             //Main inference loop:
             #pragma omp parallel for
@@ -466,7 +466,7 @@ void Cycle_Inference(long currentTime)
                             Narsese_PrintTerm(&c->term);
                             puts("");
                         }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        RuleTable_Apply(&cycling_belief_events, e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                     }
                 }
                 if(is_temporally_related)
@@ -486,7 +486,7 @@ void Cycle_Inference(long currentTime)
                             if(success)
                             {
                                 Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
+                                NAL_DerivedEvent(&cycling_belief_events, predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
                             }
                         }
                     }
@@ -511,6 +511,10 @@ void Cycle_RelativeForgetting(long currentTime)
     for(int i=0; i<cycling_belief_events.itemsAmount; i++)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
+    }
+    for(int i=0; i<cycling_predicted_events.itemsAmount; i++)
+    {
+        cycling_predicted_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
