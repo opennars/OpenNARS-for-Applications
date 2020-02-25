@@ -37,6 +37,11 @@
 
 //Methods//
 //-------//
+//Initializes the shell NAR and runs it with stdin/stdout
 void Shell_Start();
+//Only initializes the shell NAR with the default ops, but can be used differently
+void Shell_NARInit();
+//Process a shell input line, can be comments, timesteps, Narsese, and commands, returns if system reset was issued
+bool Shell_ProcessInput(char *line);
 
 #endif
