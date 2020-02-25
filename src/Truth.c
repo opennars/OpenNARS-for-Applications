@@ -149,11 +149,6 @@ Truth Truth_Negation(Truth v1, Truth v2)
     return (Truth) { .frequency = 1.0-f1, .confidence = c1 };
 }
 
-Truth Truth_Identity(Truth v1, Truth v2)
-{
-    return v1;
-}
-
 Truth Truth_StructuralDeduction(Truth v1, Truth v2)
 {
     return Truth_Deduction(v1, STRUCTURAL_TRUTH);
