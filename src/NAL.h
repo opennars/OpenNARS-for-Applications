@@ -91,6 +91,9 @@ RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //NAL5 rules
 R1( (! A), |-, A, Truth_Negation )
+R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
+R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Abduction )
+R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Induction )
 R1( (&& A B), |-, A, Truth_StructuralDeduction )
 R1( (&& A B), |-, B, Truth_StructuralDeduction )
 //NAL6 variable introduction

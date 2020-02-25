@@ -217,15 +217,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                 IN_DEBUG( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
-                Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
-                if(revised_precon != NULL)
-                {
-                    revised_precon->creationTime = currentTime; //for evaluation
-                    revised_precon->sourceConcept = A;
-                    revised_precon->sourceConceptId = A->id;
-                    /*IN_DEBUG( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
-                    Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
-                }
+                NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, NULL, 0);
             }
         }
     }
@@ -410,18 +402,6 @@ void Cycle_Inference(long currentTime)
                     }
                 }
                 PROCEED:;
-                //second  filter based on precondition implication (temporal relationship)
-                bool is_temporally_related = false;
-                for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
-                {
-                    Implication imp = c->precondition_beliefs[0].array[k];
-                    Term subject = Term_ExtractSubterm(&imp.term, 1);
-                    if(Variable_Unify(&subject, &e->term).success)
-                    {
-                        is_temporally_related = true;
-                        break;
-                    }
-                }
                 if(has_common_term)
                 {
                     #pragma omp critical(stats)
@@ -431,6 +411,7 @@ void Cycle_Inference(long currentTime)
                         Stats_countConceptsMatchedTotal++;
                     }
                 }
+                has_common_term = true;
                 if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
                 {
                     //use eternal belief as belief
@@ -467,28 +448,6 @@ void Cycle_Inference(long currentTime)
                             puts("");
                         }
                         RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                    }
-                }
-                if(is_temporally_related)
-                {
-                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
-                    {
-                        Implication *imp = &c->precondition_beliefs[0].array[i];
-                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                        Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                        Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                        Substitution subs = Variable_Unify(&precondition, &e->term);
-                        if(subs.success)
-                        {
-                            Implication updated_imp = *imp;
-                            bool success;
-                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                            if(success)
-                            {
-                                Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), c, validation_cid);
-                            }
-                        }
                     }
                 }
             }
