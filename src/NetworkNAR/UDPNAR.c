@@ -63,9 +63,11 @@ void* Receive_Thread_Run(void *sockfd_address)
         {
             break;
         }
-        strtrim(buffer);
         pthread_mutex_lock(&nar_mutex);
-        NAR_AddInputNarsese(buffer);
+        if(Shell_ProcessInput(buffer)) //reset?
+        {
+            Shell_NARInit();
+        }
         pthread_mutex_unlock(&nar_mutex);
     }
     return NULL;
@@ -77,7 +79,7 @@ int receiver_sockfd;
 void UDPNAR_Start(char *ip, int port, long timestep)
 {
     assert(!Stopped, "UDPNAR was already started!");
-    NAR_INIT();
+    Shell_NARInit();
     receiver_sockfd = UDP_INIT_Receiver(ip, port);
     //Create reasoner thread and wait for its creation
     pthread_mutex_lock(&start_mutex);
@@ -101,4 +103,5 @@ void UDPNAR_Stop()
     shutdown(receiver_sockfd, SHUT_RDWR);
     pthread_join(thread_reasoner, NULL);
     pthread_join(thread_receiver, NULL);
+    Stats_Print(currentTime);
 }

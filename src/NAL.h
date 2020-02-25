@@ -42,7 +42,7 @@
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, Concept *validation_concept, long validation_cid);
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true);
 //macro for syntactic representation, increases readability, single premise inference
@@ -66,6 +66,9 @@ R2( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 //NAL2 rules
+R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
+R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
+R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralDeduction )
 R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
@@ -115,8 +118,5 @@ ReduceStatement( (A && A), A )
 ReduceTerm( ({A} & {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
-//Statement reductions (due to identities)
-ReduceStatement((S --> {P}), (S <-> {P}) )
-ReduceStatement(([S] --> P), ([S] <-> P) )
 
 #endif
