@@ -63,6 +63,7 @@ void* Receive_Thread_Run(void *sockfd_address)
         {
             break;
         }
+        strtrim(buffer);
         pthread_mutex_lock(&nar_mutex);
         NAR_AddInputNarsese(buffer);
         pthread_mutex_unlock(&nar_mutex);
