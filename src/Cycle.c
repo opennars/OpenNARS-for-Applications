@@ -212,7 +212,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
                 if(success && Variable_hasVariable(&general_implication_term, true, true, false))
                 {
-                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, NULL, 0);
+                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                 }
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -254,7 +254,7 @@ void Cycle_PushEvents(long currentTime)
 {
     for(int i=0; i<eventsSelected; i++)
     {
-        Memory_AddEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], false, false, true, false);
+        Memory_AddEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], 0, false, false, true, false);
     }
 }
 
@@ -486,7 +486,7 @@ void Cycle_Inference(long currentTime)
                             if(success)
                             {
                                 Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), c, validation_cid);
+                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
                             }
                         }
                     }
