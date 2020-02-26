@@ -128,11 +128,11 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 int eventsSelected = 0;
 
-static bool Memory_containsEvent(Event *event)
+static bool Memory_containsEvent(PriorityQueue *cycling_events, Event *event)
 {
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+    for(int i=0; i<cycling_events->itemsAmount; i++)
     {
-        if(Event_Equal(event, cycling_belief_events.items[i].address))
+        if(Event_Equal(event, cycling_events->items[i].address))
         {
             return true;
         }
@@ -142,10 +142,10 @@ static bool Memory_containsEvent(Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+static bool Memory_addCyclingEvent(PriorityQueue *cycling_events, Event *e, double priority, long currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
-    if(Memory_containsEvent(e))
+    if(Memory_containsEvent(cycling_events, e))
     {
         return false;
     }
@@ -157,7 +157,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_belief_events, priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(cycling_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
@@ -191,7 +191,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
+void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -268,13 +268,13 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true);
+                Memory_AddEvent(cycling_events, &c->belief, currentTime, priority, 0, false, false, false, true);
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised)
+void Memory_AddEvent(PriorityQueue *cycling_events, Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -312,13 +312,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         if(!readded)
         {
             bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
+            Memory_ProcessNewEvent(cycling_events, event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
             if(isImplication)
             {
                 return;
             }
         }
-        Memory_addCyclingEvent(event, priority, currentTime);
+        Memory_addCyclingEvent(cycling_events, event, priority, currentTime);
         if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);
@@ -333,7 +333,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false);
+    Memory_AddEvent(&cycling_belief_events, event, currentTime, 1, 0, true, false, false, false);
 }
 
 void Memory_AddOperation(int id, Operation op)

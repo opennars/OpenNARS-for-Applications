@@ -231,16 +231,16 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_PopEvents()
+void Cycle_PopEvents(PriorityQueue *cycling_events)
 {
     eventsSelected = 0;
     for(int i=0; i<EVENT_SELECTIONS; i++)
     {
         Event *e;
         double priority = 0;
-        if(!PriorityQueue_PopMax(&cycling_belief_events, (void**) &e, &priority))
+        if(!PriorityQueue_PopMax(cycling_events, (void**) &e, &priority))
         {
-            assert(cycling_belief_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+            assert(cycling_events->itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
             IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
             break;
         }
@@ -250,11 +250,11 @@ void Cycle_PopEvents()
     }
 }
 
-void Cycle_PushEvents(long currentTime)
+void Cycle_PushEvents(PriorityQueue *cycling_events, long currentTime)
 {
     for(int i=0; i<eventsSelected; i++)
     {
-        Memory_AddEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], 0, false, false, true, false);
+        Memory_AddEvent(cycling_events, &selectedEvents[i], currentTime, selectedEventsPriority[i], 0, false, false, true, false);
     }
 }
 
@@ -532,7 +532,7 @@ void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
     //1. Retrieve EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
-    Cycle_PopEvents();
+    Cycle_PopEvents(&cycling_belief_events);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
@@ -542,5 +542,5 @@ void Cycle_Perform(long currentTime)
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
-    Cycle_PushEvents(currentTime);
+    Cycle_PushEvents(&cycling_belief_events, currentTime);
 }
