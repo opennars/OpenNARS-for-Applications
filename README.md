@@ -64,3 +64,12 @@ where the output can be logged simply by appending
 ```
 > output.log
 ```
+
+**Example of processing toothbrush.nal with UDPNAR (Continuous run of ONA):**
+Run with --verbose to see the steps of the demo
+Run with --iterations to get an average of real-time required for handling toothbrush.nal
+
+```
+python3 toothbrush_demo.py --verbose
+python3 toothbrush_demo.py --iterations 100
+```
