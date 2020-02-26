@@ -71,5 +71,5 @@ Run with --iterations to get an average of real-time required for handling tooth
 
 ```
 python3 toothbrush_demo.py --verbose
-python3 toothbrush_demo.py --iterations 100
+python3 toothbrush_demo.py --iterations 20
 ```
