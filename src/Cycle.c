@@ -350,7 +350,7 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     }
 }
 
-void Cycle_Inference(long currentTime)
+void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
 {
     //Inferences
 #if STAGE==2
@@ -412,14 +412,17 @@ void Cycle_Inference(long currentTime)
                 PROCEED:;
                 //second  filter based on precondition implication (temporal relationship)
                 bool is_temporally_related = false;
-                for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
+                if(cycling_events == &cycling_belief_events) //predictions don't generate further predictions
                 {
-                    Implication imp = c->precondition_beliefs[0].array[k];
-                    Term subject = Term_ExtractSubterm(&imp.term, 1);
-                    if(Variable_Unify(&subject, &e->term).success)
+                    for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
                     {
-                        is_temporally_related = true;
-                        break;
+                        Implication imp = c->precondition_beliefs[0].array[k];
+                        Term subject = Term_ExtractSubterm(&imp.term, 1);
+                        if(Variable_Unify(&subject, &e->term).success)
+                        {
+                            is_temporally_related = true;
+                            break;
+                        }
                     }
                 }
                 if(has_common_term)
@@ -486,7 +489,7 @@ void Cycle_Inference(long currentTime)
                             if(success)
                             {
                                 Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(&cycling_belief_events, predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
+                                NAL_DerivedEvent(&cycling_predicted_events, predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
                             }
                         }
                     }
@@ -505,17 +508,8 @@ void Cycle_Inference(long currentTime)
 #endif
 }
 
-void Cycle_RelativeForgetting(long currentTime)
+void Cycle_RelativeForgetConcepts(long currentTime)
 {
-    //Apply event forgetting:
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
-    {
-        cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
-    }
-    for(int i=0; i<cycling_predicted_events.itemsAmount; i++)
-    {
-        cycling_predicted_events.items[i].priority *= EVENT_DURABILITY;
-    }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -523,9 +517,19 @@ void Cycle_RelativeForgetting(long currentTime)
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
-    //Re-sort queues
+    //Re-sort queue
     PriorityQueue_Rebuild(&concepts);
-    PriorityQueue_Rebuild(&cycling_belief_events);
+}
+
+void Cycle_RelativeForgetEvents(PriorityQueue *cycling_events, double durability, long currentTime)
+{
+    //Apply event forgetting:
+    for(int i=0; i<cycling_events->itemsAmount; i++)
+    {
+        cycling_events->items[i].priority *= durability;
+    }
+    //Re-sort queue
+    PriorityQueue_Rebuild(cycling_events);
 }
 
 void Cycle_Perform(long currentTime)
@@ -538,9 +542,19 @@ void Cycle_Perform(long currentTime)
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
-    Cycle_Inference(currentTime);
-    //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
-    Cycle_RelativeForgetting(currentTime);
+    Cycle_Inference(&cycling_belief_events, currentTime);
+    //5. Apply relative forgetting for belief events according to BELIEF_EVENT_DURABILITY
+    Cycle_RelativeForgetEvents(&cycling_belief_events, BELIEF_EVENT_DURABILITY, currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
     Cycle_PushEvents(&cycling_belief_events, currentTime);
+    //7. Also inference for predicted events:
+    Cycle_PopEvents(&cycling_predicted_events);
+    //4. Perform inference between in 7. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
+    Cycle_Inference(&cycling_predicted_events, currentTime);
+    //8. Apply relative forgetting for predicted events according to PREDICTED_EVENT_DURABILITY
+    Cycle_RelativeForgetEvents(&cycling_predicted_events, PREDICTED_EVENT_DURABILITY, currentTime);
+    //9. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
+    Cycle_PushEvents(&cycling_predicted_events, currentTime);
+    //10. Apply relative forgetting for concepts according to CONCEPT_DURABILITY
+    Cycle_RelativeForgetConcepts(currentTime);
 }

@@ -253,13 +253,14 @@ void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long cu
         {
             c->usage = Usage_use(c->usage, currentTime);
             c->priority = MAX(c->priority, priority);
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL && cycling_events == &cycling_belief_events)
             {
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
             }
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
-            {
+            else
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL) //predictions, also concurrent ones, and their derivations 
+            {                                               //never go back to cycling_belief_events
                 c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
                 c->predicted_belief.creationTime = currentTime;
             }
