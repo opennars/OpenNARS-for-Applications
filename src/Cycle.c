@@ -277,14 +277,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
-                    //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<eventsSelected; k++)
-                    {
-                        if(selectedEvents[k].occurrenceTime < postcondition.occurrenceTime)
-                        {
-                            Cycle_ReinforceLink(&selectedEvents[k], &postcondition);
-                        }
-                    }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
@@ -376,10 +368,10 @@ void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
             {
                 subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
             }
-            double priority = selectedEventsPriority[i];
+            double e_priority = selectedEventsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(&cycling_belief_events, e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
+            RuleTable_Apply(&cycling_belief_events, e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, e_priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             //Main inference loop:
             #pragma omp parallel for
@@ -411,20 +403,6 @@ void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
                 }
                 PROCEED:;
                 //second  filter based on precondition implication (temporal relationship)
-                bool is_temporally_related = false;
-                if(cycling_events == &cycling_belief_events) //predictions don't generate further predictions
-                {
-                    for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
-                    {
-                        Implication imp = c->precondition_beliefs[0].array[k];
-                        Term subject = Term_ExtractSubterm(&imp.term, 1);
-                        if(Variable_Unify(&subject, &e->term).success)
-                        {
-                            is_temporally_related = true;
-                            break;
-                        }
-                    }
-                }
                 if(has_common_term)
                 {
                     #pragma omp critical(stats)
@@ -457,41 +435,19 @@ void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
                         belief = &project_belief;
                     }
                     //Check for overlap and apply inference rules
-                    if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                    if(!Stamp_checkOverlap(&e->stamp, &belief->stamp) && !Term_Equal(&e->term, &belief->term))
                     {
                         Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
                         if(PRINT_CONTROL_INFO)
                         {
                             fputs("Apply rule table on ", stdout);
                             Narsese_PrintTerm(&e->term);
-                            printf(" Priority=%f\n", priority);
+                            printf(" Priority=%f\n", e_priority);
                             fputs(" and ", stdout);
                             Narsese_PrintTerm(&c->term);
                             puts("");
                         }
-                        RuleTable_Apply(&cycling_belief_events, e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                    }
-                }
-                if(is_temporally_related)
-                {
-                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
-                    {
-                        Implication *imp = &c->precondition_beliefs[0].array[i];
-                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                        Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                        Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                        Substitution subs = Variable_Unify(&precondition, &e->term);
-                        if(subs.success)
-                        {
-                            Implication updated_imp = *imp;
-                            bool success;
-                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                            if(success)
-                            {
-                                Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(&cycling_predicted_events, predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
-                            }
-                        }
+                        RuleTable_Apply(&cycling_belief_events, e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, e_priority, c->priority, true, c, validation_cid);
                     }
                 }
             }
@@ -557,4 +513,5 @@ void Cycle_Perform(long currentTime)
     Cycle_PushEvents(&cycling_predicted_events, currentTime);
     //10. Apply relative forgetting for concepts according to CONCEPT_DURABILITY
     Cycle_RelativeForgetConcepts(currentTime);
+    Memory_CycleDebug();
 }

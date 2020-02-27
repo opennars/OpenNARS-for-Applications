@@ -152,12 +152,14 @@ bool Shell_ProcessInput(char *line)
 void Shell_Start()
 {
     Shell_NARInit();
+    debug = Narsese_Term("<(($1 * #1) | (#1 * $2)) --> larger>");
     for(;;)
     {
         char line[1024] = {0};
         if(fgets(line, 1024, stdin) == NULL)
         {
             Stats_Print(currentTime);
+            assert(HashTable_Get(&HTconcepts, &debug) != NULL, "WHAT ITS NOT THERE");
             exit(0);
         }
         if(Shell_ProcessInput(line)) //reset?

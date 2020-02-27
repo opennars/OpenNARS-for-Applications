@@ -137,7 +137,7 @@ void NAL_DerivedEvent(PriorityQueue *cycling_events, Term conclusionTerm, long c
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            Memory_AddEvent(cycling_events, &e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false);
+            Memory_AddEvent(cycling_events, &e, currentTime, conceptPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false);
         }
     }
 }

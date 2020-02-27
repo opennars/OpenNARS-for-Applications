@@ -74,6 +74,8 @@
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
 #define CONCEPT_THRESHOLD_ADAPTATION 0.000001
+//Amount of implications to consider for prediction (from top of table)
+#define PREDICTION_IMPLICATIONS 1
 
 /*------------------*/
 /* Space parameters */

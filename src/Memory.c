@@ -82,6 +82,12 @@ Concept *Memory_FindConceptByTerm(Term *term)
     return HashTable_Get(&HTconcepts, term);
 }
 
+Term debug;
+void Memory_CycleDebug()
+{
+    bool wat = HashTable_Get(&HTconcepts, &debug) != NULL;
+    //printf("CONCEPT EXISTS %d\n", wat ? 1 : 0);
+}
 Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
     if(Narsese_isOperation(term)) //don't conceptualize operations
@@ -270,6 +276,55 @@ void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long cu
             if(revision_happened)
             {
                 Memory_AddEvent(cycling_events, &c->belief, currentTime, priority, 0, false, false, false, true);
+            }
+            if(cycling_events == &cycling_belief_events)
+            {
+                Event *e = event;
+                for(int j=0; j<concepts.itemsAmount; j++)
+                {
+                    Concept *cpost = concepts.items[j].address;
+                    bool is_temporally_related = false;
+                    for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
+                    {
+                        Implication imp = cpost->precondition_beliefs[0].array[k];
+                        Term subject = Term_ExtractSubterm(&imp.term, 1);
+                        if(Variable_Unify(&subject, &e->term).success)
+                        {
+                            is_temporally_related = true;
+                            break;
+                        }
+                    }
+                    if(is_temporally_related)
+                    {
+                        #pragma omp parallel for
+                        for(int i=0; i<MIN(PREDICTION_IMPLICATIONS, cpost->precondition_beliefs[0].itemsAmount); i++)
+                        {
+                            Implication *imp = &cpost->precondition_beliefs[0].array[i];
+                            assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                            Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                            Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                            Substitution subs = Variable_Unify(&precondition, &e->term);
+                            if(subs.success)
+                            {
+                                Implication updated_imp = *imp;
+                                bool success;
+                                updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                                if(success)
+                                {
+                                    cpost->usage = Usage_use(cpost->usage, currentTime);
+                                    Event predicted = Inference_BeliefDeduction(e, &updated_imp);
+                                    /*fputs("PREDICTED ", stdout);
+                                    Narsese_PrintTerm(&imp->term);
+                                    fputs(" ", stdout);
+                                    Truth_Print(&updated_imp.truth);
+                                    printf(" expectation=%f", Truth_Expectation(imp->truth));
+                                    puts("");*/
+                                    Memory_AddEvent(&cycling_predicted_events, &predicted, currentTime, Truth_Expectation(predicted.truth), 0, false, true, false, false);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

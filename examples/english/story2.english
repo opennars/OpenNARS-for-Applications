@@ -8,5 +8,5 @@ who took out the pizza?
 1000
 the burger is in the oven
 100
-the person takes out what?
-//expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1005 Truth: frequency=0.982343, confidence=0.292628
+//the person takes out what? <- todo extend IntroduceImplicationVariables to deal with images!
+////expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1005 Truth: frequency=0.996757, confidence=0.418767

@@ -36,6 +36,7 @@
 #include "PriorityQueue.h"
 #include "Config.h"
 #include "HashTable.h"
+#include "Variable.h"
 
 //Parameters//
 //----------//
@@ -47,6 +48,7 @@ extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
+extern Term debug;
 extern Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 extern double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 extern int eventsSelected;
@@ -88,5 +90,6 @@ bool Memory_ImplicationValid(Implication *imp);
 void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, bool revised);
 //print added event
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
+void Memory_CycleDebug();
 
 #endif
