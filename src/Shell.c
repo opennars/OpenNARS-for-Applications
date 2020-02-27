@@ -24,6 +24,34 @@
 
 #include "Shell.h"
 
+void PrintInvertedAtomIndex()
+{
+    puts("printing inverted atom table content:");
+    for(int i=0; i<TERMS_MAX; i++)
+    {
+        Atom atom = i; //the atom is directly the value (from 0 to TERMS_MAX)
+        if(Narsese_IsSimpleAtom(atom))
+        {
+            for(int concept_j=0; concept_j<CONCEPTS_MAX; concept_j++)
+            {
+                Concept *c = invertedAtomIndex[(int) atom][concept_j];
+                if(c != NULL)
+                {
+                    Narsese_PrintAtom(atom);
+                    fputs(" -> ", stdout);
+                    Narsese_PrintTerm(&c->term);
+                    puts("");
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+    puts("table print finish");
+}
+
 static void Shell_op_left(Term args)
 {
     fputs("^left executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
@@ -110,6 +138,11 @@ bool Shell_ProcessInput(char *line)
         if(!strcmp(line,"**"))
         {
             return true;
+        }
+        else
+        if(!strcmp(line,"*invtable"))
+        {
+            PrintInvertedAtomIndex();
         }
         else
         if(!strcmp(line,"*volume=0"))

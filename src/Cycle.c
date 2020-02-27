@@ -217,9 +217,14 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
                 IN_DEBUG( fputs("Formed implication: ", stdout); Implication_Print(&precondition_implication); )
+                if(operationID == 0)
+                {
+                    Table_AddAndRevise(&B->postcondition_beliefs, &precondition_implication);
+                }
                 Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                 if(revised_precon != NULL)
                 {
+                    Table_AddAndRevise(&B->postcondition_beliefs, revised_precon); //make sure this one also receives the neg. evidence
                     revised_precon->creationTime = currentTime; //for evaluation
                     revised_precon->sourceConcept = A;
                     revised_precon->sourceConceptId = A->id;

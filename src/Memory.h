@@ -44,6 +44,7 @@
 extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 extern bool PRINT_INPUT;
+extern Concept *invertedAtomIndex[TERMS_MAX][CONCEPTS_MAX];
 extern double conceptPriorityThreshold;
 
 //Data structure//
@@ -91,5 +92,9 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
 //print added event
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
 void Memory_CycleDebug();
+//Add concept to inverted atom index
+void Memory_AddToInvertedAtomIndex(Term term, Concept *c);
+//Remove concept from inverted atom index
+void Memory_RemoveFromInvertedAtomIndex(Term term, Concept *c);
 
 #endif

@@ -81,5 +81,7 @@ bool Narsese_isOperation(Term *term);
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
 //Get whether something is a true atom, not a copula
 bool Narsese_IsNonCopulaAtom(Atom atom);
+//Whether something is a simple atom such as "cat"
+bool Narsese_IsSimpleAtom(Atom atom);
 
 #endif

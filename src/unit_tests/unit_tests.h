@@ -26,6 +26,7 @@
 #include "Stamp_Test.h"
 #include "PriorityQueue_Test.h"
 #include "Memory_Test.h"
+#include "InvertedAtomIndex_Test.h"
 #include "Narsese_Test.h"
 #include "RuleTable_Test.h"
 #include "Stack_Test.h"
@@ -40,6 +41,7 @@ void Run_Unit_Tests()
     PriorityQueue_Test();
     Table_Test();
     Memory_Test();
+    InvertedAtomIndex_Test();
     Narsese_Test();
     RuleTable_Test();
     Stack_Test();

@@ -75,6 +75,14 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     concept_id = 0;
+    //reset inverted term index as well:
+    for(int i=0; i<TERMS_MAX; i++)
+    {
+        for(int j=0; j<CONCEPTS_MAX; j++)
+        {
+            invertedAtomIndex[i][j] = NULL;
+        }
+    }
 }
 
 Concept *Memory_FindConceptByTerm(Term *term)
@@ -88,6 +96,60 @@ void Memory_CycleDebug()
     bool wat = HashTable_Get(&HTconcepts, &debug) != NULL;
     //printf("CONCEPT EXISTS %d\n", wat ? 1 : 0);
 }
+
+
+Concept *invertedAtomIndex[TERMS_MAX][CONCEPTS_MAX];
+void Memory_AddToInvertedAtomIndex(Term term, Concept *c)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = term.atoms[i];
+        bool notCopula = Narsese_IsNonCopulaAtom(atom);
+        //If it's not a copula, search for the first empty one, and insert the concept there
+        if(notCopula)
+        {
+            for(int j=0; invertedAtomIndex[(int) atom][j]!=c; j++) //go through invertedAtomIndex[atom] as long as not equal
+            {
+                assert(j<CONCEPTS_MAX, "invertedAtomIndex too small!");
+                if(invertedAtomIndex[(int) atom][j] == NULL) //and put in if null (empty space found!), so we are done
+                {
+                    invertedAtomIndex[(int) atom][j] = c;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void Memory_RemoveFromInvertedAtomIndex(Term term, Concept *c)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = term.atoms[i];
+        if(Narsese_IsSimpleAtom(atom))
+        {
+            //1. Get position j where inverted index value equals c->id
+            int j=0;
+            for(; invertedAtomIndex[(int) atom][j]!=c; j++)
+            {
+                if(invertedAtomIndex[(int) atom][j] == NULL)
+                {
+                    return;
+                }
+                assert(j+1<CONCEPTS_MAX, "invertedAtomIndex too small! (1)");
+            }
+            //2. Shift left the right entries to replace value at j (leaving NULL at end of course)
+            int k;
+            for(k=j; invertedAtomIndex[(int) atom][k]!=NULL; k++)
+            {
+                assert(k+2<CONCEPTS_MAX, "invertedAtomIndex too small! (2)");
+                invertedAtomIndex[(int) atom][k] = invertedAtomIndex[(int) atom][k+1];
+            }
+            invertedAtomIndex[(int) atom][k+1] = NULL;
+        }
+    }
+}
+
 Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
     if(Narsese_isOperation(term)) //don't conceptualize operations
@@ -106,10 +168,13 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
             //if something was evicted in the adding process delete from hashmap first
             if(feedback.evicted)
             {
+                Memory_RemoveFromInvertedAtomIndex(recycleConcept->term, recycleConcept);
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to delete does not exist!"); )
                 HashTable_Delete(&HTconcepts, recycleConcept);
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to delete was not deleted!"); )
             }
+            //Add term to inverted atom index as well:
+            Memory_AddToInvertedAtomIndex(*term, recycleConcept);
             //proceed with recycling of the concept in the priority queue
             *recycleConcept = (Concept) {0};
             Concept_SetTerm(recycleConcept, *term);
@@ -248,6 +313,10 @@ void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long cu
                 Term_OverrideSubterm(&imp.term, 1, &subject);
                 Term_OverrideSubterm(&imp.term, 2, &predicate);
                 Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                if(opi == 0)
+                {
+                    Table_AddAndRevise(&sourceConcept->postcondition_beliefs, &imp);
+                }
                 Memory_printAddedEvent(event, priority, input, derived, revised);
             }
         }
@@ -277,26 +346,83 @@ void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long cu
             {
                 Memory_AddEvent(cycling_events, &c->belief, currentTime, priority, 0, false, false, false, true);
             }
-            if(cycling_events == &cycling_belief_events)
-            {
+            if(cycling_events == &cycling_belief_events && Truth_Expectation(event->truth) > PREDICTION_TRUTH_EXPECTATION_THRESHOLD) 
+            {   //processing current event which made it into cycling belief events queue!
                 Event *e = event;
+                bool is_temporally_related[concepts.itemsAmount];
                 for(int j=0; j<concepts.itemsAmount; j++)
                 {
                     Concept *cpost = concepts.items[j].address;
-                    bool is_temporally_related = false;
                     for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
                     {
                         Implication imp = cpost->precondition_beliefs[0].array[k];
                         Term subject = Term_ExtractSubterm(&imp.term, 1);
                         if(Variable_Unify(&subject, &e->term).success)
                         {
-                            is_temporally_related = true;
+                            is_temporally_related[j] = true;
                             break;
                         }
                     }
-                    if(is_temporally_related)
+                }
+                
+                static bool already_used[CONCEPTS_MAX];
+                memset(already_used, false, CONCEPTS_MAX);
+                for(int k=0; k<COMPOUND_TERM_SIZE_MAX; k++)
+                {
+                    //static Concept *invertedTermRow[TERMS_MAX][CONCEPTS_MAX];
+                    Atom atom = e->term.atoms[k];
+                    if(Narsese_IsSimpleAtom(atom))
                     {
-                        #pragma omp parallel for
+                        //memcpy(&invertedTermRow[(int) atom], &invertedAtomIndex[atom], CONCEPTS_MAX);
+                        //#pragma omp parallel for
+                        for(int concept_index=0; concept_index < concepts.itemsAmount; concept_index++)
+                        {
+                            assert(concept_index<CONCEPTS_MAX, "Too small inverted atom index!");
+                            Concept *cpost = invertedAtomIndex[(int) atom][concept_index];
+                            if(cpost != NULL)
+                            {
+                                bool used = already_used[concept_index];
+                                already_used[concept_index] = true;
+                                if(!used)
+                                {
+                                    for(int i=0; i<MIN(PREDICTION_IMPLICATIONS, cpost->postcondition_beliefs.itemsAmount); i++)
+                                    {
+                                        Implication *imp = &cpost->postcondition_beliefs.array[i];
+                                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                                        Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                                        Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                                        Substitution subs = Variable_Unify(&precondition, &e->term);
+                                        if(subs.success)
+                                        {
+                                            Implication updated_imp = *imp;
+                                            bool success;
+                                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                                            if(success)
+                                            {
+                                                cpost->usage = Usage_use(cpost->usage, currentTime);
+                                                Event predicted = Inference_BeliefDeduction(e, &updated_imp);
+                                                /*fputs("PREDICTED ", stdout);
+                                                Narsese_PrintTerm(&imp->term);
+                                                fputs(" ", stdout);
+                                                Truth_Print(&updated_imp.truth);
+                                                printf(" expectation=%f", Truth_Expectation(imp->truth));
+                                                puts("");*/
+                                                Memory_AddEvent(&cycling_predicted_events, &predicted, currentTime, Truth_Expectation(predicted.truth), 0, false, true, false, false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                    
+                /*SLOW DON'T DO:
+                for(int j=0; j<concepts.itemsAmount; j++)
+                {
+                    Concept *cpost = concepts.items[j].address;
+                    if(is_temporally_related[j])
+                    {
                         for(int i=0; i<MIN(PREDICTION_IMPLICATIONS, cpost->precondition_beliefs[0].itemsAmount); i++)
                         {
                             Implication *imp = &cpost->precondition_beliefs[0].array[i];
@@ -313,18 +439,18 @@ void Memory_ProcessNewEvent(PriorityQueue *cycling_events, Event *event, long cu
                                 {
                                     cpost->usage = Usage_use(cpost->usage, currentTime);
                                     Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                    /*fputs("PREDICTED ", stdout);
-                                    Narsese_PrintTerm(&imp->term);
-                                    fputs(" ", stdout);
-                                    Truth_Print(&updated_imp.truth);
-                                    printf(" expectation=%f", Truth_Expectation(imp->truth));
-                                    puts("");*/
+                                    //fputs("PREDICTED ", stdout);
+                                    //Narsese_PrintTerm(&imp->term);
+                                    //fputs(" ", stdout);
+                                    //Truth_Print(&updated_imp.truth);
+                                    //printf(" expectation=%f", Truth_Expectation(imp->truth));
+                                    //puts("");
                                     Memory_AddEvent(&cycling_predicted_events, &predicted, currentTime, Truth_Expectation(predicted.truth), 0, false, true, false, false);
                                 }
                             }
                         }
                     }
-                }
+                }*/
             }
         }
     }
@@ -365,16 +491,19 @@ void Memory_AddEvent(PriorityQueue *cycling_events, Event *event, long currentTi
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
+        bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+        if(!isImplication)
+        {
+            Memory_addCyclingEvent(cycling_events, event, priority, currentTime);
+        }
         if(!readded)
         {
-            bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
             Memory_ProcessNewEvent(cycling_events, event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
             if(isImplication)
             {
                 return;
             }
         }
-        Memory_addCyclingEvent(cycling_events, event, priority, currentTime);
         if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
         {
             Memory_printAddedEvent(event, priority, input, derived, revised);

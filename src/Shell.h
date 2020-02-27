@@ -43,5 +43,7 @@ void Shell_Start();
 void Shell_NARInit();
 //Process a shell input line, can be comments, timesteps, Narsese, and commands, returns if system reset was issued
 bool Shell_ProcessInput(char *line);
+//debug command:
+void PrintInvertedAtomIndex();
 
 #endif
