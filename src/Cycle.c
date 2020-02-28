@@ -374,7 +374,7 @@ void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
             RuleTable_Apply(&cycling_belief_events, e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, e_priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             //Main inference loop:
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for(int j=0; j<concepts.itemsAmount; j++)
             {
                 Concept *c = concepts.items[j].address;
@@ -405,7 +405,7 @@ void Cycle_Inference(PriorityQueue *cycling_events, long currentTime)
                 //second  filter based on precondition implication (temporal relationship)
                 if(has_common_term)
                 {
-                    #pragma omp critical(stats)
+                    //#pragma omp critical(stats)
                     {
                         countConceptsMatchedNew++;
                         countConceptsMatched++;
@@ -472,6 +472,21 @@ void Cycle_RelativeForgetConcepts(long currentTime)
         Concept *c = concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
+    }
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        for(int j=0; j<c->precondition_beliefs[0].itemsAmount; j++)
+        {
+            if(c->precondition_beliefs[0].array[j].fromInput)
+            {
+                Term subject = Term_ExtractSubterm(&c->precondition_beliefs[0].array[j].term, 1);
+                Concept *c2 = Memory_Conceptualize(&subject, currentTime);
+                c->usage = Usage_use(c->usage, currentTime); //user implication won't be forgotten
+                c2->usage = Usage_use(c2->usage, currentTime); //user implication won't be forgotten
+                break;
+            }
+        }
     }
     //Re-sort queue
     PriorityQueue_Rebuild(&concepts);
