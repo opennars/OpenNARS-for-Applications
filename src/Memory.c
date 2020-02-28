@@ -183,7 +183,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
+void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -203,7 +203,8 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
-                                .creationTime = currentTime };
+                                .creationTime = currentTime,
+                                .isUserKnowledge = input };
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
@@ -260,13 +261,50 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true);
+                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
             }
+            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
+            if(!predicted)
+            {
+                for(int j=0; j<concepts.itemsAmount; j++)
+                {
+                    Concept *cpost = concepts.items[j].address;
+                    for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
+                    {
+                        Implication *imp = &cpost->precondition_beliefs[0].array[k];
+                        if(imp->isUserKnowledge)
+                        {
+                            Term subject = Term_ExtractSubterm(&imp->term, 1);
+                            if(Variable_Unify(&subject, &event->term).success)
+                            {
+                                assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                                Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                                Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                                Substitution subs = Variable_Unify(&precondition, &event->term);
+                                if(subs.success)
+                                {
+                                    Implication updated_imp = *imp;
+                                    bool success;
+                                    updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                                    if(success)
+                                    {
+                                        cpost->usage = Usage_use(cpost->usage, currentTime);
+                                        Event predicted = Inference_BeliefDeduction(event, &updated_imp);
+                                        Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            //END SPECIAL HANDLING FOR USER KNOWLEDGE
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised)
+void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -304,7 +342,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         if(!readded)
         {
             bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
+            Memory_ProcessNewEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
             if(isImplication)
             {
                 return;
@@ -325,7 +363,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
 }
 
 void Memory_AddOperation(int id, Operation op)
