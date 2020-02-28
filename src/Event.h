@@ -49,6 +49,7 @@ typedef struct {
     bool processed;
     bool propagated;
     long creationTime;
+    bool isUserKnowledge;
 } Event;
 
 //Methods//

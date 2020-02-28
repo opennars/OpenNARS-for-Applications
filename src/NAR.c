@@ -48,13 +48,14 @@ void NAR_Cycles(int cycles)
     }
 }
 
-Event NAR_AddInput(Term term, char type, Truth truth, bool eternal)
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserKnowledge)
 {
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     Event ev = Event_InputEvent(term, type, truth, currentTime);
     if(eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
+        ev.isUserKnowledge = isUserKnowledge;
     }
     Memory_AddInputEvent(&ev, currentTime);
     NAR_Cycles(1);
@@ -63,13 +64,13 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal)
 
 Event NAR_AddInputBelief(Term term)
 {
-    Event ret = NAR_AddInput(term, EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false);
+    Event ret = NAR_AddInput(term, EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, false);
     return ret;
 }
 
 Event NAR_AddInputGoal(Term term)
 {
-    return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false);
+    return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false, false);
 }
 
 void NAR_AddOperation(Term term, Action procedure)
@@ -86,7 +87,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     Truth tv;
     char punctuation;
     bool isEvent;
-    Narsese_Sentence(narsese_sentence, &term, &punctuation, &isEvent, &tv);
+    bool isUserKnowledge;
+    Narsese_Sentence(narsese_sentence, &term, &punctuation, &isEvent, &isUserKnowledge, &tv);
 #if STAGE==2
     //apply reduction rules to term:
     term = RuleTable_Reduce(term, false);
@@ -195,14 +197,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     //input beliefs and goals
     else
     {
-        if(punctuation == '!')
-        {
-            NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, !isEvent);
-        }
-        else
-        {
-            NAR_AddInput(term, EVENT_TYPE_BELIEF, tv, !isEvent);
-        }
+        NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !isEvent, isUserKnowledge);
     }
 }
 
