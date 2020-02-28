@@ -48,6 +48,7 @@ typedef struct {
     void *sourceConcept;
     long sourceConceptId; //to check whether it's still the same
     long creationTime;
+    bool isUserKnowledge;
 } Implication;
 
 //Methods//
