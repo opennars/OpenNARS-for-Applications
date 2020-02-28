@@ -225,12 +225,14 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             {
                 sourceConceptTerm = subject;
             }
-            Concept *sourceConcept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
-            if(sourceConcept != NULL)
+            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            if(source_concept != NULL)
             {
-                sourceConcept->usage = Usage_use(sourceConcept->usage, currentTime);
-                imp.sourceConceptId = sourceConcept->id;
-                imp.sourceConcept = sourceConcept;
+                source_concept->usage = Usage_use(source_concept->usage, currentTime);
+                source_concept->hasUserKnowledge |= event->isUserKnowledge;
+                target_concept->hasUserKnowledge |= event->isUserKnowledge;
+                imp.sourceConceptId = source_concept->id;
+                imp.sourceConcept = source_concept;
                 imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
                 Term_OverrideSubterm(&imp.term, 1, &subject);
                 Term_OverrideSubterm(&imp.term, 2, &predicate);
@@ -246,6 +248,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
         {
             c->usage = Usage_use(c->usage, currentTime);
             c->priority = MAX(c->priority, priority);
+            c->hasUserKnowledge |= event->isUserKnowledge;
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
@@ -263,7 +266,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
             }
-            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
+#if ONTOLOGY_HANDLING == true
             if(!predicted)
             {
                 for(int j=0; j<concepts.itemsAmount; j++)
@@ -299,7 +302,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                     }
                 }
             }
-            //END SPECIAL HANDLING FOR USER KNOWLEDGE
+#endif
         }
     }
 }

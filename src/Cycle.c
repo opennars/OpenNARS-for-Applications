@@ -519,22 +519,17 @@ void Cycle_RelativeForgetting(long currentTime)
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
+#if ONTOLOGY_HANDLING == true
     //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
-        for(int j=0; j<c->precondition_beliefs[0].itemsAmount; j++)
+        if(c->hasUserKnowledge)
         {
-            if(c->precondition_beliefs[0].array[j].isUserKnowledge)
-            {
-                Term subject = Term_ExtractSubterm(&c->precondition_beliefs[0].array[j].term, 1);
-                Concept *c2 = Memory_Conceptualize(&subject, currentTime);
-                c->usage = Usage_use(c->usage, currentTime); //user implication won't be forgotten
-                c2->usage = Usage_use(c2->usage, currentTime); //user implication won't be forgotten
-                break;
-            }
+            c->usage = Usage_use(c->usage, currentTime); //user implication won't be forgotten
         }
     }
+#endif
     //END SPECIAL HANDLING FOR USER KNOWLEDGE
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
