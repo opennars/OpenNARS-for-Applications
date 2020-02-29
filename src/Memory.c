@@ -272,6 +272,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
             }
+            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
             if(ontology_handling && !predicted)
             {
                 for(int j=0; j<concepts.itemsAmount; j++)
@@ -307,6 +308,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                     }
                 }
             }
+            //END SPECIAL HANDLING FOR USER KNOWLEDGE
         }
     }
 }

@@ -519,6 +519,7 @@ void Cycle_RelativeForgetting(long currentTime)
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
+    //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
     if(ontology_handling)
     {
         //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
