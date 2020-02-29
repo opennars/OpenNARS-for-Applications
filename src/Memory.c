@@ -32,6 +32,7 @@ Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
+bool ontology_handling = false;
 
 static void Memory_ResetEvents()
 {
@@ -67,6 +68,7 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     concept_id = 0;
+    ontology_handling = false;
 }
 
 Concept *Memory_FindConceptByTerm(Term *term)
@@ -191,6 +193,10 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
         eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
         eternal_event.truth = Truth_Eternalize(event->truth);
     }
+    if(event->isUserKnowledge)
+    {
+        ontology_handling = true;
+    }
     if(isImplication)
     {
         //get predicate and add the subject to precondition table as an implication
@@ -204,7 +210,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
                                 .creationTime = currentTime,
-                                .isUserKnowledge = input };
+                                .isUserKnowledge = event->isUserKnowledge };
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
@@ -266,8 +272,8 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
             }
-#if ONTOLOGY_HANDLING == true
-            if(!predicted)
+            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
+            if(ontology_handling && !predicted)
             {
                 for(int j=0; j<concepts.itemsAmount; j++)
                 {
@@ -302,7 +308,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                     }
                 }
             }
-#endif
+            //END SPECIAL HANDLING FOR USER KNOWLEDGE
         }
     }
 }
