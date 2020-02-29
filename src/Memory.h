@@ -48,6 +48,7 @@ extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
+extern bool ontology_handling;
 extern Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 extern double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 extern int eventsSelected;

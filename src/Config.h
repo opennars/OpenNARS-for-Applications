@@ -25,12 +25,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-/*------------------------*/
-/* Application parameters */
-/*------------------------*/
-//Enable special treatment for effective use of user knowledge, and not to forget it
-#define ONTOLOGY_HANDLING true
-
 /*-------------------------*/
 /* Anticipation parameters */
 /*-------------------------*/
