@@ -278,31 +278,34 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                 for(int j=0; j<concepts.itemsAmount; j++)
                 {
                     Concept *cpost = concepts.items[j].address;
-                    for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
+                    if(cpost->hasUserKnowledge)
                     {
-                        Implication *imp = &cpost->precondition_beliefs[0].array[k];
-                        if(imp->isUserKnowledge)
+                        for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
                         {
-                            Term subject = Term_ExtractSubterm(&imp->term, 1);
-                            if(Variable_Unify(&subject, &event->term).success)
+                            Implication *imp = &cpost->precondition_beliefs[0].array[k];
+                            if(imp->isUserKnowledge)
                             {
-                                assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                                Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                                Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                                Substitution subs = Variable_Unify(&precondition, &event->term);
-                                if(subs.success)
+                                Term subject = Term_ExtractSubterm(&imp->term, 1);
+                                if(Variable_Unify(&subject, &event->term).success)
                                 {
-                                    Implication updated_imp = *imp;
-                                    bool success;
-                                    updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                                    if(success)
+                                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                                    Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                                    Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                                    Substitution subs = Variable_Unify(&precondition, &event->term);
+                                    if(subs.success)
                                     {
-                                        cpost->usage = Usage_use(cpost->usage, currentTime);
-                                        Event predicted = Inference_BeliefDeduction(event, &updated_imp);
-                                        Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
+                                        Implication updated_imp = *imp;
+                                        bool success;
+                                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                                        if(success)
+                                        {
+                                            cpost->usage = Usage_use(cpost->usage, currentTime);
+                                            Event predicted = Inference_BeliefDeduction(event, &updated_imp);
+                                            Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
+                                        }
                                     }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
