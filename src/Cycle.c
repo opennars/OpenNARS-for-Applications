@@ -37,6 +37,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
             c->belief_spike = *e;
         }
         else
+        if(e->type == EVENT_TYPE_GOAL)
         {
             //pass spike if the concept doesn't have a satisfying motor command
             decision = Decision_Suggest(e, currentTime);

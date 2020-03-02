@@ -31,6 +31,8 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_EVENTS_MAX];
+Event cycling_question_event_storage[CYCLING_EVENTS_MAX];
+Item cycling_question_event_items_storage[CYCLING_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 bool ontology_handling = false;
 
@@ -43,6 +45,12 @@ static void Memory_ResetEvents()
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
+    }
+    PriorityQueue_RESET(&cycling_question_events, cycling_question_event_items_storage, CYCLING_EVENTS_MAX);
+    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
+    {
+        cycling_question_event_storage[i] = (Event) {0};
+        cycling_question_events.items[i] = (Item) { .address = &(cycling_question_event_storage[i]) };
     }
 }
 
@@ -138,7 +146,7 @@ static bool Memory_containsEvent(Event *event)
 //called by addEvent for eternal knowledge
 static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
-    assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
+    assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_QUESTION, "Only belief events cycle, goals have their own mechanism!");
     if(Memory_containsEvent(e))
     {
         return false;
@@ -151,7 +159,8 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_belief_events, priority);
+    PriorityQueue *cycling_events = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_question_events;
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(cycling_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
@@ -167,7 +176,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     {
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Narsese_PrintTerm(term);
-        fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
+        fputs((type == EVENT_TYPE_BELIEF ? ". " : (type == EVENT_TYPE_QUESTION ? "? " : "! ")), stdout);
         printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
         printf("Priority=%f ", priority);
         Truth_Print(truth);
@@ -349,7 +358,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             }
         }
     }
-    if(event->type == EVENT_TYPE_BELIEF)
+    if(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_QUESTION)
     {
         if(!readded)
         {
@@ -370,7 +379,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     {
         assert(false, "Eternal goals are not supported");
     }
-    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
+    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL || event->type == EVENT_TYPE_QUESTION, "Errornous event type");
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)

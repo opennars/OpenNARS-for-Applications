@@ -53,7 +53,7 @@ void Event_Print(Event *event)
     printf("Event: \n");
     Term_Print(&event->term);
     //printf("Term hash=%d", event->term_hash);
-    printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));
+    printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (event->type == EVENT_TYPE_BELIEF ? "type=belief\n" : (event->type == EVENT_TYPE_QUESTION ? "type=question\n" : "type=deleted\n" ) ));
     Truth_Print(&event->truth);
     Stamp_print(&event->stamp);
     printf("occurrenceTime=%ld\n\n", event->occurrenceTime);
