@@ -55,7 +55,7 @@ extern int eventsSelected;
 //Concepts in main memory:
 PriorityQueue concepts;
 //cycling events cycling in main memory:
-PriorityQueue cycling_events;
+PriorityQueue cycling_belief_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event buffers:

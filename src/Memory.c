@@ -29,8 +29,8 @@ bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Event cycling_event_storage[CYCLING_EVENTS_MAX];
-Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
+Event cycling_belief_event_storage[CYCLING_EVENTS_MAX];
+Item cycling_belief_event_items_storage[CYCLING_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 bool ontology_handling = false;
 
@@ -38,11 +38,11 @@ static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
-    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_EVENTS_MAX);
+    PriorityQueue_RESET(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_EVENTS_MAX);
     for(int i=0; i<CYCLING_EVENTS_MAX; i++)
     {
-        cycling_event_storage[i] = (Event) {0};
-        cycling_events.items[i] = (Item) { .address = &(cycling_event_storage[i]) };
+        cycling_belief_event_storage[i] = (Event) {0};
+        cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
 }
 
@@ -124,9 +124,9 @@ int eventsSelected = 0;
 
 static bool Memory_containsEvent(Event *event)
 {
-    for(int i=0; i<cycling_events.itemsAmount; i++)
+    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
     {
-        if(Event_Equal(event, cycling_events.items[i].address))
+        if(Event_Equal(event, cycling_belief_events.items[i].address))
         {
             return true;
         }
@@ -151,7 +151,7 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_belief_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
