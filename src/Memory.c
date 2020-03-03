@@ -29,8 +29,8 @@ bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Event cycling_event_storage[CYCLING_BELIEF_EVENTS_MAX];
-Item cycling_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
+Event cycling_event_storage[CYCLING_EVENTS_MAX];
+Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 bool ontology_handling = false;
 
@@ -38,8 +38,8 @@ static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
-    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
+    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_EVENTS_MAX);
+    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
     {
         cycling_event_storage[i] = (Event) {0};
         cycling_events.items[i] = (Item) { .address = &(cycling_event_storage[i]) };
