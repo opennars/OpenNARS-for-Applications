@@ -7,13 +7,16 @@
 <{tim} --> duck>.
 //sam is a dog
 <{sam} --> wolf>.
+100
 //tim is seen now
 <{tim} --> [seen]>. :|:
 //I want to be good now
 <{SELF} --> [good]>! :|:
 //expected: ^pick executed with args ({SELF} * duck)
+100
 //sam is seen
 <{sam} --> [seen]>. :|:
 //I want to be good now
 <{SELF} --> [good]>! :|:
 //expected: ^go executed with args ({SELF} * away)
+100

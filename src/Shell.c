@@ -132,6 +132,16 @@ bool Shell_ProcessInput(char *line)
             PRINT_DERIVATIONS = true;
         }
         else
+        if(!strcmp(line,"*motorbabbling=false"))
+        {
+            MOTOR_BABBLING_CHANCE = 0.0;
+        }
+        else
+        if(!strcmp(line,"*motorbabbling=true"))
+        {
+            MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+        }
+        else
         if(strspn(line, "0123456789"))
         {
             unsigned int steps;

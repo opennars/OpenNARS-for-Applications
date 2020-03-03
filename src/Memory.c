@@ -122,7 +122,7 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 int eventsSelected = 0;
 
-static bool Memory_containsEvent(Event *event)
+static bool Memory_containsBeliefEvent(Event *event)
 {
     for(int i=0; i<cycling_events.itemsAmount; i++)
     {
@@ -138,8 +138,8 @@ static bool Memory_containsEvent(Event *event)
 //called by addEvent for eternal knowledge
 static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
-    assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
-    if(Memory_containsEvent(e))
+    assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
+    if(e->type == EVENT_TYPE_BELIEF && Memory_containsBeliefEvent(e)) //avoid duplicate derivations, cannot happen for goals currently
     {
         return false;
     }
