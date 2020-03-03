@@ -38,7 +38,7 @@
 //--------------//
 #define EVENT_TYPE_GOAL 1
 #define EVENT_TYPE_BELIEF 2
-#define EVENT_TYPE_QUESTION 2
+#define EVENT_TYPE_QUESTION 3
 #define EVENT_TYPE_DELETED 0
 typedef struct {
     Term term;

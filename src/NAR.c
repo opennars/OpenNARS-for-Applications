@@ -193,6 +193,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             Truth_Print(&best_truth);
         }
         fflush(stdout);
+        NAR_AddInput(term, EVENT_TYPE_QUESTION, tv, !isEvent, isUserKnowledge);
     }
     //input beliefs and goals
     else

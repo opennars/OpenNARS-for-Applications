@@ -213,7 +213,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
                 if(success && Variable_hasVariable(&general_implication_term, true, true, false))
                 {
-                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                    NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, EVENT_TYPE_BELIEF, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                 }
                 int operationID = Narsese_getOperationID(&a->term);
                 IN_DEBUG ( if(operationID != 0) { Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); getchar(); } )
@@ -235,19 +235,24 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
 void Cycle_PopEvents()
 {
     eventsSelected = 0;
-    for(int i=0; i<EVENT_SELECTIONS; i++)
+    PriorityQueue *cycling_event_queues[2] = { &cycling_belief_events, &cycling_question_events };
+    for(int j=0; j<2; j++)
     {
-        Event *e;
-        double priority = 0;
-        if(!PriorityQueue_PopMax(&cycling_belief_events, (void**) &e, &priority))
+        PriorityQueue *cycling_events = cycling_event_queues[j];
+        for(int i=0; i<EVENT_SELECTIONS; i++)
         {
-            assert(cycling_belief_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-            IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
-            break;
+            Event *e;
+            double priority = 0;
+            if(!PriorityQueue_PopMax(cycling_events, (void**) &e, &priority))
+            {
+                assert(cycling_events->itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+                IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
+                break;
+            }
+            selectedEventsPriority[eventsSelected] = priority;
+            selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
+            eventsSelected++; //that while processing, would make recycled pointers invalid to use
         }
-        selectedEventsPriority[eventsSelected] = priority;
-        selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
-        eventsSelected++; //that while processing, would make recycled pointers invalid to use
     }
 }
 
@@ -380,7 +385,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedEventsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
+            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, e->type, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             //Main inference loop:
             #pragma omp parallel for
@@ -467,10 +472,10 @@ void Cycle_Inference(long currentTime)
                             Narsese_PrintTerm(&c->term);
                             puts("");
                         }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, e->type, c->priority, true, c, validation_cid);
                     }
                 }
-                if(is_temporally_related)
+                if(is_temporally_related && e->type == EVENT_TYPE_BELIEF) //beliefs, forward
                 {
                     for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                     {
@@ -487,7 +492,28 @@ void Cycle_Inference(long currentTime)
                             if(success)
                             {
                                 Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
+                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, e->type, Truth_Expectation(imp->truth), 0, c, validation_cid);
+                            }
+                        }
+                    }
+                }
+                if((has_common_term || Term_Equal(&e->term, &c->term)) && e->type == EVENT_TYPE_QUESTION) //questions, backward
+                {
+                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
+                    {
+                        Implication *imp = &c->precondition_beliefs[0].array[i];
+                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                        Term postcondition = Term_ExtractSubterm(&c->term, 2);
+                        Substitution subs = Variable_Unify(&postcondition, &e->term);
+                        if(subs.success)
+                        {
+                            Implication updated_imp = *imp;
+                            bool success;
+                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                            if(success)
+                            {
+                                Event precondition = Inference_GoalDeduction(e, &updated_imp);
+                                NAL_DerivedEvent(precondition.term, precondition.occurrenceTime, precondition.truth, precondition.stamp, currentTime, priority, e->type, Truth_Expectation(imp->truth), 0, c, validation_cid);
                             }
                         }
                     }
