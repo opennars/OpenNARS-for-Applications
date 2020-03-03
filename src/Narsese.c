@@ -379,14 +379,14 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
     assert(len < NARSESE_LEN_MAX, "Parsing error: Narsese string too long!"); //< because of '0' terminated strings
     memcpy(narseseInplace, narsese, len);
     //tv is present if last letter is '}'
-    if(len>=2 && narseseInplace[len-1] == '}')
+    if(len>=2 && narseseInplace[len-1] == '%')
     {
         //scan for opening '{'
         int openingIdx;
-        for(openingIdx=len-2; openingIdx>=0 && narseseInplace[openingIdx] != '{'; openingIdx--);
-        assert(narseseInplace[openingIdx] == '{', "Parsing error: Truth value opener not found!");
+        for(openingIdx=len-2; openingIdx>=0 && narseseInplace[openingIdx] != '%'; openingIdx--);
+        assert(narseseInplace[openingIdx] == '%', "Parsing error: Truth value opener not found!");
         double conf, freq;
-        sscanf(&narseseInplace[openingIdx], "{%lf %lf}", &freq, &conf);
+        sscanf(&narseseInplace[openingIdx], "%%%lf;%lf%%", &freq, &conf);
         destTv->frequency = freq;
         destTv->confidence = conf;
         assert(narseseInplace[openingIdx-1] == ' ', "Parsing error: Space before truth value required!");
