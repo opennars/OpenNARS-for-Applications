@@ -19,3 +19,4 @@
 //I want to be informative
 <{SELF} --> [informative]>! :|:
 //expected: ^say executed with args ({SELF} * (car * crashed))
+100

@@ -29,8 +29,10 @@ bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Event cycling_event_storage[CYCLING_EVENTS_MAX];
-Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
+Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
+Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
+Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
+Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 bool ontology_handling = false;
 
@@ -38,11 +40,17 @@ static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
-    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_EVENTS_MAX);
-    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
+    PriorityQueue_RESET(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
+    for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
-        cycling_event_storage[i] = (Event) {0};
-        cycling_events.items[i] = (Item) { .address = &(cycling_event_storage[i]) };
+        cycling_belief_event_storage[i] = (Event) {0};
+        cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
+    }
+    PriorityQueue_RESET(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
+    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    {
+        cycling_goal_event_storage[i] = (Event) {0};
+        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
     }
 }
 
@@ -122,11 +130,23 @@ Event selectedEvents[EVENT_SELECTIONS]; //better to be global
 double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
 int eventsSelected = 0;
 
-static bool Memory_containsEvent(Event *event)
+static bool Memory_containsBeliefEvent(Event *event)
 {
-    for(int i=0; i<cycling_events.itemsAmount; i++)
+    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
     {
-        if(Event_Equal(event, cycling_events.items[i].address))
+        if(Event_Equal(event, cycling_belief_events.items[i].address))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Memory_containsGoalEvent(Event *event)
+{
+    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    {
+        if(Event_Equal(event, cycling_goal_events.items[i].address))
         {
             return true;
         }
@@ -136,10 +156,10 @@ static bool Memory_containsEvent(Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
-    assert(e->type == EVENT_TYPE_BELIEF, "Only belief events cycle, goals have their own mechanism!");
-    if(Memory_containsEvent(e))
+    assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
+    if(e->type == EVENT_TYPE_BELIEF && Memory_containsBeliefEvent(e)) //avoid duplicate derivations, cannot happen for goals currently
     {
         return false;
     }
@@ -151,7 +171,8 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
+    PriorityQueue *cycling_events = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(cycling_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;

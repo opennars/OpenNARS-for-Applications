@@ -1,3 +1,4 @@
+*motorbabbling=false
 *volume=0
 <(&/,<(*,$1,plastic) --> made_of>,<(*,{SELF},$1) --> ^left>) =/> <$1 --> [heated]>>.
 <<$1 --> [heated]> =/> <$1 --> [melted]>>.
@@ -9,13 +10,14 @@
 <(*,toothbrush,plastic) --> made_of>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^left executed with args ({SELF} * toothbrush)
-10
+100
 //some time later:
 <toothbrush --> [pliable]>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^right executed with args ({SELF} * toothbrush)
-10
+100
 //some time later:
 <toothbrush --> [hardened]>. :|:
 <#1 --> [unscrewing]>! :|:
 //expected: ^down executed with args ({SELF} * toothbrush)
+100

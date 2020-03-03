@@ -55,7 +55,8 @@ extern int eventsSelected;
 //Concepts in main memory:
 PriorityQueue concepts;
 //cycling events cycling in main memory:
-PriorityQueue cycling_events;
+PriorityQueue cycling_belief_events;
+PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event buffers:
@@ -88,5 +89,9 @@ bool Memory_ImplicationValid(Implication *imp);
 void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, bool revised);
 //print added event
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
+//Whether a certain goal exist is in the cycling events queue:
+bool Memory_containsGoalEvent(Event *event);
+//Add an event to cycling events queue:
+bool Memory_addCyclingEvent(Event *e, double priority, long currentTime);
 
 #endif

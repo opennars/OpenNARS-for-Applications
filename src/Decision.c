@@ -117,6 +117,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
+    Concept *cbest_predicate = NULL;
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *postc_general = concepts.items[concept_i].address;
@@ -159,6 +160,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                                         if(considered.desire > decision.desire)
                                         {
                                             decision = considered;
+                                            cbest_predicate = cmatch;
                                         }
                                     }
                                 }
@@ -173,6 +175,17 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
     {
         return decision;
     }
+    //increase usefulness
+    assert(cbest_predicate != NULL, "Above decision threshold but postcondition concept is NULL!");
+    cbest_predicate->usage = Usage_use(cbest_predicate->usage, currentTime);
+    Term subject_with_op = Term_ExtractSubterm(&bestImp.term, 1);
+    Term subject = Narsese_GetPreconditionWithoutOp(&subject_with_op);
+    Concept *cbest_subject = Memory_Conceptualize(&subject, currentTime);
+    if(cbest_subject != NULL)
+    {
+        cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime);
+    }
+    //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
     Narsese_PrintTerm(&bestImp.term); puts("");
     decision.execute = true;
@@ -181,7 +194,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 
 void Decision_AssumptionOfFailure(int operationID, long currentTime)
 {
-    assert(operationID >= 0 && operationID < OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
+    assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = concepts.items[j].address;

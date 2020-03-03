@@ -238,9 +238,9 @@ void Cycle_PopEvents()
     {
         Event *e;
         double priority = 0;
-        if(!PriorityQueue_PopMax(&cycling_events, (void**) &e, &priority))
+        if(!PriorityQueue_PopMax(&cycling_belief_events, (void**) &e, &priority))
         {
-            assert(cycling_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+            assert(cycling_belief_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
             IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
             break;
         }
@@ -508,9 +508,9 @@ void Cycle_Inference(long currentTime)
 void Cycle_RelativeForgetting(long currentTime)
 {
     //Apply event forgetting:
-    for(int i=0; i<cycling_events.itemsAmount; i++)
+    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
     {
-        cycling_events.items[i].priority *= EVENT_DURABILITY;
+        cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
@@ -535,7 +535,7 @@ void Cycle_RelativeForgetting(long currentTime)
     //END SPECIAL HANDLING FOR USER KNOWLEDGE
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
-    PriorityQueue_Rebuild(&cycling_events);
+    PriorityQueue_Rebuild(&cycling_belief_events);
 }
 
 void Cycle_Perform(long currentTime)
