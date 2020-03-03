@@ -80,6 +80,19 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
         else
         if(i+1 < n)
         {
+            if(narsese[i] == '_' && narsese[i+1] == ',') // _, becomes /1
+            {
+                narsese_replaced[j] = '/';
+                narsese_replaced[j+1] = ' ';
+                i+=2; j+=2;
+            }
+            else
+            if(narsese[i] == '(' && narsese[i+1] == '/') // (/ becomes (initial ONR ext image support)
+            {
+                narsese_replaced[j] = '(';
+                i+=2; j++;
+            }
+            else
             if(narsese[i] == '&' && narsese[i+1] == '/') // &/ becomes +
             {
                 narsese_replaced[j] = '+';
