@@ -78,7 +78,7 @@
 /*------------------*/
 //Maximum amount of concepts
 #define CONCEPTS_MAX 16384
-//Maximum amount of belief events attention buffer holds
+//Maximum amount of events attention buffer holds
 #define CYCLING_EVENTS_MAX 20
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
