@@ -83,6 +83,14 @@ void NAR_AddOperation(Term term, Action procedure)
 
 void NAR_AddInputNarsese(char *narsese_sentence)
 {
+    //backward compatibility, accept budget
+    for(int i=0; i<strlen(narsese_sentence)-2; i++)
+    {
+        if(narsese_sentence[i] == '$' && narsese_sentence[i+1] == ' ')
+        {
+            narsese_sentence = &narsese_sentence[i+2];
+        }
+    }
     Term term;
     Truth tv;
     char punctuation;
