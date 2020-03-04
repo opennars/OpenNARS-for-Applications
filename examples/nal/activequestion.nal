@@ -26,7 +26,7 @@ G! :|:
 //expected: ^go executed with args ({SELF} * bedroom)
 
 100
-//ok, feedback to NARS going to the bedrem the cat is there!
+//ok, feedback to NARS going to the bedroom the cat is there!
 <({cat} * bedroom) --> in>. :|:
 G! :|:
 //expected: ^say executed with args ({SELF} * bedroom)
