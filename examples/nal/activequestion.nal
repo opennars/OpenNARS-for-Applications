@@ -21,7 +21,7 @@
 //NARS, where is the cat?
 //Passive question <({cat} * ?where) --> in>? :|: wouldn't trigger a decision
 //Active question however does:
-<(<({cat} * ?where) --> in> &/ <({SELF} * ?where) --> ^say>) =/> G>.
+<(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
 G! :|:
 //expected: ^go executed with args ({SELF} * bedroom)
 
