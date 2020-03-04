@@ -152,7 +152,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                                     Implication specific_imp = imp; //can only be completely specific
                                     bool success;
                                     specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                    if(success)
+                                    if(success && !Variable_hasVariable(&specific_imp.term, true, true, true))
                                     {
                                         specific_imp.sourceConcept = cmatch;
                                         specific_imp.sourceConceptId = cmatch->id;
