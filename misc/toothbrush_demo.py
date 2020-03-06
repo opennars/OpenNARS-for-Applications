@@ -24,14 +24,14 @@ for it in range(iterations):
     # Read in toothbrush file and extract expected statements
     contents = []
     expected = set()
-    with open("examples/nal/toothbrush.nal") as input_file:
+    with open("./../examples/nal/toothbrush.nal") as input_file:
         for line in input_file:
             if "//expected:" in line:
                 expected.add(line.split("//expected: ")[1].rstrip())
             contents.append(line)
 
     # ./NAR UDPNAR IP PORT  timestep(ns per cycle) printDerivations
-    process_cmd = ["./NAR", "UDPNAR", ip, str(port), "1000000", "true"]
+    process_cmd = ["./../NAR", "UDPNAR", ip, str(port), "1000000", "true"]
     process = subprocess.Popen(process_cmd,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
