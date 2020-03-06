@@ -11,7 +11,7 @@ server = "irc.freenode.net"
 channel = "#nars"
 botnick = "yan42"
 Narsese_Filter=["^","Answer:"]
-process_start = ["YAN","shell"]
+process_start = ["./../NAR","shell"]
 
 proc = subprocess.Popen(process_start, stdin=subprocess.PIPE, stdout=subprocess.PIPE) 
 irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
