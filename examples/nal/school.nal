@@ -1,0 +1,98 @@
+*motorbabbling=false
+*volume=0
+//to get to the corridor you need to use a knob
+<(<$1 --> knob> &/ <({SELF} * $1) --> ^pick>) =/> <{door} --> [open]>>. :@:
+//a knob is a metallic object attached to door
+<knob --> ([metallic] & (on /1 {door}))>. :@:
+//well sometimes it's a plastic object attached to door
+<knob --> ([plastic] & (on /1 {door}))>. :@:
+//once the door is open, you can go to the corridor
+<(<{door} --> [open]> &/ <({SELF} * {corridor}) --> ^go>) =/> <{corridor} --> [in]>>. :@:
+//from the corridor you can go into every room
+<(<{corridor} --> [in]> &/ <({SELF} * $1) --> ^go>) =/> <$1 --> [in]>>. :@:
+//from every room you can go to the corridor
+<(<$1 --> [in]> &/ <({SELF} * {corridor}) --> ^go>) =/> <{corridor} --> [in]>>. :@:
+//from the kitchen you can get something to get refreshed
+<<{kitchen} --> [in]> =/> <{SELF} --> [refreshed]>>. :@:
+//whatever coffee you can find, use it for refresh
+<(<$1 --> coffee> &/ <({SELF} * $1) --> ^pick>) =/> <{SELF} --> [refreshed]>>. :@:
+//you can educate children in the classroom
+<<{classroom} --> [in]> =/> <child --> [educated]>>. :@:
+//presenting the content using a clean blackboard will educate the children
+<(<{blackboard} --> [clean]> &/ <({SELF} * write) --> ^pick>) =/> <child --> [educated]>>. :@:
+//but if the blackboard is dirty, it needs to be cleaned first
+<(<{blackboard} --> [dirty]> &/ <({SELF} * sponge) --> ^pick>) =/> <child --> [educated]>>. :@:
+//coffee is black
+<coffee --> [black]>. :@:
+//orange juice is yellow
+<orangejuice --> [yellow]>. :@:
+//milk is white
+<milk --> [white]>. :@:
+100
+//arriving at school, you see a wooden object
+<{obj1} --> [wooden]>. :|:
+//on the door
+<{obj1} --> (on /1 {door})>. :|:
+//and a wooden object
+<{obj2} --> [wooden]>. :|:
+//on a window
+<{obj2} --> (on /1 {window})>. :|:
+//the goal is to educate children
+<child --> [educated]>! :|:
+//expected: ^pick executed with args ({SELF} * {obj1})
+100
+//you are in the corridor
+<{corridor} --> [in]>. :|:
+//with a dirty floor
+<{floor} --> [dirty]>. :|:
+//the goal is to educate children
+<child --> [educated]>! :|:
+//expected: ^go executed with args ({SELF} * {classroom})
+100
+//you are in the classroom now
+<{classroom} --> [in]>. :|:
+//with a clean floor
+<{floor} --> [clean]>. :|:
+//and a clean blackboard
+<{blackboard} --> [clean]>. :|:
+//the goal is to educate children
+<child --> [educated]>! :|:
+//expected: ^pick executed with args ({SELF} * write)
+100
+//you are still in the classroom
+<{classroom} --> [in]>. :|:
+//with a clean floor
+<{floor} --> [clean]>. :|:
+//but also the blackboard is now dirty and needs cleaning
+<{blackboard} --> [dirty]>. :|:
+//the goal is to educate children
+<child --> [educated]>! :|:
+//expected: ^pick executed with args ({SELF} * sponge)
+100
+//you are still in the classroom
+<{classroom} --> [in]>. :|:
+//with a clean floor
+<{floor} --> [clean]>. :|:
+//you are really tired now, you want to be refreshed (go for coffee!!)
+<{SELF} --> [refreshed]>! :|:
+//expected: ^go executed with args ({SELF} * {corridor})
+100
+//now you are in the corridor
+<{corridor} --> [in]>. :|:
+//with a dirty floor as before
+<{floor} --> [dirty]>. :|:
+//you are really tired, you want to be refreshed (go for coffee!!)
+<{SELF} --> [refreshed]>! :|:
+//expected: ^go executed with args ({SELF} * {kitchen})
+100
+//now you are in the kitchen
+<{kitchen} --> [in]>. :|:
+//with a clean floor
+<{floor} --> [clean]>. :|:
+//and see a black drink
+<{drink1} --> [black]>. :|:
+//and a white drink
+<{drink2} --> [white]>. :|:
+//you are really tired, you want to be refreshed (go for coffee!!)
+<{SELF} --> [refreshed]>! :|:
+//expected: ^pick executed with args ({SELF} * {drink1})
