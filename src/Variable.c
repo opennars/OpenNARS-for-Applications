@@ -171,8 +171,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
                 int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
-                    char varname[3] = "$1";
-                    varname[1] = (char) ('0' + var_id);
+                    char varname[3] = { '$', ('0' + var_id), 0 }; //$i
                     Term varterm = Narsese_AtomicTerm(varname);
                     if(!Term_OverrideSubterm(&implication, i, &varterm))
                     {
@@ -186,8 +185,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
                 int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
-                    char varname[3] = "#1";
-                    varname[1] = (char) ('0' + var_id);
+                    char varname[3] = { '#', ('0' + var_id), 0 }; //#i
                     Term varterm = Narsese_AtomicTerm(varname);
                     if(!Term_OverrideSubterm(&implication, i, &varterm))
                     {
@@ -201,4 +199,32 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     }
     *success = true;
     return implication;
+}
+
+void Variable_Normalize(Term *term)
+{
+    int independent_i = 1, dependent_i = 1, query_i = 1;
+    bool normalized[COMPOUND_TERM_SIZE_MAX] = {0};
+    //replace variables with numeric representation, then return the term
+    for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+    {
+        Atom atom = term->atoms[j];
+        char varType = Variable_isIndependentVariable(atom)  ? '$' :            (Variable_isDependentVariable(atom) ? '#' :          '?');
+        int *varIndex = Variable_isIndependentVariable(atom) ? &independent_i : (Variable_isDependentVariable(atom) ? &dependent_i : &query_i);
+        if(!normalized[j] && Variable_isVariable(atom))
+        {
+            assert(*varIndex<=9, "Variable overflow in variable normalization!");
+            char varname[3] = { varType, ('0' + *varIndex), 0 }; //$i, #j, ?k
+            (*varIndex)++;
+            for(int k=j; k<COMPOUND_TERM_SIZE_MAX; k++)
+            {
+                Atom atom2 = term->atoms[k];
+                if(atom == atom2)
+                {
+                    term->atoms[k] = Narsese_AtomicTermIndex(varname);
+                    normalized[k] = true;
+                }
+            }
+        }
+    }
 }

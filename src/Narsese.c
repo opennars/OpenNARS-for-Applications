@@ -359,11 +359,13 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
 Term Narsese_Term(char *narsese)
 {
     assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
+    //parse Narsese by expanding it, bringing into prefix form, then building a binary tree, and normalizing variables
     Term ret = {0};
     char *narsese_expanded = Narsese_Expand(narsese);
     char** tokens_prefix = Narsese_PrefixTransform(narsese_expanded);
     int nt = 0; for(;tokens_prefix[nt] != NULL; nt++){}
     buildBinaryTree(&ret, tokens_prefix, 0, 1, nt);
+    Variable_Normalize(&ret);
     return ret;
 }
 

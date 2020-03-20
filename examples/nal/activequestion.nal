@@ -19,7 +19,7 @@
 //Ok you are in corridor now
 <corridor --> in>. :|:
 //NARS, where is the cat?
-//Passive question <({cat} * ?1) --> in>? :|: wouldn't trigger a decision
+//Passive question <({cat} * ?where) --> in>? :|: wouldn't trigger a decision
 //Active question however does:
 <(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
 G! :|:
