@@ -38,19 +38,29 @@
 //--------------//
 //Substitution, mapping variable atoms to terms
 typedef struct {
-    Term map[TERMS_MAX];
+    Term map[27+1]; //there can only be 27 variables: $1 to $9 and #1 to #9 and ?1 to ?9, but it can't be 0
     bool success;
 } Substitution;
 
 //Methods//
 //-------//
+//Whether the atom is an independent variable, $i
 bool Variable_isIndependentVariable(Atom atom);
+//Whether the atom is a dependent variable, #1
 bool Variable_isDependentVariable(Atom atom);
+//Whether the atom is a query variable, ?1
 bool Variable_isQueryVariable(Atom atom);
+//Whether the atom is any variable
 bool Variable_isVariable(Atom atom);
+//Whether the term has variables of certain kind
 bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query);
+//Unify two terms, returning the substitution/unifier
 Substitution Variable_Unify(Term *general, Term *specific);
+//Applying the substitution to a term, returning success
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
+//Introduce variables in an implications
 Term IntroduceImplicationVariables(Term implication, bool *success);
+//Normalize variables, transforming ?what to ?1 for instance.
+void Variable_Normalize(Term *term);
 
 #endif

@@ -32,7 +32,7 @@
 //whether the package is initialized
 static bool initialized = false;
 //SELF atom, avoids strcmp for checking operator format
-Atom SELF; 
+Atom SELF;
 
 //Replace copulas with canonical single-char copulas, including sets and set elements!
 char* replaceWithCanonicalCopulas(char *narsese, int n)
@@ -228,13 +228,12 @@ int skipCompound(char** tokens, int i, int nt)
     return i;
 }
 
-static char* canonical_copulas = "@*&|;:=$'\"/\\.-%#~+!";
 char** Narsese_PrefixTransform(char* narsese_expanded)
 {
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
     char* token = strtok(narsese_expanded, " ");
-    int nt=0, nc = strlen(canonical_copulas);
+    int nt = 0, nc = NUM_ELEMENTS(Naresese_CanonicalCopulas) - 1;
     while(token)
     {
         tokens[nt] = token;
@@ -247,7 +246,7 @@ char** Narsese_PrefixTransform(char* narsese_expanded)
         {
             for(int k=0; k<nc; k++)
             {
-                if(tokens[i+1][0]==(int)canonical_copulas[k] && tokens[i+1][1] == 0)
+                if(tokens[i+1][0] == (int) Naresese_CanonicalCopulas[k] && tokens[i+1][1] == 0)
                 {
                     goto Continue;
                 }
@@ -360,11 +359,13 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
 Term Narsese_Term(char *narsese)
 {
     assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
+    //parse Narsese by expanding it, bringing into prefix form, then building a binary tree, and normalizing variables
     Term ret = {0};
     char *narsese_expanded = Narsese_Expand(narsese);
     char** tokens_prefix = Narsese_PrefixTransform(narsese_expanded);
     int nt = 0; for(;tokens_prefix[nt] != NULL; nt++){}
     buildBinaryTree(&ret, tokens_prefix, 0, 1, nt);
+    Variable_Normalize(&ret);
     return ret;
 }
 
@@ -573,16 +574,31 @@ void Narsese_INIT()
     {
         memset(&Narsese_operatorNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
-    //index the copulas at first, to make sure these will have same index on next run
-    for(int i=0; i<(int) strlen(canonical_copulas); i++)
+    //index variables at first, these atoms come first as also used by Substitution struct
+    for(int i=1; i<=9; i++)
     {
-        char cop[2] = {canonical_copulas[i], 0};
+        char dep_varname[3] = "#1";
+        char indep_varname[3] = "$1";
+        char query_varname[3] = "?1";
+        query_varname[1] = indep_varname[1] = dep_varname[1] = (char) ('0' + i);
+        Narsese_AtomicTerm(dep_varname);
+        Narsese_AtomicTerm(indep_varname);
+        Narsese_AtomicTerm(query_varname);
+    }
+    //index rule table variables next:
+    for(unsigned int i=0; i<NUM_ELEMENTS(Narsese_RuleTableVars)-1; i++)
+    {
+        char varname[2] = " ";
+        varname[0] = Narsese_RuleTableVars[i];
+        Narsese_AtomicTerm(varname);
+    }
+    //index the copulas as well, to make sure these will have same index on next run
+    for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
+    {
+        char cop[2] = { Naresese_CanonicalCopulas[i], 0 };
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
-    Narsese_AtomicTermIndex("$1");
-    Narsese_AtomicTermIndex("$2");
-    Narsese_AtomicTermIndex("#1");
     initialized = true;
 }
 
@@ -638,7 +654,8 @@ Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 
 bool Narsese_IsNonCopulaAtom(Atom atom)
 {
-    return (Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
-           (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
-           (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9');
+    return atom > 0 &&
+           ((Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
+            (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
+            (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
 }

@@ -46,7 +46,7 @@ Narsese:
 ./NAR shell < ./examples/nal/example1.nal
 ```
 
-English: (will be updated to Python3 at some point as well...)
+English: (needs NLTK v3.4.5, will be updated to Python3 at some point as well...)
 
 ```
 python2 english_shell.py < ./examples/english/story1.english

@@ -104,5 +104,5 @@
 <<clock --> [large]> =/> <floor --> [?what]>>?
 //expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.964794, confidence=0.449068
 //If you are where the floor is red, where do you need to go to see a cyan floor?
-<(<floor --> [red]> &/ <({SELF} * ?2) --> ^go>) =/> <floor --> [cyan]>>?
+<(<floor --> [red]> &/ <({SELF} * ?where) --> ^go>) =/> <floor --> [cyan]>>?
 //expected: Answer: <(<floor --> [red]> &/ <({SELF} * kitchen) --> ^go>) =/> <floor --> [cyan]>>. Truth: frequency=1.000000, confidence=0.01029
