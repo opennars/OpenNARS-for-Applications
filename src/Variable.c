@@ -67,6 +67,7 @@ Substitution Variable_Unify(Term *general, Term *specific)
         {
             if(Variable_isVariable(general_atom))
             {
+                assert(general_atom <= 27, "Variable_Unify: Problematic variable encountered, only $1-$9, #1-#9 and ?1-?9 are allowed!");
                 Term subtree = Term_ExtractSubterm(specific, i);
                 if(Variable_isQueryVariable(general_atom) && Variable_isVariable(subtree.atoms[0])) //not valid to substitute a variable for a question var
                 {
@@ -98,7 +99,9 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general.atoms[i];
-        if(substitution.map[(int) general_atom].atoms[0] != 0)
+        bool is_variable = Variable_isVariable(general_atom);
+        assert(!is_variable || general_atom <= 27, "Variable_ApplySubstitute: Problematic variable encountered, only $1-$9, #1-#9 and ?1-?9 are allowed!");
+        if(is_variable && substitution.map[(int) general_atom].atoms[0] != 0)
         {
             if(!Term_OverrideSubterm(&general, i, &substitution.map[(int) general_atom]))
             {
@@ -118,7 +121,8 @@ static void countExtensionTerms(Term *cur_inheritance, int *appearing)
         Term subject = Term_ExtractSubterm(cur_inheritance, 1);
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
-            if(Narsese_IsNonCopulaAtom(subject.atoms[i]))
+            Atom atom = subject.atoms[i];
+            if(Narsese_IsNonCopulaAtom(atom))
             {
                 appearing[(int) subject.atoms[i]] += 1;
             }
@@ -153,33 +157,48 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
     countExtensionTerms(&left_side, appearing);
-    Substitution subs = { .success = true };
-    int depvar_i = 1;
-    int indepvar_i = 1;
-    bool already_handled[TERMS_MAX] = {0};
+    char depvar_i = 1;
+    char indepvar_i = 1;
+    char variable_id[TERMS_MAX] = {0};
+    Term implication_copy = implication;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        Atom atom = implication.atoms[i];
-        if(!already_handled[(int) atom] && appearing[(int) atom] > 1)
+        Atom atom = implication_copy.atoms[i];
+        if(appearing[(int) atom] > 1)
         {
             if(right_contains[(int) atom])
             {
-                assert(indepvar_i <= 9, "More than 9 variables being introduced? That's not supported.");
-                char varname[3] = "$1";
-                varname[1] = (char) ('0' + indepvar_i);
-                subs.map[(int) atom] = Narsese_AtomicTerm(varname);
-                indepvar_i++;
+                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
+                if(var_id <= 9) //can only introduce up to 9 variables
+                {
+                    char varname[3] = "$1";
+                    varname[1] = (char) ('0' + var_id);
+                    Term varterm = Narsese_AtomicTerm(varname);
+                    if(!Term_OverrideSubterm(&implication, i, &varterm))
+                    {
+                        *success = false;
+                        return implication;
+                    }
+                }
             }
             else
             {
-                assert(depvar_i <= 9, "More than 9 variables being introduced? That's not supported.");
-                char varname[3] = "#1";
-                varname[1] = (char) ('0' + depvar_i);
-                subs.map[(int) atom] = Narsese_AtomicTerm(varname);
-                depvar_i++;
+                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
+                if(var_id <= 9) //can only introduce up to 9 variables
+                {
+                    char varname[3] = "#1";
+                    varname[1] = (char) ('0' + var_id);
+                    Term varterm = Narsese_AtomicTerm(varname);
+                    if(!Term_OverrideSubterm(&implication, i, &varterm))
+                    {
+                        *success = false;
+                        return implication;
+                    }
+                }
             }
         }
-        already_handled[(int) atom] = true;
+        
     }
-    return Variable_ApplySubstitute(implication, subs, success);
+    *success = true;
+    return implication;
 }

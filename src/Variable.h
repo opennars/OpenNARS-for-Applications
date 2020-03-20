@@ -38,7 +38,7 @@
 //--------------//
 //Substitution, mapping variable atoms to terms
 typedef struct {
-    Term map[TERMS_MAX];
+    Term map[27+1]; //there can only be 27 variables: $1 to $9 and #1 to #9 and ?1 to ?9, but it can't be 0
     bool success;
 } Substitution;
 
