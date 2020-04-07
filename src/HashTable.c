@@ -30,7 +30,7 @@ Concept *HashTable_Get(HashTable *hashtable, Term *key)
     VMItem *item = hashtable->HT[hash];
     for(; item!=NULL; item=item->next)
     {
-        if(Term_Equal(&item->value->term, key))
+        if(Term_Equal(item->key, key))
         {
             return item->value;
         }
@@ -38,16 +38,16 @@ Concept *HashTable_Get(HashTable *hashtable, Term *key)
     return NULL;
 }
 
-void HashTable_Set(HashTable *hashtable, Concept *c)
+void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Concept *value)
 {
     //Check if item already exists in hashtable, if yes return
-    VMItem *item = hashtable->HT[c->term_hash];
+    VMItem *item = hashtable->HT[keyhash];
     bool empty = item == NULL;
     if(!empty)
     {
         for(; item->next!=NULL; item=item->next)
         {
-            if(Term_Equal(&item->value->term, &c->term))
+            if(Term_Equal(item->key, key))
             {
                 return;
             }
@@ -55,14 +55,15 @@ void HashTable_Set(HashTable *hashtable, Concept *c)
     }
     //Retrieve recycled VMItem from the stack and set its value to c
     VMItem *popped = Stack_Pop(&hashtable->VMStack);
-    popped->value = c;
+    popped->value = value;
+    popped->key = key;
     popped->next = NULL;
-    //Case1: HT at hash was empty so add recycled item at HT[c->term_hash]
+    //Case1: HT at hash was empty so add recycled item at HT[keyhash]
     if(empty)
     {
-        hashtable->HT[c->term_hash] = popped;
+        hashtable->HT[keyhash] = popped;
     }
-    //Case2: HT at hash not empty so add recycled item at end of the chain of HT[c->term_hash]
+    //Case2: HT at hash not empty so add recycled item at end of the chain of HT[keyhash]
     else
     {
         assert(item != NULL, "VMItem should not be null!");
@@ -70,14 +71,14 @@ void HashTable_Set(HashTable *hashtable, Concept *c)
     }
 }
 
-void HashTable_Delete(HashTable *hashtable, Concept *c)
+void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key)
 {
-    VMItem *item = hashtable->HT[c->term_hash];
+    VMItem *item = hashtable->HT[keyhash];
     VMItem *previous = NULL;
     //If there is only one item set HT[c->term_hash] to NULL and push back the VMItem to stack for recycling
     if(item->next == NULL)
     {
-        hashtable->HT[c->term_hash] = NULL;
+        hashtable->HT[keyhash] = NULL;
         Stack_Push(&hashtable->VMStack, item);
         return;
     }
@@ -85,12 +86,12 @@ void HashTable_Delete(HashTable *hashtable, Concept *c)
     for(; item!=NULL; previous=item, item=item->next)
     {
         //item found?
-        if(Term_Equal(&item->value->term, &c->term))
+        if(Term_Equal(item->key, key))
         {
             //remove item and return
             if(previous == NULL)
             {
-                hashtable->HT[c->term_hash] = item->next;
+                hashtable->HT[keyhash] = item->next;
             }
             else
             {

@@ -48,11 +48,11 @@ typedef struct
 //Methods//
 //-------//
 //Get a concept from the hashtable via term
-Concept *HashTable_Get(HashTable *hashtable, Term *term);
+Concept *HashTable_Get(HashTable *hashtable, Term *key);
 //Add a concept to the hashtable using the concept term
-void HashTable_Set(HashTable *hashtable, Concept *c);
+void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Concept *value);
 //Delete a concept from hashtable (the concept's term is the key)
-void HashTable_Delete(HashTable *hashtable, Concept *c);
+void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key);
 //Initialize hashtable "virtual memory" stack and HT array
 void HashTable_Init(HashTable *hashtable);
 
