@@ -57,9 +57,13 @@ static void Memory_ResetConcepts()
 }
 
 int concept_id = 0;
+
+VMItem* storageptrs[CONCEPTS_MAX];
+VMItem storage[CONCEPTS_MAX];
+VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index
 void Memory_INIT()
 {
-    HashTable_Init(&HTconcepts, CONCEPTS_MAX, Term_Equal, Term_Hash);
+    HashTable_INIT(&HTconcepts, storage, storageptrs, HT, CONCEPTS_MAX, Term_Equal, Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();

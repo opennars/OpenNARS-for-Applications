@@ -48,10 +48,10 @@ typedef struct
 } VMItem;
 typedef struct
 {
-    VMItem* storageptrs[CONCEPTS_MAX];
-    VMItem storage[CONCEPTS_MAX];
+    VMItem** storageptrs;
+    VMItem* storage;
+    VMItem** HT; //the hash of the concept term is the index
     Stack VMStack; //"Virtual memory" stack
-    VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index
     int maxElements;
     Equal equal;
     Hash hash;
@@ -66,7 +66,7 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value);
 //Delete a concept from hashtable (the concept's term is the key)
 void HashTable_Delete(HashTable *hashtable, void *key);
 //Initialize hashtable "virtual memory" stack and HT array
-void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash hash);
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash);
 
 #endif
 

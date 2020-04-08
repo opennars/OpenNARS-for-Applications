@@ -112,8 +112,11 @@ void HashTable_Delete(HashTable *hashtable, void *key)
     assert(false, "HashTable deletion failed, item was not found!");
 }
 
-void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash hash)
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash)
 {
+    hashtable->storage = storage;
+    hashtable->storageptrs = storageptrs;
+    hashtable->HT = HT;
     hashtable->VMStack = (Stack) {0};
     Stack_INIT(&hashtable->VMStack, hashtable->storageptrs);
     hashtable->equal = equal;
@@ -121,7 +124,9 @@ void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash has
     hashtable->maxElements = maxElements;
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
-        Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
         hashtable->HT[i] = NULL;
+        hashtable->storage[i] = (VMItem) {0};
+        hashtable->storageptrs[i] = NULL;
+        Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
     }
 }

@@ -24,8 +24,11 @@
 
 void HashTable_Test()
 {
+    VMItem* storageptrs[CONCEPTS_MAX];
+    VMItem storage[CONCEPTS_MAX];
+    VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index
     puts(">>HashTable test start");
-    HashTable_Init(&HTconcepts, CONCEPTS_MAX, Term_Equal, Term_Hash);
+    HashTable_INIT(&HTconcepts, storage, storageptrs, HT, CONCEPTS_MAX, Term_Equal, Term_Hash);
     assert(HTconcepts.VMStack.stackpointer == CONCEPTS_MAX, "The stack should be full!");
     //Insert a first concept:
     Term term1 = Narsese_Term("<a --> b>");
