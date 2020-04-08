@@ -223,7 +223,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     revised_precon->creationTime = currentTime; //for evaluation
                     revised_precon->sourceConcept = A;
                     revised_precon->sourceConceptId = A->id;
-                    /*IN_DEBUG( if(true && revised_precon->term_hash != 0) { fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); } ) */
+                    /*IN_DEBUG( fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); )*/
                     Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
                 }
             }

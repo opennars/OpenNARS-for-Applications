@@ -38,23 +38,28 @@
 
 //Data structure//
 //--------------//
+typedef bool (*Equal)(void*, void*);
+typedef HASH_TYPE (*Hash)(void*);
 typedef struct
 {
     VMItem storage[CONCEPTS_MAX];
     Stack VMStack; //"Virtual memory" stack
     VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index
+    int maxElements;
+    Equal equal;
+    Hash hash;
 } HashTable;
 
 //Methods//
 //-------//
 //Get a concept from the hashtable via term
-Concept *HashTable_Get(HashTable *hashtable, Term *key);
+void* HashTable_Get(HashTable *hashtable, void *key);
 //Add a concept to the hashtable using the concept term
-void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Concept *value);
+void HashTable_Set(HashTable *hashtable, void *key, void *value);
 //Delete a concept from hashtable (the concept's term is the key)
-void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key);
+void HashTable_Delete(HashTable *hashtable, void *key);
 //Initialize hashtable "virtual memory" stack and HT array
-void HashTable_Init(HashTable *hashtable);
+void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash hash);
 
 #endif
 

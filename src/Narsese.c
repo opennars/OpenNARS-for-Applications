@@ -366,6 +366,7 @@ Term Narsese_Term(char *narsese)
     int nt = 0; for(;tokens_prefix[nt] != NULL; nt++){}
     buildBinaryTree(&ret, tokens_prefix, 0, 1, nt);
     Variable_Normalize(&ret);
+    Term_Hash(&ret);
     return ret;
 }
 

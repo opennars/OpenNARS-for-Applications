@@ -40,8 +40,8 @@
 //--------------//
 typedef struct
 {
-    Term *key;
-    Concept *value;
+    void *key;
+    void *value;
     void *next;
 } VMItem;
 

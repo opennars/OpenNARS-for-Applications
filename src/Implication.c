@@ -24,13 +24,6 @@
 
 #include "Implication.h"
 
-void Implication_SetTerm(Implication *implication, Term term)
-{
-    implication->term = term;
-    //Generate hash too:
-    //implication->term_hash = Term_Hash(&term);
-}
-
 void Implication_Print(Implication *implication)
 {
     puts("Implication:");

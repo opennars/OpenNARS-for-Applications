@@ -39,7 +39,6 @@
 //--------------//
 typedef struct {
     Term term;
-    //Term_HASH_TYPE term_hash;
     Truth truth;
     Stamp stamp;
     //for deciding occurrence time of conclusion:
@@ -54,7 +53,6 @@ typedef struct {
 //Methods//
 //-------//
 //Assign a new name to an implication
-void Implication_SetTerm(Implication *implication, Term term);
 void Implication_Print(Implication *implication);
 
 #endif

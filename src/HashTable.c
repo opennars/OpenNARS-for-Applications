@@ -24,13 +24,15 @@
 
 #include "HashTable.h"
 
-Concept *HashTable_Get(HashTable *hashtable, Term *key)
+void *HashTable_Get(HashTable *hashtable, void *key)
 {
-    TERM_HASH_TYPE hash = Term_Hash(key) % CONCEPTS_MAX;
-    VMItem *item = hashtable->HT[hash];
+    Equal equal = hashtable->equal;
+    Hash hash = hashtable->hash;
+    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
+    VMItem *item = hashtable->HT[keyhash];
     for(; item!=NULL; item=item->next)
     {
-        if(Term_Equal(item->key, key))
+        if(equal(item->key, key))
         {
             return item->value;
         }
@@ -38,8 +40,11 @@ Concept *HashTable_Get(HashTable *hashtable, Term *key)
     return NULL;
 }
 
-void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Concept *value)
+void HashTable_Set(HashTable *hashtable, void *key, void *value)
 {
+    Equal equal = hashtable->equal;
+    Hash hash = hashtable->hash;
+    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
     //Check if item already exists in hashtable, if yes return
     VMItem *item = hashtable->HT[keyhash];
     bool empty = item == NULL;
@@ -47,7 +52,7 @@ void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Conc
     {
         for(; item->next!=NULL; item=item->next)
         {
-            if(Term_Equal(item->key, key))
+            if(equal(item->key, key))
             {
                 return;
             }
@@ -71,11 +76,14 @@ void HashTable_Set(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key, Conc
     }
 }
 
-void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key)
+void HashTable_Delete(HashTable *hashtable, void *key)
 {
+    Equal equal = hashtable->equal;
+    Hash hash = hashtable->hash;
+    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
     VMItem *item = hashtable->HT[keyhash];
     VMItem *previous = NULL;
-    //If there is only one item set HT[c->term_hash] to NULL and push back the VMItem to stack for recycling
+    //If there is only one item set HT[keyhash] to NULL and push back the VMItem to stack for recycling
     if(item->next == NULL)
     {
         hashtable->HT[keyhash] = NULL;
@@ -86,7 +94,7 @@ void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key)
     for(; item!=NULL; previous=item, item=item->next)
     {
         //item found?
-        if(Term_Equal(item->key, key))
+        if(equal(item->key, key))
         {
             //remove item and return
             if(previous == NULL)
@@ -104,9 +112,12 @@ void HashTable_Delete(HashTable *hashtable, TERM_HASH_TYPE keyhash, Term *key)
     assert(false, "HashTable deletion failed, item was not found!");
 }
 
-void HashTable_Init(HashTable *hashtable)
+void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash hash)
 {
     hashtable->VMStack = (Stack) {0};
+    hashtable->equal = equal;
+    hashtable->hash = hash;
+    hashtable->maxElements = maxElements;
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
         Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);

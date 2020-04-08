@@ -41,7 +41,6 @@
 #define EVENT_TYPE_DELETED 0
 typedef struct {
     Term term;
-    //Term_HASH_TYPE term_hash;
     char type; //either JUDGMENT or GOAL
     Truth truth;
     Stamp stamp;
