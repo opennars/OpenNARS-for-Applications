@@ -24,14 +24,19 @@
 
 #include "Stack.h"
 
-void Stack_Push(Stack *stack, VMItem *item)
+void Stack_INIT(Stack *stack, void **items)
+{
+    stack->items = items;
+}
+
+void Stack_Push(Stack *stack, void *item)
 {
     stack->items[stack->stackpointer] = item;
     stack->stackpointer++;
     assert(stack->stackpointer <= CONCEPTS_MAX, "VMEntry stack overflow");
 }
 
-VMItem *Stack_Pop(Stack *stack)
+void *Stack_Pop(Stack *stack)
 {
     stack->stackpointer--;
     assert(stack->stackpointer >= 0, "VMEntry stack underflow");

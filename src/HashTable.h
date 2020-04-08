@@ -42,6 +42,13 @@ typedef bool (*Equal)(void*, void*);
 typedef HASH_TYPE (*Hash)(void*);
 typedef struct
 {
+    void *key;
+    void *value;
+    void *next;
+} VMItem;
+typedef struct
+{
+    VMItem* storageptrs[CONCEPTS_MAX];
     VMItem storage[CONCEPTS_MAX];
     Stack VMStack; //"Virtual memory" stack
     VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index

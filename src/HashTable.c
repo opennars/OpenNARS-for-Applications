@@ -115,6 +115,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
 void HashTable_Init(HashTable *hashtable, int maxElements, Equal equal, Hash hash)
 {
     hashtable->VMStack = (Stack) {0};
+    Stack_INIT(&hashtable->VMStack, hashtable->storageptrs);
     hashtable->equal = equal;
     hashtable->hash = hash;
     hashtable->maxElements = maxElements;
