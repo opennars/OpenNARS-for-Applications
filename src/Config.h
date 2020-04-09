@@ -83,7 +83,7 @@
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
-#define STAMP_SIZE 20
+#define STAMP_SIZE 10
 //Maximum event FIFO size
 #define FIFO_SIZE 20
 //Maximum Implication table size
