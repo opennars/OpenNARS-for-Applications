@@ -112,19 +112,8 @@ HASH_TYPE Term_Hash(Term *term)
         return term->hash;
     }
     int pieces = TERM_ATOMS_SIZE / HASH_TYPE_SIZE;
-    assert(HASH_TYPE_SIZE*pieces == TERM_ATOMS_SIZE, "Not a multiple, issue in hash calculation");
-    HASH_TYPE *pt = (HASH_TYPE*) &term->atoms;
-    HASH_TYPE hash = 0;
-    for(int i=0; i<pieces; i++, pt++)
-    {
-        hash ^= *pt;
-        hash += ~(hash << 15);
-        hash ^=  (hash >> 10);
-        hash +=  (hash << 3);
-        hash ^=  (hash >> 6);
-        hash += ~(hash << 11);
-        hash ^=  (hash >> 16);
-    }
+    assert(HASH_TYPE_SIZE*pieces == TERM_ATOMS_SIZE, "Not a multiple, issue in hash calculation (TermHash)");
+    HASH_TYPE hash = Globals_Hash((HASH_TYPE*) term->atoms, pieces);
     term->hashed = true;
     term->hash = hash;
     return hash;

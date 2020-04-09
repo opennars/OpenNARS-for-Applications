@@ -24,16 +24,18 @@
 
 #include "Stack.h"
 
-void Stack_INIT(Stack *stack, void **items)
+void Stack_INIT(Stack *stack, void **items, int maxElements)
 {
+    stack->stackpointer = 0;
     stack->items = items;
+    stack->maxElements = maxElements;
 }
 
 void Stack_Push(Stack *stack, void *item)
 {
     stack->items[stack->stackpointer] = item;
     stack->stackpointer++;
-    assert(stack->stackpointer <= CONCEPTS_MAX, "VMEntry stack overflow");
+    assert(stack->stackpointer <= stack->maxElements, "VMEntry stack overflow");
 }
 
 void *Stack_Pop(Stack *stack)

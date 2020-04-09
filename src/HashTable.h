@@ -67,6 +67,8 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value);
 void HashTable_Delete(HashTable *hashtable, void *key);
 //Initialize hashtable "virtual memory" stack and HT array
 void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash);
+//Maximum chain length in hashtable
+int HashTable_MaximumChainLength(HashTable *hashtable);
 
 #endif
 

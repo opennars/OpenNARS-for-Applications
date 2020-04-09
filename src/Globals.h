@@ -57,5 +57,8 @@ void assert(bool b, char* message);
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 //Number of elements of compile time allocated array:
 #define NUM_ELEMENTS(array) (sizeof(array)/sizeof(array[0]))
+//Generic hash function on byte array
+#define HASH_TYPE long
+HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
 
 #endif

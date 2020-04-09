@@ -46,7 +46,6 @@
 
 //Data structure//
 //--------------//
-#define HASH_TYPE long
 #define HASH_TYPE_SIZE sizeof(HASH_TYPE)
 #define TERM_ATOMS_SIZE (sizeof(Atom)*COMPOUND_TERM_SIZE_MAX)
 typedef struct

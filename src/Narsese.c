@@ -295,18 +295,22 @@ int Narsese_OperatorIndex(char *name)
     return ret_index;
 }
 
+HashTable HTatoms;
+VMItem* HTatoms_storageptrs[ATOMS_MAX];
+VMItem HTatoms_storage[ATOMS_MAX];
+VMItem* HTatoms_HT[ATOMS_MAX];
 int term_index = 0;
+
 //Returns the memoized index of an already seen atomic term
 int Narsese_AtomicTermIndex(char *name)
 {
-    int ret_index = -1;
-    for(int i=0; i<term_index; i++)
+    char blockname[ATOMIC_TERM_LEN_MAX] = {0};
+    strncpy(blockname, name, ATOMIC_TERM_LEN_MAX-1);
+    long ret_index = -1;
+    void* retptr = HashTable_Get(&HTatoms, blockname);
+    if(retptr != NULL)
     {
-        if(!strcmp(Narsese_atomNames[i], name))
-        {
-            ret_index = i+1;
-            break;
-        }
+        ret_index = (long) retptr; //we got the value
     }
     if(name[0] == '^')
     {
@@ -314,9 +318,10 @@ int Narsese_AtomicTermIndex(char *name)
     }
     if(ret_index == -1)
     {
-        assert(term_index < TERMS_MAX, "Too many terms for NAR");
+        assert(term_index < ATOMS_MAX, "Too many terms for NAR");
         ret_index = term_index+1;
-        strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX);
+        strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX-1);
+        HashTable_Set(&HTatoms, (HASH_TYPE*) Narsese_atomNames[term_index], (void*) ret_index);
         term_index++;
     }
     return ret_index;
@@ -564,10 +569,27 @@ void Narsese_PrintTerm(Term *term)
     Narsese_PrintTermPrettyRecursive(term, 1);
 }
 
+HASH_TYPE Narsese_StringHash(char *name)
+{
+    assert(name != NULL, "NULL ptr in Narsese_StringHash");
+    char buffer[ATOMIC_TERM_LEN_MAX] = {0};
+    strncpy(buffer, name, ATOMIC_TERM_LEN_MAX-1);
+    int pieces = ATOMIC_TERM_LEN_MAX / HASH_TYPE_SIZE;
+    assert(HASH_TYPE_SIZE*pieces == ATOMIC_TERM_LEN_MAX, "Not a multiple, issue in hash calculation (StringHash)");
+    return Globals_Hash((HASH_TYPE*) buffer, pieces);
+}
+
+bool Narsese_StringEqual(char *name1, char *name2)
+{
+    assert(name1 != NULL && name2 != NULL, "NULL ptr in Narsese_StringEqual");
+    return !strcmp(name1, name2);
+}
+
 void Narsese_INIT()
 {
+    HashTable_INIT(&HTatoms, HTatoms_storage, HTatoms_storageptrs, HTatoms_HT, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
     operator_index = term_index = 0;
-    for(int i=0; i<TERMS_MAX; i++)
+    for(int i=0; i<ATOMS_MAX; i++)
     {
         memset(&Narsese_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }

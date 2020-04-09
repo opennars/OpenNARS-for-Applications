@@ -27,7 +27,7 @@ void Stack_Test()
     puts(">>Stack test start");
     Stack stack = {0};
     VMItem* storageptrs[CONCEPTS_MAX];
-    Stack_INIT(&stack, storageptrs);
+    Stack_INIT(&stack, (void**) storageptrs, CONCEPTS_MAX);
     Concept c1 = {0};
     Concept c2 = {0};
     VMItem item1 = { .value = &c1 };

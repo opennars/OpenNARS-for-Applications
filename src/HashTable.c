@@ -26,13 +26,11 @@
 
 void *HashTable_Get(HashTable *hashtable, void *key)
 {
-    Equal equal = hashtable->equal;
-    Hash hash = hashtable->hash;
-    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
     VMItem *item = hashtable->HT[keyhash];
     for(; item!=NULL; item=item->next)
     {
-        if(equal(item->key, key))
+        if(hashtable->equal(item->key, key))
         {
             return item->value;
         }
@@ -42,9 +40,7 @@ void *HashTable_Get(HashTable *hashtable, void *key)
 
 void HashTable_Set(HashTable *hashtable, void *key, void *value)
 {
-    Equal equal = hashtable->equal;
-    Hash hash = hashtable->hash;
-    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
     //Check if item already exists in hashtable, if yes return
     VMItem *item = hashtable->HT[keyhash];
     bool empty = item == NULL;
@@ -52,7 +48,7 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value)
     {
         for(; item->next!=NULL; item=item->next)
         {
-            if(equal(item->key, key))
+            if(hashtable->equal(item->key, key))
             {
                 return;
             }
@@ -78,9 +74,7 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value)
 
 void HashTable_Delete(HashTable *hashtable, void *key)
 {
-    Equal equal = hashtable->equal;
-    Hash hash = hashtable->hash;
-    HASH_TYPE keyhash = hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
     VMItem *item = hashtable->HT[keyhash];
     VMItem *previous = NULL;
     //If there is only one item set HT[keyhash] to NULL and push back the VMItem to stack for recycling
@@ -94,7 +88,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
     for(; item!=NULL; previous=item, item=item->next)
     {
         //item found?
-        if(equal(item->key, key))
+        if(hashtable->equal(item->key, key))
         {
             //remove item and return
             if(previous == NULL)
@@ -118,15 +112,28 @@ void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs,
     hashtable->storageptrs = storageptrs;
     hashtable->HT = HT;
     hashtable->VMStack = (Stack) {0};
-    Stack_INIT(&hashtable->VMStack, hashtable->storageptrs);
+    Stack_INIT(&hashtable->VMStack, (void**) hashtable->storageptrs, maxElements);
     hashtable->equal = equal;
     hashtable->hash = hash;
     hashtable->maxElements = maxElements;
-    for(int i=0; i<CONCEPTS_MAX; i++)
+    for(int i=0; i<maxElements; i++)
     {
         hashtable->HT[i] = NULL;
         hashtable->storage[i] = (VMItem) {0};
         hashtable->storageptrs[i] = NULL;
         Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
     }
+}
+
+int HashTable_MaximumChainLength(HashTable *hashtable)
+{
+    int maxlen = 0;
+    for(int i=0; i<hashtable->maxElements; i++)
+    {
+        VMItem *item = hashtable->HT[i];
+        int cnt = 0;
+        for(;item != NULL; item=item->next, cnt++);
+        maxlen = MAX(maxlen, cnt);
+    }
+    return maxlen;
 }

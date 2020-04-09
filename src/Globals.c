@@ -35,3 +35,19 @@ void assert(bool b, char* message)
         exit(1);
     }
 }
+
+HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces)
+{
+    HASH_TYPE hash = 0;
+    for(int i=0; i<pieces; i++, data++)
+    {
+        hash ^= *data;
+        hash += ~(hash << 15);
+        hash ^=  (hash >> 10);
+        hash +=  (hash << 3);
+        hash ^=  (hash >> 6);
+        hash += ~(hash << 11);
+        hash ^=  (hash >> 16);
+    }
+    return hash;
+}

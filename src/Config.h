@@ -93,13 +93,13 @@
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
-#define TERMS_MAX 65536
+#define ATOMS_MAX 65536
 //The type of an atom
 #define Atom unsigned short
 //Maximum size of atomic terms in terms of characters
-#define ATOMIC_TERM_LEN_MAX 30
+#define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
-#define NARSESE_LEN_MAX 1000
+#define NARSESE_LEN_MAX 256
 
 /*------------------*/
 /* Truth parameters */

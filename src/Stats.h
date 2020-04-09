@@ -33,11 +33,14 @@
 //----------//
 #include <stdio.h>
 #include "Memory.h"
+#include "Narsese.h"
 
 //Global vars//
 //-----------//
 extern long Stats_countConceptsMatchedTotal;
 extern long Stats_countConceptsMatchedMax;
+//From Narsese module, for stats purposes:
+extern HashTable HTatoms;
 
 //Methods//
 //-------//

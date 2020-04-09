@@ -34,6 +34,7 @@
 //References//
 //-----------//
 #include <string.h>
+#include <stdio.h>
 #include "Term.h"
 #include "Globals.h"
 #include "Config.h"
@@ -41,7 +42,7 @@
 //Data structure//
 //--------------//
 //Atomic term names:
-char Narsese_atomNames[TERMS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
@@ -83,5 +84,9 @@ bool Narsese_isOperation(Term *term);
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
 //Get whether something is a true atom, not a copula
 bool Narsese_IsNonCopulaAtom(Atom atom);
+//Whether two Narsese strings are equal
+bool Narsese_StringEqual(char *name1, char *name2);
+//The hash code of a string
+HASH_TYPE Narsese_StringHash(char *name);
 
 #endif

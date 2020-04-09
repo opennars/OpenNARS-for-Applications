@@ -135,8 +135,8 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
-    bool right_contains[TERMS_MAX] = {0};
-    int appearing[TERMS_MAX] = {0};
+    bool right_contains[ATOMS_MAX] = {0};
+    int appearing[ATOMS_MAX] = {0};
     if(Narsese_copulaEquals(right_side.atoms[0], ':')) //inheritance
     {
         Term subject = Term_ExtractSubterm(&right_side, 1);
@@ -159,7 +159,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     countExtensionTerms(&left_side, appearing);
     char depvar_i = 1;
     char indepvar_i = 1;
-    char variable_id[TERMS_MAX] = {0};
+    char variable_id[ATOMS_MAX] = {0};
     Term implication_copy = implication;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
