@@ -40,22 +40,18 @@
 //--------------//
 typedef struct
 {
-    Concept *value; //the key is value->term
-    void *next;
-} VMItem;
-
-typedef struct
-{
-    VMItem* items[CONCEPTS_MAX];
+    void** items;
     int stackpointer;
+    int maxElements;
 } Stack;
 
 //Methods//
 //-------//
+void Stack_INIT(Stack *stack, void **items, int maxElements);
 //Add a VMItem on the top of the stack
-void Stack_Push(Stack *stack, VMItem *item);
+void Stack_Push(Stack *stack, void *item);
 //Remove a VMItem from the top of the stack
-VMItem *Stack_Pop(Stack *stack);
+void* Stack_Pop(Stack *stack);
 //Check if there aren't VMItems left on the stack
 bool Stack_IsEmpty(Stack *stack);
 

@@ -57,9 +57,13 @@ static void Memory_ResetConcepts()
 }
 
 int concept_id = 0;
+
+VMItem* HTconcepts_storageptrs[CONCEPTS_MAX];
+VMItem HTconcepts_storage[CONCEPTS_MAX];
+VMItem* HTconcepts_HT[CONCEPTS_MAX]; //the hash of the concept term is the index
 void Memory_INIT()
 {
-    HashTable_Init(&HTconcepts);
+    HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();
@@ -95,18 +99,18 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
             if(feedback.evicted)
             {
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to delete does not exist!"); )
-                HashTable_Delete(&HTconcepts, recycleConcept);
+                HashTable_Delete(&HTconcepts, &recycleConcept->term);
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to delete was not deleted!"); )
             }
             //proceed with recycling of the concept in the priority queue
             *recycleConcept = (Concept) {0};
-            Concept_SetTerm(recycleConcept, *term);
+            recycleConcept->term = *term;
             recycleConcept->id = concept_id;
             recycleConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
             concept_id++;
             //also add added concept to HashMap:
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to add already exists!"); )
-            HashTable_Set(&HTconcepts, recycleConcept);
+            HashTable_Set(&HTconcepts, &recycleConcept->term, recycleConcept);
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to add was not added!"); )
             return recycleConcept;
         }

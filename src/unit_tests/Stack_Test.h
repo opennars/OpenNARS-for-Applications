@@ -26,13 +26,15 @@ void Stack_Test()
 {
     puts(">>Stack test start");
     Stack stack = {0};
+    VMItem* storageptrs[CONCEPTS_MAX];
+    Stack_INIT(&stack, (void**) storageptrs, CONCEPTS_MAX);
     Concept c1 = {0};
     Concept c2 = {0};
     VMItem item1 = { .value = &c1 };
     VMItem item2 = { .value = &c2 };
     Stack_Push(&stack, &item1);
     assert(stack.stackpointer == 1, "Stackpointer wasn't incremented");
-    assert(stack.items[0]->value == &c1, "Item should point to c1");
+    assert(((VMItem**)stack.items)[0]->value == &c1, "Item should point to c1");
     assert(!Stack_IsEmpty(&stack), "Stack should not be empty");
     VMItem *item1_popped = Stack_Pop(&stack);
     assert(stack.stackpointer == 0, "Stackpointer wasn't decremented");

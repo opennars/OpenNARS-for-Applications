@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef USEFULNESSVALUE_H
-#define USEFULNESSVALUE_H
+#ifndef USAGE_H
+#define USAGE_H
 
 /////////////////////////////
 //  NAR usefulness value //

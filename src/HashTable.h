@@ -38,23 +38,37 @@
 
 //Data structure//
 //--------------//
+typedef bool (*Equal)(void*, void*);
+typedef HASH_TYPE (*Hash)(void*);
 typedef struct
 {
-    VMItem storage[CONCEPTS_MAX];
+    void *key;
+    void *value;
+    void *next;
+} VMItem;
+typedef struct
+{
+    VMItem** storageptrs;
+    VMItem* storage;
+    VMItem** HT; //the hash of the concept term is the index
     Stack VMStack; //"Virtual memory" stack
-    VMItem* HT[CONCEPTS_MAX]; //the hash of the concept term is the index
+    int maxElements;
+    Equal equal;
+    Hash hash;
 } HashTable;
 
 //Methods//
 //-------//
 //Get a concept from the hashtable via term
-Concept *HashTable_Get(HashTable *hashtable, Term *term);
+void* HashTable_Get(HashTable *hashtable, void *key);
 //Add a concept to the hashtable using the concept term
-void HashTable_Set(HashTable *hashtable, Concept *c);
+void HashTable_Set(HashTable *hashtable, void *key, void *value);
 //Delete a concept from hashtable (the concept's term is the key)
-void HashTable_Delete(HashTable *hashtable, Concept *c);
+void HashTable_Delete(HashTable *hashtable, void *key);
 //Initialize hashtable "virtual memory" stack and HT array
-void HashTable_Init(HashTable *hashtable);
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash);
+//Maximum chain length in hashtable
+int HashTable_MaximumChainLength(HashTable *hashtable);
 
 #endif
 

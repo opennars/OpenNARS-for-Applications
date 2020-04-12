@@ -30,7 +30,7 @@
 #include "RuleTable_Test.h"
 #include "Stack_Test.h"
 #include "Table_Test.h"
-#include "HashMap_Test.h"
+#include "HashTable_Test.h"
 #include "UDP_Test.h"
 
 void Run_Unit_Tests()

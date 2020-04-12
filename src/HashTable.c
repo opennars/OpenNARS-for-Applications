@@ -24,13 +24,13 @@
 
 #include "HashTable.h"
 
-Concept *HashTable_Get(HashTable *hashtable, Term *key)
+void *HashTable_Get(HashTable *hashtable, void *key)
 {
-    TERM_HASH_TYPE hash = Term_Hash(key) % CONCEPTS_MAX;
-    VMItem *item = hashtable->HT[hash];
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
+    VMItem *item = hashtable->HT[keyhash];
     for(; item!=NULL; item=item->next)
     {
-        if(Term_Equal(&item->value->term, key))
+        if(hashtable->equal(item->key, key))
         {
             return item->value;
         }
@@ -38,16 +38,17 @@ Concept *HashTable_Get(HashTable *hashtable, Term *key)
     return NULL;
 }
 
-void HashTable_Set(HashTable *hashtable, Concept *c)
+void HashTable_Set(HashTable *hashtable, void *key, void *value)
 {
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
     //Check if item already exists in hashtable, if yes return
-    VMItem *item = hashtable->HT[c->term_hash];
+    VMItem *item = hashtable->HT[keyhash];
     bool empty = item == NULL;
     if(!empty)
     {
         for(; item->next!=NULL; item=item->next)
         {
-            if(Term_Equal(&item->value->term, &c->term))
+            if(hashtable->equal(item->key, key))
             {
                 return;
             }
@@ -55,14 +56,15 @@ void HashTable_Set(HashTable *hashtable, Concept *c)
     }
     //Retrieve recycled VMItem from the stack and set its value to c
     VMItem *popped = Stack_Pop(&hashtable->VMStack);
-    popped->value = c;
+    popped->value = value;
+    popped->key = key;
     popped->next = NULL;
-    //Case1: HT at hash was empty so add recycled item at HT[c->term_hash]
+    //Case1: HT at hash was empty so add recycled item at HT[keyhash]
     if(empty)
     {
-        hashtable->HT[c->term_hash] = popped;
+        hashtable->HT[keyhash] = popped;
     }
-    //Case2: HT at hash not empty so add recycled item at end of the chain of HT[c->term_hash]
+    //Case2: HT at hash not empty so add recycled item at end of the chain of HT[keyhash]
     else
     {
         assert(item != NULL, "VMItem should not be null!");
@@ -70,14 +72,15 @@ void HashTable_Set(HashTable *hashtable, Concept *c)
     }
 }
 
-void HashTable_Delete(HashTable *hashtable, Concept *c)
+void HashTable_Delete(HashTable *hashtable, void *key)
 {
-    VMItem *item = hashtable->HT[c->term_hash];
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
+    VMItem *item = hashtable->HT[keyhash];
     VMItem *previous = NULL;
-    //If there is only one item set HT[c->term_hash] to NULL and push back the VMItem to stack for recycling
+    //If there is only one item set HT[keyhash] to NULL and push back the VMItem to stack for recycling
     if(item->next == NULL)
     {
-        hashtable->HT[c->term_hash] = NULL;
+        hashtable->HT[keyhash] = NULL;
         Stack_Push(&hashtable->VMStack, item);
         return;
     }
@@ -85,12 +88,12 @@ void HashTable_Delete(HashTable *hashtable, Concept *c)
     for(; item!=NULL; previous=item, item=item->next)
     {
         //item found?
-        if(Term_Equal(&item->value->term, &c->term))
+        if(hashtable->equal(item->key, key))
         {
             //remove item and return
             if(previous == NULL)
             {
-                hashtable->HT[c->term_hash] = item->next;
+                hashtable->HT[keyhash] = item->next;
             }
             else
             {
@@ -103,12 +106,34 @@ void HashTable_Delete(HashTable *hashtable, Concept *c)
     assert(false, "HashTable deletion failed, item was not found!");
 }
 
-void HashTable_Init(HashTable *hashtable)
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash)
 {
+    hashtable->storage = storage;
+    hashtable->storageptrs = storageptrs;
+    hashtable->HT = HT;
     hashtable->VMStack = (Stack) {0};
-    for(int i=0; i<CONCEPTS_MAX; i++)
+    Stack_INIT(&hashtable->VMStack, (void**) hashtable->storageptrs, maxElements);
+    hashtable->equal = equal;
+    hashtable->hash = hash;
+    hashtable->maxElements = maxElements;
+    for(int i=0; i<maxElements; i++)
     {
-        Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
         hashtable->HT[i] = NULL;
+        hashtable->storage[i] = (VMItem) {0};
+        hashtable->storageptrs[i] = NULL;
+        Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
     }
+}
+
+int HashTable_MaximumChainLength(HashTable *hashtable)
+{
+    int maxlen = 0;
+    for(int i=0; i<hashtable->maxElements; i++)
+    {
+        VMItem *item = hashtable->HT[i];
+        int cnt = 0;
+        for(;item != NULL; item=item->next, cnt++);
+        maxlen = MAX(maxlen, cnt);
+    }
+    return maxlen;
 }
