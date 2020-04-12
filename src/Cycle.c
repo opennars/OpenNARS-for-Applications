@@ -40,14 +40,6 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         {
             //pass spike if the concept doesn't have a satisfying motor command
             decision = Decision_Suggest(e, currentTime);
-            if(!decision.execute)
-            {
-                c->incoming_goal_spike = *e;
-            }
-            else
-            {
-                e->propagated = true;
-            }
         }
     }
     return decision;
@@ -103,88 +95,83 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     return best_decision;
 }
 
+void Cycle_PushGoalEvents()
+{
+    //Apply event forgetting:
+    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    {
+        cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
+    }
+    PriorityQueue_Rebuild(&cycling_goal_events);
+    for(int i=0; i<goalsSelectedCnt; i++)
+    {
+        Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
+    }
+}
+
+void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *selectedCnt, PriorityQueue *queue, int cnt)
+{
+    *selectedCnt = 0;
+    for(int i=0; i<cnt; i++)
+    {
+        Event *e;
+        double priority = 0;
+        if(!PriorityQueue_PopMax(queue, (void**) &e, &priority))
+        {
+            assert(queue->itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+            IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
+            break;
+        }
+        selectionPriority[*selectedCnt] = priority;
+        selectionArray[*selectedCnt] = *e; //needs to be copied because will be added in a batch
+        (*selectedCnt)++; //that while processing, would make recycled pointers invalid to use
+    }
+}
+
 //Propagate subgoals, generating anticipations and decisions
 static Decision Cycle_PropagateSubgoals(long currentTime)
 {
     Decision decision = {0};
+    //1. pop goal events
+    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     //pass goal spikes on to the next
-    for(int i=0; i<concepts.itemsAmount; i++)
+    for(int i=0; i<goalsSelectedCnt; i++)
     {
-        Concept *postc = concepts.items[i].address;
-        if(postc->goal_spike.type != EVENT_TYPE_DELETED && !postc->goal_spike.propagated && Truth_Expectation(postc->goal_spike.truth) > PROPAGATION_THRESHOLD)
+        Event *goal = &selectedGoals[i];
+        #pragma omp parallel for
+        for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
         {
-            for(int opi=0; opi<OPERATIONS_MAX; opi++)
+            Concept *c = concepts.items[concept_i].address;
+            if(Variable_Unify(&goal->term, &c->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
             {
-                for(int j=0; j<postc->precondition_beliefs[opi].itemsAmount; j++)
+                bool revised;
+                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                selectedGoals[i] = c->goal_spike; //also the goal is updated
+                for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
-                    Implication *imp = &postc->precondition_beliefs[opi].array[j];
-                    if(!Memory_ImplicationValid(imp))
+                    for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
-                        Table_Remove(&postc->precondition_beliefs[opi], j);
-                        j--;
-                        continue;
-                    }
-                    //no var, just send to source concept
-                    if(!Variable_hasVariable(&imp->term, true, true, true))
-                    {
-                        Concept *pre = imp->sourceConcept;
-                        if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
+                        Implication *imp = &c->precondition_beliefs[opi].array[j];
+                        if(!Memory_ImplicationValid(imp))
                         {
-                            pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
+                            Table_Remove(&c->precondition_beliefs[opi], j);
+                            j--;
+                            continue;
                         }
-                    }
-                    //find proper source to send to!
-                    else
-                    {
-                        assert(Narsese_copulaEquals(imp->term.atoms[0], '$'), "Not an implication!");
-                        Term right_side = Term_ExtractSubterm(&imp->term, 2);
-                        Substitution subs = Variable_Unify(&right_side, &postc->goal_spike.term);
-                        assert(subs.success, "Implication and spike needs to be compatible!");
-                        Term left_side_with_op = Term_ExtractSubterm(&imp->term, 1);
-                        Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op);
-                        bool success;
-                        Term left_side_substituted = Variable_ApplySubstitute(left_side, subs, &success);
-                        if(success)
+                        Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                        Decision local_decision = Cycle_ProcessSensorimotorEvent(&newGoal, currentTime);
+                        Memory_AddEvent(&newGoal, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+                        if(local_decision.execute && local_decision.desire > decision.desire)
                         {
-                            #pragma omp parallel for
-                            for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
-                            {
-                                Concept *pre = concepts.items[concept_i].address;
-                                if(Variable_Unify(&pre->term, &left_side_substituted).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
-                                {
-                                    if(pre->incoming_goal_spike.type == EVENT_TYPE_DELETED || pre->incoming_goal_spike.processed)
-                                    {
-                                        pre->incoming_goal_spike = Inference_GoalDeduction(&postc->goal_spike, imp);
-                                        pre->incoming_goal_spike.term = left_side_substituted; //set term as well, it's a specific goal now as it got specialized!
-                                    }
-                                }
-                            }
+                            decision = local_decision;
                         }
                     }
                 }
             }
         }
-        postc->goal_spike.propagated = true;
     }
-    //process incoming goal spikes, invoking potential operations
-    for(int i=0; i<concepts.itemsAmount; i++)
-    {
-        Concept *c = concepts.items[i].address;
-        if(c->incoming_goal_spike.type != EVENT_TYPE_DELETED)
-        {
-            c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, &c->incoming_goal_spike, currentTime, NULL);
-            Memory_printAddedEvent(&c->goal_spike, 1, false, true, false);
-            if(c->goal_spike.type != EVENT_TYPE_DELETED && !c->goal_spike.processed && Truth_Expectation(c->goal_spike.truth) > PROPAGATION_THRESHOLD)
-            {
-                Decision decision = Cycle_ProcessSensorimotorEvent(&c->goal_spike, currentTime);
-                if(decision.execute)
-                {
-                    return decision;
-                }
-            }
-        }
-        c->incoming_goal_spike = (Event) {0};
-    }
+    //push again
+    Cycle_PushGoalEvents();
     return decision;
 }
 
@@ -231,30 +218,11 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_PopEvents()
+void Cycle_PushBeliefEvents(long currentTime)
 {
-    eventsSelected = 0;
-    for(int i=0; i<EVENT_SELECTIONS; i++)
+    for(int i=0; i<beliefsSelectedCnt; i++)
     {
-        Event *e;
-        double priority = 0;
-        if(!PriorityQueue_PopMax(&cycling_events, (void**) &e, &priority))
-        {
-            assert(cycling_events.itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-            IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
-            break;
-        }
-        selectedEventsPriority[eventsSelected] = priority;
-        selectedEvents[eventsSelected] = *e; //needs to be copied because will be added in a batch
-        eventsSelected++; //that while processing, would make recycled pointers invalid to use
-    }
-}
-
-void Cycle_PushEvents(long currentTime)
-{
-    for(int i=0; i<eventsSelected; i++)
-    {
-        Memory_AddEvent(&selectedEvents[i], currentTime, selectedEventsPriority[i], 0, false, false, true, false, false);
+        Memory_AddEvent(&selectedBeliefs[i], currentTime, selectedBeliefsPriority[i], 0, false, false, true, false, false);
     }
 }
 
@@ -278,11 +246,11 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
                     //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<eventsSelected; k++)
+                    for(int k=0; k<beliefsSelectedCnt; k++)
                     {
-                        if(selectedEvents[k].occurrenceTime < postcondition.occurrenceTime)
+                        if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
                         {
-                            Cycle_ReinforceLink(&selectedEvents[k], &postcondition);
+                            Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition);
                         }
                     }
                     for(int k=1; k<belief_events.itemsAmount; k++)
@@ -354,7 +322,7 @@ void Cycle_Inference(long currentTime)
 {
     //Inferences
 #if STAGE==2
-    for(int i=0; i<eventsSelected; i++)
+    for(int i=0; i<beliefsSelectedCnt; i++)
     {
         long countConceptsMatched = 0;
         bool fired[CONCEPTS_MAX] = {0}; //whether a concept already fired
@@ -370,13 +338,13 @@ void Cycle_Inference(long currentTime)
             double increment = error*CONCEPT_THRESHOLD_ADAPTATION;
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
-            Event *e = &selectedEvents[i];
+            Event *e = &selectedBeliefs[i];
             Term subterms_of_e[2] = {0}; //subterms up to level 1
             for(int j=0; j<2; j++)
             {
                 subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
             }
-            double priority = selectedEventsPriority[i];
+            double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
@@ -508,9 +476,9 @@ void Cycle_Inference(long currentTime)
 void Cycle_RelativeForgetting(long currentTime)
 {
     //Apply event forgetting:
-    for(int i=0; i<cycling_events.itemsAmount; i++)
+    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
     {
-        cycling_events.items[i].priority *= EVENT_DURABILITY;
+        cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
@@ -535,14 +503,14 @@ void Cycle_RelativeForgetting(long currentTime)
     //END SPECIAL HANDLING FOR USER KNOWLEDGE
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
-    PriorityQueue_Rebuild(&cycling_events);
+    PriorityQueue_Rebuild(&cycling_belief_events);
 }
 
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
-    Cycle_PopEvents();
+    //1. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+    Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
@@ -552,5 +520,5 @@ void Cycle_Perform(long currentTime)
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
-    Cycle_PushEvents(currentTime);
+    Cycle_PushBeliefEvents(currentTime);
 }

@@ -36,8 +36,6 @@
 /*-----------------------*/
 /* Subgoaling parameters */
 /*-----------------------*/
-//Truth expectation threshold for subgoals to be propagated
-#define PROPAGATION_THRESHOLD_INITIAL 0.501
 //How many propagation iterations happen per cycle
 #define PROPAGATION_ITERATIONS 5
 
@@ -55,7 +53,9 @@
 /* Attention parameters */
 /*----------------------*/
 //Event selections per cycle for inference
-#define EVENT_SELECTIONS 1
+#define BELIEF_EVENT_SELECTIONS 1
+//Goal event selections per cycle for inference
+#define GOAL_EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
 #define EVENT_DURABILITY 0.9999
 //Additional event priority decay of an event which was selected
@@ -78,8 +78,10 @@
 /*------------------*/
 //Maximum amount of concepts
 #define CONCEPTS_MAX 16384
-//Maximum amount of events attention buffer holds
-#define CYCLING_EVENTS_MAX 20
+//Maximum amount of belief events attention buffer holds
+#define CYCLING_BELIEF_EVENTS_MAX 20
+//Maximum amount of goal events attention buffer holds
+#define CYCLING_GOAL_EVENTS_MAX 20
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
