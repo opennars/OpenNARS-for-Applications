@@ -114,7 +114,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
     }
 }
 
-//Propagate subgoals, generating anticipations and decisions
+//Propagate subgoals, leading to decisions
 static Decision Cycle_PropagateSubgoals(long currentTime)
 {
     Decision decision = {0};
@@ -122,6 +122,11 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
     for(int i=0; i<goalsSelectedCnt; i++)
     {
         Event *goal = &selectedGoals[i];
+        Decision local_decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
+        if(local_decision.execute && local_decision.desire > decision.desire)
+        {
+            decision = local_decision;
+        }
         #pragma omp parallel for
         for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
         {
@@ -130,7 +135,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             {
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                selectedGoals[i] = c->goal_spike; //also the goal is updated
+                selectedGoals[i] = c->goal_spike;
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
@@ -143,12 +148,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                             continue;
                         }
                         Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                        Decision local_decision = Cycle_ProcessSensorimotorEvent(&newGoal, currentTime);
-                        Memory_AddEvent(&newGoal, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
-                        if(local_decision.execute && local_decision.desire > decision.desire)
-                        {
-                            decision = local_decision;
-                        }
+                        Memory_AddEvent(&newGoal, currentTime, Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
                     }
                 }
             }
