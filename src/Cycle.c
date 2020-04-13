@@ -95,20 +95,6 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     return best_decision;
 }
 
-void Cycle_PushGoalEvents()
-{
-    //Apply event forgetting:
-    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
-    {
-        cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
-    }
-    PriorityQueue_Rebuild(&cycling_goal_events);
-    for(int i=0; i<goalsSelectedCnt; i++)
-    {
-        Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
-    }
-}
-
 void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *selectedCnt, PriorityQueue *queue, int cnt)
 {
     *selectedCnt = 0;
@@ -132,8 +118,6 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 static Decision Cycle_PropagateSubgoals(long currentTime)
 {
     Decision decision = {0};
-    //1. pop goal events
-    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt; i++)
     {
@@ -170,8 +154,6 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             }
         }
     }
-    //push again
-    Cycle_PushGoalEvents();
     return decision;
 }
 
@@ -218,11 +200,15 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_PushBeliefEvents(long currentTime)
+void Cycle_PushEvents(long currentTime)
 {
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
         Memory_AddEvent(&selectedBeliefs[i], currentTime, selectedBeliefsPriority[i], 0, false, false, true, false, false);
+    }
+    for(int i=0; i<goalsSelectedCnt; i++)
+    {
+        Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
     }
 }
 
@@ -282,39 +268,26 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 void Cycle_ProcessInputGoalEvents(long currentTime)
 {
     //process goals
-    bool hadGoal = false;
-    Decision decision[PROPAGATION_ITERATIONS + 1] = {0};
+    Decision decision = {0};
     if(goal_events.itemsAmount > 0)
     {
         Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
         if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
         {
-            hadGoal = true;
             assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
-            decision[0] = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-            //allow reasoning into the future by propagating spikes from goals back to potential current events
-            for(int i=0; i<PROPAGATION_ITERATIONS; i++)
-            {
-                decision[i+1] = Cycle_PropagateSubgoals(currentTime);
-            }
+            decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
         }
     }
-    if(!hadGoal)
+    //allow reasoning into the future by propagating spikes from goals back to potential current events
+    if(!decision.execute)
     {
-        return;
+        decision = Cycle_PropagateSubgoals(currentTime);
     }
-    //inject the best action if there was one
-    Decision best_decision = {0};
-    for(int i=0; i<PROPAGATION_ITERATIONS+1; i++)
+    if(decision.execute && decision.operationID > 0)
     {
-        if(decision[i].execute && decision[i].desire >= best_decision.desire)
-        {
-            best_decision = decision[i];
-        }
-    }
-    if(best_decision.execute && best_decision.operationID > 0)
-    {
-        Decision_Execute(&best_decision);
+        Decision_Execute(&decision);
+        //reset cycling goal events after execution to avoid "residue actions"
+        PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
     }
 }
 
@@ -480,6 +453,10 @@ void Cycle_RelativeForgetting(long currentTime)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
+    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    {
+        cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
+    }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -504,12 +481,14 @@ void Cycle_RelativeForgetting(long currentTime)
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_belief_events);
+    PriorityQueue_Rebuild(&cycling_goal_events);
 }
 
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+    //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
@@ -517,8 +496,8 @@ void Cycle_Perform(long currentTime)
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
-    //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to EVENT_DURABILITY
+    //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
-    //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on EVENT_DURABILITY_ON_USAGE
-    Cycle_PushBeliefEvents(currentTime);
+    //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on BELIEF_EVENT_DURABILITY_ON_USAGE
+    Cycle_PushEvents(currentTime);
 }
