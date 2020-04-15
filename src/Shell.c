@@ -81,6 +81,53 @@ void Shell_NARInit()
     NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
 }
 
+void Shell_register(char *name) {
+    if(!strcmp(name,"^left"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
+    }
+    else
+    if(!strcmp(name,"^right"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
+    }
+    else
+    if(!strcmp(name,"^up"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
+    }
+    else
+    if(!strcmp(name,"^down"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down); 
+    }
+    else
+    if(!strcmp(name,"^pick"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick); 
+    }
+    else
+    if(!strcmp(name,"^drop"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop); 
+    }
+    else
+    if(!strcmp(name,"^go"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); 
+    }
+    else
+    if(!strcmp(name,"^activate"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_left); 
+    }
+    else
+    if(!strcmp(name,"^deactivate"))
+    {
+        NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_left); 
+    }
+}
+
 bool Shell_ProcessInput(char *line)
 {
     //trim string, for IRC etc. convenience
@@ -140,6 +187,11 @@ bool Shell_ProcessInput(char *line)
         if(!strcmp(line,"*motorbabbling=true"))
         {
             MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+        }
+        else
+        if(strlen(line) >= strlen("*register ") && memcmp(line, "*register ", strlen("*register ")) == 0) {
+            char *name = (char*)&line[strlen("*register ")];
+            Shell_register(name);
         }
         else
         if(strspn(line, "0123456789"))
