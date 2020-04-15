@@ -151,6 +151,11 @@ bool Shell_ProcessInput(char *line)
             printf("done with %u additional inference steps.\n", steps); fflush(stdout);
         }
         else
+        if(!strcmp(line,"*reset"))
+        {
+            Memory_INIT();
+        }
+        else
         {
             NAR_AddInputNarsese(line);
         }
