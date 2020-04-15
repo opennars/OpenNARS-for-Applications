@@ -119,12 +119,12 @@ void Shell_register(char *name) {
     else
     if(!strcmp(name,"^activate"))
     {
-        NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_left); 
+        NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); 
     }
     else
     if(!strcmp(name,"^deactivate"))
     {
-        NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_left); 
+        NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); 
     }
 }
 
