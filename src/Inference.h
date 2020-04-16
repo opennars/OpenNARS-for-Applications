@@ -47,9 +47,9 @@
 //{Event a.} |- Event a. Truth_Projection (projecting to current time)
 Event Inference_EventUpdate(Event *ev, long currentTime);
 //{Event a., Event b.} |- Event (&/,a,b). Truth_Intersection (after projecting b to a)
-Event Inference_BeliefIntersection(Event *a, Event *b);
+Event Inference_BeliefIntersection(Event *a, Event *b, bool *success);
 //{Event a., Event b.} |- Implication <a =/> c>. Truth_Eternalize(Truth_Induction) (after projecting b to a)
-Implication Inference_BeliefInduction(Event *a, Event *b);
+Implication Inference_BeliefInduction(Event *a, Event *b, bool *success);
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>. Truth_Revision
 Implication Inference_ImplicationRevision(Implication *a, Implication *b);
 //{Event b!, Implication <a =/> b>.} |- Event a! Truth_Deduction

@@ -207,7 +207,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
-        if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
+        if(target_concept != NULL)
         {
             target_concept->usage = Usage_use(target_concept->usage, currentTime);
             Implication imp = { .truth = eternal_event.truth,
@@ -243,9 +243,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                 target_concept->hasUserKnowledge |= event->isUserKnowledge;
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
-                imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
-                Term_OverrideSubterm(&imp.term, 1, &subject);
-                Term_OverrideSubterm(&imp.term, 2, &predicate);
+                imp.term = event->term;
                 Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
                 Memory_printAddedEvent(event, priority, input, derived, revised);
             }
