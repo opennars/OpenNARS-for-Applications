@@ -33,20 +33,22 @@ void Decision_Execute(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
-    (*decision->op.action)(decision->arguments);
     //and add operator feedback
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
         Term operation = {0};
         operation.atoms[0] = Narsese_AtomicTermIndex(":"); //<args --> ^op>
-        Term_OverrideSubterm(&operation, 1, &decision->arguments);
-        Term_OverrideSubterm(&operation, 2, &decision->op.term);
+        if(!Term_OverrideSubterm(&operation, 1, &decision->arguments) || !Term_OverrideSubterm(&operation, 2, &decision->op.term))
+        {
+            return;
+        }
         NAR_AddInputBelief(operation);
     }
     else //atomic operation / operator
     {
         NAR_AddInputBelief(decision->op.term);
     }
+    (*decision->op.action)(decision->arguments);
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -216,23 +218,27 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                 Event op = { .type = EVENT_TYPE_BELIEF,
                              .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime };
-                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op); //(&/,a,op). :|:
-                Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
+                bool success;
+                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success); //(&/,a,op). :|:
+                if(success)
                 {
-                    Implication negative_confirmation = imp;
-                    Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                    Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
-                    negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
-                    negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                    assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-                    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
-                    if(added != NULL)
+                    Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
+                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
                     {
-                        added->sourceConcept = negative_confirmation.sourceConcept;
-                        added->sourceConceptId = negative_confirmation.sourceConceptId;
-                    }                                
-                    stampID--;
+                        Implication negative_confirmation = imp;
+                        Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
+                        Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
+                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
+                        negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
+                        assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
+                        Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
+                        if(added != NULL)
+                        {
+                            added->sourceConcept = negative_confirmation.sourceConcept;
+                            added->sourceConceptId = negative_confirmation.sourceConceptId;
+                        }                                
+                        stampID--;
+                    }
                 }
             }
         }

@@ -55,8 +55,9 @@ void FIFO_Add(Event *event, FIFO *fifo)
                 break;
             }
             //printf("occurrence times a=%d, b=%d", ((int) sequence->occurrenceTime),((int) event->occurrenceTime));
-            Event new_sequence = Inference_BeliefIntersection(sequence, event);
-            fifo->array[len][fifo->currentIndex] = new_sequence;
+            bool success;
+            Event new_sequence = Inference_BeliefIntersection(sequence, event, &success);
+            fifo->array[len][fifo->currentIndex] = success ? new_sequence : (Event) {0};
         }
         
     }

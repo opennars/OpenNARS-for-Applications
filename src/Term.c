@@ -26,7 +26,7 @@
 
 void Term_Print(Term *term)
 {
-    for(int i=0; i<MAX_SEQUENCE_LEN; i++)
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(term->atoms[i] != 0)
         {
