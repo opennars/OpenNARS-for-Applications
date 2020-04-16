@@ -136,11 +136,11 @@ Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 int goalsSelectedCnt = 0;
 
-static bool Memory_containsBeliefEvent(Event *event)
+static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 {
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+    for(int i=0; i<queue->itemsAmount; i++)
     {
-        if(Event_Equal(event, cycling_belief_events.items[i].address))
+        if(Event_Equal(event, queue->items[i].address))
         {
             return true;
         }
@@ -153,7 +153,8 @@ static bool Memory_containsBeliefEvent(Event *event)
 bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
-    if(e->type == EVENT_TYPE_BELIEF && Memory_containsBeliefEvent(e)) //avoid duplicate derivations, cannot happen for goals currently
+    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
+       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e))) //avoid duplicate derivations
     {
         return false;
     }
@@ -204,7 +205,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -373,7 +374,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         if(!readded)
         {
             bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
+            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
             if(isImplication)
             {
                 return;
@@ -389,6 +390,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         Memory_addCyclingEvent(event, priority, currentTime);
+        if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
+        {
+            Memory_printAddedEvent(event, priority, input, derived, revised);
+        }
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
