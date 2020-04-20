@@ -68,7 +68,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             {
                 ecp.term = e->term;
                 Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire)
+                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                 {
                     best_decision = decision;
                 }
@@ -84,7 +84,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 if(success)
                 {
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire)
+                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                     {
                         best_decision = decision;
                     }
@@ -117,21 +117,22 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 //Propagate subgoals, leading to decisions
 static Decision Cycle_PropagateSubgoals(long currentTime)
 {
-    Decision decision = {0};
+    Decision best_decision = {0};
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt; i++)
     {
         Event *goal = &selectedGoals[i];
-        Decision local_decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        if(local_decision.execute && local_decision.desire > decision.desire)
+        IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
+        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
+        if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
         {
-            decision = local_decision;
+            best_decision = decision;
         }
         #pragma omp parallel for
         for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
         {
             Concept *c = concepts.items[concept_i].address;
-            if(Variable_Unify(&goal->term, &c->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+            if(Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
             {
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
@@ -148,13 +149,14 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                             continue;
                         }
                         Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                        Memory_AddEvent(&newGoal, currentTime, Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+                        IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoal.term); puts(""); )
+                        Memory_AddEvent(&newGoal, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
                     }
                 }
             }
         }
     }
-    return decision;
+    return best_decision;
 }
 
 //Reinforce link between concept a and b (creating it if non-existent)

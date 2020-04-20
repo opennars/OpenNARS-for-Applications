@@ -71,7 +71,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, Implication *DebugBestImp)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
 {
     Decision decision = (Decision) {0};
     IN_DEBUG
@@ -100,7 +100,6 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
             printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
             Narsese_PrintTerm(&precondition->term); puts("");
         )
-        *DebugBestImp = *imp;
         //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
         Term operation = Term_ExtractSubterm(&imp->term, 4); //^op or [: args ^op]
         if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
@@ -119,7 +118,12 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
+    long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
     Concept *cbest_predicate = NULL;
+    Decision decisionGeneral = (Decision) {0};
+    Implication bestImpGeneral = {0};
+    long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
+    Concept *cbest_predicateGeneral = NULL;
     for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
     {
         Concept *postc_general = concepts.items[concept_i].address;
@@ -136,6 +140,7 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                         continue;
                     }
                     Implication imp = postc_general->precondition_beliefs[opi].array[j];
+                    bool impHasVariable = Variable_hasVariable(&imp.term, true, true, true);
                     bool success;
                     imp.term = Variable_ApplySubstitute(imp.term, subs, &success);
                     if(success)
@@ -158,11 +163,28 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
                                     {
                                         specific_imp.sourceConcept = cmatch;
                                         specific_imp.sourceConceptId = cmatch->id;
-                                        Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &bestImp);
-                                        if(considered.desire > decision.desire)
+                                        Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                        int specific_imp_complexity = Term_Complexity(&specific_imp.term);
+                                        if(impHasVariable)
                                         {
-                                            decision = considered;
-                                            cbest_predicate = cmatch;
+                                            if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
+                                            {
+                                                decisionGeneral = considered;
+                                                cbest_predicateGeneral = cmatch;
+                                                bestComplexityGeneral = specific_imp_complexity;
+                                                bestImpGeneral = imp;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if(considered.desire > decision.desire || (considered.desire == decision.desire && specific_imp_complexity < bestComplexity))
+                                            {
+                                                decision = considered;
+                                                decision.specialized = true;
+                                                cbest_predicate = cmatch;
+                                                bestComplexity = specific_imp_complexity;
+                                                bestImp = imp;
+                                            }
                                         }
                                     }
                                 }
@@ -173,9 +195,16 @@ Decision Decision_BestCandidate(Event *goal, long currentTime)
             }
         }
     }
+    //use general solution only if the specific solution doesn't exceed the threshold
+    if(decisionGeneral.desire > decision.desire && decision.desire < DECISION_THRESHOLD)
+    {
+        decision = decisionGeneral;
+        cbest_predicate = cbest_predicateGeneral;
+        bestImp = bestImpGeneral;
+    }
     if(decision.desire < DECISION_THRESHOLD)
     {
-        return decision;
+        return (Decision) {0};
     }
     //increase usefulness
     assert(cbest_predicate != NULL, "Above decision threshold but postcondition concept is NULL!");

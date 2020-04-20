@@ -363,7 +363,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             if(event->type == EVENT_TYPE_GOAL)
             {
                 FIFO_Add(event, &goal_events);
-                Memory_printAddedEvent(event, priority, input, derived, revised);
             }
         }
     }
@@ -379,19 +378,15 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             }
         }
         Memory_addCyclingEvent(event, priority, currentTime);
-        if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
-        {
-            Memory_printAddedEvent(event, priority, input, derived, revised);
-        }
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         Memory_addCyclingEvent(event, priority, currentTime);
-        if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
-        {
-            Memory_printAddedEvent(event, priority, input, derived, revised);
-        }
+    }
+    if(input || !readded) //print new tasks
+    {
+        Memory_printAddedEvent(event, priority, input, derived, revised);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }

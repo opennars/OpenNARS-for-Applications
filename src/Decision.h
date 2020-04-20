@@ -54,6 +54,7 @@ typedef struct
     int operationID;
     Operation op;
     Term arguments;
+    bool specialized;
 }Decision;
 
 //Methods//
