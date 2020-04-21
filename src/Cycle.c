@@ -30,7 +30,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
-        c->usage = Usage_use(c->usage, currentTime);
+        c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
         {
@@ -149,8 +149,9 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                             continue;
                         }
                         Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                        IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoal.term); puts(""); )
-                        Memory_AddEvent(&newGoal, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+                        Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                        IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                        Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                     }
                 }
             }
@@ -478,7 +479,7 @@ void Cycle_RelativeForgetting(long currentTime)
             Concept *c = concepts.items[i].address;
             if(c->hasUserKnowledge)
             {
-                c->usage = Usage_use(c->usage, currentTime); //user implication won't be forgotten
+                c->usage = Usage_use(c->usage, currentTime, false); //user implication won't be forgotten
             }
         }
     }

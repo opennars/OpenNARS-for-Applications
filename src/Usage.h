@@ -32,6 +32,8 @@
 //References//
 //-----------//
 #include <stdio.h>
+#include <stdbool.h>
+#include "Config.h"
 
 //Data structure//
 //--------------//
@@ -47,7 +49,7 @@ typedef struct {
 //how useful it is in respect to the current moment
 double Usage_usefulness(Usage usage, long currentTime);
 //use the item
-Usage Usage_use(Usage usage, long currentTime);
+Usage Usage_use(Usage usage, long currentTime, bool eternalInput);
 //print it
 void Usage_Print(Usage *usage);
 

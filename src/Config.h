@@ -66,6 +66,8 @@
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
 #define CONCEPT_THRESHOLD_ADAPTATION 0.000001
+//Usage boost for input
+#define ETERNAL_INPUT_USAGE_BOOST 1000000
 
 /*------------------*/
 /* Space parameters */
@@ -79,11 +81,11 @@
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
-#define STAMP_SIZE 10
+#define STAMP_SIZE 5
 //Maximum event FIFO size
 #define FIFO_SIZE 20
 //Maximum Implication table size
-#define TABLE_SIZE 20
+#define TABLE_SIZE 5
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
