@@ -49,13 +49,17 @@ extern double conceptPriorityThreshold;
 //Data structure//
 //--------------//
 extern bool ontology_handling;
-extern Event selectedEvents[EVENT_SELECTIONS]; //better to be global
-extern double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
-extern int eventsSelected;
+extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
+extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
+extern int beliefsSelectedCnt;
+extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
+extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
+extern int goalsSelectedCnt;
 //Concepts in main memory:
 PriorityQueue concepts;
 //cycling events cycling in main memory:
-PriorityQueue cycling_events;
+PriorityQueue cycling_belief_events;
+PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event buffers:

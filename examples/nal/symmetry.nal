@@ -42,7 +42,7 @@
 <(u * v) --> like>.
 <(v * u) --> like>.
 <<($1 * $2) --> like> ==> <($2 * $1) --> like>>?
-4000
+7000
 <(w * x) --> like>.
 <(x * w) --> like>.
 <<($1 * $2) --> like> ==> <($2 * $1) --> like>>?
@@ -50,4 +50,4 @@
 <(y * z) --> like>.
 10
 <(z * y) --> like>?
-//expected: Answer: <(z * y) --> like>. Truth: frequency=1.000000, confidence=0.866876
+//expected: Answer: <(z * y) --> like>. Truth: frequency=1.000000, confidence=0.871680
