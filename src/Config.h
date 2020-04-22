@@ -39,7 +39,7 @@
 //Truth expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
-#define MOTOR_BABBLING_CHANCE_INITIAL 0.2
+#define MOTOR_BABBLING_CHANCE_INITIAL 0.1
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.6
 
