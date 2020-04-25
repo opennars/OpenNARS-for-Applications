@@ -45,48 +45,48 @@
 <{obj2} --> (on /1 window)>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-//expected: ^pick executed with args ({SELF} * {obj1})
 15
+//expected: ^pick executed with args ({SELF} * {obj1})
 //you are in a place with a large clock now (the corridor!)
 <clock --> [large]>. :|:
 //with a red floor
 <floor --> [red]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-//expected: ^go executed with args ({SELF} * classroom)
 15
+//expected: ^go executed with args ({SELF} * classroom)
 //you are somewhere with a clean blackboard (you are in the classroom!)
 <blackboard --> [clean]>. :|:
 //and a blue floor as well
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-//expected: ^pick executed with args ({SELF} * write)
 15
+//expected: ^pick executed with args ({SELF} * write)
 //your are at a place with a blackboard which now is dirty (blackboard was used!)
 <blackboard --> [dirty]>. :|:
 //the floor is still blue
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-//expected: ^pick executed with args ({SELF} * sponge)
 15
+//expected: ^pick executed with args ({SELF} * sponge)
 //you are at a place with a clean blackboard now (still in the classroom!)
 <blackboard --> [clean]>. :|:
 //with a blue floor still
 <floor --> [blue]>. :|:
 //you are really tired now, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-//expected: ^go executed with args ({SELF} * corridor)
 15
+//expected: ^go executed with args ({SELF} * corridor)
 //now you are in the place with a large clock (the corridor!)
 <clock --> [large]>. :|:
 //with a red floor
 <floor --> [red]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-//expected: ^go executed with args ({SELF} * kitchen)
 15
+//expected: ^go executed with args ({SELF} * kitchen)
 //now you are at a place with a microwave which is on
 <microwave --> [on]>. :|:
 //with a cyan floor
@@ -97,6 +97,7 @@
 <{drink2} --> [white]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
+15
 //expected: ^pick executed with args ({SELF} * {drink1})
 
 //Q&A time
@@ -106,3 +107,4 @@
 //If you are where the floor is red, where do you need to go to see a cyan floor?
 <(<floor --> [red]> &/ <({SELF} * ?where) --> ^go>) =/> <floor --> [cyan]>>?
 //expected: Answer: <(<floor --> [red]> &/ <({SELF} * kitchen) --> ^go>) =/> <floor --> [cyan]>>. Truth: frequency=1.000000, confidence=0.01029
+5000

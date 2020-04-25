@@ -9,15 +9,18 @@
 //let's try an example:
 <(*,toothbrush,plastic) --> made_of>. :|:
 <#1 --> [unscrewing]>! :|:
+10
 //expected: ^left executed with args ({SELF} * toothbrush)
 100
 //some time later:
 <toothbrush --> [pliable]>. :|:
 <#1 --> [unscrewing]>! :|:
+10
 //expected: ^right executed with args ({SELF} * toothbrush)
 100
 //some time later:
 <toothbrush --> [hardened]>. :|:
 <#1 --> [unscrewing]>! :|:
+10
 //expected: ^down executed with args ({SELF} * toothbrush)
 100

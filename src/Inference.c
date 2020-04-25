@@ -38,32 +38,34 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 }
                 
 //{Event a., Event b.} |- Event (&/,a,b).
-Event Inference_BeliefIntersection(Event *a, Event *b)
+Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    return (Event) { .term = Narsese_Sequence(&a->term, &b->term),
-                     .type = EVENT_TYPE_BELIEF,
-                     .truth = Truth_Intersection(truthA, truthB),
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = conclusionTime,
-                     .creationTime = creationTime };
+    Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
+    return *success ? (Event) { .term = conclusionTerm,
+                                .type = EVENT_TYPE_BELIEF,
+                                .truth = Truth_Intersection(truthA, truthB),
+                                .stamp = conclusionStamp, 
+                                .occurrenceTime = conclusionTime,
+                                .creationTime = creationTime }
+                    : (Event) {0};
 }
 
 //{Event a., Event b., after(b,a)} |- Implication <a =/> b>.
-Implication Inference_BeliefInduction(Event *a, Event *b)
+Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     Term term = {0};
     term.atoms[0] = Narsese_AtomicTermIndex("$");
-    Term_OverrideSubterm(&term, 1, &a->term);
-    Term_OverrideSubterm(&term, 2, &b->term);
-    return (Implication) { .term = term, 
-                           .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
-                           .stamp = conclusionStamp,
-                           .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
-                           .creationTime = creationTime };
+    *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
+    return *success ? (Implication) { .term = term, 
+                                      .truth = Truth_Eternalize(Truth_Induction(truthA, truthB)),
+                                      .stamp = conclusionStamp,
+                                      .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
+                                      .creationTime = creationTime }
+                    : (Implication) {0};
 }
 
 //{Event a., Event a.} |- Event a.

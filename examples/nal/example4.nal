@@ -23,8 +23,10 @@
 10
 <{start} --> [at]>. :|:
 <{switch3} --> [on]>! :|:
+10
 //expected: ^go executed with args ({SELF} * {switch3})
 10
 <{switch3} --> [at]>. :|:
 <{switch3} --> [on]>! :|:
+10
 //expected: ^activate executed with args ({SELF} * {switch3})

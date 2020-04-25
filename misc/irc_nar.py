@@ -46,8 +46,8 @@ while True:
                 TEXT=":".join(SPL[2:len(SPL)])
                 if TEXT.replace(" ","").replace("\n","").replace("\r","")=="":
 		    continue
-                if TEXT.startswith("**"):
-                    proc.stdin.write("**\n")
+                if TEXT.startswith("*reset"):
+                    proc.stdin.write("*reset\n")
                 if TEXT.startswith("yan: ") or TEXT.startswith("(") or TEXT.startswith("<") or TEXT.startswith("100"):
 		    if TEXT.startswith("yan: "):
                         TEXT = TEXT.split("yan: ")[1]
