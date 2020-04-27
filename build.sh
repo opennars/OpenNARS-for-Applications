@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 rm NAR
 rm src/RuleTable.c
 set -e
