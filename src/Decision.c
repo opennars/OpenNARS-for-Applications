@@ -86,7 +86,8 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        Truth dedTruth = Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth;
+        double operationGoalTruthExpectation = Truth_Expectation(dedTruth); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
@@ -109,6 +110,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         }
         decision.operationID = considered_opi;
         decision.desire = operationGoalTruthExpectation;
+        decision.desireTv = dedTruth;
     }
     return decision;
 }
@@ -116,6 +118,17 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
+    //curiosity: we want to know the op with the least amount of evidence which leads to the goal
+    //
+    //curiosity: more precisely we search argmin curiOpTable[opIdx].exp to minimize the uncertainty of the coresponding impl (or none at all if it is completely new to the agent)
+    //
+    //curiosity: so we have to maintain a datastructure for each op
+    double curiOpConf[OPERATIONS_MAX];
+    for(int opIdx=0; opIdx<OPERATIONS_MAX; opIdx++)
+    {
+        curiOpConf[opIdx] = 0.0f; // no evidence for op to fullfill goal
+    }
+    
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
@@ -161,6 +174,10 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
                                     Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                    
+                                    //curiosity: update desire with max, because we search in the final pass for min
+                                    curiOpConf[opi-1] = MAX(curiOpConf[opi-1], considered.desireTv.confidence);
+                                    
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
@@ -200,6 +217,54 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     }
     if(decision.desire < DECISION_THRESHOLD)
     {
+        { //curiosity: give curiosity a chance
+            if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+            {
+                //search op(s) with lowest conf
+                double lowestConf = curiOpConf[0];
+                for(int opIdx=0; opIdx<OPERATIONS_MAX; opIdx++)
+                {
+                    if(operations[opIdx].action != 0)
+                    {
+                        lowestConf = MIN(lowestConf, curiOpConf[opIdx]);
+                    }
+                }
+
+                bool curiOpEn[OPERATIONS_MAX];
+                int cnt = 0;
+                for(int opIdx=0; opIdx<OPERATIONS_MAX; opIdx++)
+                {
+                    if(operations[opIdx].action != 0)
+                    {
+                        curiOpEn[opIdx] = curiOpConf[opIdx] == lowestConf;
+                        if(curiOpEn[opIdx])
+                        {
+                            cnt++;
+                        }
+                    }
+                }
+
+                // select random action among candidates
+                int selCntDown = rand() % cnt;
+                for(int opIdx=0; opIdx<OPERATIONS_MAX; opIdx++)
+                {
+                    if(selCntDown == 0) { //select this op for execution?
+                        Decision decision2 = (Decision) {0};
+                        decision2.operationID = 1+opIdx;
+                        //IN_DEBUG (
+                            printf("NAR CURIOSITY %d\n", decision2.operationID);
+                        //)
+                        decision2.execute = true;
+                        return decision2;
+                    }
+
+                    if(curiOpEn[opIdx]) {
+                        selCntDown--;
+                    }
+                }
+            }
+        }
+
         return (Decision) {0};
     }
     //increase usefulness
@@ -274,10 +339,10 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance
-    if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
-    {
-        babble_decision = Decision_MotorBabbling();
-    }
+    //if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    //{
+    //    babble_decision = Decision_MotorBabbling();
+    //}
     //try matching op if didn't motor babble
     Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
     if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)

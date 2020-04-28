@@ -50,6 +50,7 @@ extern double MOTOR_BABBLING_CHANCE;
 typedef struct
 {
     double desire;
+    Truth desireTv;
     bool execute;
     int operationID;
     Operation op;
