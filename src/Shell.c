@@ -107,11 +107,6 @@ bool Shell_ProcessInput(char *line)
             return false;
         }
         else
-        if(!strcmp(line,"*reset"))
-        {
-            return true;
-        }
-        else
         if(!strcmp(line,"*volume=0"))
         {
             PRINT_DERIVATIONS = false;
