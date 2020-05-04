@@ -100,7 +100,8 @@ void UDPNAR_Stop()
 {
     assert(Started, "UDPNAR not started, call UDPNAR_Start first!");
     Stopped = true;
-    shutdown(receiver_sockfd, SHUT_RDWR);
+    shutdown(receiver_sockfd, SHUT_RDWR); //sufficient on Linux to get out of blocking ops on socket, insufficient on Mac
+    close(receiver_sockfd); //sufficient on Mac to get out of blocking ops on socket, insufficient on Linux (hence, use both!)
     pthread_join(thread_reasoner, NULL);
     pthread_join(thread_receiver, NULL);
     Stats_Print(currentTime);
