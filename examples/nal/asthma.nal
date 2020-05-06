@@ -15,17 +15,17 @@
 100
 //Jonas has asthma?
 <{jonas} --> [asthma]>?
-//expected: Answer: <{jonas} --> [asthma]>. creationTime=190 Truth: frequency=1.000000, confidence=0.531441
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
 //Angelika has asthma?
 <{angelika} --> [asthma]>?
-//expected: Answer: <{angelika} --> [asthma]>. creationTime=176 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
 100
 //Jonas is stressed
 <{jonas} --> [stressed]>.
 100
 //Jonas has asthma?
 <{jonas} --> [asthma]>?
-//expected: Answer: <{jonas} --> [asthma]>. creationTime=379 Truth: frequency=1.000000, confidence=0.815224
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.815224
 //Angelika has asthma?
 <{angelika} --> [asthma]>?
-//expected: Answer: <{angelika} --> [asthma]>. creationTime=224 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
