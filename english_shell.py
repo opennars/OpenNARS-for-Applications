@@ -49,7 +49,7 @@ questionwords = set([])
 def output(text):
     for x in questionwords:
         text = text.replace(x, "?1")
-    text = text.replace("what","?1").replace("where","?1").replace("which","?1").replace("when","?1").replace("who","?1")
+    text = text.replace("what","?1").replace("where","?1").replace("which","?1").replace("when","?1").replace("who","?1").replace("where","?1")
     print(text)
     sys.stdout.flush()
     proc.stdin.write(text + "\n")
@@ -85,6 +85,9 @@ while True:
         continue
     if sentence.strip().startswith("*") or sentence.strip().startswith("//"):
         proc.stdin.write(sentence.strip() + "\n")
+        continue
+    if sentence.strip().startswith('(') or sentence.strip().startswith('<') or sentence.strip().startswith('//'):
+        output(sentence)
         continue
     print("Input sentence: " + sentence)
     (words, wordtypes) = words_and_types(sentence + " and")
