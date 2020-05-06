@@ -7,3 +7,4 @@ John picked up the football.
 Bob went to the kitchen.
 50
 The football is in what?
+//expected: Answer: <football --> (in /1 playground)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.466560
