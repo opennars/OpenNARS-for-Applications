@@ -410,13 +410,12 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *is
     *destTerm = Narsese_Term(narseseInplace);
 }
 
-Term Narsese_Sequence(Term *a, Term *b)
+Term Narsese_Sequence(Term *a, Term *b, bool *success)
 {
     Term ret = {0};
     ret.atoms[0] = Narsese_AtomicTermIndex("+");
-    Term_OverrideSubterm(&ret,1,a);
-    Term_OverrideSubterm(&ret,2,b);
-    return ret;
+    *success = Term_OverrideSubterm(&ret,1,a) && Term_OverrideSubterm(&ret,2,b);
+    return *success ? ret : (Term) {0};
 }
 
 Term Narsese_AtomicTerm(char *name)

@@ -24,13 +24,14 @@
 
 #include "Memory.h"
 
-double PROPAGATION_THRESHOLD = PROPAGATION_THRESHOLD_INITIAL;
 bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Event cycling_event_storage[CYCLING_EVENTS_MAX];
-Item cycling_event_items_storage[CYCLING_EVENTS_MAX];
+Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
+Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
+Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
+Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 bool ontology_handling = false;
 
@@ -38,11 +39,17 @@ static void Memory_ResetEvents()
 {
     FIFO_RESET(&belief_events);
     FIFO_RESET(&goal_events);
-    PriorityQueue_RESET(&cycling_events, cycling_event_items_storage, CYCLING_EVENTS_MAX);
-    for(int i=0; i<CYCLING_EVENTS_MAX; i++)
+    PriorityQueue_RESET(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
+    PriorityQueue_RESET(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
+    for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
-        cycling_event_storage[i] = (Event) {0};
-        cycling_events.items[i] = (Item) { .address = &(cycling_event_storage[i]) };
+        cycling_belief_event_storage[i] = (Event) {0};
+        cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
+    }
+    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    {
+        cycling_goal_event_storage[i] = (Event) {0};
+        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
     }
 }
 
@@ -127,15 +134,18 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
     return NULL;
 }
 
-Event selectedEvents[EVENT_SELECTIONS]; //better to be global
-double selectedEventsPriority[EVENT_SELECTIONS]; //better to be global
-int eventsSelected = 0;
+Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
+double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
+int beliefsSelectedCnt = 0;
+Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
+double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
+int goalsSelectedCnt = 0;
 
-static bool Memory_containsBeliefEvent(Event *event)
+static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 {
-    for(int i=0; i<cycling_events.itemsAmount; i++)
+    for(int i=0; i<queue->itemsAmount; i++)
     {
-        if(Event_Equal(event, cycling_events.items[i].address))
+        if(Event_Equal(event, queue->items[i].address))
         {
             return true;
         }
@@ -145,10 +155,11 @@ static bool Memory_containsBeliefEvent(Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
-    if(e->type == EVENT_TYPE_BELIEF && Memory_containsBeliefEvent(e)) //avoid duplicate derivations, cannot happen for goals currently
+    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
+       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e))) //avoid duplicate derivations
     {
         return false;
     }
@@ -159,8 +170,13 @@ static bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
+        if(e->type == EVENT_TYPE_GOAL && c->goal_spike.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->goal_spike.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->goal_spike.truth, c->goal_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
+        {
+            return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
+        }   //more radical than OpenNARS!
     }
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_events, priority);
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
@@ -194,8 +210,9 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
+    bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
@@ -212,9 +229,9 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
-        if(target_concept != NULL) // && Memory_FindConceptByTerm(&subject, &source_concept_i))
+        if(target_concept != NULL)
         {
-            target_concept->usage = Usage_use(target_concept->usage, currentTime);
+            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
@@ -243,14 +260,12 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
             Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
             if(source_concept != NULL)
             {
-                source_concept->usage = Usage_use(source_concept->usage, currentTime);
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
                 source_concept->hasUserKnowledge |= event->isUserKnowledge;
                 target_concept->hasUserKnowledge |= event->isUserKnowledge;
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
-                imp.term.atoms[0] = Narsese_AtomicTermIndex("$");
-                Term_OverrideSubterm(&imp.term, 1, &subject);
-                Term_OverrideSubterm(&imp.term, 2, &predicate);
+                imp.term = event->term;
                 Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
                 Memory_printAddedEvent(event, priority, input, derived, revised);
             }
@@ -261,7 +276,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
         {
-            c->usage = Usage_use(c->usage, currentTime);
+            c->usage = Usage_use(c->usage, currentTime, eternalInput);
             c->priority = MAX(c->priority, priority);
             c->hasUserKnowledge |= event->isUserKnowledge;
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
@@ -308,7 +323,7 @@ void Memory_ProcessNewEvent(Event *event, long currentTime, double priority, lon
                                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
                                         if(success)
                                         {
-                                            cpost->usage = Usage_use(cpost->usage, currentTime);
+                                            cpost->usage = Usage_use(cpost->usage, currentTime, false);
                                             Event predicted = Inference_BeliefDeduction(event, &updated_imp);
                                             Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
                                         }
@@ -354,7 +369,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             if(event->type == EVENT_TYPE_GOAL)
             {
                 FIFO_Add(event, &goal_events);
-                Memory_printAddedEvent(event, priority, input, derived, revised);
             }
         }
     }
@@ -363,21 +377,22 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         if(!readded)
         {
             bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
+            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
             if(isImplication)
             {
                 return;
             }
         }
         Memory_addCyclingEvent(event, priority, currentTime);
-        if(input || !readded) //task gets replaced with revised one, more radical than OpenNARS!!
-        {
-            Memory_printAddedEvent(event, priority, input, derived, revised);
-        }
     }
-    if(event->occurrenceTime == OCCURRENCE_ETERNAL && event->type == EVENT_TYPE_GOAL)
+    if(event->type == EVENT_TYPE_GOAL)
     {
-        assert(false, "Eternal goals are not supported");
+        assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
+        Memory_addCyclingEvent(event, priority, currentTime);
+    }
+    if(input || !readded) //print new tasks
+    {
+        Memory_printAddedEvent(event, priority, input, derived, revised);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }

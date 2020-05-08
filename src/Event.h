@@ -46,7 +46,6 @@ typedef struct {
     Stamp stamp;
     long occurrenceTime;
     bool processed;
-    bool propagated;
     long creationTime;
     bool isUserKnowledge;
 } Event;

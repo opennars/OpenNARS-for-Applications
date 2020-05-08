@@ -107,7 +107,7 @@ bool Shell_ProcessInput(char *line)
             return false;
         }
         else
-        if(!strcmp(line,"**"))
+        if(!strcmp(line,"*reset"))
         {
             return true;
         }

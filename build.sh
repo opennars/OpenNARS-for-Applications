@@ -1,3 +1,4 @@
+#!/bin/sh
 rm NAR
 rm src/RuleTable.c
 set -e
@@ -10,5 +11,3 @@ echo "First stage done, generating RuleTable.c now, and finishing compilation."
 ./NAR NAL_GenerateRuleTable > ./src/RuleTable.c
 gcc $1 -DSTAGE=2 $BaseFlags src/RuleTable.c
 echo "Done."
-
-

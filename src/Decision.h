@@ -54,6 +54,7 @@ typedef struct
     int operationID;
     Operation op;
     Term arguments;
+    bool specialized;
 }Decision;
 
 //Methods//
@@ -63,6 +64,6 @@ void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_AssumptionOfFailure(int operationID, long currentTime);
 //NAR decision making rule applying when goal is an operation
-Decision Decision_Suggest(Event *goal, long currentTime);
+Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
 
 #endif

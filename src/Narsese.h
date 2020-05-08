@@ -61,7 +61,7 @@ Term Narsese_Term(char *narsese);
 //Parses a Narsese string to a compound term and a tv, tv is default if not present
 void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, bool *isUserKnowledge, Truth *destTv);
 //Encodes a sequence
-Term Narsese_Sequence(Term *a, Term *b);
+Term Narsese_Sequence(Term *a, Term *b, bool *success);
 //Parses an atomic term string to a term
 Term Narsese_AtomicTerm(char *name);
 //Index of atomic term
