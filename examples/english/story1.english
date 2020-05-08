@@ -8,4 +8,4 @@ who left the forest?
 the wolf leaves the forest
 1000
 the hunter sees the wolf?
-//expected: Answer: <hunter --> (see /1 wolf)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.196369
+//expected: Answer: <hunter --> (see /1 wolf)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.294726

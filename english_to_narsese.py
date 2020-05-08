@@ -1,12 +1,33 @@
-#NAR NLP Shell
-#Can "parse" English with roughly the structure:  
+"""
+ * The MIT License
+ *
+ * Copyright 2020 The OpenNARS authors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * """
+
+#NAR NLP Shell (needs nltk)
+#Can "parse" English with roughly the following structure to Narsese:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
-#pip install nltk
 import sys
-import thread
 import time
-from subprocess import Popen, PIPE, STDOUT
 import subprocess
 import nltk as nltk
 from nltk import sent_tokenize, word_tokenize
@@ -18,7 +39,6 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('universal_tagset')
 nltk.download('wordnet')
-proc = subprocess.Popen(["./NAR","shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
 #convert universal tag set to the wordnet word types
 def wordnet_tag(tag):
@@ -45,14 +65,13 @@ def words_and_types(text):
     return tokens, wordtypes
 
 #output the Narsese, replacing question words with question variables
-questionwords = set([])
-def output(text):
-    for x in questionwords:
-        text = text.replace(x, "?1")
-    text = text.replace("what","?1").replace("where","?1").replace("which","?1").replace("when","?1").replace("who","?1").replace("where","?1")
+questionwords = set(["what", "where", "which", "when", "who"])
+def output(text, replaceQuestionWords=True):
+    if replaceQuestionWords:
+        for x in questionwords:
+            text = text.replace(x, "?1")
     print(text)
     sys.stdout.flush()
-    proc.stdin.write(text + "\n")
     
 #return word type for a word, treating question words (who, what etc.) also as nouns
 def isWordType(word, wordtype):
@@ -63,36 +82,18 @@ def isWordType(word, wordtype):
             return True
         return wordtype == wordtypes[word]
 
-def receive_thread(a):
-    while True:
-        newstr = proc.stdout.readline().strip()
-        if newstr != "":
-            print(newstr)
-            sys.stdout.flush()
-       
-thread.start_new_thread(receive_thread,(1,))
-sys.stdout.flush()
-timeout = 0
 while True:
     try:
-        sentence = raw_input()
-    except: #exit but let reasoning finish according to the steps in the file using pessmistic estimation:
-        time.sleep(1+timeout/100) #to not exit before: 100 steps per second should be doable! :)
-        exit(0) #eof from cat (TODO check in a better way, TODO timeout can be done in a better way as well)
-    if sentence.strip().isdigit():
-        timeout += int(sentence.strip())
-        proc.stdin.write(sentence.strip() + "\n")
-        continue
-    if sentence.strip().startswith("*") or sentence.strip().startswith("//"):
-        proc.stdin.write(sentence.strip() + "\n")
-        continue
-    if sentence.strip().startswith('(') or sentence.strip().startswith('<') or sentence.strip().startswith('//'):
+        sentence = input().strip()
+    except:
+        break
+    if sentence.startswith("*") or sentence.startswith("//") or sentence.isdigit() or sentence.startswith('(') or sentence.startswith('<'):
         output(sentence)
         continue
-    print("Input sentence: " + sentence)
+    output("//Input sentence: " + sentence)
     (words, wordtypes) = words_and_types(sentence + " and")
     punctuation = "?" if "?" in sentence else "."
-    print("Word types: " + str(wordtypes))
+    output("//Word types: " + str(wordtypes))
     subject = ""
     subject_modifiers = "_subject_"
     predicate = ""
@@ -160,5 +161,3 @@ while True:
                     subject_modifiers = "_subject_"
                     predicate_modifiers = "_predicate_"
                     object_modifiers = "_object_"
-            else:
-                sys.stdout.flush()
