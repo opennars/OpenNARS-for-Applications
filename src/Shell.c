@@ -122,6 +122,11 @@ bool Shell_ProcessInput(char *line)
             Stats_Print(currentTime);
         }
         else
+        if(!strcmp(line,"*invtable"))
+        {
+            InvertedAtomIndex_Print();
+        }
+        else
         if(!strcmp(line,"quit"))
         {
             exit(0);

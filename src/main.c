@@ -28,9 +28,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "NAR.h"
+#include "Shell.h"
 #include "./unit_tests/unit_tests.h"
 #include "./system_tests/system_tests.h"
-#include "Shell.h"
 #include "./NetworkNAR/UDPNAR.h"
 
 void Process_Args(int argc, char *argv[])

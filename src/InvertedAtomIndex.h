@@ -22,31 +22,40 @@
  * THE SOFTWARE.
  */
 
+#ifndef INVERTEDATOMINDEX_H
+#define INVERTEDATOMINDEX_H
+
+///////////////////////////
+//  Inverted atom table  //
+///////////////////////////
+//The inverted atom table for efficient query
+
+//References//
+//////////////
+#include "Concept.h"
 #include "Stack.h"
 
-void Stack_INIT(Stack *stack, void **items, int maxElements)
+//Data structure//
+//--------------//
+typedef struct
 {
-    stack->stackpointer = 0;
-    stack->items = items;
-    stack->maxElements = maxElements;
-}
+    Concept *c;
+    void *next;
+}InvtableChainElement;
+InvtableChainElement* invTableChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+InvtableChainElement invTableChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+Stack invTableChainElementStack;
+InvtableChainElement *invertedAtomIndex[ATOMS_MAX];
 
-void Stack_Push(Stack *stack, void *item)
-{
-    stack->items[stack->stackpointer] = item;
-    stack->stackpointer++;
-    assert(stack->stackpointer <= stack->maxElements, "Entry stack overflow");
-}
+//Methods//
+//-------//
+//Init inverted atom index
+void InvertedAtomIndex_INIT();
+//Add concept to inverted atom index
+void InvertedAtomIndex_Add(Term term, Concept *c);
+//Remove concept from inverted atom index
+void InvertedAtomIndex_Remove(Term term, Concept *c);
+//Print the inverted atom index
+void InvertedAtomIndex_Print();
 
-void *Stack_Pop(Stack *stack)
-{
-    stack->stackpointer--;
-    assert(stack->stackpointer >= 0, "Entry stack underflow");
-    return stack->items[stack->stackpointer];
-}
-
-bool Stack_IsEmpty(Stack *stack)
-{
-    return stack->stackpointer == 0;
-}
-
+#endif

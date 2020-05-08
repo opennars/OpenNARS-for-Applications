@@ -25,14 +25,15 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-/////////////////
-//  NAR Memory //
-/////////////////
+//////////////////
+//  NAR Memory  //
+//////////////////
 //The concept-based memory of NAR
 
 //References//
 //////////////
 #include "Concept.h"
+#include "InvertedAtomIndex.h"
 #include "PriorityQueue.h"
 #include "Config.h"
 #include "HashTable.h"
