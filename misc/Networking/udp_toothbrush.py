@@ -55,7 +55,7 @@ for it in range(iterations):
             contents.append(line)
 
     # ./NAR UDPNAR IP PORT  timestep(ns per cycle) printDerivations
-    process_cmd = ["./../NAR", "UDPNAR", ip, str(port), "1000000", "true"]
+    process_cmd = ["./../../NAR", "UDPNAR", ip, str(port), "1000000", "true"]
     process = subprocess.Popen(process_cmd,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
