@@ -46,10 +46,10 @@ Narsese:
 ./NAR shell < ./examples/nal/example1.nal
 ```
 
-English: (needs NLTK v3.4.5, will be updated to Python3 at some point as well...)
+English: (tested with NLTK v3.5)
 
 ```
-python2 english_shell.py < ./examples/english/story1.english
+python3 english_shell.py < ./examples/english/story1.english | ./NAR shell
 ```
 
 **How to run an UDPNAR:**
