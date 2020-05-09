@@ -33,7 +33,7 @@ void NAR_Cartpole(long iterations)
         }
         if(angle > 0)
         {
-            angle_velocity -= 0.01;
+            angle_velocity += 0.01;
         }
         //max. velocities given by air density
         if(angle_velocity > max_angle_velocity)
