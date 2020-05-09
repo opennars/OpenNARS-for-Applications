@@ -64,6 +64,10 @@ void Process_Args(int argc, char *argv[])
         {
             NAR_Alien(iterations);
         }
+        if(!strcmp(argv[1],"cartpole"))
+        {
+            NAR_Cartpole(iterations);
+        }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();

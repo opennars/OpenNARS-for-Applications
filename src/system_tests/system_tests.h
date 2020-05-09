@@ -27,6 +27,7 @@
 #include "Follow_Test.h"
 #include "Pong2_Test.h"
 #include "Pong_Test.h"
+#include "Cartpole_Test.h"
 #include "Multistep_Test.h"
 #include "Multistep2_Test.h"
 #include "Testchamber_Test.h"

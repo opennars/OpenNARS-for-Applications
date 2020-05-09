@@ -165,4 +165,5 @@ print("\nNow running procedure learning examples for 10K iterations each:")
 ctests("Pong", "./NAR pong 10000", True)
 ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 10000", True)
+ctests("Cartpole", "./NAR cartpole 10000", True)
 print("\nProcedure learning metrics done");
