@@ -21,7 +21,7 @@ def parseTask(s):
 def parseExecution(e):
     return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
     
-def NAR_GetOutput():
+def GetOutput():
     NAR.sendline("0")
     NAR.expect("done with 0 additional inference steps.")
     lines = [a.strip().decode("utf-8") for a in NAR.before.split(b'\n')][2:-3]
@@ -31,11 +31,14 @@ def NAR_GetOutput():
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions}
 
-def NAR_AddInput(narsese):
+def AddInput(narsese):
     NAR.sendline(narsese)
-    return NAR_GetOutput()
+    return GetOutput()
 
-def NAR_Exit():
+def Exit():
     NAR.sendline("quit")
 
-NAR_AddInput("*volume=100")
+def Reset():
+    NAR.sendline("*reset")
+
+AddInput("*volume=100")
