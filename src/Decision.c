@@ -127,7 +127,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
         {
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {

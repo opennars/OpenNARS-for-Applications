@@ -143,7 +143,7 @@ QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 for filename in glob.glob('./examples/english/*.english'):
     Test(filename, subprocess.getoutput("python3 english_to_narsese.py < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
-    print("\nEnglish integration tests skipped, install python2 and nltk to include them in the evaluation!")
+    print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
 else:
     print("\nEnglish integration tests successful!")
 

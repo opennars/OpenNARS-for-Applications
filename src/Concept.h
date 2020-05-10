@@ -46,7 +46,7 @@ typedef struct {
     Event belief_spike;
     Event predicted_belief;
     Event goal_spike;
-    Table precondition_beliefs[OPERATIONS_MAX];
+    Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
     bool hasUserKnowledge;
 } Concept;
