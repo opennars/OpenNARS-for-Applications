@@ -137,7 +137,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
                 selectedGoals[i] = c->goal_spike;
-                for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {

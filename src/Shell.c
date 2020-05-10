@@ -69,16 +69,18 @@ void Shell_NARInit()
     fflush(stdout);
     NAR_INIT();
     PRINT_DERIVATIONS = true;
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
-    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down);
-    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say);
-    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick);
-    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop);
-    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
-    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
-    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
+    int k=0; if(k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
+    assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 
 bool Shell_ProcessInput(char *line)

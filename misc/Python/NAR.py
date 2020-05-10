@@ -1,5 +1,6 @@
 import pexpect
 NAR = pexpect.spawn('./../../NAR shell')
+NAR.delaybeforesend = None
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1]}
