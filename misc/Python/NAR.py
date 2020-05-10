@@ -39,6 +39,6 @@ def Exit():
     NAR.sendline("quit")
 
 def Reset():
-    NAR.sendline("*reset")
+    AddInput("*reset")
 
 AddInput("*volume=100")
