@@ -68,6 +68,10 @@ void Process_Args(int argc, char *argv[])
         {
             NAR_Cartpole(iterations);
         }
+        if(!strcmp(argv[1],"chamber"))
+        {
+            NAR_Chamber(iterations);
+        }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
@@ -96,6 +100,8 @@ void Display_Help()
     puts("NAR pong2 (starts Pong2 example)");
     puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
     puts("NAR alien (starts the alien example)");
+    puts("NAR cartpole (starts the cartpole example)");
+    puts("NAR chamber (starts the chamber example)");
     puts("NAR shell (starts the interactive NAL shell)");
 }
 
