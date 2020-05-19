@@ -314,6 +314,7 @@ void buildMaze(int x1, int y1, int x2, int y2)
 
 int lastpX = 5;
 int lastpY = 5;
+int goalMode = 0;
 void Agent_Invoke()
 {
     Perception percept = Agent_View();
@@ -332,8 +333,14 @@ void Agent_Invoke()
     }
     lastpX = pX;
     lastpY = pY;
-    //NAR_AddInputNarsese("eaten! :|:");
-    NAR_AddInputNarsese("moved! :|:");
+    if(goalMode == 1)
+    {
+        NAR_AddInputNarsese("eaten! :|:");
+    }
+    if(goalMode == 0)
+    {
+        NAR_AddInputNarsese("moved! :|:");
+    }
 }
 
 void NAR_Chamber(long iterations)
@@ -344,10 +351,14 @@ void NAR_Chamber(long iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Chamber_Right); 
     NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Chamber_Forward);
     buildMaze(0, 1, worldsizeX, worldsizeY);
-    //for(int i=0; i<20; i++) { spawnFood(); }
+    for(int i=0; i<10; i++) { spawnFood(); }
     long t=0;
     while(1)
     {
+        if(t >= 1000)
+        {
+            goalMode = 1;
+        }
         t++;
         if(iterations != -1 && t++ > iterations)
         {
