@@ -314,7 +314,7 @@ void buildMaze(int x1, int y1, int x2, int y2)
 
 int lastpX = 5;
 int lastpY = 5;
-int goalMode = 0;
+int goalMode = 1;
 void Agent_Invoke()
 {
     Perception percept = Agent_View();
@@ -333,11 +333,11 @@ void Agent_Invoke()
     }
     lastpX = pX;
     lastpY = pY;
-    if(goalMode == 1)
+    if(goalMode == 2)
     {
         NAR_AddInputNarsese("eaten! :|:");
     }
-    if(goalMode == 0)
+    if(goalMode == 1)
     {
         NAR_AddInputNarsese("moved! :|:");
     }
@@ -357,7 +357,7 @@ void NAR_Chamber(long iterations)
     {
         if(t >= 1000)
         {
-            goalMode = 1;
+            goalMode = 2;
         }
         t++;
         if(iterations != -1 && t++ > iterations)
