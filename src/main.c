@@ -70,7 +70,7 @@ void Process_Args(int argc, char *argv[])
         }
         if(!strcmp(argv[1],"chamber"))
         {
-            NAR_Chamber(iterations);
+            NAR_Robot(iterations);
         }
         if(!strcmp(argv[1],"shell"))
         {
