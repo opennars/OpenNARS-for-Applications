@@ -36,7 +36,7 @@ int pY = 5;
 char direction = DIRECTION_RIGHT; //right, right down, down, left down, left, left up, up, right up
 
 //Angle transition via ^left operator
-void NAR_Chamber_Left()
+void NAR_Robot_Left()
 {
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_UP;
@@ -64,7 +64,7 @@ void NAR_Chamber_Left()
 }
 
 //Angle transition via ^right operator
-void NAR_Chamber_Right()
+void NAR_Robot_Right()
 {
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_DOWN;
@@ -179,9 +179,9 @@ typedef struct
 
 int irand(int n)
 {
-	int r, rmax = n*(RAND_MAX/n);
-	while((r=rand()) >= rmax);
-	return r / (RAND_MAX/n);
+	int r, rmax = n*(MY_RAND_MAX/n);
+	while((r=myrand()) >= rmax);
+	return r / (MY_RAND_MAX/n);
 }
 
 void spawnFood()
@@ -285,7 +285,7 @@ Perception Agent_View()
 }
 
 //Forward move
-void NAR_Chamber_Forward()
+void NAR_Robot_Forward()
 {
     Perception percept = Agent_View();
     //progress movement
@@ -323,42 +323,42 @@ void Agent_Invoke()
     narsese[9] = percept.viewfield[1];
     narsese[14] = percept.viewfield[0];
     NAR_AddInputNarsese(narsese);
-    if(percept.reward)
-    {
-        NAR_AddInputNarsese("eaten. :|:");
-    }
     if(pX != lastpX || pY != lastpY)
     {
         NAR_AddInputNarsese("moved. :|:"); //innate drive to move (can also be learned)
     }
+    if(percept.reward)
+    {
+        NAR_AddInputNarsese("eaten. :|:");
+    }
     lastpX = pX;
     lastpY = pY;
-    if(goalMode == 2)
-    {
-        NAR_AddInputNarsese("eaten! :|:");
-    }
     if(goalMode == 1)
     {
         NAR_AddInputNarsese("moved! :|:");
     }
+    if(goalMode == 2)
+    {
+        NAR_AddInputNarsese("eaten! :|:");
+    }
 }
 
-void NAR_Chamber(long iterations)
+void NAR_Robot(long iterations)
 {
     NAR_INIT();
-    puts(">>NAR Chamber start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Chamber_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Chamber_Right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Chamber_Forward);
-    buildMaze(0, 1, worldsizeX, worldsizeY);
-    for(int i=0; i<10; i++) { spawnFood(); }
+    puts(">>NAR Robot start");
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Robot_Left); 
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
+    NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
+    buildMaze(0, 0, worldsizeX, worldsizeY);
+    for(int i=0; i<20; i++) { spawnFood(); }
     long t=0;
     while(1)
     {
-        if(t >= 1000)
-        {
-            goalMode = 2;
-        }
+        //if(t >= 1000)
+        //{
+        //    goalMode = 2;
+        //}
         t++;
         if(iterations != -1 && t++ > iterations)
         {

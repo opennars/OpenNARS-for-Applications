@@ -293,6 +293,10 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     {
         Decision_Execute(&decision);
         //reset cycling goal events after execution to avoid "residue actions"
+        for(int i=0; i<goalsSelectedCnt; i++)
+        {
+            selectedGoalsPriority[i] = 0;
+        }
         PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
     }
 }

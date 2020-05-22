@@ -62,7 +62,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(rand() % (n_ops));
+        decision.operationID = 1+(myrand() % (n_ops));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
@@ -274,7 +274,7 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance
-    if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
     {
         babble_decision = Decision_MotorBabbling();
     }

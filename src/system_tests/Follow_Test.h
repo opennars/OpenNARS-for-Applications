@@ -86,7 +86,7 @@ void NAR_Follow_Test()
             }
             NAR_Follow_Test_Left_executed = false;
         }
-        BALL = rand() % 2;
+        BALL = myrand() % 2;
         printf("Score %i step%d=\n", score,i);
         assert(score > -100, "too bad score");
         assert(bads < 500, "too many wrong trials");
