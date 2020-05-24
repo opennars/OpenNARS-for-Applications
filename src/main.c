@@ -68,6 +68,10 @@ void Process_Args(int argc, char *argv[])
         {
             NAR_Cartpole(iterations);
         }
+        if(!strcmp(argv[1],"robot"))
+        {
+            NAR_Robot(iterations);
+        }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
@@ -96,12 +100,14 @@ void Display_Help()
     puts("NAR pong2 (starts Pong2 example)");
     puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
     puts("NAR alien (starts the alien example)");
+    puts("NAR cartpole (starts the cartpole example)");
+    puts("NAR robot (starts the robot example)");
     puts("NAR shell (starts the interactive NAL shell)");
 }
 
 int main(int argc, char *argv[])
 {
-    srand(1337);
+    mysrand(1337);
     Process_Args(argc, argv);
     NAR_INIT();
     Run_Unit_Tests();

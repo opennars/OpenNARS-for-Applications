@@ -25,6 +25,7 @@
 #include "Alphabet_Test.h"
 #include "Procedure_Test.h"
 #include "Follow_Test.h"
+#include "Robot_Test.h"
 #include "Pong2_Test.h"
 #include "Pong_Test.h"
 #include "Cartpole_Test.h"

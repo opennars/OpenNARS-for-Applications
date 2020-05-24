@@ -51,3 +51,19 @@ HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces)
     }
     return hash;
 }
+
+//rand(): http://man7.org/linux/man-pages/man3/rand.3.html
+//"POSIX.1-2001 gives the following example of an implementation of rand() and srand(), possibly useful when one needs the same sequence on two different machines."
+static unsigned long next = 1;
+
+/* RAND_MAX assumed to be 32767 */
+int myrand(void)
+{
+   next = next * 1103515245 + 12345;
+   return((unsigned)(next/65536) % 32768);
+}
+
+void mysrand(unsigned int seed)
+{
+   next = seed;
+}

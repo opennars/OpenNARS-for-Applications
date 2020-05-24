@@ -64,10 +64,10 @@ static void Memory_ResetConcepts()
 }
 
 int concept_id = 0;
-
 VMItem* HTconcepts_storageptrs[CONCEPTS_MAX];
 VMItem HTconcepts_storage[CONCEPTS_MAX];
 VMItem* HTconcepts_HT[CONCEPTS_MAX]; //the hash of the concept term is the index
+
 void Memory_INIT()
 {
     HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
@@ -188,7 +188,10 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
-        printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
+        if(occurrenceTime != OCCURRENCE_ETERNAL)
+        {
+            printf(":|: occurrenceTime=%ld ", occurrenceTime);
+        }
         printf("Priority=%f ", priority);
         Truth_Print(truth);
         fflush(stdout);

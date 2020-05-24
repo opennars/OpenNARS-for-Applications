@@ -166,4 +166,5 @@ ctests("Pong", "./NAR pong 10000", True)
 ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 10000", True)
 ctests("Cartpole", "./NAR cartpole 10000", True)
+ctests("Robot", "./NAR robot 500", True)
 print("\nProcedure learning metrics done");

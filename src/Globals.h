@@ -60,5 +60,9 @@ void assert(bool b, char* message);
 //Generic hash function on byte array
 #define HASH_TYPE long
 HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
+//Random number generator for reproducibility across platforms
+int myrand(void);
+void mysrand(unsigned int seed);
+#define MY_RAND_MAX 32767
 
 #endif
