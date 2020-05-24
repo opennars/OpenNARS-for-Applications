@@ -68,7 +68,7 @@ void Process_Args(int argc, char *argv[])
         {
             NAR_Cartpole(iterations);
         }
-        if(!strcmp(argv[1],"chamber"))
+        if(!strcmp(argv[1],"robot"))
         {
             NAR_Robot(iterations);
         }

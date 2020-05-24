@@ -99,7 +99,7 @@ typedef struct
 }Cell;
 #define worldsizeX 20
 #define worldsizeY 10
-Cell world[worldsizeX][worldsizeY] = {0};
+Cell world[worldsizeX+1][worldsizeY+1] = {0}; //+1 for the maze generator
 
 //Draw cells
 void Cell_Draw(Cell *cell)
@@ -179,9 +179,9 @@ typedef struct
 
 int irand(int n)
 {
-	int r, rmax = n*(MY_RAND_MAX/n);
-	while((r=myrand()) >= rmax);
-	return r / (MY_RAND_MAX/n);
+    int r, rmax = n*(MY_RAND_MAX/n);
+    while((r=myrand()) >= rmax);
+    return r / (MY_RAND_MAX/n);
 }
 
 void spawnFood()
@@ -284,11 +284,21 @@ Perception Agent_View()
     return ret;
 }
 
+int lastpX = 5;
+int lastpY = 5;
+int goalMode = 1;
+int eaten = 0;
+int moves = 0;
+
 //Forward move
 void NAR_Robot_Forward()
 {
     Perception percept = Agent_View();
     //progress movement
+    if(pX != percept.forward_pX || pY != percept.forward_pY)
+    {
+        moves++;    
+    }
     pX = percept.forward_pX;
     pY = percept.forward_pY;
 }
@@ -306,15 +316,16 @@ void buildMaze(int x1, int y1, int x2, int y2)
         int lx = x+dx*2, ly = y+dy*2;
         if (lx>=x1 && lx<=x2 && ly>=y1 && ly<=y2 && !world[lx][ly].wall)
         {
-            world[x+dx][y+dy].wall = world[x][y].wall = true;
-            finishedCount++;
+            //bound check for safety in case that build maze will be reused at different locations
+            if(x>=0 && y>=0 && x+dx>=0 && y+dy>=0 && x<worldsizeX && y<worldsizeY && x+dx<worldsizeX && y+dy<worldsizeY)
+            {
+                world[x+dx][y+dy].wall = world[x][y].wall = true;
+                finishedCount++;
+            }
         }
     }
 }
 
-int lastpX = 5;
-int lastpY = 5;
-int goalMode = 1;
 void Agent_Invoke()
 {
     Perception percept = Agent_View();
@@ -329,11 +340,12 @@ void Agent_Invoke()
     }
     if(percept.reward)
     {
+        eaten++;
         NAR_AddInputNarsese("eaten. :|:");
     }
     lastpX = pX;
     lastpY = pY;
-    if(goalMode == 1)
+    if(goalMode >= 1)
     {
         NAR_AddInputNarsese("moved! :|:");
     }
@@ -351,21 +363,22 @@ void NAR_Robot(long iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
     NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
     buildMaze(0, 0, worldsizeX, worldsizeY);
-    for(int i=0; i<20; i++) { spawnFood(); }
+    for(int i=0; i<25; i++) { spawnFood(); }
     long t=0;
     while(1)
     {
-        //if(t >= 1000)
-        //{
-        //    goalMode = 2;
-        //}
+        if(t >= 250)
+        {
+            goalMode = 2;
+        }
         t++;
-        if(iterations != -1 && t++ > iterations)
+        if(iterations != -1 && t > iterations)
         {
             exit(0);
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         World_Draw();
+        printf("time=%ld moves=%d move_success_ratio=%f eaten=%d time=%ld\n", t, moves, (float) (((float) moves) / ((float) t)), eaten, currentTime);
         Agent_Invoke();
         if(iterations == -1)
         {
