@@ -52,7 +52,7 @@ typedef struct
     VMItem* storage;
     VMItem** HT; //the hash of the concept term is the index
     Stack VMStack; //"Virtual memory" stack
-    int maxElements;
+    int buckets;
     Equal equal;
     Hash hash;
 } HashTable;
@@ -66,7 +66,7 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value);
 //Delete a concept from hashtable (the concept's term is the key)
 void HashTable_Delete(HashTable *hashtable, void *key);
 //Initialize hashtable "virtual memory" stack and HT array
-void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash);
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int buckets, int maxElements, Equal equal, Hash hash);
 //Maximum chain length in hashtable
 int HashTable_MaximumChainLength(HashTable *hashtable);
 

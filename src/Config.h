@@ -74,6 +74,8 @@
 /*------------------*/
 //Maximum amount of concepts
 #define CONCEPTS_MAX 16384
+//Amount of buckets for concept hashmap
+#define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
@@ -92,6 +94,8 @@
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
+//Amount of buckets for atoms hashmap
+#define ATOMS_HASHTABLE_BUCKETS ATOMS_MAX
 //The type of an atom
 #define Atom unsigned short
 //Maximum size of atomic terms in terms of characters

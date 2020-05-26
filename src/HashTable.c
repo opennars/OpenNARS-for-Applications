@@ -26,7 +26,7 @@
 
 void *HashTable_Get(HashTable *hashtable, void *key)
 {
-    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->buckets;
     VMItem *item = hashtable->HT[keyhash];
     for(; item!=NULL; item=item->next)
     {
@@ -40,7 +40,7 @@ void *HashTable_Get(HashTable *hashtable, void *key)
 
 void HashTable_Set(HashTable *hashtable, void *key, void *value)
 {
-    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->buckets;
     //Check if item already exists in hashtable, if yes return
     VMItem *item = hashtable->HT[keyhash];
     bool empty = item == NULL;
@@ -74,7 +74,7 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value)
 
 void HashTable_Delete(HashTable *hashtable, void *key)
 {
-    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->maxElements;
+    HASH_TYPE keyhash = hashtable->hash(key) % hashtable->buckets;
     VMItem *item = hashtable->HT[keyhash];
     VMItem *previous = NULL;
     //If there is only one item set HT[keyhash] to NULL and push back the VMItem to stack for recycling
@@ -106,7 +106,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
     assert(false, "HashTable deletion failed, item was not found!");
 }
 
-void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int maxElements, Equal equal, Hash hash)
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int buckets, int maxElements, Equal equal, Hash hash)
 {
     hashtable->storage = storage;
     hashtable->storageptrs = storageptrs;
@@ -115,10 +115,13 @@ void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs,
     Stack_INIT(&hashtable->VMStack, (void**) hashtable->storageptrs, maxElements);
     hashtable->equal = equal;
     hashtable->hash = hash;
-    hashtable->maxElements = maxElements;
-    for(int i=0; i<maxElements; i++)
+    hashtable->buckets = buckets;
+    for(int i=0; i<buckets; i++)
     {
         hashtable->HT[i] = NULL;
+    }
+    for(int i=0; i<maxElements; i++)
+    {
         hashtable->storage[i] = (VMItem) {0};
         hashtable->storageptrs[i] = NULL;
         Stack_Push(&hashtable->VMStack, &hashtable->storage[i]);
@@ -128,7 +131,7 @@ void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs,
 int HashTable_MaximumChainLength(HashTable *hashtable)
 {
     int maxlen = 0;
-    for(int i=0; i<hashtable->maxElements; i++)
+    for(int i=0; i<hashtable->buckets; i++)
     {
         VMItem *item = hashtable->HT[i];
         int cnt = 0;
