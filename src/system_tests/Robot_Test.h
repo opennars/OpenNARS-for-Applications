@@ -34,10 +34,13 @@ int pY = 5;
 #define DIRECTION_UP 'v'
 #define DIRECTION_RIGHT_UP 'q'
 char direction = DIRECTION_RIGHT; //right, right down, down, left down, left, left up, up, right up
+bool allowAction = false;
 
 //Angle transition via ^left operator
 void NAR_Robot_Left()
 {
+    if(!allowAction)
+        return;
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_UP;
     else
@@ -61,11 +64,14 @@ void NAR_Robot_Left()
     else
     if(direction == DIRECTION_RIGHT_DOWN)
         direction = DIRECTION_RIGHT;
+    allowAction = false;
 }
 
 //Angle transition via ^right operator
 void NAR_Robot_Right()
 {
+    if(!allowAction)
+        return;
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_DOWN;
     else
@@ -89,6 +95,7 @@ void NAR_Robot_Right()
     else
     if(direction == DIRECTION_RIGHT_UP)
         direction = DIRECTION_RIGHT;
+    allowAction = false;
 }
 
 //The world is composed of worldsizeX * worldsizeY cells
@@ -295,6 +302,8 @@ int moves = 0;
 //Forward move
 void NAR_Robot_Forward()
 {
+    if(!allowAction)
+        return;
     Perception percept = Agent_View();
     //progress movement
     if(pX != percept.forward_pX || pY != percept.forward_pY)
@@ -303,6 +312,7 @@ void NAR_Robot_Forward()
     }
     pX = percept.forward_pX;
     pY = percept.forward_pY;
+    allowAction = false;
 }
 
 void buildMaze(int x1, int y1, int x2, int y2)
@@ -347,7 +357,8 @@ void Agent_Invoke()
     }
     lastpX = pX;
     lastpY = pY;
-    if(goalMode >= 1)
+    allowAction = true;
+    if(goalMode == 1)
     {
         NAR_AddInputNarsese("moved! :|:");
     }
@@ -369,7 +380,7 @@ void NAR_Robot(long iterations)
     long t=0;
     while(1)
     {
-        if(t >= 250)
+        if(t >= 300)
         {
             goalMode = 2;
         }
