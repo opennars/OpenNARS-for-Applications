@@ -380,7 +380,7 @@ void NAR_Robot(long iterations)
     long t=0;
     while(1)
     {
-        if(t >= 300)
+        if(t >= 350)
         {
             goalMode = 2;
         }
