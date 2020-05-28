@@ -617,7 +617,7 @@ void Narsese_INIT()
     //index the copulas as well, to make sure these will have same index on next run
     for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
     {
-        char cop[2] = { Naresese_CanonicalCopulas[i], 0 };
+        char cop[2] = { (Naresese_CanonicalCopulas[i]), 0 };
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
