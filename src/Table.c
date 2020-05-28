@@ -54,7 +54,7 @@ void Table_Remove(Table *table, int index)
     //move up the rest beginning at index
     for(int j=index; j<table->itemsAmount; j++)
     {
-        table->array[j] = j == table->itemsAmount ? (Implication) {0} : table->array[j+1];
+        table->array[j] = j == table->itemsAmount-1 ? (Implication) {0} : table->array[j+1];
     }
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
