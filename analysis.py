@@ -22,13 +22,35 @@
  * THE SOFTWARE.
  * """
 
-import sys
-import os
-sys.path.insert(1, os.getcwd()+'/misc/Python')
-os.chdir('./misc/Python/')
-import NAR
+import subprocess
+import matplotlib.pyplot as plt
 
-NAR.AddInput("<a --> b>.")
-NAR.AddInput("<b --> c>.")
-print(NAR.AddInput("*stats"))
-NAR.Exit()
+concepts = {}
+events = {}
+cmd = "./NAR shell InspectionOnExit < ./examples/nal/example1.nal"
+lines = subprocess.getoutput(cmd).split("\n")
+concepts = {}
+Active = False
+
+for l in lines:
+    L = l.split(":")
+    if Active and len(L) >= 2:
+        term = L[0].strip()
+        information = eval(":".join(L[1:]).strip())
+        concepts[term] = information
+    elif l.startswith("*concepts"):
+        Active = True
+    elif l.startswith("*done"):
+        break
+        
+ConceptPriorities=[]
+ConceptUseCount=[]
+for c in concepts.values():
+    ConceptPriorities += [c["priority"]]
+    ConceptUseCount += [c["useCount"]]
+plt.hist(ConceptPriorities, log=True)
+plt.savefig("ConceptPrioritiesHistogram.png")
+plt.hist(ConceptUseCount, log=True)
+plt.savefig("ConceptUseCountHistogram.png")
+print("Average priority: " + str((sum(ConceptPriorities))/float(len(ConceptPriorities))))
+print("Average use count: " + str((sum(ConceptUseCount))/float(len(ConceptUseCount))))
