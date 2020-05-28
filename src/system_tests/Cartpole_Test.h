@@ -61,7 +61,7 @@ void NAR_Cartpole(long iterations)
         }
         if(iterations != -1 && t++ > iterations)
         {
-            exit(0);
+            break;
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         printf("position=%f, velocity=%f, angle=%f, angleV=%f\nsuccesses=%f, failures=%f, ratio=%f\n", position, velocity, angle, angle_velocity, successes, failures, successes/(successes+failures));

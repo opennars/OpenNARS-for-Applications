@@ -387,7 +387,7 @@ void NAR_Robot(long iterations)
         t++;
         if(iterations != -1 && t > iterations)
         {
-            exit(0);
+            break;
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         World_Draw();

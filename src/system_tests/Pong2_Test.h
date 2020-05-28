@@ -61,7 +61,7 @@ void NAR_Pong2(long iterations)
         t++;
         if(iterations != -1 && t++ > iterations)
         {
-            exit(0);
+            break;
         }
         //if(t%10000 == 0)
         //    getchar();

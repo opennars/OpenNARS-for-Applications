@@ -57,7 +57,7 @@ void NAR_Alien(long iterations)
     {
         if(iterations != -1 && t++ > iterations)
         {
-            exit(0);
+            break;
         }
         if(t++%10000 == 0)
         {

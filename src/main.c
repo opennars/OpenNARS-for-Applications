@@ -35,10 +35,25 @@
 
 void Process_Args(int argc, char *argv[])
 {
+    bool inspectionOnExit = false;
     long iterations = -1;
-    if(argc == 3)
+    if(argc >= 4)
     {
-        iterations = atol(argv[2]);
+        if(!strcmp(argv[3],"InspectionOnExit"))
+        {
+            inspectionOnExit = true;
+        }
+    }
+    if(argc >= 3)
+    {
+        if(!strcmp(argv[2],"InspectionOnExit"))
+        {
+            inspectionOnExit = true;
+        }
+        else
+        {
+            iterations = atol(argv[2]);
+        }
     }
     if(argc >= 2)
     {
@@ -88,8 +103,18 @@ void Process_Args(int argc, char *argv[])
             fflush(stdout);
             getchar();
             UDPNAR_Stop();
-            exit(0);
         }
+    }
+    if(inspectionOnExit)
+    {
+        puts("*concepts");
+        Shell_ProcessInput("*concepts");
+        puts("*cycling_belief_events");
+        Shell_ProcessInput("*cycling_belief_events");
+        puts("*cycling_goal_events");
+        Shell_ProcessInput("*cycling_goal_events");
+        puts("*stats");
+        Shell_ProcessInput("*stats");
     }
 }
 
@@ -109,10 +134,13 @@ int main(int argc, char *argv[])
 {
     mysrand(1337);
     Process_Args(argc, argv);
-    NAR_INIT();
-    Run_Unit_Tests();
-    Run_System_Tests();
-    Display_Help();
+    if(argc == 1)
+    {
+        NAR_INIT();
+        Run_Unit_Tests();
+        Run_System_Tests();
+        Display_Help();
+    }
     return 0;
 }
 
