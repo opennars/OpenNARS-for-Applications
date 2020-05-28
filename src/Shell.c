@@ -83,7 +83,7 @@ void Shell_NARInit()
     assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 
-bool Shell_ProcessInput(char *line)
+int Shell_ProcessInput(char *line)
 {
     //trim string, for IRC etc. convenience
     for(int i=strlen(line)-1; i>=0; i--)
@@ -106,12 +106,12 @@ bool Shell_ProcessInput(char *line)
         {
             fputs("Comment: ", stdout);
             puts(&line[2]); fflush(stdout);
-            return false;
+            return SHELL_CONTINUE;
         }
         else
         if(!strcmp(line,"*reset"))
         {
-            return true;
+            return SHELL_RESET;
         }
         else
         if(!strcmp(line,"*volume=0"))
@@ -124,9 +124,42 @@ bool Shell_ProcessInput(char *line)
             Stats_Print(currentTime);
         }
         else
+        if(!strcmp(line,"*concepts"))
+        {
+            for(int i=0; i<concepts.itemsAmount; i++)
+            {
+                Concept *c = concepts.items[i].address;
+                assert(c != NULL, "Concept is null");
+                Narsese_PrintTerm(&c->term);
+                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+            }
+        }
+        else
+        if(!strcmp(line,"*cycling_belief_events"))
+        {
+            for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+            {
+                Event *e = cycling_belief_events.items[i].address;
+                assert(e != NULL, "Event is null");
+                Narsese_PrintTerm(&e->term);
+                printf(": { \"priority\": %f, \"time\": %ld }\n", cycling_belief_events.items[i].priority, e->occurrenceTime);
+            }
+        }
+        else
+        if(!strcmp(line,"*cycling_goal_events"))
+        {
+            for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+            {
+                Event *e = cycling_goal_events.items[i].address;
+                assert(e != NULL, "Event is null");
+                Narsese_PrintTerm(&e->term);
+                printf(": {\"priority\": %f, \"time\": %ld }\n", cycling_goal_events.items[i].priority, e->occurrenceTime);
+            }
+        }
+        else
         if(!strcmp(line,"quit"))
         {
-            exit(0);
+            return SHELL_EXIT;
         }
         else
         if(!strcmp(line,"*volume=100"))
@@ -158,7 +191,7 @@ bool Shell_ProcessInput(char *line)
         }
     }
     fflush(stdout);
-    return false;
+    return SHELL_CONTINUE;
 }
 
 void Shell_Start()
@@ -170,11 +203,17 @@ void Shell_Start()
         if(fgets(line, 1024, stdin) == NULL)
         {
             Stats_Print(currentTime);
-            exit(0);
+            break;
         }
-        if(Shell_ProcessInput(line)) //reset?
+        int cmd = Shell_ProcessInput(line);
+        if(cmd == SHELL_RESET) //reset?
         {
             Shell_NARInit();
+        }
+        else
+        if(cmd == SHELL_EXIT)
+        {
+            break;
         }
     }
 }

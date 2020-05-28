@@ -48,7 +48,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
 //macro for bidirectional transformation rules
-#define RTrans(rep1, _, rep2, truthFunction) R1( rep1, _, rep2, truthFunction ); R1( rep2, _, rep1, truthFunction );
+#define RTrans(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false);
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions

@@ -1,4 +1,4 @@
-/* 
+"""
  * The MIT License
  *
  * Copyright 2020 The OpenNARS authors.
@@ -20,23 +20,37 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * """
 
-#include "Stats.h"
+import subprocess
+import matplotlib.pyplot as plt
 
-long Stats_countConceptsMatchedTotal = 0;
-long Stats_countConceptsMatchedMax = 0;
+concepts = {}
+events = {}
+cmd = "./NAR shell InspectionOnExit < ./examples/nal/example1.nal"
+lines = subprocess.getoutput(cmd).split("\n")
+concepts = {}
+Active = False
 
-void Stats_Print(long currentTime)
-{
-    puts("Statistics");
-    printf("countConceptsMatchedTotal:\t%ld\n", Stats_countConceptsMatchedTotal);
-    printf("countConceptsMatchedMax:\t%ld\n", Stats_countConceptsMatchedMax);
-    long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
-    printf("countConceptsMatchedAverage:\t%ld\n", countConceptsMatchedAverage);
-    printf("currentTime:\t\t\t%ld\n", currentTime);
-    printf("total concepts:\t\t\t%d\n", concepts.itemsAmount);
-    printf("Maximum chain length in concept hashtable: %d\n", HashTable_MaximumChainLength(&HTconcepts));
-    printf("Maximum chain length in atoms hashtable: %d\n", HashTable_MaximumChainLength(&HTatoms));
-    fflush(stdout);
-}
+for l in lines:
+    L = l.split(":")
+    if Active and len(L) >= 2:
+        term = L[0].strip()
+        information = eval(":".join(L[1:]).strip())
+        concepts[term] = information
+    elif l.startswith("*concepts"):
+        Active = True
+    elif l.startswith("*done"):
+        break
+        
+ConceptPriorities=[]
+ConceptUseCount=[]
+for c in concepts.values():
+    ConceptPriorities += [c["priority"]]
+    ConceptUseCount += [c["useCount"]]
+plt.hist(ConceptPriorities, log=True)
+plt.savefig("ConceptPrioritiesHistogram.png")
+plt.hist(ConceptUseCount, log=True)
+plt.savefig("ConceptUseCountHistogram.png")
+print("Average priority: " + str((sum(ConceptPriorities))/float(len(ConceptPriorities))))
+print("Average use count: " + str((sum(ConceptUseCount))/float(len(ConceptUseCount))))
