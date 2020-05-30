@@ -1,6 +1,5 @@
 import pexpect
 NAR = pexpect.spawn('./../../NAR shell')
-NAR.delaybeforesend = None
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1]}
@@ -33,7 +32,7 @@ def GetOutput():
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "raw": lines}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions}
 
 def GetStats():
 	Stats = {}
