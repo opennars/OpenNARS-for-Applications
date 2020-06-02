@@ -250,18 +250,17 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
+                            if(len2 > 0)
+                            {
+                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+len2, 0);
+                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                {
+                                    break;
+                                }
+                            }
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                Term precond = Narsese_GetPreconditionWithoutOp(&precondition->term);  //a or (&/,a,op)
-                                for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-                                {
-                                    if(Narsese_isOperator(precond.atoms[i]))
-                                    {
-                                        goto NoReinforce; //if there is an op in a, then a longer sequ has also, try different k
-                                    }
-                                }
                                 Cycle_ReinforceLink(precondition, &postcondition);
-                                NoReinforce:;
                             }
                         }
                     }
