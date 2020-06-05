@@ -115,7 +115,7 @@ ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
 //Extensional set
-ReduceTerm( ({A} & {B}), {A B} )
+ReduceTerm( ({A} | {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
 
