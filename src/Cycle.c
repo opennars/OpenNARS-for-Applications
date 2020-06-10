@@ -190,6 +190,10 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                         NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     int operationID = Narsese_getOperationID(&a->term);
+                    if(Narsese_isOperation(&a->term))
+                    {
+                        operationID = 0; //if only an op is on left side, don't add to an op table
+                    }
                     IN_DEBUG( fputs("Formed implication: ", stdout); Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); )
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
