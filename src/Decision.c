@@ -93,7 +93,11 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         if(opc != NULL)
         {
             opc->goal_spike = Inference_RevisionAndChoice(&opc->goal_spike, &OpEvent, currentTime, NULL);
-            double operationGoalTruthExpectation = Truth_Expectation(opc->goal_spike.truth); //op()! :|:
+            if(Truth_Expectation(opc->goal_spike.truth) < DECISION_THRESHOLD)
+            {
+                return decision; //the revised desire value speaks against the execution
+            }
+            double operationGoalTruthExpectation = Truth_Expectation(OpEvent.truth); //op()! :|:
             IN_DEBUG
             (
                 printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
