@@ -29,7 +29,7 @@ static bool initialized = false;
 
 void NAR_INIT()
 {
-    assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
+    assert(pow(TRUTH_PROJECTION_DECAY_INITIAL, EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();
@@ -140,7 +140,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             {
                 if(c->belief_spike.type != EVENT_TYPE_DELETED)
                 {
-                    Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
+                    Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime, false);
                     if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
                     {
                         best_truth_projected = potential_best_truth;
@@ -152,7 +152,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 }
                 if(c->predicted_belief.type != EVENT_TYPE_DELETED)
                 {
-                    Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
+                    Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime, false);
                     if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
                     {
                         best_truth_projected = potential_best_truth;

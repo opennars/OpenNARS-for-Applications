@@ -93,12 +93,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         Concept *opc = Memory_Conceptualize(&OpEvent.term, currentTime);
         if(opc != NULL)
         {
-            bool stillValid = labs(opc->goal_spike.occurrenceTime - currentTime) < EVENT_BELIEF_DISTANCE;
-            if(stillValid && Truth_Expectation(opc->goal_spike.truth) < AVOIDANCE_THRESHOLD)
-            {
-                return decision;
-            }
-            opc->goal_spike = OpEvent;
+            opc->goal_spike = Inference_RevisionAndChoice(&opc->goal_spike, &OpEvent, currentTime, NULL);
             double operationGoalTruthExpectation = Truth_Expectation(opc->goal_spike.truth); //op()! :|:
             IN_DEBUG
             (
@@ -264,7 +259,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                     {
                         Implication negative_confirmation = imp;
                         Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                        Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
+                        Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset, false);
                         negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
                         negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
                         assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");

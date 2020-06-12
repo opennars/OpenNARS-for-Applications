@@ -88,11 +88,12 @@ Truth Truth_Eternalize(Truth v)
     return (Truth) { .frequency = v.frequency, .confidence = Truth_w2c(v.confidence) };
 }
 
-Truth Truth_Projection(Truth v, long originalTime, long targetTime)
+Truth Truth_Projection(Truth v, long originalTime, long targetTime, bool isGoal)
 {
     double difference = labs(targetTime - originalTime);
+    double decay = isGoal ? 0.9 : TRUTH_PROJECTION_DECAY;
     return originalTime == OCCURRENCE_ETERNAL ? 
-           v : (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference) };
+           v : (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(decay,difference) };
 }
 
 void Truth_Print(Truth *truth)

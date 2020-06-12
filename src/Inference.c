@@ -29,7 +29,7 @@
                               long creationTime = MAX(a->creationTime, b->creationTime);
 #define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
                 long conclusionTime = b->occurrenceTime; \
-                Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
+                Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime, a->type == EVENT_TYPE_GOAL); \
                 Truth truthB = b->truth;
                 
 static double weighted_average(double a1, double a2, double w1, double w2)
@@ -115,7 +115,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
 Event Inference_EventUpdate(Event *ev, long currentTime)
 {
     Event ret = *ev;
-    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
+    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime, ret.type == EVENT_TYPE_GOAL);
     ret.occurrenceTime = currentTime;
     return ret;
 }
@@ -152,7 +152,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || existing_potential->type == EVENT_TYPE_DELETED || (incoming_spike->type == EVENT_TYPE_BELIEF && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {
