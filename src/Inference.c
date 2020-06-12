@@ -105,7 +105,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
     //extract precondition: (plus unification once vars are there)
     return (Event) { .term = Narsese_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .truth = Truth_DesireDeduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
                      .creationTime = creationTime };
@@ -128,7 +128,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
     Event componentUpdated = Inference_EventUpdate(component, currentTime);
     return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
+                     .truth = Truth_DesireDeduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = compound->occurrenceTime,
                      .creationTime = creationTime };
@@ -152,7 +152,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || existing_potential->type == EVENT_TYPE_DELETED || (incoming_spike->type == EVENT_TYPE_BELIEF && existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {

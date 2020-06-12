@@ -60,6 +60,12 @@ Truth Truth_Deduction(Truth v1, Truth v2)
     return (Truth) { .frequency = f, .confidence = c1 * c2 * f };
 }
 
+Truth Truth_DesireDeduction(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 };
+}
+
 Truth Truth_Abduction(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);

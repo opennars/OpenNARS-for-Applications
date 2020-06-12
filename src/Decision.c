@@ -25,6 +25,7 @@
 #include "Decision.h"
 
 double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
+double AVOIDANCE_THRESHOLD = AVOIDANCE_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
@@ -92,7 +93,12 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         Concept *opc = Memory_Conceptualize(&OpEvent.term, currentTime);
         if(opc != NULL)
         {
-            opc->goal_spike = Inference_RevisionAndChoice(&opc->goal_spike, &OpEvent, currentTime, NULL);
+            bool stillValid = labs(opc->goal_spike.occurrenceTime - currentTime) < EVENT_BELIEF_DISTANCE;
+            if(stillValid && Truth_Expectation(opc->goal_spike.truth) < AVOIDANCE_THRESHOLD)
+            {
+                return decision;
+            }
+            opc->goal_spike = OpEvent;
             double operationGoalTruthExpectation = Truth_Expectation(opc->goal_spike.truth); //op()! :|:
             IN_DEBUG
             (

@@ -346,6 +346,10 @@ void Agent_Invoke()
     narsese[9] = percept.viewfield[1];
     narsese[14] = percept.viewfield[0];
     NAR_AddInputNarsese(narsese);
+    if(percept.collision)
+    {
+        NAR_AddInputNarsese("collided. :|:");
+    }
     if(pX != lastpX || pY != lastpY)
     {
         NAR_AddInputNarsese("moved. :|:"); //innate drive to move (can also be learned)
@@ -358,6 +362,7 @@ void Agent_Invoke()
     lastpX = pX;
     lastpY = pY;
     allowAction = true;
+    NAR_AddInputNarsese("collided! :|: {0.0 0.9}");
     if(goalMode == 1)
     {
         NAR_AddInputNarsese("moved! :|:");
