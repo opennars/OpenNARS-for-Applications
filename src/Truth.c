@@ -26,6 +26,7 @@
 
 double TRUTH_EVIDENTAL_HORIZON = TRUTH_EVIDENTAL_HORIZON_INITIAL;
 double TRUTH_PROJECTION_DECAY = TRUTH_PROJECTION_DECAY_INITIAL;
+double DESIRE_PROJECTION_DECAY = DESIRE_PROJECTION_DECAY_INITIAL;
 #define TruthValues(v1,v2, f1,c1, f2,c2) double f1 = v1.frequency; double f2 = v2.frequency; double c1 = v1.confidence; double c2 = v2.confidence;
 
 double Truth_w2c(double w)
@@ -91,7 +92,7 @@ Truth Truth_Eternalize(Truth v)
 Truth Truth_Projection(Truth v, long originalTime, long targetTime, bool isGoal)
 {
     double difference = labs(targetTime - originalTime);
-    double decay = isGoal ? 0.9 : TRUTH_PROJECTION_DECAY;
+    double decay = isGoal ? DESIRE_PROJECTION_DECAY : TRUTH_PROJECTION_DECAY;
     return originalTime == OCCURRENCE_ETERNAL ? 
            v : (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(decay,difference) };
 }

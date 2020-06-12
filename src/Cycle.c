@@ -392,18 +392,18 @@ void Cycle_Inference(long currentTime)
                     Event future_belief = c->predicted_belief;
                     //but if there is a predicted one in the event's window, use this one
                     if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_DISTANCE_MAX) //take event as belief if it's stronger
                     {
-                        future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime, true);
+                        future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime, false);
                         future_belief.occurrenceTime = e->occurrenceTime;
                         belief = &future_belief;
                     }
                     //unless there is an actual belief which falls into the event's window
                     Event project_belief = c->belief_spike;
                     if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_DISTANCE_MAX) //take event as belief if it's stronger
                     {
-                        project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime, true);
+                        project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime, false);
                         project_belief.occurrenceTime = e->occurrenceTime;
                         belief = &project_belief;
                     }

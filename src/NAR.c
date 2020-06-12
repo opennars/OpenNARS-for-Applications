@@ -29,7 +29,8 @@ static bool initialized = false;
 
 void NAR_INIT()
 {
-    assert(pow(TRUTH_PROJECTION_DECAY_INITIAL, EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
+    assert(pow(TRUTH_PROJECTION_DECAY_INITIAL, EVENT_DISTANCE_MAX) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event distance!");
+    assert(pow(DESIRE_PROJECTION_DECAY_INITIAL, EVENT_DISTANCE_MAX) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event distance!");
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();

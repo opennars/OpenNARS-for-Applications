@@ -38,8 +38,6 @@
 /*---------------------*/
 //Truth expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
-//Truth expectation needed for execution avoidance
-#define AVOIDANCE_THRESHOLD_INITIAL 0.3
 //Motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.1
 //Decisions above the following threshold will suppress babbling actions
@@ -63,7 +61,7 @@
 //Minimum priority to accept events
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
-#define EVENT_BELIEF_DISTANCE 20
+#define EVENT_DISTANCE_MAX 20
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
@@ -118,6 +116,8 @@
 #define TRUTH_EVIDENTAL_HORIZON_INITIAL 1.0
 //Time distance based projection decay of event truth
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
+//Time distance based projection decay of event desire
+#define DESIRE_PROJECTION_DECAY_INITIAL 0.9
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
 
