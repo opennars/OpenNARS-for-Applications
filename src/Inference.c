@@ -128,7 +128,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
     Event componentUpdated = Inference_EventUpdate(component, currentTime);
     return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_DesireDeduction(compoundUpdated.truth, componentUpdated.truth),
+                     .truth = Truth_DesireDeduction(componentUpdated.truth, compoundUpdated.truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = compound->occurrenceTime,
                      .creationTime = creationTime };
