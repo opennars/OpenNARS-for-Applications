@@ -193,7 +193,7 @@ int irand(int n)
     return r / (MY_RAND_MAX/n);
 }
 
-void spawnFood()
+void spawnFood(bool good)
 {
     int x, y;
     do
@@ -202,7 +202,10 @@ void spawnFood()
         y = irand(worldsizeY);
         if(!world[x][y].wall && !world[x][y].food)
         {
-            world[x][y].food = true;
+			if(good)
+				world[x][y].food = true;
+			if(!good)
+				world[x][y].wall = true;
             break;
         }
     }
@@ -216,7 +219,7 @@ void overwriteViewfield(int distance, bool* collided, char *original, char newva
 		return;	
 	}
 	*collided = true; //vision can't go through objects
-	if(distance > 1 && newval == 'w') //ultrasonic detection only up to distance=1
+	if(distance > 2 && newval == 'w') //ultrasonic detection only up to this distance
 	{
 		return;
 	}
@@ -395,7 +398,7 @@ Perception Agent_View()
     {
         ret.reward = true;
         world[pX][pY].food = false;
-        spawnFood();
+        spawnFood(true);
     }
     return ret;
 }
@@ -485,7 +488,8 @@ void NAR_Robot(long iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
     NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
     buildRooms();
-    for(int i=0; i<20; i++) { spawnFood(); }
+    for(int i=0; i<20; i++) { spawnFood(false); }
+    for(int i=0; i<20; i++) { spawnFood(true); }
     long t=0;
     while(1)
     {
