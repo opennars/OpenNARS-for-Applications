@@ -202,10 +202,10 @@ void spawnFood(bool good)
         y = irand(worldsizeY);
         if(!world[x][y].wall && !world[x][y].food)
         {
-			if(good)
-				world[x][y].food = true;
-			if(!good)
-				world[x][y].wall = true;
+            if(good)
+                world[x][y].food = true;
+            if(!good)
+                world[x][y].wall = true;
             break;
         }
     }
@@ -214,16 +214,16 @@ void spawnFood(bool good)
 
 void overwriteViewfield(int distance, bool* collided, char *original, char newval)
 {
-	if(newval == 'o' || *collided) //nothing hit the view ray position, or something was already hit
-	{
-		return;	
-	}
-	*collided = true; //vision can't go through objects
-	if(distance > 2 && newval == 'w') //ultrasonic detection only up to this distance
-	{
-		return;
-	}
-	*original = newval;
+    if(newval == 'o' || *collided) //nothing hit the view ray position, or something was already hit
+    {
+        return;    
+    }
+    *collided = true; //vision can't go through objects
+    if(distance > 2 && newval == 'w') //ultrasonic detection only up to this distance
+    {
+        return;
+    }
+    *original = newval;
 }
 
 Perception Agent_View()
@@ -234,163 +234,163 @@ Perception Agent_View()
     for(int i=1;i<=viewdist; i++)
     {
 #define BREAK_ON_DONE if(ret.viewfield[0] == 'f' || ret.viewfield[1] == 'f' || ret.viewfield[2] == 'f') \
-					  { \
-					      break; \
-					  }
-		BREAK_ON_DONE //not best practice but fine for examples.. :)
-		if(direction == DIRECTION_RIGHT)
-		{
-			ret.forward_pX = pX + 1;
-			ret.forward_pY = pY;
-			for(int I=1; I<=i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY-i));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_RIGHT_UP)
-		{
-			ret.forward_pX = pX + 1;
-			ret.forward_pY = pY + 1;
-			for(int I=0; I<i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY-I));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_UP)
-		{
-			ret.forward_pX = pX;
-			ret.forward_pY = pY + 1;
-			for(int I=1; I<=i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX,   pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY+I));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_LEFT_UP)
-		{
-			ret.forward_pX = pX - 1;
-			ret.forward_pY = pY + 1;
-			for(int I=0; I<i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY+i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY+i));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_LEFT)
-		{
-			ret.forward_pX = pX - 1;
-			ret.forward_pY = pY;
-			for(int I=1; I<=i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY+i));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_LEFT_DOWN)
-		{
-			ret.forward_pX = pX - 1;
-			ret.forward_pY = pY - 1;
-			for(int I=0; I<i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY+I));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_DOWN)
-		{
-			ret.forward_pX = pX;
-			ret.forward_pY = pY - 1;
-			for(int I=1; I<=i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX,   pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY-I));
-				BREAK_ON_DONE
-			}
-		}
-		if(direction == DIRECTION_RIGHT_DOWN)
-		{
-			ret.forward_pX = pX + 1;
-			ret.forward_pY = pY - 1;
-			for(int I=0; I<i; I++)
-			{
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY+I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY-I));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY-i));
-				BREAK_ON_DONE
-				overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY-i));
-				BREAK_ON_DONE
-			}
-		}
-	}
+                      { \
+                          break; \
+                      }
+        BREAK_ON_DONE //not best practice but fine for examples.. :)
+        if(direction == DIRECTION_RIGHT)
+        {
+            ret.forward_pX = pX + 1;
+            ret.forward_pY = pY;
+            for(int I=1; I<=i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY-i));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_RIGHT_UP)
+        {
+            ret.forward_pX = pX + 1;
+            ret.forward_pY = pY + 1;
+            for(int I=0; I<i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY-I));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_UP)
+        {
+            ret.forward_pX = pX;
+            ret.forward_pY = pY + 1;
+            for(int I=1; I<=i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX,   pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+i, pY+I));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_LEFT_UP)
+        {
+            ret.forward_pX = pX - 1;
+            ret.forward_pY = pY + 1;
+            for(int I=0; I<i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY+i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY+i));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_LEFT)
+        {
+            ret.forward_pX = pX - 1;
+            ret.forward_pY = pY;
+            for(int I=1; I<=i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY+i));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_LEFT_DOWN)
+        {
+            ret.forward_pX = pX - 1;
+            ret.forward_pY = pY - 1;
+            for(int I=0; I<i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX-i, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY+I));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_DOWN)
+        {
+            ret.forward_pX = pX;
+            ret.forward_pY = pY - 1;
+            for(int I=1; I<=i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX,   pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-i, pY-I));
+                BREAK_ON_DONE
+            }
+        }
+        if(direction == DIRECTION_RIGHT_DOWN)
+        {
+            ret.forward_pX = pX + 1;
+            ret.forward_pY = pY - 1;
+            for(int I=0; I<i; I++)
+            {
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY+I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY-I));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[1], &ret.viewfield[1], Cell_State(pX+i, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX+I, pY-i));
+                BREAK_ON_DONE
+                overwriteViewfield(i, &collided[2], &ret.viewfield[2], Cell_State(pX-I, pY-i));
+                BREAK_ON_DONE
+            }
+        }
+    }
     bool outside = ret.forward_pX < 0 || ret.forward_pX >= worldsizeX || 
                    ret.forward_pY < 0 || ret.forward_pY >= worldsizeY;
     if(outside ||  world[ret.forward_pX][ret.forward_pY].wall)
     {
-		if(ret.forward_pX != pX || ret.forward_pY != pY)
-		{
-			ret.collision = true;
-		}
+        if(ret.forward_pX != pX || ret.forward_pY != pY)
+        {
+            ret.collision = true;
+        }
         ret.forward_pX = pX;
         ret.forward_pY = pY;
     }
@@ -424,28 +424,28 @@ void NAR_Robot_Forward()
 
 void buildRooms()
 {
-	int roomsize=20;
+    int roomsize=20;
     for(int x=0; x<worldsizeX; x++)
     {
-		for(int y=0; y<worldsizeY; y++)
-		{
-			if(x%roomsize == 0 || y%roomsize == 0)
-			{
-				world[x][y].wall = true;
-			}
-			if(x%roomsize == 0 && y%roomsize == 0) //corner
-			{
-				if(x-roomsize/2 > 0 && y-roomsize/2 > 0 && x-roomsize/2 < worldsizeX-1 && y-roomsize/2 < worldsizeY-1)
-				{
-					for(int k=-2; k<=2; k++) //door size
-					{
-						world[x-roomsize/2+k][y].wall = false;
-						world[x][y-roomsize/2+k].wall = false;
-					}
-				}
-			}
-		}
-	}
+        for(int y=0; y<worldsizeY; y++)
+        {
+            if(x%roomsize == 0 || y%roomsize == 0)
+            {
+                world[x][y].wall = true;
+            }
+            if(x%roomsize == 0 && y%roomsize == 0) //corner
+            {
+                if(x-roomsize/2 > 0 && y-roomsize/2 > 0 && x-roomsize/2 < worldsizeX-1 && y-roomsize/2 < worldsizeY-1)
+                {
+                    for(int k=-2; k<=2; k++) //door size
+                    {
+                        world[x-roomsize/2+k][y].wall = false;
+                        world[x][y-roomsize/2+k].wall = false;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Agent_Invoke()
@@ -460,16 +460,16 @@ void Agent_Invoke()
     narseseR[2] = percept.viewfield[2];
     if(percept.viewfield[0] != 'o')
     {
-		NAR_AddInputNarsese(narseseL);
-	}
-	if(percept.viewfield[1] != 'o')
+        NAR_AddInputNarsese(narseseL);
+    }
+    if(percept.viewfield[1] != 'o')
     {
-		NAR_AddInputNarsese(narseseM);
-	}
-	if(percept.viewfield[2] != 'o')
+        NAR_AddInputNarsese(narseseM);
+    }
+    if(percept.viewfield[2] != 'o')
     {
-		NAR_AddInputNarsese(narseseR);
-	}
+        NAR_AddInputNarsese(narseseR);
+    }
     if(percept.reward)
     {
         eaten++;
@@ -500,7 +500,7 @@ void NAR_Robot(long iterations)
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         World_Draw();
-        printf("time=%ld moves=%d move_success_ratio=%f eaten=%d time=%ld\n", t, moves, (float) (((float) moves) / ((float) t)), eaten, currentTime);
+        printf("time=%ld moves=%d move_success_ratio=%f eaten=%d reasonerStep=%ld\n", t, moves, (float) (((float) moves) / ((float) t)), eaten, currentTime);
         Agent_Invoke();
         if(iterations == -1)
         {
