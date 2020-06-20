@@ -25,6 +25,9 @@
 #include "Narsese.h"
 #include "NAR.h"
 
+//Atomic term names:
+char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
 //size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
