@@ -48,6 +48,12 @@ extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
+typedef void (*Action)(Term);
+typedef struct
+{
+    Term term;
+    Action action;
+}Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
@@ -56,22 +62,17 @@ extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 extern int goalsSelectedCnt;
 //Concepts in main memory:
-PriorityQueue concepts;
+extern PriorityQueue concepts;
 //cycling events cycling in main memory:
-PriorityQueue cycling_belief_events;
-PriorityQueue cycling_goal_events;
+extern PriorityQueue cycling_belief_events;
+extern PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
-HashTable HTconcepts;
+extern HashTable HTconcepts;
 //Input event buffers:
-FIFO belief_events;
-FIFO goal_events;
-typedef void (*Action)(Term);
-typedef struct
-{
-    Term term;
-    Action action;
-}Operation;
-Operation operations[OPERATIONS_MAX];
+extern FIFO belief_events;
+extern FIFO goal_events;
+//Registered perations
+extern Operation operations[OPERATIONS_MAX];
 
 //Methods//
 //-------//
