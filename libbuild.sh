@@ -5,7 +5,6 @@ mv src/main_ src/main.c
 sudo rm -rf /usr/local/include/ona
 sudo rm /usr/local/lib/libONA.a
 sudo rm /usr/local/lib/libONA.so
-set -e
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 echo $Str
 echo "Compilation started:"
@@ -28,4 +27,5 @@ sudo mkdir /usr/local/include/ona/NetworkNAR/
 sudo cp src/NetworkNAR/*.h /usr/local/include/ona/NetworkNAR/
 sudo cp *.a /usr/local/lib/
 sudo cp *.so /usr/local/lib/
+mv src/main_ src/main.c
 echo "Done."
