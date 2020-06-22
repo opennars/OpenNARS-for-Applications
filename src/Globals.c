@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void assert(bool b, char* message)
+void Globals_assert(bool b, char* message)
 {
     if(!b)
     {

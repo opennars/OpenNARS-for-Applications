@@ -52,7 +52,8 @@
 #endif
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
-void assert(bool b, char* message);
+void Globals_assert(bool b, char* message);
+#define assert Globals_assert
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 //Number of elements of compile time allocated array:

@@ -1,8 +1,9 @@
 #include <iostream>
 //namespace ona { //if used with other namespaces
 extern "C" {
-    #include "ona/NAR.h"
-    //#undef assert //for ROS
+    #include "./../../src/NAR.h"
+    //#include <ona/NAR.h>
+    #undef assert //for ROS and Mac
 }
 //}
 //using namespace ona;
@@ -20,6 +21,6 @@ int main()
     NAR_AddInputNarsese((char*) "<(a &/ ^op) =/> g>.");
     NAR_AddInputNarsese((char*) "a. :|:");
     NAR_AddInputNarsese((char*) "g! :|:");
-    assert(executed, (char*) "Eecution should have happened!");
+    Globals_assert(executed, (char*) "Eecution should have happened!");
     return 0;
 }
