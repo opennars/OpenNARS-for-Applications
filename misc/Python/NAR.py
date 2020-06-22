@@ -19,6 +19,8 @@ def parseTask(s):
     return M
     
 def parseExecution(e):
+    if "args " not in e:
+        return {"operator" : e.split(" ")[0], "arguments" : []}
     return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
 
 def GetRawOutput():
