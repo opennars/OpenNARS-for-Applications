@@ -62,8 +62,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 
 //NAL1 rules
 R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
-R2( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
-R2( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
+R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
+R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 //NAL2 rules
 R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
