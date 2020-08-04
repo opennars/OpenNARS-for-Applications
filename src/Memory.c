@@ -50,6 +50,8 @@ Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 double conceptPriorityThreshold = 0.0;
 //Special ontology handling if demanded
 bool ontology_handling = false;
+//Inverted atom index
+InvertedAtomIndex invertedAtomIndex;
 
 static void Memory_ResetEvents()
 {
@@ -86,6 +88,7 @@ VMItem* HTconcepts_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept ter
 
 void Memory_INIT()
 {
+    InvertedAtomIndex_INIT(&invertedAtomIndex);
     HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_HASHTABLE_BUCKETS, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();

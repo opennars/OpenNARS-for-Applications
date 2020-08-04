@@ -76,6 +76,8 @@
 #define CONCEPTS_MAX 16384
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
+//Amount of buckets for inverted atom index hashmap
+#define INVTABLE_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds

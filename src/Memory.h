@@ -35,7 +35,7 @@
 #include "Concept.h"
 #include "PriorityQueue.h"
 #include "Config.h"
-#include "HashTable.h"
+#include "InvertedAtomIndex.h"
 #include "Variable.h"
 
 //Parameters//
@@ -73,6 +73,8 @@ extern FIFO belief_events;
 extern FIFO goal_events;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
+//Inverted atom index
+extern InvertedAtomIndex invertedAtomIndex;
 
 //Methods//
 //-------//
