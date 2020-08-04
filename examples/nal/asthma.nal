@@ -25,7 +25,7 @@
 100
 //Jonas has asthma?
 <{jonas} --> [asthma]>?
-//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.815224
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
 //Angelika has asthma?
 <{angelika} --> [asthma]>?
 //expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000

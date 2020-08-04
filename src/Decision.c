@@ -253,7 +253,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                         Implication negative_confirmation = imp;
                         Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
                         Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
-                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
+                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
                         negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
                         assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
                         Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
