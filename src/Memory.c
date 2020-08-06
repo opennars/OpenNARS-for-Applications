@@ -24,15 +24,31 @@
 
 #include "Memory.h"
 
+//Concepts in main memory:
+PriorityQueue concepts;
+//cycling events cycling in main memory:
+PriorityQueue cycling_belief_events;
+PriorityQueue cycling_goal_events;
+//Hashtable of concepts used for fast retrieval of concepts via term:
+HashTable HTconcepts;
+//Input event buffers:
+FIFO belief_events;
+FIFO goal_events;
+//Operations
+Operation operations[OPERATIONS_MAX];
+//Parameters
 bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
+//Storage arrays for the datastructures
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
 Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+//Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
+//Special ontology handling if demanded
 bool ontology_handling = false;
 
 static void Memory_ResetEvents()
@@ -64,13 +80,13 @@ static void Memory_ResetConcepts()
 }
 
 int concept_id = 0;
-
 VMItem* HTconcepts_storageptrs[CONCEPTS_MAX];
 VMItem HTconcepts_storage[CONCEPTS_MAX];
-VMItem* HTconcepts_HT[CONCEPTS_MAX]; //the hash of the concept term is the index
+VMItem* HTconcepts_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept term is the index
+
 void Memory_INIT()
 {
-    HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
+    HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_HASHTABLE_BUCKETS, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();
@@ -193,7 +209,10 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
         Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
-        printf(occurrenceTime == OCCURRENCE_ETERNAL ? "" : ":|: occurrenceTime=%ld ", occurrenceTime);
+        if(occurrenceTime != OCCURRENCE_ETERNAL)
+        {
+            printf(":|: occurrenceTime=%ld ", occurrenceTime);
+        }
         printf("Priority=%f ", priority);
         Truth_Print(truth);
         fflush(stdout);

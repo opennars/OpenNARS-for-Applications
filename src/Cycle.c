@@ -137,7 +137,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
                 selectedGoals[i] = c->goal_spike;
-                for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
@@ -250,18 +250,17 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
+                            if(len2 > 0)
+                            {
+                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+len2, 0);
+                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                {
+                                    break;
+                                }
+                            }
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                Term precond = Narsese_GetPreconditionWithoutOp(&precondition->term);  //a or (&/,a,op)
-                                for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-                                {
-                                    if(Narsese_isOperator(precond.atoms[i]))
-                                    {
-                                        goto NoReinforce; //if there is an op in a, then a longer sequ has also, try different k
-                                    }
-                                }
                                 Cycle_ReinforceLink(precondition, &postcondition);
-                                NoReinforce:;
                             }
                         }
                     }
@@ -293,6 +292,10 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     {
         Decision_Execute(&decision);
         //reset cycling goal events after execution to avoid "residue actions"
+        for(int i=0; i<goalsSelectedCnt; i++)
+        {
+            selectedGoalsPriority[i] = 0;
+        }
         PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
     }
 }
@@ -385,7 +388,7 @@ void Cycle_Inference(long currentTime)
                     Event future_belief = c->predicted_belief;
                     //but if there is a predicted one in the event's window, use this one
                     if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                       abs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                     {
                         future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
                         future_belief.occurrenceTime = e->occurrenceTime;
@@ -394,7 +397,7 @@ void Cycle_Inference(long currentTime)
                     //unless there is an actual belief which falls into the event's window
                     Event project_belief = c->belief_spike;
                     if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                       abs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                     {
                         project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
                         project_belief.occurrenceTime = e->occurrenceTime;

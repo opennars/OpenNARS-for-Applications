@@ -52,7 +52,8 @@
 #endif
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
-void assert(bool b, char* message);
+void Globals_assert(bool b, char* message);
+#define assert Globals_assert
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 //Number of elements of compile time allocated array:
@@ -60,5 +61,9 @@ void assert(bool b, char* message);
 //Generic hash function on byte array
 #define HASH_TYPE long
 HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
+//Random number generator for reproducibility across platforms
+int myrand(void);
+void mysrand(unsigned int seed);
+#define MY_RAND_MAX 32767
 
 #endif

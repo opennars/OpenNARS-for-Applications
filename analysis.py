@@ -1,4 +1,4 @@
-/* 
+"""
  * The MIT License
  *
  * Copyright 2020 The OpenNARS authors.
@@ -20,36 +20,37 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * """
 
-#ifndef SHELL_H
-#define SHELL_H
+import subprocess
+import matplotlib.pyplot as plt
 
-/////////////
-//  Shell  //
-/////////////
-//The shell for interaction with NAR
+concepts = {}
+events = {}
+cmd = "./NAR shell InspectionOnExit < ./examples/nal/example1.nal"
+lines = subprocess.getoutput(cmd).split("\n")
+concepts = {}
+Active = False
 
-//Data structure//
-//--------------//
-#define SHELL_CONTINUE 0
-#define SHELL_RESET 1
-#define SHELL_EXIT 2
-
-//References//
-//----------//
-#include "NAR.h"
-#include "Stats.h"
-
-//Methods//
-//-------//
-//Initializes the shell NAR and runs it with stdin/stdout
-void Shell_Start();
-//Only initializes the shell NAR with the default ops, but can be used differently
-void Shell_NARInit();
-//Process a shell input line, can be comments, timesteps, Narsese, and commands, returns if system reset was issued
-int Shell_ProcessInput(char *line);
-//debug command:
-void PrintInvertedAtomIndex();
-
-#endif
+for l in lines:
+    L = l.split(":")
+    if Active and len(L) >= 2:
+        term = L[0].strip()
+        information = eval(":".join(L[1:]).strip())
+        concepts[term] = information
+    elif l.startswith("*concepts"):
+        Active = True
+    elif l.startswith("*done"):
+        break
+        
+ConceptPriorities=[]
+ConceptUseCount=[]
+for c in concepts.values():
+    ConceptPriorities += [c["priority"]]
+    ConceptUseCount += [c["useCount"]]
+plt.hist(ConceptPriorities, log=True)
+plt.savefig("ConceptPrioritiesHistogram.png")
+plt.hist(ConceptUseCount, log=True)
+plt.savefig("ConceptUseCountHistogram.png")
+print("Average priority: " + str((sum(ConceptPriorities))/float(len(ConceptPriorities))))
+print("Average use count: " + str((sum(ConceptUseCount))/float(len(ConceptUseCount))))

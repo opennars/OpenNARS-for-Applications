@@ -63,7 +63,7 @@ Truth Truth_Deduction(Truth v1, Truth v2)
 Truth Truth_Abduction(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1, .confidence = Truth_w2c(f2 * c1 * c2) };
+    return (Truth) { .frequency = f2, .confidence = Truth_w2c(f1 * c1 * c2) };
 }
 
 Truth Truth_Induction(Truth v1, Truth v2)

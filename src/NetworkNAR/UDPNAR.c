@@ -64,7 +64,8 @@ void* Receive_Thread_Run(void *sockfd_address)
             break;
         }
         pthread_mutex_lock(&nar_mutex);
-        if(Shell_ProcessInput(buffer)) //reset?
+        int cmd = Shell_ProcessInput(buffer);
+        if(cmd == SHELL_RESET) //reset?
         {
             Shell_NARInit();
         }

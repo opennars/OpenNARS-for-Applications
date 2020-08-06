@@ -213,7 +213,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     //first evict if necessary
     if(queue->itemsAmount >= queue->maxElements)
     {
-		double minPriority = at(0).priority;
+        double minPriority = at(0).priority;
         if(priority < minPriority)
         { //smaller than smallest
             return feedback;

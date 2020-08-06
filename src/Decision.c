@@ -62,7 +62,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(rand() % (n_ops));
+        decision.operationID = 1+(myrand() % (n_ops));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
@@ -127,7 +127,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
         {
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {
@@ -253,7 +253,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                         Implication negative_confirmation = imp;
                         Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
                         Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
-                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TPast, TNew));
+                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
                         negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
                         assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
                         Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
@@ -274,7 +274,7 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance
-    if(rand() % 1000000 < (int)(MOTOR_BABBLING_CHANCE*1000000.0))
+    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
     {
         babble_decision = Decision_MotorBabbling();
     }

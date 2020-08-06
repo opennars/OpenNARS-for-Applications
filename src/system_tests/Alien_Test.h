@@ -57,7 +57,7 @@ void NAR_Alien(long iterations)
     {
         if(iterations != -1 && t++ > iterations)
         {
-            exit(0);
+            break;
         }
         if(t++%10000 == 0)
         {
@@ -87,7 +87,7 @@ void NAR_Alien(long iterations)
             {
                 hits++;
                 NAR_AddInputBelief(Narsese_Term("s0"));
-                alien0X = ((double)(rand() % 1000)) / 1000.0;
+                alien0X = ((double)(myrand() % 1000)) / 1000.0;
             }
         }
         if(NAR_Alien_Left_executed)

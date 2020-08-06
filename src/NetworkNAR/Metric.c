@@ -38,7 +38,7 @@ static int graphite_sockfd = 0;
 
 void Metric_send( const char* path, int value)
 {
-    char message[GRAPHITE_MAX_MSG_LEN];
+    char message[GRAPHITE_MAX_MSG_LEN] = {0};
     if(graphite_sockfd == 0)
     {
         graphite_sockfd = UDP_INIT_Sender();

@@ -35,10 +35,25 @@
 
 void Process_Args(int argc, char *argv[])
 {
+    bool inspectionOnExit = false;
     long iterations = -1;
-    if(argc == 3)
+    if(argc >= 4)
     {
-        iterations = atol(argv[2]);
+        if(!strcmp(argv[3],"InspectionOnExit"))
+        {
+            inspectionOnExit = true;
+        }
+    }
+    if(argc >= 3)
+    {
+        if(!strcmp(argv[2],"InspectionOnExit"))
+        {
+            inspectionOnExit = true;
+        }
+        else
+        {
+            iterations = atol(argv[2]);
+        }
     }
     if(argc >= 2)
     {
@@ -64,6 +79,14 @@ void Process_Args(int argc, char *argv[])
         {
             NAR_Alien(iterations);
         }
+        if(!strcmp(argv[1],"cartpole"))
+        {
+            NAR_Cartpole(iterations);
+        }
+        if(!strcmp(argv[1],"robot"))
+        {
+            NAR_Robot(iterations);
+        }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
@@ -80,8 +103,22 @@ void Process_Args(int argc, char *argv[])
             fflush(stdout);
             getchar();
             UDPNAR_Stop();
-            exit(0);
         }
+    }
+    if(inspectionOnExit)
+    {
+        puts("*concepts");
+        Shell_ProcessInput("*concepts");
+        puts("*done");
+        puts("*cycling_belief_events");
+        Shell_ProcessInput("*cycling_belief_events");
+        puts("*done");
+        puts("*cycling_goal_events");
+        Shell_ProcessInput("*cycling_goal_events");
+        puts("*done");
+        puts("*stats");
+        Shell_ProcessInput("*stats");
+        puts("*done");
     }
 }
 
@@ -92,17 +129,22 @@ void Display_Help()
     puts("NAR pong2 (starts Pong2 example)");
     puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
     puts("NAR alien (starts the alien example)");
+    puts("NAR cartpole (starts the cartpole example)");
+    puts("NAR robot (starts the robot example)");
     puts("NAR shell (starts the interactive NAL shell)");
 }
 
 int main(int argc, char *argv[])
 {
-    srand(1337);
+    mysrand(1337);
     Process_Args(argc, argv);
-    NAR_INIT();
-    Run_Unit_Tests();
-    Run_System_Tests();
-    Display_Help();
+    if(argc == 1)
+    {
+        NAR_INIT();
+        Run_Unit_Tests();
+        Run_System_Tests();
+        Display_Help();
+    }
     return 0;
 }
 

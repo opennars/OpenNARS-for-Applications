@@ -69,19 +69,21 @@ void Shell_NARInit()
     fflush(stdout);
     NAR_INIT();
     PRINT_DERIVATIONS = true;
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); 
-    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down);
-    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say);
-    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick);
-    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop);
-    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go);
-    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate);
-    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate);
+    int k=0; if(k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
+    assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 
-bool Shell_ProcessInput(char *line)
+int Shell_ProcessInput(char *line)
 {
     //trim string, for IRC etc. convenience
     for(int i=strlen(line)-1; i>=0; i--)
@@ -104,12 +106,12 @@ bool Shell_ProcessInput(char *line)
         {
             fputs("Comment: ", stdout);
             puts(&line[2]); fflush(stdout);
-            return false;
+            return SHELL_CONTINUE;
         }
         else
         if(!strcmp(line,"*reset"))
         {
-            return true;
+            return SHELL_RESET;
         }
         else
         if(!strcmp(line,"*volume=0"))
@@ -127,9 +129,42 @@ bool Shell_ProcessInput(char *line)
             InvertedAtomIndex_Print();
         }
         else
+        if(!strcmp(line,"*concepts"))
+        {
+            for(int i=0; i<concepts.itemsAmount; i++)
+            {
+                Concept *c = concepts.items[i].address;
+                assert(c != NULL, "Concept is null");
+                Narsese_PrintTerm(&c->term);
+                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+            }
+        }
+        else
+        if(!strcmp(line,"*cycling_belief_events"))
+        {
+            for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+            {
+                Event *e = cycling_belief_events.items[i].address;
+                assert(e != NULL, "Event is null");
+                Narsese_PrintTerm(&e->term);
+                printf(": { \"priority\": %f, \"time\": %ld }\n", cycling_belief_events.items[i].priority, e->occurrenceTime);
+            }
+        }
+        else
+        if(!strcmp(line,"*cycling_goal_events"))
+        {
+            for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+            {
+                Event *e = cycling_goal_events.items[i].address;
+                assert(e != NULL, "Event is null");
+                Narsese_PrintTerm(&e->term);
+                printf(": {\"priority\": %f, \"time\": %ld }\n", cycling_goal_events.items[i].priority, e->occurrenceTime);
+            }
+        }
+        else
         if(!strcmp(line,"quit"))
         {
-            exit(0);
+            return SHELL_EXIT;
         }
         else
         if(!strcmp(line,"*volume=100"))
@@ -161,7 +196,7 @@ bool Shell_ProcessInput(char *line)
         }
     }
     fflush(stdout);
-    return false;
+    return SHELL_CONTINUE;
 }
 
 void Shell_Start()
@@ -173,11 +208,17 @@ void Shell_Start()
         if(fgets(line, 1024, stdin) == NULL)
         {
             Stats_Print(currentTime);
-            exit(0);
+            break;
         }
-        if(Shell_ProcessInput(line)) //reset?
+        int cmd = Shell_ProcessInput(line);
+        if(cmd == SHELL_RESET) //reset?
         {
             Shell_NARInit();
+        }
+        else
+        if(cmd == SHELL_EXIT)
+        {
+            break;
         }
     }
 }

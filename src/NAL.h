@@ -48,7 +48,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
 //macro for bidirectional transformation rules
-#define RTrans(rep1, _, rep2, truthFunction) R1( rep1, _, rep2, truthFunction ); R1( rep2, _, rep1, truthFunction );
+#define RTrans(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false);
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
@@ -62,8 +62,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 
 //NAL1 rules
 R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
-R2( (A --> B), (A --> C), |-, (C --> B), Truth_Abduction )
-R2( (A --> C), (B --> C), |-, (B --> A), Truth_Induction )
+R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
+R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 //NAL2 rules
 R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
@@ -97,13 +97,11 @@ R1( (! A), |-, A, Truth_Negation )
 R1( (&& A B), |-, A, Truth_StructuralDeduction )
 R1( (&& A B), |-, B, Truth_StructuralDeduction )
 //NAL6 variable introduction
-R2( (M --> A), (M --> B), |-, (($1 --> A) ==> ($1 --> B)), Truth_Induction )
 R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
-R2( (A --> M), (B --> M), |-, ((A --> $1) ==> (B --> $1)), Truth_Induction )
 R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
 R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
-R2( ((A * B) --> R), (! ((B * A) --> R) ), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
-R2( (((A * B) | (B * C)) --> R), ((A * C) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
+R2( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
+R2( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
 //NAL5/7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
 
 #endif
@@ -115,7 +113,7 @@ ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
 //Extensional set
-ReduceTerm( ({A} & {B}), {A B} )
+ReduceTerm( ({A} | {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
 

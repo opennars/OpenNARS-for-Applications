@@ -1,3 +1,27 @@
+"""
+ * The MIT License
+ *
+ * Copyright 2020 The OpenNARS authors.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * """
+
 from subprocess import PIPE, run
 import subprocess
 import glob
@@ -117,9 +141,9 @@ QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
 for filename in glob.glob('./examples/english/*.english'):
-    Test(filename, subprocess.getoutput("python2 english_shell.py < " + filename))
+    Test(filename, subprocess.getoutput("python3 english_to_narsese.py < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
-    print("\nEnglish integration tests skipped, install python2 and nltk to include them in the evaluation!")
+    print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
 else:
     print("\nEnglish integration tests successful!")
 
@@ -141,4 +165,6 @@ print("\nNow running procedure learning examples for 10K iterations each:")
 ctests("Pong", "./NAR pong 10000", True)
 ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 10000", True)
+ctests("Cartpole", "./NAR cartpole 10000", True)
+ctests("Robot", "./NAR robot 1000", True)
 print("\nProcedure learning metrics done");

@@ -3,19 +3,19 @@
 <corridor --> in>. :|:
 <({SELF} * kitchen) --> ^go>. :|:
 <({cat} * kitchen) --> in>. :|:
-100
+120
 <corridor --> in>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-100
+120
 <corridor --> in>. :|:
 <({SELF} * livingroom) --> ^go>. :|:
 //no cat this time, it doesn't like the livingroom :)
-100
+120
 <corridor --> in>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-100
+120
 //Ok you are in corridor now
 <corridor --> in>. :|:
 //NARS, where is the cat?

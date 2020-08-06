@@ -25,6 +25,9 @@
 #include "Narsese.h"
 #include "NAR.h"
 
+//Atomic term names:
+char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
+char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 //upper bound of multplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
 //size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
@@ -298,7 +301,7 @@ int Narsese_OperatorIndex(char *name)
 HashTable HTatoms;
 VMItem* HTatoms_storageptrs[ATOMS_MAX];
 VMItem HTatoms_storage[ATOMS_MAX];
-VMItem* HTatoms_HT[ATOMS_MAX];
+VMItem* HTatoms_HT[ATOMS_HASHTABLE_BUCKETS];
 int term_index = 0;
 
 //Returns the memoized index of an already seen atomic term
@@ -586,7 +589,7 @@ bool Narsese_StringEqual(char *name1, char *name2)
 
 void Narsese_INIT()
 {
-    HashTable_INIT(&HTatoms, HTatoms_storage, HTatoms_storageptrs, HTatoms_HT, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
+    HashTable_INIT(&HTatoms, HTatoms_storage, HTatoms_storageptrs, HTatoms_HT, ATOMS_HASHTABLE_BUCKETS, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
     operator_index = term_index = 0;
     for(int i=0; i<ATOMS_MAX; i++)
     {
@@ -617,7 +620,7 @@ void Narsese_INIT()
     //index the copulas as well, to make sure these will have same index on next run
     for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
     {
-        char cop[2] = { Naresese_CanonicalCopulas[i], 0 };
+        char cop[2] = { (Naresese_CanonicalCopulas[i]), 0 };
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");

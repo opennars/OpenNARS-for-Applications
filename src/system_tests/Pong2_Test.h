@@ -61,7 +61,7 @@ void NAR_Pong2(long iterations)
         t++;
         if(iterations != -1 && t++ > iterations)
         {
-            exit(0);
+            break;
         }
         //if(t%10000 == 0)
         //    getchar();
@@ -152,9 +152,9 @@ void NAR_Pong2(long iterations)
         }
         if(ballY == 0 || ballX == 0 || ballX >= szX-1)
         {
-            ballY = szY/2+rand()%(szY/2);
-            ballX = rand()%szX;
-            vX = rand()%2 == 0 ? 1 : -1;
+            ballY = szY/2+myrand()%(szY/2);
+            ballX = myrand()%szX;
+            vX = myrand()%2 == 0 ? 1 : -1;
         }
         if(NAR_Pong_Left_executed)
         {
