@@ -145,46 +145,52 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
                     Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                    for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
+                    //for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++) //UNIFY
+                    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
                     {
-                        Concept *cmatch = concepts.items[cmatch_k].address;
-                        if(!Variable_hasVariable(&cmatch->term, true, true, true))
+                        InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(left_side.atoms[i]);
+                        while(chain != NULL)
                         {
-                            Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
-                            if(subs2.success)
+                            Concept *cmatch = chain->c;
+                            if(!Variable_hasVariable(&cmatch->term, true, true, true))
                             {
-                                Implication specific_imp = imp; //can only be completely specific
-                                bool success;
-                                specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                if(success && !Variable_hasVariable(&specific_imp.term, true, true, true))
+                                Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
+                                if(subs2.success)
                                 {
-                                    specific_imp.sourceConcept = cmatch;
-                                    specific_imp.sourceConceptId = cmatch->id;
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
-                                    int specific_imp_complexity = Term_Complexity(&specific_imp.term);
-                                    if(impHasVariable)
+                                    Implication specific_imp = imp; //can only be completely specific
+                                    bool success;
+                                    specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
+                                    if(success && !Variable_hasVariable(&specific_imp.term, true, true, true))
                                     {
-                                        if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
+                                        specific_imp.sourceConcept = cmatch;
+                                        specific_imp.sourceConceptId = cmatch->id;
+                                        Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                        int specific_imp_complexity = Term_Complexity(&specific_imp.term);
+                                        if(impHasVariable)
                                         {
-                                            decisionGeneral = considered;
-                                            cbest_predicateGeneral = cmatch;
-                                            bestComplexityGeneral = specific_imp_complexity;
-                                            bestImpGeneral = imp;
+                                            if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
+                                            {
+                                                decisionGeneral = considered;
+                                                cbest_predicateGeneral = cmatch;
+                                                bestComplexityGeneral = specific_imp_complexity;
+                                                bestImpGeneral = imp;
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        if(considered.desire > decision.desire || (considered.desire == decision.desire && specific_imp_complexity < bestComplexity))
+                                        else
                                         {
-                                            decision = considered;
-                                            decision.specialized = true;
-                                            cbest_predicate = cmatch;
-                                            bestComplexity = specific_imp_complexity;
-                                            bestImp = imp;
+                                            if(considered.desire > decision.desire || (considered.desire == decision.desire && specific_imp_complexity < bestComplexity))
+                                            {
+                                                decision = considered;
+                                                decision.specialized = true;
+                                                cbest_predicate = cmatch;
+                                                bestComplexity = specific_imp_complexity;
+                                                bestImp = imp;
+                                            }
                                         }
                                     }
                                 }
                             }
+                            chain = chain->next;
                         }
                     }
                 }

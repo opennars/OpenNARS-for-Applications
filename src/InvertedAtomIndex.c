@@ -7,7 +7,7 @@ void InvertedAtomIndex_INIT()
         invertedAtomIndex[i] = NULL;
     }
     Stack_INIT(&invTableChainElementStack, (void**) invTableChainElementStoragePointers, COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX);
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX; i++)
+    for(int i=0; i<UNIFICATION_DEPTH*CONCEPTS_MAX; i++)
     {
         invTableChainElementStorage[i] = (InvtableChainElement) {0};
         invTableChainElementStoragePointers[i] = NULL;
@@ -17,7 +17,7 @@ void InvertedAtomIndex_INIT()
 
 void InvertedAtomIndex_Add(Term term, Concept *c)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
@@ -54,7 +54,7 @@ void InvertedAtomIndex_Add(Term term, Concept *c)
 
 void InvertedAtomIndex_Remove(Term term, Concept *c)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
@@ -110,4 +110,9 @@ void InvertedAtomIndex_Print()
         }
     }
     puts("table print finish");
+}
+
+InvtableChainElement* InvertedAtomIndex_GetInvtableChain(Atom atom)
+{
+    return invertedAtomIndex[atom];
 }

@@ -56,33 +56,21 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
-    #pragma omp parallel for
-    for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+    //#pragma omp parallel for
+    //for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++) //UNIFY
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        Event ecp = *e;
-        Concept *c = concepts.items[concept_i].address;
-        if(!e_hasVariable)  //concept matched to the event which doesn't have variables
+        InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
+        while(chain != NULL)
         {
-            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
-            if(subs.success)
+            Concept *c = chain->c;
+            Event ecp = *e;
+            if(!e_hasVariable)  //concept matched to the event which doesn't have variables
             {
-                ecp.term = e->term;
-                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+                if(subs.success)
                 {
-                    best_decision = decision;
-                }
-            }
-        }
-        else
-        {
-            Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
-            if(subs.success)
-            {
-                bool success;
-                ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
-                if(success)
-                {
+                    ecp.term = e->term;
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                     if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                     {
@@ -90,6 +78,24 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                     }
                 }
             }
+            else
+            {
+                Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+                if(subs.success)
+                {
+                    bool success;
+                    ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
+                    if(success)
+                    {
+                        Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                        if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                        {
+                            best_decision = decision;
+                        }
+                    }
+                }
+            }
+            chain = chain->next;
         }
     }
     return best_decision;
@@ -129,31 +135,37 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             best_decision = decision;
         }
         #pragma omp parallel for
-        for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+        //for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++) //UNIFY
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
-            Concept *c = concepts.items[concept_i].address;
-            if(Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+            InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(goal->term.atoms[i]);
+            while(chain != NULL)
             {
-                bool revised;
-                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                selectedGoals[i] = c->goal_spike;
-                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                Concept *c = chain->c;
+                if(Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                 {
-                    for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                    bool revised;
+                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                    selectedGoals[i] = c->goal_spike;
+                    for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                     {
-                        Implication *imp = &c->precondition_beliefs[opi].array[j];
-                        if(!Memory_ImplicationValid(imp))
+                        for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                         {
-                            Table_Remove(&c->precondition_beliefs[opi], j);
-                            j--;
-                            continue;
+                            Implication *imp = &c->precondition_beliefs[opi].array[j];
+                            if(!Memory_ImplicationValid(imp))
+                            {
+                                Table_Remove(&c->precondition_beliefs[opi], j);
+                                j--;
+                                continue;
+                            }
+                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                         }
-                        Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                        Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                        IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                        Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                     }
                 }
+                chain = chain->next;
             }
         }
     }

@@ -34,6 +34,7 @@
 //////////////
 #include "Concept.h"
 #include "Stack.h"
+#include "Config.h"
 
 //Data structure//
 //--------------//
@@ -57,5 +58,7 @@ void InvertedAtomIndex_Add(Term term, Concept *c);
 void InvertedAtomIndex_Remove(Term term, Concept *c);
 //Print the inverted atom index
 void InvertedAtomIndex_Print();
+//Get the invtable chain with the concepts for an atom
+InvtableChainElement* InvertedAtomIndex_GetInvtableChain(Atom atom);
 
 #endif
