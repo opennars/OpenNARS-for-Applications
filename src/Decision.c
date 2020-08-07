@@ -152,6 +152,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                         while(chain != NULL)
                         {
                             Concept *cmatch = chain->c;
+                            chain = chain->next;
                             if(!Variable_hasVariable(&cmatch->term, true, true, true))
                             {
                                 Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
@@ -190,7 +191,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     }
                                 }
                             }
-                            chain = chain->next;
                         }
                     }
                 }
