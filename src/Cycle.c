@@ -56,37 +56,22 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
-    //#pragma omp parallel for
-    //for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++) //UNIFY
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
         InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
         while(chain != NULL)
         {
             Concept *c = chain->c;
-            Event ecp = *e;
-            if(!e_hasVariable)  //concept matched to the event which doesn't have variables
+            chain = chain->next;
+            if(c != NULL)
             {
-                Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
-                if(subs.success)
+                Event ecp = *e;
+                if(!e_hasVariable)  //concept matched to the event which doesn't have variables
                 {
-                    ecp.term = e->term;
-                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                    Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+                    if(subs.success)
                     {
-                        best_decision = decision;
-                    }
-                }
-            }
-            else
-            {
-                Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
-                if(subs.success)
-                {
-                    bool success;
-                    ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
-                    if(success)
-                    {
+                        ecp.term = e->term;
                         Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                         if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                         {
@@ -94,8 +79,24 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                         }
                     }
                 }
+                else
+                {
+                    Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+                    if(subs.success)
+                    {
+                        bool success;
+                        ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
+                        if(success)
+                        {
+                            Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                            if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                            {
+                                best_decision = decision;
+                            }
+                        }
+                    }
+                }
             }
-            chain = chain->next;
         }
     }
     return best_decision;
@@ -134,15 +135,14 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         {
             best_decision = decision;
         }
-        #pragma omp parallel for
-        //for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++) //UNIFY
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        for(int i=0; i<UNIFICATION_DEPTH; i++)
         {
             InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(goal->term.atoms[i]);
             while(chain != NULL)
             {
                 Concept *c = chain->c;
-                if(Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                chain = chain->next;
+                if(c != NULL && c->id != 0 && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                 {
                     bool revised;
                     c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
@@ -165,7 +165,6 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                         }
                     }
                 }
-                chain = chain->next;
             }
         }
     }
@@ -342,6 +341,7 @@ void Cycle_Inference(long currentTime)
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+            #pragma omp parallel for
             for(int i=0; i<UNIFICATION_DEPTH; i++)
             {
                 InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
@@ -349,53 +349,56 @@ void Cycle_Inference(long currentTime)
                 {
                     Concept *c = chain->c;
                     chain = chain->next;
-                    long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
-                    if(c->priority < conceptPriorityThresholdCurrent)
+                    if(c != NULL)
                     {
-                        continue;
-                    }
-                    #pragma omp critical(stats)
-                    {
-                        countConceptsMatchedNew++;
-                        countConceptsMatched++;
-                        Stats_countConceptsMatchedTotal++;
-                    }
-                    if(c->belief.type != EVENT_TYPE_DELETED)
-                    {
-                        //use eternal belief as belief
-                        Event* belief = &c->belief;
-                        Event future_belief = c->predicted_belief;
-                        //but if there is a predicted one in the event's window, use this one
-                        if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                           labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                        long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
+                        if(c->priority < conceptPriorityThresholdCurrent)
                         {
-                            future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                            future_belief.occurrenceTime = e->occurrenceTime;
-                            belief = &future_belief;
+                            continue;
                         }
-                        //unless there is an actual belief which falls into the event's window
-                        Event project_belief = c->belief_spike;
-                        if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                           labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                        #pragma omp critical(stats)
                         {
-                            project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                            project_belief.occurrenceTime = e->occurrenceTime;
-                            belief = &project_belief;
+                            countConceptsMatchedNew++;
+                            countConceptsMatched++;
+                            Stats_countConceptsMatchedTotal++;
                         }
-                        //Check for overlap and apply inference rules
-                        if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                        if(c->belief.type != EVENT_TYPE_DELETED)
                         {
-                            Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
-                            if(PRINT_CONTROL_INFO)
+                            //use eternal belief as belief
+                            Event* belief = &c->belief;
+                            Event future_belief = c->predicted_belief;
+                            //but if there is a predicted one in the event's window, use this one
+                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
+                               labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                             {
-                                fputs("Apply rule table on ", stdout);
-                                Narsese_PrintTerm(&e->term);
-                                printf(" Priority=%f\n", priority);
-                                fputs(" and ", stdout);
-                                Narsese_PrintTerm(&c->term);
-                                puts("");
+                                future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
+                                future_belief.occurrenceTime = e->occurrenceTime;
+                                belief = &future_belief;
                             }
-                            RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                            //unless there is an actual belief which falls into the event's window
+                            Event project_belief = c->belief_spike;
+                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+                               labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                            {
+                                project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
+                                project_belief.occurrenceTime = e->occurrenceTime;
+                                belief = &project_belief;
+                            }
+                            //Check for overlap and apply inference rules
+                            if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                            {
+                                Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                                if(PRINT_CONTROL_INFO)
+                                {
+                                    fputs("Apply rule table on ", stdout);
+                                    Narsese_PrintTerm(&e->term);
+                                    printf(" Priority=%f\n", priority);
+                                    fputs(" and ", stdout);
+                                    Narsese_PrintTerm(&c->term);
+                                    puts("");
+                                }
+                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                            }
                         }
                     }
                 }

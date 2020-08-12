@@ -114,5 +114,10 @@ void InvertedAtomIndex_Print()
 
 InvtableChainElement* InvertedAtomIndex_GetInvtableChain(Atom atom)
 {
-    return invertedAtomIndex[atom];
+    InvtableChainElement* ret = NULL;
+    if(atom != 0)
+    {
+        ret = invertedAtomIndex[atom];
+    }
+    return ret;
 }

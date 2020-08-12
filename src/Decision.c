@@ -145,15 +145,14 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
                     Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                    //for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++) //UNIFY
-                    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+                    for(int i=0; i<UNIFICATION_DEPTH; i++)
                     {
                         InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(left_side.atoms[i]);
                         while(chain != NULL)
                         {
                             Concept *cmatch = chain->c;
                             chain = chain->next;
-                            if(!Variable_hasVariable(&cmatch->term, true, true, true))
+                            if(cmatch != NULL && !Variable_hasVariable(&cmatch->term, true, true, true))
                             {
                                 Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
                                 if(subs2.success)
