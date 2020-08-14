@@ -40,6 +40,6 @@
 //Methods//
 //-------//
 //Correlate current events
-void Cycle_CorrelateEvents(long currentTime);
+void Correlator_CorrelateEvents(long currentTime);
 
 #endif

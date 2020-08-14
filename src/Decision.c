@@ -223,19 +223,23 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
-Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
+Decision Decision_SuggestOperation(Concept *postc, Event *goal, long currentTime)
 {
     Decision babble_decision = {0};
-    //try motor babbling with a certain chance
-    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
+    if(goal->truth.confidence > MIN_CONFIDENCE)
     {
-        babble_decision = Decision_MotorBabbling();
-    }
-    //try matching op if didn't motor babble
-    Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
-    if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
-    {
-       return decision_suggested;
+        postc->usage = Usage_use(postc->usage, currentTime);
+        //try motor babbling with a certain chance
+        if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
+        {
+            babble_decision = Decision_MotorBabbling();
+        }
+        //try matching op if didn't motor babble
+        Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
+        if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
+        {
+           return decision_suggested;
+        }
     }
     return babble_decision;
 }

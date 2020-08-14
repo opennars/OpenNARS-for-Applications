@@ -26,18 +26,6 @@
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
 
-//doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ProcessGoalInConcept(Concept *c, Event *e, long currentTime)
-{
-    Decision decision = {0};
-    if(e->truth.confidence > MIN_CONFIDENCE)
-    {
-        c->usage = Usage_use(c->usage, currentTime);
-        decision = Decision_Suggest(c, e, currentTime);
-    }
-    return decision;
-}
-
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessGoal(Event *e, long currentTime)
 {
@@ -66,7 +54,7 @@ static Decision Cycle_ProcessGoal(Event *e, long currentTime)
                     if(subs.success)
                     {
                         ecp.term = e->term;
-                        Decision decision = Cycle_ProcessGoalInConcept(c, &ecp, currentTime);
+                        Decision decision = Decision_SuggestOperation(c, &ecp, currentTime);
                         if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                         {
                             best_decision = decision;
@@ -82,7 +70,7 @@ static Decision Cycle_ProcessGoal(Event *e, long currentTime)
                         ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                         if(success)
                         {
-                            Decision decision = Cycle_ProcessGoalInConcept(c, &ecp, currentTime);
+                            Decision decision = Decision_SuggestOperation(c, &ecp, currentTime);
                             if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                             {
                                 best_decision = decision;
@@ -116,7 +104,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Propagate subgoals, leading to decisions
-static Decision Cycle_DeriveSubgoals(long currentTime)
+static void Cycle_GoalReasoning(long currentTime)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -169,16 +157,9 @@ static Decision Cycle_DeriveSubgoals(long currentTime)
             }
         }
     }
-    return best_decision;
-}
-
-void Cycle_GoalReasoning(long currentTime)
-{
-    //process goals, allow reasoning into the future by propagating spikes from goals back to potential current events
-    Decision decision = Cycle_DeriveSubgoals(currentTime);
-    if(decision.execute && decision.operationID > 0)
+    if(best_decision.execute && best_decision.operationID > 0)
     {
-        Decision_Execute(&decision);
+        Decision_Execute(&best_decision);
         PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
     }
 }
@@ -320,7 +301,7 @@ void Cycle_Perform(long currentTime)
     Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
-    Cycle_CorrelateEvents(currentTime);
+    Correlator_CorrelateEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
     Cycle_GoalReasoning(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events

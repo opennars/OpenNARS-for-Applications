@@ -53,7 +53,7 @@ static void Correlator_PenalizeLinks(int operationID, long currentTime)
 }
 
 //Reinforce link between concept a and b (creating it if non-existent)
-static void Cycle_ReinforceLink(Event *a, Event *b, long currentTime)
+static void Correlator_ReinforceLink(Event *a, Event *b, long currentTime)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
@@ -98,7 +98,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b, long currentTime)
     }
 }
 
-void Cycle_CorrelateEvents(long currentTime)
+void Correlator_CorrelateEvents(long currentTime)
 {
     //1. process newest event
     if(belief_events.itemsAmount > 0)
@@ -122,7 +122,7 @@ void Cycle_CorrelateEvents(long currentTime)
                     {
                         if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
                         {
-                            Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition, currentTime);
+                            Correlator_ReinforceLink(&selectedBeliefs[k], &postcondition, currentTime);
                         }
                     }
                     for(int k=1; k<belief_events.itemsAmount; k++)
@@ -140,7 +140,7 @@ void Cycle_CorrelateEvents(long currentTime)
                             }
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                Cycle_ReinforceLink(precondition, &postcondition, currentTime);
+                                Correlator_ReinforceLink(precondition, &postcondition, currentTime);
                             }
                         }
                     }
