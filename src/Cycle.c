@@ -26,8 +26,8 @@
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
 
-//Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessGoal(Event *e, long currentTime)
+//Process a goal, by creating a concept, or activating an existing
+static Decision Cycle_ProcessGoalEvent(Event *e, long currentTime)
 {
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
@@ -45,6 +45,8 @@ static Decision Cycle_ProcessGoal(Event *e, long currentTime)
             chain = chain->next;
             if(c != NULL && c->processID != conceptProcessID)
             {
+                bool revised;
+                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, e, currentTime, &revised);
                 c->processID = conceptProcessID;
                 Event ecp = *e;
                 if(!e_hasVariable)  //concept matched to the event which doesn't have variables
@@ -112,7 +114,7 @@ static void Cycle_GoalReasoning(long currentTime)
         conceptProcessID++; //process the to e related concepts
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
-        Decision decision = Cycle_ProcessGoal(goal, currentTime);
+        Decision decision = Cycle_ProcessGoalEvent(goal, currentTime);
         if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
         {
             best_decision = decision;
@@ -133,8 +135,6 @@ static void Cycle_GoalReasoning(long currentTime)
                 if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                 {
                     c->processID = conceptProcessID;
-                    bool revised;
-                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
                     for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                     {
                         for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)

@@ -111,7 +111,7 @@ void Correlator_CorrelateEvents(long currentTime)
             {
                 toProcess->processed = true;
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Memory_ProcessNewBeliefEvent(toProcess, currentTime, 1.0, 0, false, true, false, false);
+                Memory_ProcessBeliefEvent(toProcess, currentTime, 1.0, 0, false, true, false, false);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1

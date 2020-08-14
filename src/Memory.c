@@ -226,7 +226,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
+void Memory_ProcessBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
 {
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -339,7 +339,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
         if(isImplication)
         {
-            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
+            Memory_ProcessBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
             return;
         }
         Memory_addCyclingEvent(event, priority, currentTime);

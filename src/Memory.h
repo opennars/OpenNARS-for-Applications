@@ -94,6 +94,6 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
 //print added event
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
 //process new belief event
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication);
+void Memory_ProcessBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication);
 
 #endif
