@@ -113,7 +113,6 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     return decision;
 }
 
-int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
     Decision decision = (Decision) {0};
@@ -222,57 +221,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Narsese_PrintTerm(&bestImp.term); puts("");
     decision.execute = true;
     return decision;
-}
-
-void Decision_AssumptionOfFailure(int operationID, long currentTime)
-{
-    assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
-    for(int j=0; j<concepts.itemsAmount; j++)
-    {
-        Concept *postc = concepts.items[j].address;
-        for(int  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
-        {
-            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
-            {
-                Table_Remove(&postc->precondition_beliefs[operationID], h);
-                h--;
-                continue;
-            }
-            Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
-            Concept *current_prec = imp.sourceConcept;
-            Event *precondition = &current_prec->belief_spike; //a. :|:
-            if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
-            {
-                assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
-                Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
-                Event op = { .type = EVENT_TYPE_BELIEF,
-                             .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
-                             .occurrenceTime = currentTime };
-                bool success;
-                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success); //(&/,a,op). :|:
-                if(success)
-                {
-                    Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
-                    {
-                        Implication negative_confirmation = imp;
-                        Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                        Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
-                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-                        negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                        assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-                        Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
-                        if(added != NULL)
-                        {
-                            added->sourceConcept = negative_confirmation.sourceConcept;
-                            added->sourceConceptId = negative_confirmation.sourceConceptId;
-                        }                                
-                        stampID--;
-                    }
-                }
-            }
-        }
-    }
 }
 
 Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)

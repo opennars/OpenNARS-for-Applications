@@ -21,30 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
-#ifndef H_CYCLE
-#define H_CYCLE
 
-///////////////////////////////////
-//  NAR Control Cycle            //
-///////////////////////////////////
-//A FIFO-like structure, that only supports put in and overwrites
-//the oldest task when full
+#ifndef CORRELATOR_H
+#define CORRELATOR_H
 
 //References//
-//-----------//
-#include "Globals.h"
+//----------//
+#include <stdbool.h>
+#include <stdio.h>
+#include "Memory.h"
 #include "Decision.h"
-#include "Inference.h"
-#include "Correlator.h"
-#include "RuleTable.h"
-#include "Variable.h"
-#include "Stats.h"
-#include "./NetworkNAR/Metric.h"
+
+//////////////////////
+//  NAR Correlator  //
+//////////////////////
+//Builds implications between events
 
 //Methods//
 //-------//
-//Apply one operating cyle
-void Cycle_Perform(long currentTime);
+//Correlate current events
+void Cycle_CorrelateEvents(long currentTime);
 
 #endif
