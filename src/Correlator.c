@@ -109,6 +109,7 @@ void Correlator_CorrelateEvents(long currentTime)
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
+                toProcess->processed = true;
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Memory_ProcessNewBeliefEvent(toProcess, currentTime, 1.0, 0, false, true, false, false);
                 Event postcondition = *toProcess;

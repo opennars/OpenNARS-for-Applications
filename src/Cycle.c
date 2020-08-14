@@ -32,7 +32,6 @@ static Decision Cycle_ProcessGoal(Event *e, long currentTime)
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
-    e->processed = true;
     Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
@@ -114,7 +113,7 @@ static void Cycle_GoalReasoning(long currentTime)
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         Decision decision = Cycle_ProcessGoal(goal, currentTime);
-        if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
+        if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
         {
             best_decision = decision;
         }
