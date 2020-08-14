@@ -27,28 +27,19 @@
 static long conceptProcessID = 0; //avoids duplicate concept processing
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
+static Decision Cycle_ProcessGoalInConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(c->usage, currentTime, false);
-        //add event as spike to the concept:
-        if(e->type == EVENT_TYPE_BELIEF)
-        {
-            c->belief_spike = *e;
-        }
-        else
-        {
-            //pass spike if the concept doesn't have a satisfying motor command
-            decision = Decision_Suggest(c, e, currentTime);
-        }
+        decision = Decision_Suggest(c, e, currentTime);
     }
     return decision;
 }
 
 //Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
+static Decision Cycle_ProcessGoal(Event *e, long currentTime)
 {
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
@@ -75,7 +66,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                     if(subs.success)
                     {
                         ecp.term = e->term;
-                        Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                        Decision decision = Cycle_ProcessGoalInConcept(c, &ecp, currentTime);
                         if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                         {
                             best_decision = decision;
@@ -91,7 +82,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                         ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                         if(success)
                         {
-                            Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                            Decision decision = Cycle_ProcessGoalInConcept(c, &ecp, currentTime);
                             if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
                             {
                                 best_decision = decision;
@@ -125,7 +116,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Propagate subgoals, leading to decisions
-static Decision Cycle_PropagateSubgoals(long currentTime)
+static Decision Cycle_DeriveSubgoals(long currentTime)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -134,7 +125,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         conceptProcessID++; //process the to e related concepts
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
-        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
+        Decision decision = Cycle_ProcessGoal(goal, currentTime);
         if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
         {
             best_decision = decision;
@@ -239,7 +230,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
+                Memory_ProcessNewBeliefEvent(toProcess, currentTime, 1.0, 0, false, true, false, false);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
@@ -279,32 +270,13 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
-void Cycle_ProcessInputGoalEvents(long currentTime)
+void Cycle_ProcessGoalReasoning(long currentTime)
 {
-    //process goals
-    Decision decision = {0};
-    if(goal_events.itemsAmount > 0)
-    {
-        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
-        if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
-        {
-            assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
-            decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        }
-    }
-    //allow reasoning into the future by propagating spikes from goals back to potential current events
-    if(!decision.execute)
-    {
-        decision = Cycle_PropagateSubgoals(currentTime);
-    }
+    //process goals, allow reasoning into the future by propagating spikes from goals back to potential current events
+    Decision decision = Cycle_DeriveSubgoals(currentTime);
     if(decision.execute && decision.operationID > 0)
     {
         Decision_Execute(&decision);
-        //reset cycling goal events after execution to avoid "residue actions"
-        for(int i=0; i<goalsSelectedCnt; i++)
-        {
-            selectedGoalsPriority[i] = 0;
-        }
         PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
     }
 }
@@ -448,7 +420,7 @@ void Cycle_Perform(long currentTime)
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_ProcessInputGoalEvents(currentTime);
+    Cycle_ProcessGoalReasoning(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
