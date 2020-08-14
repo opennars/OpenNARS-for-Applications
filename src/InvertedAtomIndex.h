@@ -43,8 +43,8 @@ typedef struct
     Concept *c;
     void *next;
 }ConceptChainElement;
-extern ConceptChainElement* conceptChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
-extern ConceptChainElement conceptChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+extern ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX];
 extern Stack conceptChainElementStack;
 extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
 

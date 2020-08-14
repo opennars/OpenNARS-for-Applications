@@ -1,7 +1,7 @@
 #include "InvertedAtomIndex.h"
 
-ConceptChainElement* conceptChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
-ConceptChainElement conceptChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX];
+ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX];
 Stack conceptChainElementStack;
 ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
 
@@ -11,7 +11,7 @@ void InvertedAtomIndex_INIT()
     {
         invertedAtomIndex[i] = NULL;
     }
-    Stack_INIT(&conceptChainElementStack, (void**) conceptChainElementStoragePointers, COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX);
+    Stack_INIT(&conceptChainElementStack, (void**) conceptChainElementStoragePointers, UNIFICATION_DEPTH*CONCEPTS_MAX);
     for(int i=0; i<UNIFICATION_DEPTH*CONCEPTS_MAX; i++)
     {
         conceptChainElementStorage[i] = (ConceptChainElement) {0};
