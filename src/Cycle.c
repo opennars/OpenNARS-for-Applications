@@ -26,7 +26,7 @@
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
 
-//Process a goal, by creating a concept, or activating an existing
+//Process a goal, by creating a concept, or activating existing, triggering choice for the best action
 static Decision Cycle_ProcessGoalEvent(Event *e, long currentTime)
 {
     Decision best_decision = {0};
