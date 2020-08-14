@@ -124,7 +124,7 @@ int Shell_ProcessInput(char *line)
             Stats_Print(currentTime);
         }
         else
-        if(!strcmp(line,"*invtable"))
+        if(!strcmp(line,"*inverted_atom_index"))
         {
             InvertedAtomIndex_Print();
         }

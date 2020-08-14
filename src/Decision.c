@@ -147,7 +147,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
                     for(int i=0; i<UNIFICATION_DEPTH; i++)
                     {
-                        InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(left_side.atoms[i]);
+                        ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(left_side.atoms[i]);
                         while(chain != NULL)
                         {
                             Concept *cmatch = chain->c;

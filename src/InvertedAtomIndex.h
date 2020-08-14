@@ -42,23 +42,23 @@ typedef struct
 {
     Concept *c;
     void *next;
-}InvtableChainElement;
-InvtableChainElement* invTableChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
-InvtableChainElement invTableChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
-Stack invTableChainElementStack;
-InvtableChainElement *invertedAtomIndex[ATOMS_MAX];
+}ConceptChainElement;
+extern ConceptChainElement* conceptChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+extern ConceptChainElement conceptChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+extern Stack conceptChainElementStack;
+extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
 
 //Methods//
 //-------//
 //Init inverted atom index
 void InvertedAtomIndex_INIT();
 //Add concept to inverted atom index
-void InvertedAtomIndex_Add(Term term, Concept *c);
+void InvertedAtomIndex_AddConcept(Term term, Concept *c);
 //Remove concept from inverted atom index
-void InvertedAtomIndex_Remove(Term term, Concept *c);
+void InvertedAtomIndex_RemoveConcept(Term term, Concept *c);
 //Print the inverted atom index
 void InvertedAtomIndex_Print();
 //Get the invtable chain with the concepts for an atom
-InvtableChainElement* InvertedAtomIndex_GetInvtableChain(Atom atom);
+ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom);
 
 #endif

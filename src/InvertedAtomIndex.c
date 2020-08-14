@@ -1,38 +1,43 @@
 #include "InvertedAtomIndex.h"
 
+ConceptChainElement* conceptChainElementStoragePointers[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+ConceptChainElement conceptChainElementStorage[COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX];
+Stack conceptChainElementStack;
+ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
+
 void InvertedAtomIndex_INIT()
 {
     for(int i=0; i<ATOMS_MAX; i++)
     {
         invertedAtomIndex[i] = NULL;
     }
-    Stack_INIT(&invTableChainElementStack, (void**) invTableChainElementStoragePointers, COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX);
+    Stack_INIT(&conceptChainElementStack, (void**) conceptChainElementStoragePointers, COMPOUND_TERM_SIZE_MAX*CONCEPTS_MAX);
     for(int i=0; i<UNIFICATION_DEPTH*CONCEPTS_MAX; i++)
     {
-        invTableChainElementStorage[i] = (InvtableChainElement) {0};
-        invTableChainElementStoragePointers[i] = NULL;
-        Stack_Push(&invTableChainElementStack, &invTableChainElementStorage[i]);
+        conceptChainElementStorage[i] = (ConceptChainElement) {0};
+        conceptChainElementStoragePointers[i] = NULL;
+        Stack_Push(&conceptChainElementStack, &conceptChainElementStorage[i]);
     }
 }
 
-void InvertedAtomIndex_Add(Term term, Concept *c)
+void InvertedAtomIndex_AddConcept(Term term, Concept *c)
 {
     for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
         {
-            InvtableChainElement *elem = invertedAtomIndex[atom];
+            ConceptChainElement *elem = invertedAtomIndex[atom];
             if(elem == NULL)
             {
-                InvtableChainElement *newElem = Stack_Pop(&invTableChainElementStack); //new item
+                ConceptChainElement *newElem = Stack_Pop(&conceptChainElementStack); //new item
                 newElem->c = c;
                 invertedAtomIndex[atom] = newElem;
             }
             else
             {
                 //search for c:
-                InvtableChainElement *previous = NULL;
+                ConceptChainElement *previous = NULL;
                 while(elem != NULL)
                 {
                     if(elem->c == c)
@@ -43,7 +48,7 @@ void InvertedAtomIndex_Add(Term term, Concept *c)
                     elem = elem->next;
                 }
                 //ok, we can add it as previous->next
-                InvtableChainElement *newElem = Stack_Pop(&invTableChainElementStack); //new item
+                ConceptChainElement *newElem = Stack_Pop(&conceptChainElementStack); //new item
                 newElem->c = c;
                 previous->next = newElem;
             }
@@ -52,15 +57,15 @@ void InvertedAtomIndex_Add(Term term, Concept *c)
     }
 }
 
-void InvertedAtomIndex_Remove(Term term, Concept *c)
+void InvertedAtomIndex_RemoveConcept(Term term, Concept *c)
 {
     for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
         {
-            InvtableChainElement *previous = NULL;
-            InvtableChainElement *elem = invertedAtomIndex[atom];
+            ConceptChainElement *previous = NULL;
+            ConceptChainElement *elem = invertedAtomIndex[atom];
             while(elem != NULL)
             {
                 if(elem->c == c) //we found c in the chain, remove it
@@ -77,7 +82,7 @@ void InvertedAtomIndex_Remove(Term term, Concept *c)
                     assert(elem->c != NULL, "A null concept was in inverted atom index!");
                     elem->c = NULL;
                     elem->next = NULL;
-                    Stack_Push(&invTableChainElementStack, elem);
+                    Stack_Push(&conceptChainElementStack, elem);
                     goto NEXT_ATOM;
                 }
                 previous = elem;
@@ -96,7 +101,7 @@ void InvertedAtomIndex_Print()
         Atom atom = i; //the atom is directly the value (from 0 to ATOMS_MAX)
         if(Narsese_IsSimpleAtom(atom))
         {
-            InvtableChainElement *elem = invertedAtomIndex[atom];
+            ConceptChainElement *elem = invertedAtomIndex[atom];
             while(elem != NULL)
             {
                 Concept *c = elem->c;
@@ -112,9 +117,9 @@ void InvertedAtomIndex_Print()
     puts("table print finish");
 }
 
-InvtableChainElement* InvertedAtomIndex_GetInvtableChain(Atom atom)
+ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom)
 {
-    InvtableChainElement* ret = NULL;
+    ConceptChainElement* ret = NULL;
     if(atom != 0)
     {
         ret = invertedAtomIndex[atom];

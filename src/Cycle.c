@@ -60,7 +60,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
-        InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
+        ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]);
         while(chain != NULL)
         {
             Concept *c = chain->c;
@@ -147,7 +147,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         Event *goal = &selectedGoals[i];
         for(int k=0; k<UNIFICATION_DEPTH; k++)
         {
-            InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(goal->term.atoms[k]);
+            ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]);
             while(chain != NULL)
             {
                 Concept *c = chain->c;
@@ -342,7 +342,7 @@ void Cycle_Inference(long currentTime)
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             for(int i=0; i<UNIFICATION_DEPTH; i++)
             {
-                InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
+                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]);
                 while(chain != NULL)
                 {
                     Concept *c = chain->c;

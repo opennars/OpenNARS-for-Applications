@@ -123,10 +123,10 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
                 HashTable_Delete(&HTconcepts, &recycleConcept->term);
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to delete was not deleted!"); )
                 //and also delete from inverted atom index:
-                InvertedAtomIndex_Remove(recycleConcept->term, recycleConcept);
+                InvertedAtomIndex_RemoveConcept(recycleConcept->term, recycleConcept);
             }
             //Add term to inverted atom index as well:
-            InvertedAtomIndex_Add(*term, recycleConcept);
+            InvertedAtomIndex_AddConcept(*term, recycleConcept);
             //proceed with recycling of the concept in the priority queue
             *recycleConcept = (Concept) {0};
             recycleConcept->term = *term;
