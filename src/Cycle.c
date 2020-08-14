@@ -32,7 +32,7 @@ static Decision Cycle_ProcessGoalInConcept(Concept *c, Event *e, long currentTim
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
-        c->usage = Usage_use(c->usage, currentTime, false);
+        c->usage = Usage_use(c->usage, currentTime);
         decision = Decision_Suggest(c, e, currentTime);
     }
     return decision;
@@ -218,7 +218,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_ProcessInputBeliefEvents(long currentTime)
+void Cycle_CorrelateEvents(long currentTime)
 {
     //1. process newest event
     if(belief_events.itemsAmount > 0)
@@ -270,7 +270,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
-void Cycle_ProcessGoalReasoning(long currentTime)
+void Cycle_GoalReasoning(long currentTime)
 {
     //process goals, allow reasoning into the future by propagating spikes from goals back to potential current events
     Decision decision = Cycle_DeriveSubgoals(currentTime);
@@ -281,7 +281,7 @@ void Cycle_ProcessGoalReasoning(long currentTime)
     }
 }
 
-void Cycle_Inference(long currentTime)
+void Cycle_BeliefReasoning(long currentTime)
 {
     //Inferences
 #if STAGE==2
@@ -418,11 +418,11 @@ void Cycle_Perform(long currentTime)
     Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
-    Cycle_ProcessInputBeliefEvents(currentTime);
+    Cycle_CorrelateEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_ProcessGoalReasoning(currentTime);
+    Cycle_GoalReasoning(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
-    Cycle_Inference(currentTime);
+    Cycle_BeliefReasoning(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }

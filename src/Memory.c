@@ -228,7 +228,6 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
 {
-    bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
@@ -243,7 +242,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
         if(target_concept != NULL)
         {
-            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
+            target_concept->usage = Usage_use(target_concept->usage, currentTime);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
@@ -271,7 +270,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
             if(source_concept != NULL)
             {
-                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                source_concept->usage = Usage_use(source_concept->usage, currentTime);
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
@@ -285,7 +284,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
         {
-            c->usage = Usage_use(c->usage, currentTime, eternalInput);
+            c->usage = Usage_use(c->usage, currentTime);
             c->priority = MAX(c->priority, priority);
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {

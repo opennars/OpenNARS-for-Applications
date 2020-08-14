@@ -31,9 +31,9 @@ double Usage_usefulness(Usage usage, long currentTime)
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }
 
-Usage Usage_use(Usage usage, long currentTime, bool eternalInput)
+Usage Usage_use(Usage usage, long currentTime)
 {
-    return (Usage) { .useCount = usage.useCount+(eternalInput ? ETERNAL_INPUT_USAGE_BOOST : 1),
+    return (Usage) { .useCount = usage.useCount + 1,
                      .lastUsed = currentTime };
 }
 
