@@ -337,9 +337,12 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     if(event->type == EVENT_TYPE_BELIEF)
     {
         bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-        if(isImplication)
+        if(isImplication || event->occurrenceTime == OCCURRENCE_ETERNAL)
         {
             Memory_ProcessBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
+        }
+        if(isImplication)
+        {
             return;
         }
         Memory_addCyclingEvent(event, priority, currentTime);
