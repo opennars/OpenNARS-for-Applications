@@ -28,12 +28,14 @@ double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+bool Decision_ProcessOperatorFeedback = false;
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
     //and add operator feedback
+    Decision_ProcessOperatorFeedback = true;
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
         Term operation = {0};

@@ -44,6 +44,7 @@ extern double DECISION_THRESHOLD;
 extern double ANTICIPATION_THRESHOLD;
 extern double ANTICIPATION_CONFIDENCE;
 extern double MOTOR_BABBLING_CHANCE;
+extern bool Decision_ProcessOperatorFeedback;
 
 //Data structure//
 //--------------//

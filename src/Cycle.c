@@ -296,6 +296,13 @@ void Cycle_RelativeForgetting(long currentTime)
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
+    //0. If there was an operation, just process the feedback and go on
+    if(Decision_ProcessOperatorFeedback)
+    {
+        Correlator_CorrelateEvents(currentTime);
+        Decision_ProcessOperatorFeedback = false;
+        return;
+    }
     //1. Remove BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
