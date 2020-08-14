@@ -24,6 +24,8 @@
 
 #include "Cycle.h"
 
+static long conceptProcessID = 0; //avoids duplicate concept processing
+
 //doing inference within the matched concept, returning whether decisionMaking should continue
 static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
@@ -48,6 +50,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
 {
+    conceptProcessID++; //process the to e related concepts
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
@@ -63,8 +66,9 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
         {
             Concept *c = chain->c;
             chain = chain->next;
-            if(c != NULL)
+            if(c != NULL && c->processID != conceptProcessID)
             {
+                c->processID = conceptProcessID;
                 Event ecp = *e;
                 if(!e_hasVariable)  //concept matched to the event which doesn't have variables
                 {
@@ -128,6 +132,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt; i++)
     {
+        conceptProcessID++; //process the related concepts for each selected goal
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
@@ -142,8 +147,9 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             {
                 Concept *c = chain->c;
                 chain = chain->next;
-                if(c != NULL && c->id != 0 && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                 {
+                    c->processID = conceptProcessID;
                     bool revised;
                     c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
                     selectedGoals[i] = c->goal_spike;
@@ -317,6 +323,7 @@ void Cycle_Inference(long currentTime)
 #if STAGE==2
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
+        conceptProcessID++; //process the related belief concepts
         long countConceptsMatched = 0;
         for(;;)
         {
@@ -349,8 +356,9 @@ void Cycle_Inference(long currentTime)
                 {
                     Concept *c = chain->c;
                     chain = chain->next;
-                    if(c != NULL)
+                    if(c != NULL && c->processID != conceptProcessID)
                     {
+                        c->processID = conceptProcessID;
                         long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
                         if(c->priority < conceptPriorityThresholdCurrent)
                         {
@@ -362,7 +370,7 @@ void Cycle_Inference(long currentTime)
                             countConceptsMatched++;
                             Stats_countConceptsMatchedTotal++;
                         }
-                        if(c->belief.type != EVENT_TYPE_DELETED)
+                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched < BELIEF_CONCEPT_MATCH_TARGET)
                         {
                             //use eternal belief as belief
                             Event* belief = &c->belief;

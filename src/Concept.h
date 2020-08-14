@@ -49,7 +49,7 @@ typedef struct {
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
     bool hasUserKnowledge;
-    bool fired;
+    long processID; //avoids duplicate processing
 } Concept;
 
 //Methods//
