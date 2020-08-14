@@ -25,6 +25,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+//References//
+//-----------//
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h> 

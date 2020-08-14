@@ -59,7 +59,7 @@ char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Narsese_Term(char *narsese);
 //Parses a Narsese string to a compound term and a tv, tv is default if not present
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, bool *isUserKnowledge, Truth *destTv);
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, Truth *destTv);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b, bool *success);
 //Parses an atomic term string to a term

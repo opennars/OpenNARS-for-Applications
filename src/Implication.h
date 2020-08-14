@@ -1,13 +1,3 @@
-#ifndef BELIEF_H
-#define BELIEF_H
-
-//////////////////////
-//  Implication     //
-//////////////////////
-//essentially allowing concepts to predict activations of others
-
-//References//
-//-----------//
 /* 
  * The MIT License
  *
@@ -32,6 +22,17 @@
  * THE SOFTWARE.
  */
 
+#ifndef IMPLICATION_H
+#define IMPLICATION_H
+
+//////////////////////
+//  Implication     //
+//////////////////////
+//essentially allowing concepts to predict activations of others
+
+//References//
+//-----------//
+
 #include "Term.h"
 #include "Stamp.h"
 
@@ -47,7 +48,6 @@ typedef struct {
     void *sourceConcept;
     long sourceConceptId; //to check whether it's still the same
     long creationTime;
-    bool isUserKnowledge;
 } Implication;
 
 //Methods//

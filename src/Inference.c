@@ -92,8 +92,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
                            .sourceConceptId = a->sourceConceptId,
-                           .creationTime = creationTime,
-                           .isUserKnowledge = a->isUserKnowledge || b->isUserKnowledge };
+                           .creationTime = creationTime };
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!

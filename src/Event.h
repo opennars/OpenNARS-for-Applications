@@ -47,7 +47,6 @@ typedef struct {
     long occurrenceTime;
     bool processed;
     long creationTime;
-    bool isUserKnowledge;
 } Event;
 
 //Methods//

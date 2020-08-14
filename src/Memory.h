@@ -55,7 +55,6 @@ typedef struct
     Term term;
     Action action;
 }Operation;
-extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern int beliefsSelectedCnt;
