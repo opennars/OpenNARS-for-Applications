@@ -226,7 +226,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -302,13 +302,13 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
+                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, true);
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
+void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised)
 {
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -337,14 +337,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!readded)
+        bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, isImplication);
+        if(isImplication)
         {
-            bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, predicted, isImplication);
-            if(isImplication)
-            {
-                return;
-            }
+            return;
         }
         Memory_addCyclingEvent(event, priority, currentTime);
     }
@@ -353,16 +350,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         Memory_addCyclingEvent(event, priority, currentTime);
     }
-    if(input || !readded) //print new tasks
-    {
-        Memory_printAddedEvent(event, priority, input, derived, revised);
-    }
+    Memory_printAddedEvent(event, priority, input, derived, revised);
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, 0, true, false, false);
 }
 
 void Memory_AddOperation(int id, Operation op)

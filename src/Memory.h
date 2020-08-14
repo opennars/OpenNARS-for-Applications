@@ -83,7 +83,7 @@ Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted);
+void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised);
 void Memory_AddInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);

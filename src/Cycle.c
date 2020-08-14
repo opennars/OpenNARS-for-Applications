@@ -162,7 +162,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
                         Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
                         Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                         IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                        Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                        Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false);
                     }
                 }
             }
