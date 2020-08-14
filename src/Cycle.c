@@ -132,7 +132,6 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt; i++)
     {
-        conceptProcessID++; //process the related concepts for each selected goal
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
@@ -140,35 +139,30 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         {
             best_decision = decision;
         }
-        for(int i=0; i<UNIFICATION_DEPTH; i++)
+        #pragma omp parallel for
+        for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
         {
-            InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(goal->term.atoms[i]);
-            while(chain != NULL)
+            Concept *c = concepts.items[concept_i].address;
+            if(Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
             {
-                Concept *c = chain->c;
-                chain = chain->next;
-                if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                bool revised;
+                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                selectedGoals[i] = c->goal_spike;
+                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                 {
-                    c->processID = conceptProcessID;
-                    bool revised;
-                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                    selectedGoals[i] = c->goal_spike;
-                    for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                    for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
-                        for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                        Implication *imp = &c->precondition_beliefs[opi].array[j];
+                        if(!Memory_ImplicationValid(imp))
                         {
-                            Implication *imp = &c->precondition_beliefs[opi].array[j];
-                            if(!Memory_ImplicationValid(imp))
-                            {
-                                Table_Remove(&c->precondition_beliefs[opi], j);
-                                j--;
-                                continue;
-                            }
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            Table_Remove(&c->precondition_beliefs[opi], j);
+                            j--;
+                            continue;
                         }
+                        Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                        Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                        IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                        Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                     }
                 }
             }
@@ -348,7 +342,6 @@ void Cycle_Inference(long currentTime)
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-            #pragma omp parallel for
             for(int i=0; i<UNIFICATION_DEPTH; i++)
             {
                 InvtableChainElement* chain = InvertedAtomIndex_GetInvtableChain(e->term.atoms[i]);
