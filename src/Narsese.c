@@ -684,3 +684,8 @@ bool Narsese_IsNonCopulaAtom(Atom atom)
             (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
             (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
 }
+
+bool Narsese_IsSimpleAtom(Atom atom)
+{
+    return Narsese_IsNonCopulaAtom(atom) && !Variable_isVariable(atom);
+}

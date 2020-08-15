@@ -88,5 +88,7 @@ bool Narsese_IsNonCopulaAtom(Atom atom);
 bool Narsese_StringEqual(char *name1, char *name2);
 //The hash code of a string
 HASH_TYPE Narsese_StringHash(char *name);
+//Whether something is a simple atom such as "cat"
+bool Narsese_IsSimpleAtom(Atom atom);
 
 #endif
