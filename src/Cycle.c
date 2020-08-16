@@ -146,7 +146,7 @@ static void Cycle_GoalReasoning(long currentTime)
                                 j--;
                                 continue;
                             }
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                            Event newGoal = Inference_GoalDeduction(goal, imp);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
                             Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false);
