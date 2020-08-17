@@ -123,7 +123,6 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
     //process selected goals
     for(int i=0; i<goalsSelectedCnt; i++)
     {
-        conceptProcessID++; //process the to e related concepts
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
@@ -139,7 +138,8 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         Event *goal = &selectedGoals[i];
         for(int k=0; k<UNIFICATION_DEPTH; k++)
         {
-            ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]);
+            ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]) };
+            ConceptChainElement* chain = &chain_extended;
             while(chain != NULL)
             {
                 Concept *c = chain->c;
