@@ -22,29 +22,43 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "InvertedAtomIndex_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashTable_Test.h"
-#include "UDP_Test.h"
+#ifndef INVERTEDATOMINDEX_H
+#define INVERTEDATOMINDEX_H
 
-void Run_Unit_Tests()
+///////////////////////////
+//  Inverted atom table  //
+///////////////////////////
+//The inverted atom table for efficient query
+
+//References//
+//////////////
+#include "Concept.h"
+#include "Stack.h"
+#include "Config.h"
+
+//Data structure//
+//--------------//
+typedef struct
 {
-    Stamp_Test();
-    FIFO_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    InvertedAtomIndex_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
-}
+    Concept *c;
+    void *next;
+}ConceptChainElement;
+extern ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern Stack conceptChainElementStack;
+extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
+
+//Methods//
+//-------//
+//Init inverted atom index
+void InvertedAtomIndex_INIT();
+//Add concept to inverted atom index
+void InvertedAtomIndex_AddConcept(Term term, Concept *c);
+//Remove concept from inverted atom index
+void InvertedAtomIndex_RemoveConcept(Term term, Concept *c);
+//Print the inverted atom index
+void InvertedAtomIndex_Print();
+//Get the invtable chain with the concepts for an atom
+ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom);
+
+#endif
