@@ -50,6 +50,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
 {
+    conceptProcessID++; //process the to e related concepts
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
@@ -58,37 +59,46 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
-    #pragma omp parallel for
-    for(int concept_i=0; concept_i<concepts.itemsAmount; concept_i++)
+    for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
-        Event ecp = *e;
-        Concept *c = concepts.items[concept_i].address;
-        if(!e_hasVariable)  //concept matched to the event which doesn't have variables
+        ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&e->term), .next = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]) };
+        ConceptChainElement* chain = &chain_extended;
+        while(chain != NULL)
         {
-            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
-            if(subs.success)
+            Concept *c = chain->c;
+            chain = chain->next;
+            if(c != NULL && c->processID != conceptProcessID)
             {
-                ecp.term = e->term;
-                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                c->processID = conceptProcessID;
+                Event ecp = *e;
+                if(!e_hasVariable)  //concept matched to the event which doesn't have variables
                 {
-                    best_decision = decision;
-                }
-            }
-        }
-        else
-        {
-            Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
-            if(subs.success)
-            {
-                bool success;
-                ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
-                if(success)
-                {
-                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                    Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+                    if(subs.success)
                     {
-                        best_decision = decision;
+                        ecp.term = e->term;
+                        Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                        if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                        {
+                            best_decision = decision;
+                        }
+                    }
+                }
+                else
+                {
+                    Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+                    if(subs.success)
+                    {
+                        bool success;
+                        ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
+                        if(success)
+                        {
+                            Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                            if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                            {
+                                best_decision = decision;
+                            }
+                        }
                     }
                 }
             }
