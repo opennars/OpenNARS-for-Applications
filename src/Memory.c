@@ -402,7 +402,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
                 return;
             }
         }
-        Memory_addCyclingEvent(event, priority, currentTime);
+        if(!predicted)
+        {
+            Memory_addCyclingEvent(event, priority, currentTime);
+        }
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
