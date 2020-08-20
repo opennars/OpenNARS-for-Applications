@@ -154,26 +154,35 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             {
                 Concept *c = chain->c;
                 chain = chain->next;
-                if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                if(c != NULL && c->processID != conceptProcessID)
                 {
                     c->processID = conceptProcessID;
-                    bool revised;
-                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                    for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                    Substitution subs = Variable_Unify(&c->term, &goal->term);
+                    if(subs.success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                     {
-                        for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                        bool revised;
+                        c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                        for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                         {
-                            Implication *imp = &c->precondition_beliefs[opi].array[j];
-                            if(!Memory_ImplicationValid(imp))
+                            for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                             {
-                                Table_Remove(&c->precondition_beliefs[opi], j);
-                                j--;
-                                continue;
+                                Implication *imp = &c->precondition_beliefs[opi].array[j];
+                                if(!Memory_ImplicationValid(imp))
+                                {
+                                    Table_Remove(&c->precondition_beliefs[opi], j);
+                                    j--;
+                                    continue;
+                                }
+                                Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                                Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                                bool success;
+                                newGoalUpdated.term = Variable_ApplySubstitute(newGoalUpdated.term, subs, &success);
+                                if(success)
+                                {
+                                    IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                    Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                                }
                             }
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                         }
                     }
                 }
