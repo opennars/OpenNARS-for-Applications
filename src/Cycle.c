@@ -479,9 +479,9 @@ void Cycle_Prediction(long currentTime)
                                                 predicted = Inference_BeliefDeduction(&cpre->belief_spike, imp);
                                             }
                                             //if the prediction is for the future though, it's too early to predict it, so use eternal if available
-                                            if(predicted.type == EVENT_TYPE_DELETED || predicted.occurrenceTime > currentTime)
+                                            if(predicted.type == EVENT_TYPE_DELETED)
                                             {
-                                                if(cpre->belief.type != EVENT_TYPE_DELETED)
+                                                if(cpre->belief.type != EVENT_TYPE_DELETED || cpre->belief.creationTime > cpre->belief_spike.creationTime)
                                                 {
                                                     predicted = Inference_BeliefDeduction(&cpre->belief, imp);
                                                 }
