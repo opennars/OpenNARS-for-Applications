@@ -3,6 +3,6 @@ burgers are tasty food
 the stranger eats a burger in the pub
 100
 who eats tasty food?
-//expected: Answer: <stranger --> (eat /1 ([tasty] & food))>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.207911
+//expected: Answer: <stranger --> (eat /1 ([tasty] & food))>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.278811
 who is in the pub?
 //expected: Answer: <stranger --> (in /1 pub)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.900000

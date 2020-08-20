@@ -45,6 +45,7 @@ void NAL_GenerateRuleTable();
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true);
+#define R2Ordered(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false);
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
 //macro for bidirectional transformation rules
@@ -97,11 +98,11 @@ R1( (! A), |-, A, Truth_Negation )
 R1( (&& A B), |-, A, Truth_StructuralDeduction )
 R1( (&& A B), |-, B, Truth_StructuralDeduction )
 //NAL6 variable introduction
-R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
-R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
-R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
-R2( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
-R2( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
+R2Ordered( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
+R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
+R2Ordered( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
+R2Ordered( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
+R2Ordered( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
 //NAL5/7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
 
 #endif
