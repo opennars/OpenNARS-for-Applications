@@ -50,7 +50,7 @@ typedef struct {
     double priority;
     bool hasUserKnowledge;
     long processID; //avoids duplicate processing
-    long processID2; //avoids duplicate processing
+    long processID2; //avoids duplicate nested processing
 } Concept;
 
 //Methods//

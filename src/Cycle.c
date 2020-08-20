@@ -373,7 +373,7 @@ void Cycle_Inference(long currentTime)
                         countConceptsMatchedNew++;
                         countConceptsMatched++;
                         Stats_countConceptsMatchedTotal++;
-                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched < BELIEF_CONCEPT_MATCH_TARGET)
+                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
                         {
                             //use eternal belief as belief
                             Event* belief = &c->belief;
@@ -432,16 +432,15 @@ void Cycle_Prediction(long currentTime)
     for(int l=0; l<goalsSelectedCnt; l++)
     {
         Event *goal = &selectedGoals[l];
-        //Concept *cpost = Memory_FindConceptByTerm(&goal->term);
-        for(int k=0; k<UNIFICATION_DEPTH; k++)
+        int conceptProcessID2 = conceptProcessID + 1;
+        for(int g=0; g<UNIFICATION_DEPTH; g++)
         {
-            ConceptChainElement chain_extended2 = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]) };
+            ConceptChainElement chain_extended2 = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[g]) };
             ConceptChainElement* chain2 = &chain_extended2;
             while(chain2 != NULL)
             {
                 Concept *cpost = chain2->c;
                 chain2 = chain2->next;
-                int conceptProcessID2 = conceptProcessID + 1;
                 if(cpost != NULL && cpost->processID2 != conceptProcessID2)
                 {
                     cpost->processID2 = conceptProcessID2;
