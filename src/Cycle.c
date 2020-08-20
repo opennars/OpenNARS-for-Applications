@@ -154,26 +154,35 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             {
                 Concept *c = chain->c;
                 chain = chain->next;
-                if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
+                if(c != NULL && c->processID != conceptProcessID)
                 {
                     c->processID = conceptProcessID;
-                    bool revised;
-                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                    for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                    Substitution subs = Variable_Unify(&c->term, &goal->term);
+                    if(subs.success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                     {
-                        for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                        bool revised;
+                        c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                        for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                         {
-                            Implication *imp = &c->precondition_beliefs[opi].array[j];
-                            if(!Memory_ImplicationValid(imp))
+                            for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                             {
-                                Table_Remove(&c->precondition_beliefs[opi], j);
-                                j--;
-                                continue;
+                                Implication *imp = &c->precondition_beliefs[opi].array[j];
+                                if(!Memory_ImplicationValid(imp))
+                                {
+                                    Table_Remove(&c->precondition_beliefs[opi], j);
+                                    j--;
+                                    continue;
+                                }
+                                Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
+                                Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                                bool success;
+                                newGoalUpdated.term = Variable_ApplySubstitute(newGoalUpdated.term, subs, &success);
+                                if(success)
+                                {
+                                    IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                    Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                                }
                             }
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
                         }
                     }
                 }
@@ -260,14 +269,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
-                    //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<beliefsSelectedCnt; k++)
-                    {
-                        if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
-                        {
-                            Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition);
-                        }
-                    }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
@@ -329,8 +330,8 @@ void Cycle_Inference(long currentTime)
 #if STAGE==2
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
+        conceptProcessID++; //process the related belief concepts
         long countConceptsMatched = 0;
-        bool fired[CONCEPTS_MAX] = {0}; //whether a concept already fired
         for(;;)
         {
             long countConceptsMatchedNew = 0;
@@ -354,112 +355,60 @@ void Cycle_Inference(long currentTime)
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-            //Main inference loop:
-            #pragma omp parallel for
-            for(int j=0; j<concepts.itemsAmount; j++)
+            for(int i=0; i<UNIFICATION_DEPTH; i++)
             {
-                Concept *c = concepts.items[j].address;
-                long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
-                if(fired[j] || c->priority < conceptPriorityThresholdCurrent)
+                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]);
+                while(chain != NULL)
                 {
-                    continue;
-                }
-                fired[j] = true;
-                //first filter based on common term (semantic relationship)
-                bool has_common_term = false;
-                for(int k=0; k<2; k++)
-                {
-                    Term current = Term_ExtractSubterm(&c->term, k+1);
-                    for(int h=0; h<2; h++)
+                    Concept *c = chain->c;
+                    chain = chain->next;
+                    if(c != NULL && c->processID != conceptProcessID)
                     {
-                        if(current.atoms[0] != 0 && subterms_of_e[h].atoms[0] != 0)
+                        c->processID = conceptProcessID;
+                        long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
+                        if(c->priority < conceptPriorityThresholdCurrent)
                         {
-                            if(Term_Equal(&current, &subterms_of_e[h]))
-                            {
-                                has_common_term = true;
-                                goto PROCEED;
-                            }
+                            continue;
                         }
-                    }
-                }
-                PROCEED:;
-                //second  filter based on precondition implication (temporal relationship)
-                bool is_temporally_related = false;
-                for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
-                {
-                    Implication imp = c->precondition_beliefs[0].array[k];
-                    Term subject = Term_ExtractSubterm(&imp.term, 1);
-                    if(Variable_Unify(&subject, &e->term).success)
-                    {
-                        is_temporally_related = true;
-                        break;
-                    }
-                }
-                if(has_common_term)
-                {
-                    #pragma omp critical(stats)
-                    {
                         countConceptsMatchedNew++;
                         countConceptsMatched++;
                         Stats_countConceptsMatchedTotal++;
-                    }
-                }
-                if(has_common_term && c->belief.type != EVENT_TYPE_DELETED)
-                {
-                    //use eternal belief as belief
-                    Event* belief = &c->belief;
-                    Event future_belief = c->predicted_belief;
-                    //but if there is a predicted one in the event's window, use this one
-                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                    {
-                        future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                        future_belief.occurrenceTime = e->occurrenceTime;
-                        belief = &future_belief;
-                    }
-                    //unless there is an actual belief which falls into the event's window
-                    Event project_belief = c->belief_spike;
-                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                    {
-                        project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                        project_belief.occurrenceTime = e->occurrenceTime;
-                        belief = &project_belief;
-                    }
-                    //Check for overlap and apply inference rules
-                    if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
-                    {
-                        Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
-                        if(PRINT_CONTROL_INFO)
+                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched < BELIEF_CONCEPT_MATCH_TARGET)
                         {
-                            fputs("Apply rule table on ", stdout);
-                            Narsese_PrintTerm(&e->term);
-                            printf(" Priority=%f\n", priority);
-                            fputs(" and ", stdout);
-                            Narsese_PrintTerm(&c->term);
-                            puts("");
-                        }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                    }
-                }
-                if(is_temporally_related)
-                {
-                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
-                    {
-                        Implication *imp = &c->precondition_beliefs[0].array[i];
-                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                        Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                        Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                        Substitution subs = Variable_Unify(&precondition, &e->term);
-                        if(subs.success)
-                        {
-                            Implication updated_imp = *imp;
-                            bool success;
-                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                            if(success)
+                            //use eternal belief as belief
+                            Event* belief = &c->belief;
+                            Event future_belief = c->predicted_belief;
+                            //but if there is a predicted one in the event's window, use this one
+                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
+                               labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                             {
-                                Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                NAL_DerivedEvent(predicted.term, predicted.occurrenceTime, predicted.truth, predicted.stamp, currentTime, priority, Truth_Expectation(imp->truth), 0, c, validation_cid);
+                                future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
+                                future_belief.occurrenceTime = e->occurrenceTime;
+                                belief = &future_belief;
+                            }
+                            //unless there is an actual belief which falls into the event's window
+                            Event project_belief = c->belief_spike;
+                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+                               labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                            {
+                                project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
+                                project_belief.occurrenceTime = e->occurrenceTime;
+                                belief = &project_belief;
+                            }
+                            //Check for overlap and apply inference rules
+                            if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                            {
+                                Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                                if(PRINT_CONTROL_INFO)
+                                {
+                                    fputs("Apply rule table on ", stdout);
+                                    Narsese_PrintTerm(&e->term);
+                                    printf(" Priority=%f\n", priority);
+                                    fputs(" and ", stdout);
+                                    Narsese_PrintTerm(&c->term);
+                                    puts("");
+                                }
+                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                             }
                         }
                     }
@@ -476,6 +425,90 @@ void Cycle_Inference(long currentTime)
         }
     }
 #endif
+}
+
+void Cycle_Prediction(long currentTime)
+{
+    for(int l=0; l<goalsSelectedCnt; l++)
+    {
+        Event *goal = &selectedGoals[l];
+        //Concept *cpost = Memory_FindConceptByTerm(&goal->term);
+        for(int k=0; k<UNIFICATION_DEPTH; k++)
+        {
+            ConceptChainElement chain_extended2 = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]) };
+            ConceptChainElement* chain2 = &chain_extended2;
+            while(chain2 != NULL)
+            {
+                Concept *cpost = chain2->c;
+                chain2 = chain2->next;
+                int conceptProcessID2 = conceptProcessID + 1;
+                if(cpost != NULL && cpost->processID2 != conceptProcessID2)
+                {
+                    cpost->processID2 = conceptProcessID2;
+                    Substitution subs = Variable_Unify(&cpost->term, &goal->term);
+                    if(subs.success)
+                    {
+                        for(int h=0; h<cpost->precondition_beliefs[0].itemsAmount; h++)
+                        {
+                            if(!Memory_ImplicationValid(&cpost->precondition_beliefs[0].array[h]))
+                            {
+                                Table_Remove(&cpost->precondition_beliefs[0], h--);
+                                continue;
+                            }
+                            Implication *imp = &cpost->precondition_beliefs[0].array[h];
+                            assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                            Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
+                            Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
+                            conceptProcessID++; //process the matching precondition concepts
+                            for(int k=0; k<UNIFICATION_DEPTH; k++)
+                            {
+                                ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&precondition), .next = InvertedAtomIndex_GetConceptChain(precondition.atoms[k]) };
+                                ConceptChainElement* chain = &chain_extended;
+                                while(chain != NULL)
+                                {
+                                    Concept *cpre = chain->c;
+                                    chain = chain->next;
+                                    if(cpre != NULL && cpre->processID != conceptProcessID && Variable_Unify(&precondition, &cpre->term).success) //general precondition matched to specific precondition concept
+                                    {
+                                        cpre->processID = conceptProcessID;
+                                        if(subs.success)
+                                        {
+                                            Event predicted = {0};
+                                            //use belief spike to make a prediction
+                                            if(cpre->belief_spike.type != EVENT_TYPE_DELETED)
+                                            {
+                                                predicted = Inference_BeliefDeduction(&cpre->belief_spike, imp);
+                                            }
+                                            //if the prediction is for the future though, it's too early to predict it, so use eternal if available
+                                            if(predicted.type == EVENT_TYPE_DELETED || predicted.occurrenceTime > currentTime)
+                                            {
+                                                if(cpre->belief.type != EVENT_TYPE_DELETED)
+                                                {
+                                                    predicted = Inference_BeliefDeduction(&cpre->belief, imp);
+                                                }
+                                            }
+                                            #pragma omp critical(Memory)
+                                            {
+                                                if(predicted.type != EVENT_TYPE_DELETED)
+                                                {
+                                                    bool success;
+                                                    predicted.term = Variable_ApplySubstitute(predicted.term, subs, &success);
+                                                    if(success)
+                                                    {
+                                                        Memory_AddEvent(&predicted, currentTime, 1, 0, false, true, false, false, true);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Cycle_RelativeForgetting(long currentTime)
@@ -495,6 +528,7 @@ void Cycle_RelativeForgetting(long currentTime)
         Concept *c = concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
+        
     }
     //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
     if(ontology_handling)
@@ -525,6 +559,7 @@ void Cycle_Perform(long currentTime)
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
+    Cycle_Prediction(currentTime);
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);

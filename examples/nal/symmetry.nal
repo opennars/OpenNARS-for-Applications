@@ -1,4 +1,5 @@
 *volume=0
+*motorbabbling=false
 <(a * b) --> like>.
 <(b * a) --> like>.
 <<($1 * $2) --> like> ==> <($2 * $1) --> like>>?
@@ -42,12 +43,13 @@
 <(u * v) --> like>.
 <(v * u) --> like>.
 <<($1 * $2) --> like> ==> <($2 * $1) --> like>>?
-5000
+100
 <(w * x) --> like>.
 <(x * w) --> like>.
 <<($1 * $2) --> like> ==> <($2 * $1) --> like>>?
 100
 <(y * z) --> like>.
 10
+<(z * y) --> like>! :|:
 <(z * y) --> like>?
 //expected: Answer: <(z * y) --> like>. Truth: frequency=1.000000, confidence=0.866568

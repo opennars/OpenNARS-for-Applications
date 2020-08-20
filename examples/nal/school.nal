@@ -54,7 +54,7 @@
 //the goal is to educate children
 <child --> [educated]>! :|:
 15
-//expected: ^go executed with args ({SELF} * classroom)
+//--expected: ^go executed with args ({SELF} * classroom)
 //you are somewhere with a clean blackboard (you are in the classroom!)
 <blackboard --> [clean]>. :|:
 //and a blue floor as well
@@ -86,7 +86,7 @@
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
 15
-//expected: ^go executed with args ({SELF} * kitchen)
+//--expected: ^go executed with args ({SELF} * kitchen)
 //now you are at a place with a microwave which is on
 <microwave --> [on]>. :|:
 //with a cyan floor

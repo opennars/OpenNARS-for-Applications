@@ -1,4 +1,5 @@
 *volume=0
+*motorbabbling=false
 //Stressed people tend to smoke
 <<$1 --> [stressed]> ==> <$1 --> [smokes]>>. {1.0 0.99}
 //A smoker befriended with someone else often makes the other person smoke as well
@@ -14,9 +15,11 @@
 <{jonas} --> (friend /1 {angelika})>.
 100
 //Jonas has asthma?
+<{jonas} --> [asthma]>! :|:
 <{jonas} --> [asthma]>?
 //expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
 //Angelika has asthma?
+<{angelika} --> [asthma]>! :|:
 <{angelika} --> [asthma]>?
 //expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
 100
@@ -24,8 +27,10 @@
 <{jonas} --> [stressed]>.
 100
 //Jonas has asthma?
+<{jonas} --> [asthma]>! :|:
 <{jonas} --> [asthma]>?
 //expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
 //Angelika has asthma?
+<{angelika} --> [asthma]>! :|:
 <{angelika} --> [asthma]>?
 //expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
