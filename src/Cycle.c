@@ -61,7 +61,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     for(int i=0; i<UNIFICATION_DEPTH; i++)
     {
-        ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&e->term), .next = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]) };
+        ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&e->term), .next = InvertedAtomIndex_GetConceptChain(e->term.atoms[i], i) };
         ConceptChainElement* chain = &chain_extended;
         while(chain != NULL)
         {
@@ -148,7 +148,7 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
         Event *goal = &selectedGoals[i];
         for(int k=0; k<UNIFICATION_DEPTH; k++)
         {
-            ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]) };
+            ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k], k) };
             ConceptChainElement* chain = &chain_extended;
             while(chain != NULL)
             {
@@ -354,7 +354,7 @@ void Cycle_Inference(long currentTime)
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             for(int i=0; i<UNIFICATION_DEPTH; i++)
             {
-                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]);
+                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i], i);
                 while(chain != NULL)
                 {
                     Concept *c = chain->c;

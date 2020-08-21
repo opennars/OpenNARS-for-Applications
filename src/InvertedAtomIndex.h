@@ -43,10 +43,10 @@ typedef struct
     Concept *c;
     void *next;
 }ConceptChainElement;
-extern ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX];
-extern ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX*UNIFICATION_DEPTH];
+extern ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX*UNIFICATION_DEPTH];
 extern Stack conceptChainElementStack;
-extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
+extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX][UNIFICATION_DEPTH];
 
 //Methods//
 //-------//
@@ -59,6 +59,6 @@ void InvertedAtomIndex_RemoveConcept(Term term, Concept *c);
 //Print the inverted atom index
 void InvertedAtomIndex_Print();
 //Get the invtable chain with the concepts for an atom
-ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom);
+ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom, int i);
 
 #endif

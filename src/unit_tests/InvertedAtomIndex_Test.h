@@ -25,43 +25,45 @@
 void InvertedAtomIndex_Test()
 {
     puts(">>Inverted atom index test start");
-    NAR_INIT();
-    Term term = Narsese_Term("<a --> (b & c)>");
-    Concept c = { .term = term };
+    NAR_INIT();                                  // 1 2 3 4 5 6 7   heap index
+    Term term = Narsese_Term("<a --> (b & c)>"); // : a &     b c   atoms
+    Concept c = { .term = term };                // 0 1 2 3 4 5 6   C index
     InvertedAtomIndex_AddConcept(term, &c);
     InvertedAtomIndex_Print();
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")]->c == &c, "There was no concept reference added for key a!");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")]->c == &c, "There was no concept reference added for key b!");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")]->c == &c, "There was no concept reference added for key c!");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex(":")] == NULL, "There was a concept reference added for key inheritance!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")][1]->c == &c, "There was no concept reference added for key a!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][5]->c == &c, "There was no concept reference added for key b!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")][6]->c == &c, "There was no concept reference added for key c!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex(":")][0] == NULL, "There was a concept reference added for key inheritance!");
     InvertedAtomIndex_RemoveConcept(term, &c);
     InvertedAtomIndex_Print();
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")] == NULL, "Concept reference was not removed for key a!");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")] == NULL, "Concept reference was not removed for key b!");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")] == NULL, "Concept reference was not removed for key c!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")][1] == NULL, "Concept reference was not removed for key a!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][5] == NULL, "Concept reference was not removed for key b!");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")][6] == NULL, "Concept reference was not removed for key c!");
     InvertedAtomIndex_AddConcept(term, &c);
-    Term term2 = Narsese_Term("<b --> d>");
-    Concept c2 = { .term = term2 };
+    Term term2 = Narsese_Term("<b --> d>"); // : b d 
+    Concept c2 = { .term = term2 };         // 0 1 2
     InvertedAtomIndex_AddConcept(term2, &c2);
     InvertedAtomIndex_Print();
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")]->c == &c, "There was no concept reference added for key a! (2)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")]->c == &c, "There was no concept reference added for key b! (2)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")]->c == &c, "There was no concept reference added for key c! (2)");
-    assert(((ConceptChainElement*) invertedAtomIndex[Narsese_AtomicTermIndex("b")]->next)->c == &c2, "There was no concept2 reference added for key b! (2)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")]->c == &c2, "There was no concept2 reference added for key d! (2)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")][1]->c == &c, "There was no concept reference added for key a! (2)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][5]->c == &c, "There was no concept reference added for key b! (2)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][1]->c == &c2, "There was no concept reference added for key b! (2')");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")][6]->c == &c, "There was no concept reference added for key c! (2)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")][2]->c == &c2, "There was no concept2 reference added for key d! (2')");
     InvertedAtomIndex_RemoveConcept(term, &c);
     puts("after removal");
     InvertedAtomIndex_Print();
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")]->c == &c2, "There was no concept2 reference remaining for key b! (3)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")]->c == &c2, "There was no concept2 reference remaining for key d! (3)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")] == NULL, "Concept reference was not removed for key a! (3)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")] == NULL, "Concept reference was not removed for key c! (3)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][1]->c == &c2, "There was no concept2 reference remaining for key b! (3')");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")][2]->c == &c2, "There was no concept2 reference remaining for key d! (3')");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")][1] == NULL, "Concept reference was not removed for key a! (3)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][5] == NULL, "Concept reference was not removed for key b! (3)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")][6] == NULL, "Concept reference was not removed for key c! (3)");
     InvertedAtomIndex_RemoveConcept(term2, &c2);
     puts("after removal2");
     InvertedAtomIndex_Print();
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")] == NULL, "Concept reference was not removed for key a! (4)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")] == NULL, "Concept reference was not removed for key b! (4)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")] == NULL, "Concept reference was not removed for key c! (4)");
-    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")] == NULL, "Concept reference was not removed for key d! (4)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("a")][1] == NULL, "Concept reference was not removed for key a! (4)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][5] == NULL, "Concept reference was not removed for key b! (4)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")][6] == NULL, "Concept reference was not removed for key c! (4)");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")][1] == NULL, "Concept reference was not removed for key b! (4')");
+    assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")][2] == NULL, "Concept reference was not removed for key d! (4')");
     puts(">>Inverted atom index test successul");
 }
