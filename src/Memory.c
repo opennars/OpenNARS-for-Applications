@@ -371,7 +371,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         double complexity = Term_Complexity(&event->term);
         priority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
         return;
     }
