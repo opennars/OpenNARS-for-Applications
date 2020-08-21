@@ -124,6 +124,11 @@ int Shell_ProcessInput(char *line)
             Stats_Print(currentTime);
         }
         else
+        if(!strcmp(line,"*inverted_atom_index"))
+        {
+            InvertedAtomIndex_Print();
+        }
+        else
         if(!strcmp(line,"*concepts"))
         {
             for(int i=0; i<concepts.itemsAmount; i++)

@@ -90,6 +90,7 @@ void Memory_INIT()
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
     Memory_ResetEvents();
+    InvertedAtomIndex_INIT();
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         operations[i] = (Operation) {0};
@@ -124,7 +125,11 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to delete does not exist!"); )
                 HashTable_Delete(&HTconcepts, &recycleConcept->term);
                 IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to delete was not deleted!"); )
+                //and also delete from inverted atom index:
+                InvertedAtomIndex_RemoveConcept(recycleConcept->term, recycleConcept);
             }
+            //Add term to inverted atom index as well:
+            InvertedAtomIndex_AddConcept(*term, recycleConcept);
             //proceed with recycling of the concept in the priority queue
             *recycleConcept = (Concept) {0};
             recycleConcept->term = *term;
@@ -366,7 +371,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
         double complexity = Term_Complexity(&event->term);
         priority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
         return;
     }

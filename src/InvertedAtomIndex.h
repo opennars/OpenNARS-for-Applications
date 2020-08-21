@@ -22,32 +22,43 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h> 
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifndef INVERTEDATOMINDEX_H
+#define INVERTEDATOMINDEX_H
 
-#include "Metric.h"
+///////////////////////////
+//  Inverted atom table  //
+///////////////////////////
+//The inverted atom table for efficient query
 
-static int graphite_sockfd = 0;
+//References//
+//////////////
+#include "Concept.h"
+#include "Stack.h"
+#include "Config.h"
 
-void Metric_send( const char* path, int value)
+//Data structure//
+//--------------//
+typedef struct
 {
-    char message[GRAPHITE_MAX_MSG_LEN] = {0};
-    if(graphite_sockfd == 0)
-    {
-        graphite_sockfd = UDP_INIT_Sender();
-    }
-    sprintf(message, "%s:%d|c", path, value);
-    assert(strlen(message) < GRAPHITE_MAX_MSG_LEN, "Metric Graphite msg too long!");
-    UDP_SendData(graphite_sockfd, 
-                 GRAPHITE_IP_ADDRESS, 
-                 GRAPHITE_STATSD_PORT, 
-                 message, 
-                 GRAPHITE_MAX_MSG_LEN);
-}
+    Concept *c;
+    void *next;
+}ConceptChainElement;
+extern ConceptChainElement* conceptChainElementStoragePointers[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern ConceptChainElement conceptChainElementStorage[UNIFICATION_DEPTH*CONCEPTS_MAX];
+extern Stack conceptChainElementStack;
+extern ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
+
+//Methods//
+//-------//
+//Init inverted atom index
+void InvertedAtomIndex_INIT();
+//Add concept to inverted atom index
+void InvertedAtomIndex_AddConcept(Term term, Concept *c);
+//Remove concept from inverted atom index
+void InvertedAtomIndex_RemoveConcept(Term term, Concept *c);
+//Print the inverted atom index
+void InvertedAtomIndex_Print();
+//Get the invtable chain with the concepts for an atom
+ConceptChainElement* InvertedAtomIndex_GetConceptChain(Atom atom);
+
+#endif

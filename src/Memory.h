@@ -33,6 +33,7 @@
 //References//
 //////////////
 #include "Concept.h"
+#include "InvertedAtomIndex.h"
 #include "PriorityQueue.h"
 #include "Config.h"
 #include "HashTable.h"
