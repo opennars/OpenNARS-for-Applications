@@ -316,6 +316,8 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
         Decision_Execute(&decision);
         //reset cycling goal events after execution to avoid "residue actions"
         PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
+        //also don't re-add the selected goal:
+        goalsSelectedCnt = 0;
     }
 }
 
