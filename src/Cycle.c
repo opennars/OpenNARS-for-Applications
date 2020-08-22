@@ -342,19 +342,14 @@ void Cycle_Inference(long currentTime)
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
             Event *e = &selectedBeliefs[i];
-            Term subterms_of_e[2] = {0}; //subterms up to level 1
-            for(int j=0; j<2; j++)
-            {
-                subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
-            }
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-            for(int i=0; i<UNIFICATION_DEPTH; i++)
+            for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
-                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]);
+                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
                 while(chain != NULL)
                 {
                     Concept *c = chain->c;
