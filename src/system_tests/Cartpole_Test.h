@@ -15,7 +15,7 @@ static void NAR_CP_Right()
 }
 static double successes = 0;
 static double failures = 0;
-void NAR_Cartpole(long iterations)
+void NAR_Cartpole(int64_t iterations)
 {
     int t=0;
     NAR_INIT();

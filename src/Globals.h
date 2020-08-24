@@ -25,6 +25,8 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h> 
@@ -59,7 +61,7 @@ void Globals_assert(bool b, char* message);
 //Number of elements of compile time allocated array:
 #define NUM_ELEMENTS(array) (sizeof(array)/sizeof(array[0]))
 //Generic hash function on byte array
-#define HASH_TYPE long
+#define HASH_TYPE uint32_t
 HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
 //Random number generator for reproducibility across platforms
 int myrand(void);

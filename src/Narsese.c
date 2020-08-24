@@ -302,18 +302,18 @@ HashTable HTatoms;
 VMItem* HTatoms_storageptrs[ATOMS_MAX];
 VMItem HTatoms_storage[ATOMS_MAX];
 VMItem* HTatoms_HT[ATOMS_HASHTABLE_BUCKETS];
-int term_index = 0;
+int32_t term_index = 0;
 
 //Returns the memoized index of an already seen atomic term
 int Narsese_AtomicTermIndex(char *name)
 {
     char blockname[ATOMIC_TERM_LEN_MAX] = {0};
     strncpy(blockname, name, ATOMIC_TERM_LEN_MAX-1);
-    long ret_index = -1;
+    int ret_index = -1;
     void* retptr = HashTable_Get(&HTatoms, blockname);
     if(retptr != NULL)
     {
-        ret_index = (long) retptr; //we got the value
+        ret_index = (int) retptr; //we got the value
     }
     if(name[0] == '^')
     {

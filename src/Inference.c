@@ -26,9 +26,9 @@
 #include "Term.h"
 
 #define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp); \
-                              long creationTime = MAX(a->creationTime, b->creationTime);
+                              uint32_t creationTime = MAX(a->creationTime, b->creationTime);
 #define DERIVATION_STAMP_AND_TIME(a,b) DERIVATION_STAMP(a,b) \
-                long conclusionTime = b->occurrenceTime; \
+                uint32_t conclusionTime = b->occurrenceTime; \
                 Truth truthA = Truth_Projection(a->truth, a->occurrenceTime, conclusionTime); \
                 Truth truthB = b->truth;
                 
@@ -112,7 +112,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
 }
 
 //{Event a.} |- Event a. updated to currentTime
-Event Inference_EventUpdate(Event *ev, long currentTime)
+Event Inference_EventUpdate(Event *ev, uint32_t currentTime)
 {
     Event ret = *ev;
     ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
@@ -121,7 +121,7 @@ Event Inference_EventUpdate(Event *ev, long currentTime)
 }
 
 //{Event (&/,a,op())!, Event a.} |- Event op()!
-Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime)
+Event Inference_OperationDeduction(Event *compound, Event *component, uint32_t currentTime)
 {
     DERIVATION_STAMP(component,compound)
     Event compoundUpdated = Inference_EventUpdate(compound, currentTime);
@@ -135,7 +135,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
 }
 
 //{Event a!, Event a!} |- Event a! (revision and choice)
-Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised)
+Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, uint32_t currentTime, bool *revised)
 {
     if(revised != NULL)
     {

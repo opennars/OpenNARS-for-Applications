@@ -24,10 +24,10 @@
 
 #include "Cycle.h"
 
-static long conceptProcessID = 0; //avoids duplicate concept processing
+static uint32_t conceptProcessID = 0; //avoids duplicate concept processing
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
+static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, uint32_t currentTime)
 {
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
@@ -48,7 +48,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 }
 
 //Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
+static Decision Cycle_ProcessSensorimotorEvent(Event *e, uint32_t currentTime)
 {
     conceptProcessID++; //process the to e related concepts
     Decision best_decision = {0};
@@ -127,7 +127,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Propagate subgoals, leading to decisions
-static Decision Cycle_PropagateSubgoals(long currentTime)
+static Decision Cycle_PropagateSubgoals(uint32_t currentTime)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -229,7 +229,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_PushEvents(long currentTime)
+void Cycle_PushEvents(uint32_t currentTime)
 {
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
@@ -241,7 +241,7 @@ void Cycle_PushEvents(long currentTime)
     }
 }
 
-void Cycle_ProcessInputBeliefEvents(long currentTime)
+void Cycle_ProcessInputBeliefEvents(uint32_t currentTime)
 {
     //1. process newest event
     if(belief_events.itemsAmount > 0)
@@ -293,7 +293,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
-void Cycle_ProcessInputGoalEvents(long currentTime)
+void Cycle_ProcessInputGoalEvents(uint32_t currentTime)
 {
     //process goals
     Decision decision = {0};
@@ -321,20 +321,20 @@ void Cycle_ProcessInputGoalEvents(long currentTime)
     }
 }
 
-void Cycle_Inference(long currentTime)
+void Cycle_Inference(uint32_t currentTime)
 {
     //Inferences
 #if STAGE==2
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
         conceptProcessID++; //process the related belief concepts
-        long countConceptsMatched = 0;
+        uint32_t countConceptsMatched = 0;
         for(;;)
         {
-            long countConceptsMatchedNew = 0;
+            uint32_t countConceptsMatchedNew = 0;
             //Adjust dynamic firing threshold: (proportional "self"-control)
             double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
-            long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
+            uint32_t countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
             double set_point = BELIEF_CONCEPT_MATCH_TARGET;
             double process_value = countConceptsMatchedAverage; 
             double error = process_value - set_point;
@@ -357,7 +357,7 @@ void Cycle_Inference(long currentTime)
                     if(c != NULL && c->processID != conceptProcessID)
                     {
                         c->processID = conceptProcessID;
-                        long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
+                        uint32_t validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
                         if(c->priority < conceptPriorityThresholdCurrent)
                         {
                             continue;
@@ -419,7 +419,7 @@ void Cycle_Inference(long currentTime)
 #endif
 }
 
-void Cycle_Prediction(long currentTime)
+void Cycle_Prediction(uint32_t currentTime)
 {
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
@@ -477,7 +477,7 @@ void Cycle_Prediction(long currentTime)
     }
 }
 
-void Cycle_RelativeForgetting(long currentTime)
+void Cycle_RelativeForgetting(uint32_t currentTime)
 {
     //Apply event forgetting:
     for(int i=0; i<cycling_belief_events.itemsAmount; i++)
@@ -515,7 +515,7 @@ void Cycle_RelativeForgetting(long currentTime)
     PriorityQueue_Rebuild(&cycling_goal_events);
 }
 
-void Cycle_Perform(long currentTime)
+void Cycle_Perform(uint32_t currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
     //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)

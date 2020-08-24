@@ -82,10 +82,10 @@ void Memory_INIT();
 //Find a concept
 Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
-Concept* Memory_Conceptualize(Term *term, long currentTime);
+Concept* Memory_Conceptualize(Term *term, uint32_t currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted);
-void Memory_AddInputEvent(Event *event, long currentTime);
+void Memory_AddEvent(Event *event, uint32_t currentTime, double priority, uint32_t occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted);
+void Memory_AddInputEvent(Event *event, uint32_t currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)

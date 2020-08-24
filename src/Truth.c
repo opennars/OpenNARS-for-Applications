@@ -82,9 +82,9 @@ Truth Truth_Eternalize(Truth v)
     return (Truth) { .frequency = v.frequency, .confidence = Truth_w2c(v.confidence) };
 }
 
-Truth Truth_Projection(Truth v, long originalTime, long targetTime)
+Truth Truth_Projection(Truth v, uint32_t originalTime, uint32_t targetTime)
 {
-    double difference = labs(targetTime - originalTime);
+    double difference = fabs(((double) targetTime) - ((double) originalTime));
     return originalTime == OCCURRENCE_ETERNAL ? 
            v : (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference) };
 }

@@ -27,16 +27,16 @@ void FIFO_Test()
     puts(">>FIFO test start");
     FIFO fifo = {0};
     //First, evaluate whether the fifo works, not leading to overflow
-    for(int i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
+    for(uint32_t i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
         Event event1 = { .term = Narsese_AtomicTerm("test"), 
                          .type = EVENT_TYPE_BELIEF, 
                          .truth = { .frequency = 1.0, .confidence = 0.9 },
                          .stamp = { .evidentalBase = { i } }, 
-                         .occurrenceTime = FIFO_SIZE*2 - i*10 };
+                         .occurrenceTime = FIFO_SIZE*200 - i*10 };
         FIFO_Add(&event1, &fifo);
     }
-    for(int i=0; i<FIFO_SIZE; i++)
+    for(uint32_t i=0; i<FIFO_SIZE; i++)
     {
         assert(FIFO_SIZE-i == fifo.array[0][i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }

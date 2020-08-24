@@ -103,7 +103,7 @@ void Stamp_print(Stamp *stamp)
         {
             break;
         }
-        printf("%ld,", stamp->evidentalBase[i]);
+        printf("%" PRIu32 ",", stamp->evidentalBase[i]);
     }
     puts("");
 }

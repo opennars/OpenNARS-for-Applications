@@ -42,11 +42,11 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     //for deciding occurrence time of conclusion:
-    long occurrenceTimeOffset;
+    uint32_t occurrenceTimeOffset;
     //for efficient spike propagation:
     void *sourceConcept;
-    long sourceConceptId; //to check whether it's still the same
-    long creationTime;
+    uint32_t sourceConceptId; //to check whether it's still the same
+    uint32_t creationTime;
     bool isUserKnowledge;
 } Implication;
 

@@ -50,7 +50,7 @@ typedef struct {
 //----------//
 extern double TRUTH_EVIDENTAL_HORIZON;
 extern double TRUTH_PROJECTION_DECAY;
-#define OCCURRENCE_ETERNAL -1
+#define OCCURRENCE_ETERNAL 0
 #define STRUCTURAL_TRUTH (Truth) { .frequency = 1.0, .confidence = RELIANCE }
 
 //Methods//
@@ -63,7 +63,7 @@ Truth Truth_Deduction(Truth v1, Truth v2);
 Truth Truth_Induction(Truth v1, Truth v2);
 Truth Truth_Intersection(Truth v1, Truth v2);
 Truth Truth_Eternalize(Truth v);
-Truth Truth_Projection(Truth v, long originalTime, long targetTime);
+Truth Truth_Projection(Truth v, uint32_t originalTime, uint32_t targetTime);
 void Truth_Print(Truth *truth);
 //not part of MSC:
 Truth Truth_Abduction(Truth v1, Truth v2);

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-void NAR_Pong(long iterations)
+void NAR_Pong(int64_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Pong start");
@@ -144,7 +144,7 @@ void NAR_Pong(long iterations)
             batVX = 2;
         }
         batX=MAX(0,MIN(szX-1,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
+        printf("Hits=%d misses=%d ratio=%f time=%" PRIu32 "\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
         if(iterations == -1)
         {
             nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep

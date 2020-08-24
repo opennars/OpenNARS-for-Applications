@@ -44,9 +44,9 @@ typedef struct {
     char type; //either JUDGMENT or GOAL
     Truth truth;
     Stamp stamp;
-    long occurrenceTime;
+    uint32_t occurrenceTime;
     bool processed;
-    long creationTime;
+    uint32_t creationTime;
     bool isUserKnowledge;
 } Event;
 
@@ -57,7 +57,7 @@ void Event_INIT();
 //Assign a new name to an event
 void Event_SetTerm(Event *event, Term term);
 //construct an input event
-Event Event_InputEvent(Term term, char type, Truth truth, long currentTime);
+Event Event_InputEvent(Term term, char type, Truth truth, uint32_t currentTime);
 //print event
 void Event_Print(Event *event);
 //Whether two events are the same

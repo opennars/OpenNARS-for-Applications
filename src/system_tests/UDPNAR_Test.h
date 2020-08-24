@@ -35,7 +35,7 @@ void NAR_UDPNAR_Test()
     puts(">>UDPNAR test start");
     char *ip = "127.0.0.1";
     int port = 50001;
-    long timestep = 10000000L; //10ms
+    int64_t timestep = 10000000L; //10ms
     UDPNAR_Start(ip, port, timestep);
     NAR_AddOperation(Narsese_Term("^left"), NAR_UDPNAR_Test_op_left);
     int sockfd_sender = UDP_INIT_Sender();

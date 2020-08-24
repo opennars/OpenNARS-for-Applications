@@ -40,7 +40,7 @@ void NAR_Alien_Shoot()
     puts("NAR invoked shoot");
     NAR_Alien_Shoot_executed = true;
 }
-void NAR_Alien(long iterations)
+void NAR_Alien(int64_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Alien1 start");
@@ -100,7 +100,7 @@ void NAR_Alien(long iterations)
             NAR_Alien_Right_executed = false;
             defenderX = MIN(1.0, defenderX+0.1);
         }
-        printf("shots=%d hits=%d ratio=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
+        printf("shots=%d hits=%d ratio=%f time=%" PRIu32 "\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
         //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
         //NAR_Cycles(10);
     }

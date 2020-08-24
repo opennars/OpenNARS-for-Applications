@@ -71,7 +71,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
+static Decision Decision_ConsiderImplication(uint32_t currentTime, Event *goal, int considered_opi, Implication *imp)
 {
     Decision decision = (Decision) {0};
     IN_DEBUG
@@ -97,7 +97,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
             Truth_Print(&goal->truth);
             fputs("CONSIDERED imp truth ", stdout);
             Truth_Print(&imp->truth);
-            printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
+            printf("CONSIDERED time %" PRIu32 "\n", precondition->occurrenceTime);
             Narsese_PrintTerm(&precondition->term); puts("");
         )
         //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
@@ -114,15 +114,15 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 }
 
 int stampID = -1;
-Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
+Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, uint32_t currentTime)
 {
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
-    long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
+    uint32_t bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
     Concept *cbest_predicate = NULL;
     Decision decisionGeneral = (Decision) {0};
     Implication bestImpGeneral = {0};
-    long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
+    uint32_t bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
     Concept *cbest_predicateGeneral = NULL;
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
@@ -161,7 +161,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
                                     Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
-                                    int specific_imp_complexity = Term_Complexity(&specific_imp.term);
+                                    uint32_t specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
                                         if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
@@ -213,13 +213,13 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
     }
     //set execute and return execution
-    printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+    printf("decision expectation %f impTruth=(%f, %f): future=%" PRIu32 " ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
     Narsese_PrintTerm(&bestImp.term); puts("");
     decision.execute = true;
     return decision;
 }
 
-void Decision_AssumptionOfFailure(int operationID, long currentTime)
+void Decision_AssumptionOfFailure(int operationID, uint32_t currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
@@ -270,7 +270,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
     }
 }
 
-Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
+Decision Decision_Suggest(Concept *postc, Event *goal, uint32_t currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance

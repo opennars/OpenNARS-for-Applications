@@ -37,8 +37,8 @@
 
 //Methods//
 //-------//
-void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, 
-                     long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid);
+void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, uint32_t conclusionOccurrence, Stamp conclusionStamp, 
+                     uint32_t currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, uint32_t validation_cid);
 Term RuleTable_Reduce(Term term1, bool doublePremise);
 
 #endif

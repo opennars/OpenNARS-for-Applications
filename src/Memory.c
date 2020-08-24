@@ -104,7 +104,7 @@ Concept *Memory_FindConceptByTerm(Term *term)
     return HashTable_Get(&HTconcepts, term);
 }
 
-Concept* Memory_Conceptualize(Term *term, long currentTime)
+Concept* Memory_Conceptualize(Term *term, uint32_t currentTime)
 {
     if(Narsese_isOperation(term)) //don't conceptualize operations
     {
@@ -171,7 +171,7 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, uint32_t currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
@@ -202,7 +202,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     return false;
 }
 
-static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double priority, bool input, bool derived, bool revised)
+static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, uint32_t occurrenceTime, double priority, bool input, bool derived, bool revised)
 {
     if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
@@ -211,7 +211,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         if(occurrenceTime != OCCURRENCE_ETERNAL)
         {
-            printf(":|: occurrenceTime=%ld ", occurrenceTime);
+            printf(":|: occurrenceTime=%" PRIu32 " ", occurrenceTime);
         }
         printf("Priority=%f ", priority);
         Truth_Print(truth);
@@ -229,7 +229,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, 1, input, true, revised);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, uint32_t currentTime, double priority, uint32_t occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -359,7 +359,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
+void Memory_AddEvent(Event *event, uint32_t currentTime, double priority, uint32_t occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -416,7 +416,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_AddInputEvent(Event *event, long currentTime)
+void Memory_AddInputEvent(Event *event, uint32_t currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
 }

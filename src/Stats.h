@@ -37,13 +37,13 @@
 
 //Global vars//
 //-----------//
-extern long Stats_countConceptsMatchedTotal;
-extern long Stats_countConceptsMatchedMax;
+extern uint32_t Stats_countConceptsMatchedTotal;
+extern uint32_t Stats_countConceptsMatchedMax;
 //From Narsese module, for stats purposes:
 extern HashTable HTatoms;
 
 //Methods//
 //-------//
-void Stats_Print(long currentTime);
+void Stats_Print(uint32_t currentTime);
 
 #endif

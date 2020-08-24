@@ -24,7 +24,7 @@
 
 #include "NAR.h"
 
-long currentTime = 1;
+uint32_t currentTime = 1;
 static bool initialized = false;
 
 void NAR_INIT()
@@ -99,8 +99,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
         Truth best_truth_projected = {0};
         Term best_term = {0};
-        long answerOccurrenceTime = OCCURRENCE_ETERNAL;
-        long answerCreationTime = 0;
+        uint32_t answerOccurrenceTime = OCCURRENCE_ETERNAL;
+        uint32_t answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
@@ -184,11 +184,11 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             Narsese_PrintTerm(&best_term);
             if(answerOccurrenceTime == OCCURRENCE_ETERNAL)
             {
-                printf(". creationTime=%ld ", answerCreationTime);
+                printf(". creationTime=%" PRIu32 " ", answerCreationTime);
             }
             else
             {
-                printf(". :|: occurrenceTime=%ld creationTime=%ld ", answerOccurrenceTime, answerCreationTime);
+                printf(". :|: occurrenceTime=%" PRIu32 " creationTime=%" PRIu32 " ", answerOccurrenceTime, answerCreationTime);
             }
             Truth_Print(&best_truth);
         }

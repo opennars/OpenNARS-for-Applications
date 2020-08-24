@@ -30,7 +30,7 @@ void PriorityQueue_Test()
     Item items[n_items];
     for(int i=0; i<n_items; i++)
     {
-        items[i].address = (void*) ((long) i+1);
+        items[i].address = (void*) ((uint32_t) i+1);
         items[i].priority = 0;
     }
     PriorityQueue_RESET(&queue, items, n_items);
@@ -39,12 +39,12 @@ void PriorityQueue_Test()
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0/((double) (n_items*2-i)));
         if(feedback.added)
         {
-            printf("item was added %f %ld\n", feedback.addedItem.priority, (long)feedback.addedItem.address);
+            printf("item was added %f %" PRIu32 "\n", feedback.addedItem.priority, (uint32_t)feedback.addedItem.address);
         }
         if(feedback.evicted)
         {
             double epsilon = 0.0001;
-            printf("evicted item %f %ld\n", feedback.evictedItem.priority, (long)feedback.evictedItem.address);
+            printf("evicted item %f %" PRIu32 "\n", feedback.evictedItem.priority, (uint32_t)feedback.evictedItem.address);
             assert(evictions>0 || feedback.evictedItem.priority-1.0/((double) (n_items*2))<epsilon, "the evicted item has to be the lowest priority one");
             assert(queue.itemsAmount < n_items+1, "eviction should only happen when full!");
             evictions++;

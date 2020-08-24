@@ -37,7 +37,7 @@ void NAR_Pong_Stop()
 {
     NAR_Pong_Stop_executed = true;
 }
-void NAR_Pong2(long iterations)
+void NAR_Pong2(int64_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Pong start");
@@ -175,7 +175,7 @@ void NAR_Pong2(long iterations)
             batVX = 0;
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
+        printf("Hits=%d misses=%d ratio=%f time=%" PRIu32 "\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
         if(iterations == -1)
         {
             nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep

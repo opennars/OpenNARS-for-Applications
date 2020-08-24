@@ -62,8 +62,8 @@ typedef struct
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
-void Decision_AssumptionOfFailure(int operationID, long currentTime);
+void Decision_AssumptionOfFailure(int operationID, uint32_t currentTime);
 //NAR decision making rule applying when goal is an operation
-Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+Decision Decision_Suggest(Concept *goalconcept, Event *goal, uint32_t currentTime);
 
 #endif

@@ -136,7 +136,7 @@ int Shell_ProcessInput(char *line)
                 Concept *c = concepts.items[i].address;
                 assert(c != NULL, "Concept is null");
                 Narsese_PrintTerm(&c->term);
-                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %" PRIu32 ", \"lastUsed\": %" PRIu32 " }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
             }
         }
         else
@@ -147,7 +147,7 @@ int Shell_ProcessInput(char *line)
                 Event *e = cycling_belief_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
-                printf(": { \"priority\": %f, \"time\": %ld }\n", cycling_belief_events.items[i].priority, e->occurrenceTime);
+                printf(": { \"priority\": %f, \"time\": %" PRIu32 " }\n", cycling_belief_events.items[i].priority, e->occurrenceTime);
             }
         }
         else
@@ -158,7 +158,7 @@ int Shell_ProcessInput(char *line)
                 Event *e = cycling_goal_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
-                printf(": {\"priority\": %f, \"time\": %ld }\n", cycling_goal_events.items[i].priority, e->occurrenceTime);
+                printf(": {\"priority\": %f, \"time\": %" PRIu32 " }\n", cycling_goal_events.items[i].priority, e->occurrenceTime);
             }
         }
         else

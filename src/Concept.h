@@ -39,7 +39,7 @@
 //Data structure//
 //--------------//
 typedef struct {
-    long id;
+    uint32_t id;
     Usage usage;
     Term term;
     Event belief; //the highest confident eternal belief
@@ -49,7 +49,7 @@ typedef struct {
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
     bool hasUserKnowledge;
-    long processID; //avoids duplicate processing
+    uint32_t processID; //avoids duplicate processing
 } Concept;
 
 //Methods//

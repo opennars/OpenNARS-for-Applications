@@ -479,7 +479,7 @@ void Agent_Invoke()
     NAR_AddInputNarsese("eaten! :|:");
 }
 
-void NAR_Robot(long iterations)
+void NAR_Robot(int64_t iterations)
 {
     NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0.3;
@@ -490,7 +490,7 @@ void NAR_Robot(long iterations)
     buildRooms();
     for(int i=0; i<30; i++) { spawnFood(false); }
     for(int i=0; i<30; i++) { spawnFood(true); }
-    long t=0;
+    uint32_t t=0;
     while(1)
     {
         t++;
@@ -500,7 +500,7 @@ void NAR_Robot(long iterations)
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         World_Draw();
-        printf("time=%ld moves=%d move_success_ratio=%f eaten=%d reasonerStep=%ld\n", t, moves, (float) (((float) moves) / ((float) t)), eaten, currentTime);
+        printf("time=%" PRIu32 " moves=%d move_success_ratio=%f eaten=%d reasonerStep=%" PRIu32 "\n", t, moves, (float) (((float) moves) / ((float) t)), eaten, currentTime);
         Agent_Invoke();
         if(iterations == -1)
         {

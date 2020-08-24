@@ -113,7 +113,7 @@ static void NAL_GenerateReduction(char *premise1, char* conclusion)
 void NAL_GenerateRuleTable()
 {
     puts("#include \"RuleTable.h\"");
-    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, Stamp conclusionStamp, long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)\n{\ngoto RULE_0;");
+    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, uint32_t conclusionOccurrence, Stamp conclusionStamp, uint32_t currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, uint32_t validation_cid)\n{\ngoto RULE_0;");
 #define H_NAL_RULES
 #include "NAL.h"
 #undef H_NAL_RULES
@@ -125,13 +125,13 @@ void NAL_GenerateRuleTable()
     printf("RULE_%d:;\nreturn term1;\n}\n\n", ruleID);
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
+void NAL_DerivedEvent(Term conclusionTerm, uint32_t conclusionOccurrence, Truth conclusionTruth, Stamp stamp, uint32_t currentTime, double parentPriority, double conceptPriority, uint32_t occurrenceTimeOffset, Concept *validation_concept, uint32_t validation_cid)
 {
     Event e = { .term = conclusionTerm,
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
-                .occurrenceTime = conclusionOccurrence ,
+                .occurrenceTime = conclusionOccurrence,
                 .creationTime = currentTime };
     #pragma omp critical(Memory)
     {

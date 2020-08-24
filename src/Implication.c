@@ -30,5 +30,5 @@ void Implication_Print(Implication *implication)
     Term_Print(&implication->term);
     Truth_Print(&implication->truth);
     Stamp_print(&implication->stamp);
-    printf("occurrenceTimeOffset=%ld\n\n", implication->occurrenceTimeOffset);
+    printf("occurrenceTimeOffset=%" PRIu32 "\n\n", implication->occurrenceTimeOffset);
 }

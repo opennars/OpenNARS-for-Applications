@@ -44,6 +44,6 @@
 //Methods//
 //-------//
 //Apply one operating cyle
-void Cycle_Perform(long currentTime);
+void Cycle_Perform(uint32_t currentTime);
 
 #endif

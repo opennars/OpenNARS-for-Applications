@@ -36,7 +36,7 @@
 void Process_Args(int argc, char *argv[])
 {
     bool inspectionOnExit = false;
-    long iterations = -1;
+    int64_t iterations = -1;
     if(argc >= 4)
     {
         if(!strcmp(argv[3],"InspectionOnExit"))
@@ -95,7 +95,7 @@ void Process_Args(int argc, char *argv[])
         {
             char *ip = argv[2];
             int port = atoi(argv[3]);
-            long timestep = atol(argv[4]);
+            int64_t timestep = atol(argv[4]);
             bool printDerivations = !strcmp("true", argv[5]);
             PRINT_DERIVATIONS = printDerivations;
             UDPNAR_Start(ip, port, timestep);

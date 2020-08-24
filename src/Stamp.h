@@ -33,6 +33,8 @@
 //References//
 //----------//
 #include <stdbool.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include "Config.h"
 
@@ -42,7 +44,7 @@
 #define STAMP_FREE 0
 typedef struct {
     //EvidentalBase of stamp
-    long evidentalBase[STAMP_SIZE];
+    uint32_t evidentalBase[STAMP_SIZE];
 } Stamp;
 
 //Methods//

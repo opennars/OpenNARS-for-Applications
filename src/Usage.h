@@ -33,23 +33,25 @@
 //-----------//
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include "Config.h"
 
 //Data structure//
 //--------------//
 typedef struct {
     //use_count, how often it was used in total
-    long useCount;
+    uint32_t useCount;
     //age, how many cycles ago it was last used
-    long lastUsed;
+    uint32_t lastUsed;
 } Usage;
 
 //Methods//
 //-------//
 //how useful it is in respect to the current moment
-double Usage_usefulness(Usage usage, long currentTime);
+double Usage_usefulness(Usage usage, uint32_t currentTime);
 //use the item
-Usage Usage_use(Usage usage, long currentTime, bool eternalInput);
+Usage Usage_use(Usage usage, uint32_t currentTime, bool eternalInput);
 //print it
 void Usage_Print(Usage *usage);
 
