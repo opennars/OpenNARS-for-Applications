@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-void NAR_Pong(int64_t iterations)
+void NAR_Pong(int32_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Pong start");
@@ -39,7 +39,7 @@ void NAR_Pong(int64_t iterations)
     int vY = 1;
     int hits = 0;
     int misses = 0;
-    int t=0;
+    int32_t t=0;
     while(1)
     {
         if(iterations != -1 && t++ > iterations)

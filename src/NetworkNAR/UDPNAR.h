@@ -42,7 +42,7 @@
 //Methods//
 //-------//
 //Starts the UDPNAR with a reasoning speed given by timestep, example: 10000000L = 10ms
-void UDPNAR_Start(char *ip, int port, int64_t timestep);
+void UDPNAR_Start(char *ip, int port, int32_t timestep);
 //Stops the UDPNAR, cancelling its threads
 void UDPNAR_Stop();
 

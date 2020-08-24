@@ -40,7 +40,7 @@ void NAR_Alien_Shoot()
     puts("NAR invoked shoot");
     NAR_Alien_Shoot_executed = true;
 }
-void NAR_Alien(int64_t iterations)
+void NAR_Alien(int32_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Alien1 start");
@@ -52,7 +52,7 @@ void NAR_Alien(int64_t iterations)
     double alienWidth = 0.18;
     int hits = 0;
     int shots = 0;
-    int t=0;
+    int32_t t=0;
     while(1)
     {
         if(iterations != -1 && t++ > iterations)

@@ -34,7 +34,7 @@ void* Reasoner_Thread_Run(void* timestep_address)
     pthread_mutex_lock(&start_mutex);
     pthread_cond_signal(&start_cond);
     pthread_mutex_unlock(&start_mutex);
-    int64_t timestep = *((int64_t*) timestep_address);
+    int32_t timestep = *((int64_t*) timestep_address);
     assert(timestep >= 0, "Nonsensical timestep for UDPNAR!");
     while(!Stopped)
     {
@@ -77,7 +77,7 @@ void* Receive_Thread_Run(void *sockfd_address)
 pthread_t thread_reasoner, thread_receiver;
 bool Started = false;
 int receiver_sockfd; 
-void UDPNAR_Start(char *ip, int port, int64_t timestep)
+void UDPNAR_Start(char *ip, int port, int32_t timestep)
 {
     assert(!Stopped, "UDPNAR was already started!");
     Shell_NARInit();

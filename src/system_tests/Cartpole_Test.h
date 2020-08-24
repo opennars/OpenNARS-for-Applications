@@ -15,9 +15,9 @@ static void NAR_CP_Right()
 }
 static double successes = 0;
 static double failures = 0;
-void NAR_Cartpole(int64_t iterations)
+void NAR_Cartpole(int32_t iterations)
 {
-    int t=0;
+    int32_t t=0;
     NAR_INIT();
     puts(">>NAR CP start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_CP_Left); 

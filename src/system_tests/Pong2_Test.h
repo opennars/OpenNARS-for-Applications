@@ -37,7 +37,7 @@ void NAR_Pong_Stop()
 {
     NAR_Pong_Stop_executed = true;
 }
-void NAR_Pong2(int64_t iterations)
+void NAR_Pong2(int32_t iterations)
 {
     NAR_INIT();
     puts(">>NAR Pong start");
@@ -55,7 +55,7 @@ void NAR_Pong2(int64_t iterations)
     int vY = 1;
     int hits = 0;
     int misses = 0;
-    int t=0;
+    int32_t t=0;
     while(1)
     {
         t++;

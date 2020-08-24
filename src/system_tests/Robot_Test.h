@@ -479,7 +479,7 @@ void Agent_Invoke()
     NAR_AddInputNarsese("eaten! :|:");
 }
 
-void NAR_Robot(int64_t iterations)
+void NAR_Robot(int32_t iterations)
 {
     NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0.3;
@@ -490,7 +490,7 @@ void NAR_Robot(int64_t iterations)
     buildRooms();
     for(int i=0; i<30; i++) { spawnFood(false); }
     for(int i=0; i<30; i++) { spawnFood(true); }
-    uint32_t t=0;
+    int32_t t=0;
     while(1)
     {
         t++;
