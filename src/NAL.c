@@ -24,8 +24,8 @@
 
 #include "NAL.h"
 
-int ruleID = 0;
-static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
+int32_t ruleID = 0;
+static void NAL_GeneratePremisesUnifier(int32_t i, Atom atom, int32_t premiseIndex)
 {
     if(atom)
     {
@@ -45,7 +45,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
     }
 }
 
-static void NAL_GenerateConclusionSubstitution(int i, Atom atom)
+static void NAL_GenerateConclusionSubstitution(int32_t i, Atom atom)
 {
     if(atom)
     {
@@ -72,19 +72,19 @@ static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* con
     if(doublePremise) { printf("if(!doublePremise) { goto RULE_%d; }\n", ruleID); }
     if(!doublePremise) { printf("if(doublePremise) { goto RULE_%d; }\n", ruleID); }
     puts("Term substitutions[27+NUM_ELEMENTS(Narsese_RuleTableVars)] = {0}; Term subtree = {0};"); //27 because of 9 indep, 9 dep, 9 query vars
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         NAL_GeneratePremisesUnifier(i, term1.atoms[i], 1);
     }
     if(doublePremise)
     {
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             NAL_GeneratePremisesUnifier(i, term2.atoms[i], 2);
         }
     }
     puts("Term conclusion = {0};");
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i]);
     }

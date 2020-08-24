@@ -57,12 +57,12 @@ static void Memory_ResetEvents()
     FIFO_RESET(&goal_events);
     PriorityQueue_RESET(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     PriorityQueue_RESET(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
-    for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
+    for(int32_t i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
-    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    for(int32_t i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
     {
         cycling_goal_event_storage[i] = (Event) {0};
         cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
@@ -72,14 +72,14 @@ static void Memory_ResetEvents()
 static void Memory_ResetConcepts()
 {
     PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
-    for(int i=0; i<CONCEPTS_MAX; i++)
+    for(int32_t i=0; i<CONCEPTS_MAX; i++)
     {
         concept_storage[i] = (Concept) {0};
         concepts.items[i] = (Item) { .address = &(concept_storage[i]) };
     }
 }
 
-int concept_id = 0;
+uint32_t concept_id = 0;
 VMItem* HTconcepts_storageptrs[CONCEPTS_MAX];
 VMItem HTconcepts_storage[CONCEPTS_MAX];
 VMItem* HTconcepts_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept term is the index
@@ -91,7 +91,7 @@ void Memory_INIT()
     Memory_ResetConcepts();
     Memory_ResetEvents();
     InvertedAtomIndex_INIT();
-    for(int i=0; i<OPERATIONS_MAX; i++)
+    for(int32_t i=0; i<OPERATIONS_MAX; i++)
     {
         operations[i] = (Operation) {0};
     }
@@ -152,14 +152,14 @@ Concept* Memory_Conceptualize(Term *term, uint32_t currentTime)
 
 Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
-int beliefsSelectedCnt = 0;
+int32_t beliefsSelectedCnt = 0;
 Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
-int goalsSelectedCnt = 0;
+int32_t goalsSelectedCnt = 0;
 
 static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 {
-    for(int i=0; i<queue->itemsAmount; i++)
+    for(int32_t i=0; i<queue->itemsAmount; i++)
     {
         if(Event_Equal(event, queue->items[i].address))
         {
@@ -258,7 +258,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, uint32_t currentTime, double pri
                                 .isUserKnowledge = event->isUserKnowledge };
             Term sourceConceptTerm = subject;
             //now extract operation id
-            int opi = 0;
+            int32_t opi = 0;
             if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
             {
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
@@ -318,12 +318,12 @@ void Memory_ProcessNewBeliefEvent(Event *event, uint32_t currentTime, double pri
             //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
             if(ontology_handling && !predicted)
             {
-                for(int j=0; j<concepts.itemsAmount; j++)
+                for(int32_t j=0; j<concepts.itemsAmount; j++)
                 {
                     Concept *cpost = concepts.items[j].address;
                     if(cpost->hasUserKnowledge)
                     {
-                        for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
+                        for(int32_t k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
                         {
                             Implication *imp = &cpost->precondition_beliefs[0].array[k];
                             if(imp->isUserKnowledge)
@@ -421,7 +421,7 @@ void Memory_AddInputEvent(Event *event, uint32_t currentTime)
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
 }
 
-void Memory_AddOperation(int id, Operation op)
+void Memory_AddOperation(int32_t id, Operation op)
 {
     operations[id - 1] = op;
 }

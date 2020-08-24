@@ -51,7 +51,7 @@ typedef struct
 {
     double desire;
     bool execute;
-    int operationID;
+    int32_t operationID;
     Operation op;
     Term arguments;
     bool specialized;
@@ -62,7 +62,7 @@ typedef struct
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
-void Decision_AssumptionOfFailure(int operationID, uint32_t currentTime);
+void Decision_AssumptionOfFailure(int32_t operationID, uint32_t currentTime);
 //NAR decision making rule applying when goal is an operation
 Decision Decision_Suggest(Concept *goalconcept, Event *goal, uint32_t currentTime);
 

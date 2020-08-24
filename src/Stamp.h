@@ -44,7 +44,7 @@
 #define STAMP_FREE 0
 typedef struct {
     //EvidentalBase of stamp
-    uint32_t evidentalBase[STAMP_SIZE];
+    int32_t evidentalBase[STAMP_SIZE];
 } Stamp;
 
 //Methods//

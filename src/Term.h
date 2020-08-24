@@ -62,11 +62,11 @@ void Term_Print(Term *term);
 //Whether two Term's are equal completely
 bool Term_Equal(Term *a, Term *b);
 //Overwrites a subterm
-bool Term_OverrideSubterm(Term *term, int i, Term *subterm);
+bool Term_OverrideSubterm(Term *term, int32_t i, Term *subterm);
 //Extract a subterm as a term
-Term Term_ExtractSubterm(Term *term, int j);
+Term Term_ExtractSubterm(Term *term, int32_t j);
 //The complexity of a term
-int Term_Complexity(Term *term);
+int32_t Term_Complexity(Term *term);
 //Hash of a term (needed by the term->concept HashTable)
 HASH_TYPE Term_Hash(Term *term);
 

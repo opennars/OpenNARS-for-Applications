@@ -41,13 +41,13 @@
 typedef struct
 {
     void** items;
-    int stackpointer;
-    int maxElements;
+    int32_t stackpointer;
+    int32_t maxElements;
 } Stack;
 
 //Methods//
 //-------//
-void Stack_INIT(Stack *stack, void **items, int maxElements);
+void Stack_INIT(Stack *stack, void **items, int32_t maxElements);
 //Add a VMItem on the top of the stack
 void Stack_Push(Stack *stack, void *item);
 //Remove a VMItem from the top of the stack

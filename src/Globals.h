@@ -62,10 +62,10 @@ void Globals_assert(bool b, char* message);
 #define NUM_ELEMENTS(array) (sizeof(array)/sizeof(array[0]))
 //Generic hash function on byte array
 #define HASH_TYPE uint32_t
-HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
+HASH_TYPE Globals_Hash(HASH_TYPE *data, int32_t pieces);
 //Random number generator for reproducibility across platforms
-int myrand(void);
-void mysrand(unsigned int seed);
+uint32_t myrand(void);
+void mysrand(uint32_t seed);
 #define MY_RAND_MAX 32767
 
 #endif

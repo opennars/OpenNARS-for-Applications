@@ -27,9 +27,9 @@ void NAR_Alphabet_Test()
     NAR_INIT();
     puts(">>NAR Alphabet test start");
     NAR_AddInput(Narsese_AtomicTerm("a"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, false);
-    for(int i=0; i<50; i++)
+    for(int32_t i=0; i<50; i++)
     {
-        int k=i%10;
+        int32_t k=i%10;
         if(i % 3 == 0)
         {
             char c[2] = {'a'+k,0};

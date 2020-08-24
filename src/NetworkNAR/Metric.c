@@ -34,9 +34,9 @@
 
 #include "Metric.h"
 
-static int graphite_sockfd = 0;
+static int32_t graphite_sockfd = 0;
 
-void Metric_send( const char* path, int value)
+void Metric_send( const char* path, int32_t value)
 {
     char message[GRAPHITE_MAX_MSG_LEN] = {0};
     if(graphite_sockfd == 0)

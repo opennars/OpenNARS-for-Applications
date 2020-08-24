@@ -24,7 +24,7 @@
 
 #include "PriorityQueue.h"
 
-void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
+void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int32_t maxElements)
 {
     queue->items = items;
     queue->maxElements = maxElements;
@@ -33,17 +33,17 @@ void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
 
 #define at(i) (queue->items[i])
 
-static void swap(PriorityQueue *queue, int index1, int index2)
+static void swap(PriorityQueue *queue, int32_t index1, int32_t index2)
 {
     Item temp = at(index1);
     at(index1) = at(index2);
     at(index2) = temp;
 }
 
-static bool isOnMaxLevel(int i)
+static bool isOnMaxLevel(int32_t i)
 { 
-    int level=-1;
-    int n = i+1;
+    int32_t level=-1;
+    int32_t n = i+1;
     while(n)
     {
       n = n >> 1;
@@ -52,34 +52,34 @@ static bool isOnMaxLevel(int i)
     return level & 1; /*% 2*/;
 }
 
-static int parent(int i) 
+static int32_t parent(int32_t i) 
 { 
     return ((i+1)/2)-1;
 }
 
-static int grandparent(int i) 
+static int32_t grandparent(int32_t i) 
 { 
     return ((i+1)/4)-1;
 }
 
-static int leftChild(int i) 
+static int32_t leftChild(int32_t i) 
 { 
     return 2*i + 1;
 }
 
-static int leftGrandChild(int i)
+static int32_t leftGrandChild(int32_t i)
 { 
     return 4*i + 3;
 }
 
-static int smallestChild(PriorityQueue *queue, int i, bool invert) 
+static int32_t smallestChild(PriorityQueue *queue, int32_t i, bool invert) 
 { //return smallest of children or self if no children
-    int l = leftChild(i);
+    int32_t l = leftChild(i);
     if(l >= queue->itemsAmount)
     { 
         return i; //no children, return self
     }
-    int r = l+1; //right child
+    int32_t r = l+1; //right child
     if(r < queue->itemsAmount)
     {
         Item lv = at(l);
@@ -92,16 +92,16 @@ static int smallestChild(PriorityQueue *queue, int i, bool invert)
     return l;
 }
 
-static int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
+static int32_t smallestGrandChild(PriorityQueue *queue, int32_t i, bool invert)
 {//return smallest of grandchildren or self if no children
-    int l = leftGrandChild(i);
+    int32_t l = leftGrandChild(i);
     if(l >= queue->itemsAmount)
     {
         return i;
     }
     Item lv = at(l);
-    int min = l;
-    for(int r=l+1; r<queue->itemsAmount && r < l+4; r++) 
+    int32_t min = l;
+    for(int32_t r=l+1; r<queue->itemsAmount && r < l+4; r++) 
     { //iterate on three grandsiblings (they are consecutive)
         Item rv = at(r);
         if((rv.priority < lv.priority)^invert)
@@ -113,12 +113,12 @@ static int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
     return min;
 }
   
-void trickleDown(PriorityQueue *queue, int i, bool invert)
+void trickleDown(PriorityQueue *queue, int32_t i, bool invert)
 {   //assert(invert == isOnMaxLevel(i));
     while(1)
     {
         //enforce min-max property on level(i), we need to check children and grandchildren
-        int m = smallestChild(queue, i, invert);
+        int32_t m = smallestChild(queue, i, invert);
         if(m == i)
         {
             break; //no children
@@ -127,7 +127,7 @@ void trickleDown(PriorityQueue *queue, int i, bool invert)
         {
             swap(queue, i, m);
         }
-        int j = smallestGrandChild(queue, i, invert);
+        int32_t j = smallestGrandChild(queue, i, invert);
         if(j == i)
         {
             break; //no grandchildren
@@ -144,9 +144,9 @@ void trickleDown(PriorityQueue *queue, int i, bool invert)
     }
 }
 
-void bubbleUp(PriorityQueue *queue, int i)
+void bubbleUp(PriorityQueue *queue, int32_t i)
 {
-    int m;
+    int32_t m;
     m = parent(i);
     bool invert = isOnMaxLevel(i);
     if(m>=0 && ((at(i).priority > at(m).priority)^invert))
@@ -191,7 +191,7 @@ bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress, double
     {
         return false;
     }
-    int p = smallestChild(queue, 0, true);
+    int32_t p = smallestChild(queue, 0, true);
     Item item = at(p);
     swap(queue, p, queue->itemsAmount-1); //swap max with last item
     queue->itemsAmount--;
@@ -234,7 +234,7 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     return feedback;
 }
 
-bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
+bool PriorityQueue_PopAt(PriorityQueue *queue, int32_t i, void** returnItemAddress)
 {
     if(queue->itemsAmount == 0)
     {
@@ -253,7 +253,7 @@ bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)
 
 void PriorityQueue_Rebuild(PriorityQueue *queue)
 {
-    for(int i=0; i<queue->itemsAmount; i++)
+    for(int32_t i=0; i<queue->itemsAmount; i++)
     {
         bubbleUp(queue, i);
     }

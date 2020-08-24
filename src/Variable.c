@@ -26,17 +26,17 @@
 
 bool Variable_isIndependentVariable(Atom atom)
 {
-    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '$';
+    return atom > 0 && Narsese_atomNames[(int32_t) atom-1][1] != 0 && Narsese_atomNames[(int32_t) atom-1][0] == '$';
 }
 
 bool Variable_isDependentVariable(Atom atom)
 {
-    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '#';
+    return atom > 0 && Narsese_atomNames[(int32_t) atom-1][1] != 0 && Narsese_atomNames[(int32_t) atom-1][0] == '#';
 }
 
 bool Variable_isQueryVariable(Atom atom)
 {
-    return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '?';
+    return atom > 0 && Narsese_atomNames[(int32_t) atom-1][1] != 0 && Narsese_atomNames[(int32_t) atom-1][0] == '?';
 }
 
 bool Variable_isVariable(Atom atom)
@@ -46,7 +46,7 @@ bool Variable_isVariable(Atom atom)
 
 bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = term->atoms[i];
         if((independent && Variable_isIndependentVariable(atom)) || (dependent && Variable_isDependentVariable(atom)) || (query && Variable_isQueryVariable(atom)))
@@ -60,7 +60,7 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
 Substitution Variable_Unify(Term *general, Term *specific)
 {
     Substitution substitution = {0};
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general->atoms[i];
         if(general_atom)
@@ -73,11 +73,11 @@ Substitution Variable_Unify(Term *general, Term *specific)
                 {
                     return substitution;
                 }
-                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
+                if(substitution.map[(int32_t) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int32_t) general_atom], &subtree)) //unificiation var consistency criteria
                 {
                     return substitution;
                 }
-                substitution.map[(int) general_atom] = subtree;
+                substitution.map[(int32_t) general_atom] = subtree;
             }
             else
             {
@@ -96,14 +96,14 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 {
     assert(substitution.success, "A substitution from unsuccessful unification cannot be used to substitute variables!");
     *success = true;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general.atoms[i];
         bool is_variable = Variable_isVariable(general_atom);
         assert(!is_variable || general_atom <= 27, "Variable_ApplySubstitute: Problematic variable encountered, only $1-$9, #1-#9 and ?1-?9 are allowed!");
-        if(is_variable && substitution.map[(int) general_atom].atoms[0] != 0)
+        if(is_variable && substitution.map[(int32_t) general_atom].atoms[0] != 0)
         {
-            if(!Term_OverrideSubterm(&general, i, &substitution.map[(int) general_atom]))
+            if(!Term_OverrideSubterm(&general, i, &substitution.map[(int32_t) general_atom]))
             {
                 *success = false;
             }
@@ -114,17 +114,17 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 
 //Search for variables which appear twice extensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countExtensionTerms(Term *cur_inheritance, int *appearing)
+static void countExtensionTerms(Term *cur_inheritance, int32_t *appearing)
 {
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':')) //inheritance
     {
         Term subject = Term_ExtractSubterm(cur_inheritance, 1);
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = subject.atoms[i];
             if(Narsese_IsNonCopulaAtom(atom))
             {
-                appearing[(int) subject.atoms[i]] += 1;
+                appearing[(int32_t) subject.atoms[i]] += 1;
             }
         }
     }
@@ -136,17 +136,17 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
     bool right_contains[ATOMS_MAX] = {0};
-    int appearing[ATOMS_MAX] = {0};
+    int32_t appearing[ATOMS_MAX] = {0};
     if(Narsese_copulaEquals(right_side.atoms[0], ':')) //inheritance
     {
         Term subject = Term_ExtractSubterm(&right_side, 1);
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = subject.atoms[i];
             if(Narsese_IsNonCopulaAtom(atom))
             {
-                right_contains[(int) atom] = true;
-                appearing[(int) atom] += 1;
+                right_contains[(int32_t) atom] = true;
+                appearing[(int32_t) atom] += 1;
             }
         }
     }
@@ -161,14 +161,14 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     char indepvar_i = 1;
     char variable_id[ATOMS_MAX] = {0};
     Term implication_copy = implication;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = implication_copy.atoms[i];
-        if(appearing[(int) atom] > 1)
+        if(appearing[(int32_t) atom] > 1)
         {
-            if(right_contains[(int) atom])
+            if(right_contains[(int32_t) atom])
             {
-                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
+                int32_t var_id = variable_id[(int32_t) atom] = variable_id[(int32_t) atom] ? variable_id[(int32_t) atom] : indepvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '$', ('0' + var_id), 0 }; //$i
@@ -182,7 +182,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
             }
             else
             {
-                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
+                int32_t var_id = variable_id[(int32_t) atom] = variable_id[(int32_t) atom] ? variable_id[(int32_t) atom] : depvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '#', ('0' + var_id), 0 }; //#i
@@ -203,20 +203,20 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
 
 void Variable_Normalize(Term *term)
 {
-    int independent_i = 1, dependent_i = 1, query_i = 1;
+    int32_t independent_i = 1, dependent_i = 1, query_i = 1;
     bool normalized[COMPOUND_TERM_SIZE_MAX] = {0};
     //replace variables with numeric representation, then return the term
-    for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+    for(int32_t j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
     {
         Atom atom = term->atoms[j];
         char varType = Variable_isIndependentVariable(atom)  ? '$' :            (Variable_isDependentVariable(atom) ? '#' :          '?');
-        int *varIndex = Variable_isIndependentVariable(atom) ? &independent_i : (Variable_isDependentVariable(atom) ? &dependent_i : &query_i);
+        int32_t *varIndex = Variable_isIndependentVariable(atom) ? &independent_i : (Variable_isDependentVariable(atom) ? &dependent_i : &query_i);
         if(!normalized[j] && Variable_isVariable(atom))
         {
             assert(*varIndex<=9, "Variable overflow in variable normalization!");
             char varname[3] = { varType, ('0' + *varIndex), 0 }; //$i, #j, ?k
             (*varIndex)++;
-            for(int k=j; k<COMPOUND_TERM_SIZE_MAX; k++)
+            for(int32_t k=j; k<COMPOUND_TERM_SIZE_MAX; k++)
             {
                 Atom atom2 = term->atoms[k];
                 if(atom == atom2)

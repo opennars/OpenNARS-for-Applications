@@ -24,7 +24,7 @@
 
 #include "Stack.h"
 
-void Stack_INIT(Stack *stack, void **items, int maxElements)
+void Stack_INIT(Stack *stack, void **items, int32_t maxElements)
 {
     stack->stackpointer = 0;
     stack->items = items;

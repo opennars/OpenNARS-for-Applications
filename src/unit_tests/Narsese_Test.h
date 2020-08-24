@@ -30,13 +30,13 @@ void Narsese_Test()
     char* preprocessed = Narsese_Expand(narsese);
     printf("Preprocessed: %s\n", preprocessed);
     char **tokens = Narsese_PrefixTransform(preprocessed);
-    int k = 0;
+    int32_t k = 0;
     for(;tokens[k] != NULL;k++)
     {
         printf("token: %s\n", tokens[k]);
     }
     Term ret = Narsese_Term(narsese);
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(ret.atoms[i] != 0)
         {

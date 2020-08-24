@@ -28,17 +28,17 @@ void NAR_Pong(int32_t iterations)
     puts(">>NAR Pong start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
-    int szX = 50;
-    int szY = 20;
-    int ballX = szX/2;
-    int ballY = szY/5;
-    int batX = 20;
-    int batVX = 0;
-    int batWidth = 4; //"radius", batWidth from middle to the left and right
-    int vX = 1;
-    int vY = 1;
-    int hits = 0;
-    int misses = 0;
+    int32_t szX = 50;
+    int32_t szY = 20;
+    int32_t ballX = szX/2;
+    int32_t ballY = szY/5;
+    int32_t batX = 20;
+    int32_t batVX = 0;
+    int32_t batWidth = 4; //"radius", batWidth from middle to the left and right
+    int32_t vX = 1;
+    int32_t vY = 1;
+    int32_t hits = 0;
+    int32_t misses = 0;
     int32_t t=0;
     while(1)
     {
@@ -49,36 +49,36 @@ void NAR_Pong(int32_t iterations)
         //if(t%10000 == 0)
         //    getchar();
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
-        for(int i=0; i<batX-batWidth+1; i++)
+        for(int32_t i=0; i<batX-batWidth+1; i++)
         {
             fputs(" ", stdout);
         }
-        for(int i=0; i<batWidth*2-1 ;i++)
+        for(int32_t i=0; i<batWidth*2-1 ;i++)
         {
             fputs("@", stdout);
         }
         puts("");
-        for(int i=0; i<ballY; i++)
+        for(int32_t i=0; i<ballY; i++)
         {
-            for(int k=0; k<szX; k++)
+            for(int32_t k=0; k<szX; k++)
             {
                 fputs(" ", stdout);
             }
             puts("|");
         }
-        for(int i=0; i<ballX; i++)
+        for(int32_t i=0; i<ballX; i++)
         {
             fputs(" ", stdout);
         }
         fputs("#", stdout);
-        for(int i=ballX+1; i<szX; i++)
+        for(int32_t i=ballX+1; i<szX; i++)
         {
             fputs(" ", stdout);
         }
         puts("|");
-        for(int i=ballY+1; i<szY; i++)
+        for(int32_t i=ballY+1; i<szY; i++)
         {
-            for(int k=0; k<szX; k++)
+            for(int32_t k=0; k<szX; k++)
             {
                 fputs(" ", stdout);
             }

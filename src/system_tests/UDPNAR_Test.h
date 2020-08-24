@@ -34,11 +34,11 @@ void NAR_UDPNAR_Test()
 {
     puts(">>UDPNAR test start");
     char *ip = "127.0.0.1";
-    int port = 50001;
+    int32_t port = 50001;
     uint32_t timestep = 10000000L; //10ms
     UDPNAR_Start(ip, port, timestep);
     NAR_AddOperation(Narsese_Term("^left"), NAR_UDPNAR_Test_op_left);
-    int sockfd_sender = UDP_INIT_Sender();
+    int32_t sockfd_sender = UDP_INIT_Sender();
     char *send_data1 = "<(a &/ ^left) =/> g>.";
     UDP_SendData(sockfd_sender, ip, port, send_data1, strlen(send_data1)+1);
     char *send_data2 = "a. :|:";

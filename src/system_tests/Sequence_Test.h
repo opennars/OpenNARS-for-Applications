@@ -45,7 +45,7 @@ void NAR_Sequence_Test()
     NAR_AddOperation(Narsese_AtomicTerm("^1"), op_1); 
     NAR_AddOperation(Narsese_AtomicTerm("^2"), op_2); 
     NAR_AddOperation(Narsese_AtomicTerm("^3"), op_3); 
-    for(int i=0;i<5;i++)
+    for(int32_t i=0;i<5;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("a")); //0 2 4 5
         NAR_AddInputBelief(Narsese_AtomicTerm("b"));
@@ -53,26 +53,26 @@ void NAR_Sequence_Test()
         NAR_AddInputBelief(Narsese_AtomicTerm("g"));
         NAR_Cycles(100);
     }
-    for(int i=0;i<100;i++)
+    for(int32_t i=0;i<100;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("a"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^1"));
         NAR_Cycles(100);
     }
-    for(int i=0;i<100;i++)
+    for(int32_t i=0;i<100;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("b"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^1"));
         NAR_Cycles(100);
     }
-    for(int i=0;i<2;i++)
+    for(int32_t i=0;i<2;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("b"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^2"));
         NAR_AddInputBelief(Narsese_AtomicTerm("g"));
         NAR_Cycles(100);
     }
-    for(int i=0;i<2;i++)
+    for(int32_t i=0;i<2;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("a"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^3"));

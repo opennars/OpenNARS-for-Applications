@@ -48,6 +48,6 @@ void Shell_Start();
 //Only initializes the shell NAR with the default ops, but can be used differently
 void Shell_NARInit();
 //Process a shell input line, can be comments, timesteps, Narsese, and commands, returns if system reset was issued
-int Shell_ProcessInput(char *line);
+int32_t Shell_ProcessInput(char *line);
 
 #endif

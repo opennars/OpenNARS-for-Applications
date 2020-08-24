@@ -27,7 +27,7 @@ void Table_Test()
     puts(">>Table test start");
     Concept sourceConcept = {0};
     Table table = {0};
-    for(uint32_t i=TABLE_SIZE*2; i>=1; i--)
+    for(int32_t i=TABLE_SIZE*2; i>=1; i--)
     {
         Implication imp = { .term = Narsese_AtomicTerm("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
@@ -36,7 +36,7 @@ void Table_Test()
                             .sourceConcept = &sourceConcept };
         Table_Add(&table, &imp);
     }
-    for(uint32_t i=0; i<TABLE_SIZE; i++)
+    for(int32_t i=0; i<TABLE_SIZE; i++)
     {
         assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
     }

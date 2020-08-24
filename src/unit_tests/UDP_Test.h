@@ -27,8 +27,8 @@
 
 void *Receiver_Test_Thread_Run(void *sockfd_receiver_address)
 {
-    int sockfd_receiver = *((int*) sockfd_receiver_address);
-    int receive_size = 1024;
+    int32_t sockfd_receiver = *((int*) sockfd_receiver_address);
+    int32_t receive_size = 1024;
     char receive_data[receive_size];
     UDP_ReceiveData(sockfd_receiver, receive_data, receive_size);
     assert(!strcmp(receive_data, "<(a &/ ^left) =/> g>."), "We didn't receive what we sent!");
@@ -39,12 +39,12 @@ void UDP_Test()
 {
     puts(">>UDP test start");
     char *ip = "127.0.0.1";
-    int port = 50000;
-    int sockfd_receiver = UDP_INIT_Receiver(ip, port);
+    int32_t port = 50000;
+    int32_t sockfd_receiver = UDP_INIT_Receiver(ip, port);
     pthread_t thread_receiver;
     pthread_create(&thread_receiver, NULL, Receiver_Test_Thread_Run, &sockfd_receiver);
     nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //wait for 10ms
-    int sockfd_sender = UDP_INIT_Sender();
+    int32_t sockfd_sender = UDP_INIT_Sender();
     char *send_data = "<(a &/ ^left) =/> g>.";
     UDP_SendData(sockfd_sender, ip, port, send_data, strlen(send_data)+1);
     pthread_join(thread_receiver, NULL);

@@ -106,7 +106,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
     assert(false, "HashTable deletion failed, item was not found!");
 }
 
-void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int buckets, int maxElements, Equal equal, Hash hash)
+void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs, VMItem** HT, int32_t buckets, int32_t maxElements, Equal equal, Hash hash)
 {
     hashtable->storage = storage;
     hashtable->storageptrs = storageptrs;
@@ -116,11 +116,11 @@ void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs,
     hashtable->equal = equal;
     hashtable->hash = hash;
     hashtable->buckets = buckets;
-    for(int i=0; i<buckets; i++)
+    for(int32_t i=0; i<buckets; i++)
     {
         hashtable->HT[i] = NULL;
     }
-    for(int i=0; i<maxElements; i++)
+    for(int32_t i=0; i<maxElements; i++)
     {
         hashtable->storage[i] = (VMItem) {0};
         hashtable->storageptrs[i] = NULL;
@@ -128,13 +128,13 @@ void HashTable_INIT(HashTable *hashtable, VMItem* storage, VMItem** storageptrs,
     }
 }
 
-int HashTable_MaximumChainLength(HashTable *hashtable)
+int32_t HashTable_MaximumChainLength(HashTable *hashtable)
 {
-    int maxlen = 0;
-    for(int i=0; i<hashtable->buckets; i++)
+    int32_t maxlen = 0;
+    for(int32_t i=0; i<hashtable->buckets; i++)
     {
         VMItem *item = hashtable->HT[i];
-        int cnt = 0;
+        int32_t cnt = 0;
         for(;item != NULL; item=item->next, cnt++);
         maxlen = MAX(maxlen, cnt);
     }

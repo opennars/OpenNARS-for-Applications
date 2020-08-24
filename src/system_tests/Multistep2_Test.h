@@ -29,7 +29,7 @@ void NAR_Multistep2_Test()
     NAR_INIT();
     NAR_AddOperation(Narsese_AtomicTerm("^goto_switch"), NAR_Lightswitch_GotoSwitch); 
     NAR_AddOperation(Narsese_AtomicTerm("^activate_switch"), NAR_Lightswitch_ActivateSwitch); 
-    for(int i=0; i<5; i++)
+    for(int32_t i=0; i<5; i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^goto_switch"));
@@ -38,7 +38,7 @@ void NAR_Multistep2_Test()
         NAR_Cycles(10);
     }
     NAR_Cycles(1000);
-    for(int i=0; i<5; i++)
+    for(int32_t i=0; i<5; i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("switch_at"));
         NAR_AddInputBelief(Narsese_AtomicTerm("^activate_switch"));

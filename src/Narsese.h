@@ -65,9 +65,9 @@ Term Narsese_Sequence(Term *a, Term *b, bool *success);
 //Parses an atomic term string to a term
 Term Narsese_AtomicTerm(char *name);
 //Index of atomic term
-int Narsese_AtomicTermIndex(char *name);
+int32_t Narsese_AtomicTermIndex(char *name);
 //Index of operator
-int Narsese_OperatorIndex(char *name);
+int32_t Narsese_OperatorIndex(char *name);
 //Print an atom
 void Narsese_PrintAtom(Atom atom);
 //Print a term
@@ -77,7 +77,7 @@ bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Narsese_getOperationID(Term *term);
+int32_t Narsese_getOperationID(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation

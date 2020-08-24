@@ -26,11 +26,11 @@
 
 void Term_Print(Term *term)
 {
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(term->atoms[i] != 0)
         {
-            printf("%d", (int) term->atoms[i]);
+            printf("%d", (int32_t) term->atoms[i]);
         }
         else
         {
@@ -51,7 +51,7 @@ bool Term_Equal(Term *a, Term *b)
     }
 }
 
-static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
+static bool Term_RelativeOverride(Term *term, int32_t i, Term *subterm, int32_t j)
 {
     if(i >= COMPOUND_TERM_SIZE_MAX)
     {
@@ -60,7 +60,7 @@ static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
     if(j < COMPOUND_TERM_SIZE_MAX)
     {
         term->atoms[i] = subterm->atoms[j];
-        int left_in_subterm = (j+1)*2-1;
+        int32_t left_in_subterm = (j+1)*2-1;
         if(left_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[left_in_subterm] != 0)
         {
             if(!Term_RelativeOverride(term, (i+1)*2-1, subterm, left_in_subterm))   //override left child
@@ -68,7 +68,7 @@ static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
                 return false;
             }
         }
-        int right_in_subterm = (j+1)*2+1-1;
+        int32_t right_in_subterm = (j+1)*2+1-1;
         if(right_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[right_in_subterm] != 0)
         {
             if(!Term_RelativeOverride(term, (i+1)*2+1-1, subterm, right_in_subterm)) //override right child
@@ -80,22 +80,22 @@ static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
     return true;
 }
 
-bool Term_OverrideSubterm(Term *term, int i, Term *subterm)
+bool Term_OverrideSubterm(Term *term, int32_t i, Term *subterm)
 {
     return Term_RelativeOverride(term, i, subterm, 0); //subterm starts at its root, but its a subterm in term at position i
 }
 
-Term Term_ExtractSubterm(Term *term, int j)
+Term Term_ExtractSubterm(Term *term, int32_t j)
 {
     Term ret = {0}; //ret is where to "write into" 
     Term_RelativeOverride(&ret, 0, term, j); //where we begin to write at root, 0 (always succeeds as we extract just a subset)
     return ret; //reading from term beginning at i
 }
 
-int Term_Complexity(Term *term)
+int32_t Term_Complexity(Term *term)
 {
-    int s = 0;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    int32_t s = 0;
+    for(int32_t i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(term->atoms[i])
         {
@@ -111,7 +111,7 @@ HASH_TYPE Term_Hash(Term *term)
     {
         return term->hash;
     }
-    int pieces = TERM_ATOMS_SIZE / HASH_TYPE_SIZE;
+    int32_t pieces = TERM_ATOMS_SIZE / HASH_TYPE_SIZE;
     assert(HASH_TYPE_SIZE*pieces == TERM_ATOMS_SIZE, "Not a multiple, issue in hash calculation (TermHash)");
     HASH_TYPE hash = Globals_Hash((HASH_TYPE*) term->atoms, pieces);
     term->hashed = true;

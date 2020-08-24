@@ -80,7 +80,7 @@ void HashTable_Test()
     char blockname[ATOMIC_TERM_LEN_MAX] = {0};
     strncpy(blockname, testname, ATOMIC_TERM_LEN_MAX-1);
     HashTable_Set(&HTtest2, blockname, (void*) 42);
-    int res = (int) HashTable_Get(&HTtest2, blockname);
+    int32_t res = (int32_t) HashTable_Get(&HTtest2, blockname);
     assert(res == 42, "Result is not right!");
     puts(">>HashTable test successul");
 }

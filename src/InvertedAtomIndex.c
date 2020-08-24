@@ -7,12 +7,12 @@ ConceptChainElement *invertedAtomIndex[ATOMS_MAX];
 
 void InvertedAtomIndex_INIT()
 {
-    for(int i=0; i<ATOMS_MAX; i++)
+    for(int32_t i=0; i<ATOMS_MAX; i++)
     {
         invertedAtomIndex[i] = NULL;
     }
     Stack_INIT(&conceptChainElementStack, (void**) conceptChainElementStoragePointers, UNIFICATION_DEPTH*CONCEPTS_MAX);
-    for(int i=0; i<UNIFICATION_DEPTH*CONCEPTS_MAX; i++)
+    for(int32_t i=0; i<UNIFICATION_DEPTH*CONCEPTS_MAX; i++)
     {
         conceptChainElementStorage[i] = (ConceptChainElement) {0};
         conceptChainElementStoragePointers[i] = NULL;
@@ -22,7 +22,7 @@ void InvertedAtomIndex_INIT()
 
 void InvertedAtomIndex_AddConcept(Term term, Concept *c)
 {
-    for(int i=0; i<UNIFICATION_DEPTH; i++)
+    for(int32_t i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
@@ -59,7 +59,7 @@ void InvertedAtomIndex_AddConcept(Term term, Concept *c)
 
 void InvertedAtomIndex_RemoveConcept(Term term, Concept *c)
 {
-    for(int i=0; i<UNIFICATION_DEPTH; i++)
+    for(int32_t i=0; i<UNIFICATION_DEPTH; i++)
     {
         Atom atom = term.atoms[i];
         if(Narsese_IsSimpleAtom(atom))
@@ -96,7 +96,7 @@ void InvertedAtomIndex_RemoveConcept(Term term, Concept *c)
 void InvertedAtomIndex_Print()
 {
     puts("printing inverted atom table content:");
-    for(int i=0; i<ATOMS_MAX; i++)
+    for(int32_t i=0; i<ATOMS_MAX; i++)
     {
         Atom atom = i; //the atom is directly the value (from 0 to ATOMS_MAX)
         if(Narsese_IsSimpleAtom(atom))

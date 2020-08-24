@@ -23,8 +23,8 @@
  */
 
 
-int pX = 5;
-int pY = 5;
+int32_t pX = 5;
+int32_t pY = 5;
 #define DIRECTION_RIGHT '>'
 #define DIRECTION_RIGHT_DOWN 'd'
 #define DIRECTION_DOWN '^'
@@ -128,7 +128,7 @@ void Cell_Draw(Cell *cell)
     }
 }
 
-char Cell_State(int i, int j)
+char Cell_State(int32_t i, int32_t j)
 {
     if(i < 0 || j < 0 || i >= worldsizeX || j >= worldsizeY)
     {
@@ -155,9 +155,9 @@ char Cell_State(int i, int j)
 //Draw the world
 void World_Draw()
 {
-    for(int i=0; i<worldsizeY; i++)
+    for(int32_t i=0; i<worldsizeY; i++)
     {
-        for(int j=0; j<worldsizeX; j++)
+        for(int32_t j=0; j<worldsizeX; j++)
         {
             if(j == pX && i == pY)
             {
@@ -178,24 +178,24 @@ void World_Draw()
 //A perception of the world
 typedef struct
 {
-    int forward_pX; //position the agent reaches in case that
-    int forward_pY; //moving forward is possible
+    int32_t forward_pX; //position the agent reaches in case that
+    int32_t forward_pY; //moving forward is possible
     char viewfield[3];
     bool collision;
     bool reward;
     bool moved;
 }Perception;
 
-int irand(int n)
+int32_t irand(int32_t n)
 {
-    int r, rmax = n*(MY_RAND_MAX/n);
+    int32_t r, rmax = n*(MY_RAND_MAX/n);
     while((r=myrand()) >= rmax);
     return r / (MY_RAND_MAX/n);
 }
 
 void spawnFood(bool good)
 {
-    int x, y;
+    int32_t x, y;
     do
     {
         x = irand(worldsizeX);
@@ -212,7 +212,7 @@ void spawnFood(bool good)
     while(1);
 }
 
-void overwriteViewfield(int distance, bool* collided, char *original, char newval)
+void overwriteViewfield(int32_t distance, bool* collided, char *original, char newval)
 {
     if(newval == 'o' || *collided) //nothing hit the view ray position, or something was already hit
     {
@@ -229,9 +229,9 @@ void overwriteViewfield(int distance, bool* collided, char *original, char newva
 Perception Agent_View()
 {
     Perception ret = { .viewfield = {'o', 'o', 'o'} };
-    int viewdist = 10;
+    int32_t viewdist = 10;
     bool collided[3] = {0};
-    for(int i=1;i<=viewdist; i++)
+    for(int32_t i=1;i<=viewdist; i++)
     {
 #define BREAK_ON_DONE if(ret.viewfield[0] == 'f' || ret.viewfield[1] == 'f' || ret.viewfield[2] == 'f') \
                       { \
@@ -242,7 +242,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX + 1;
             ret.forward_pY = pY;
-            for(int I=1; I<=i; I++)
+            for(int32_t I=1; I<=i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY+i));
                 BREAK_ON_DONE
@@ -260,7 +260,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX + 1;
             ret.forward_pY = pY + 1;
-            for(int I=0; I<i; I++)
+            for(int32_t I=0; I<i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY+i));
                 BREAK_ON_DONE
@@ -278,7 +278,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX;
             ret.forward_pY = pY + 1;
-            for(int I=1; I<=i; I++)
+            for(int32_t I=1; I<=i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY+I));
                 BREAK_ON_DONE
@@ -296,7 +296,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX - 1;
             ret.forward_pY = pY + 1;
-            for(int I=0; I<i; I++)
+            for(int32_t I=0; I<i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-i, pY-I));
                 BREAK_ON_DONE
@@ -314,7 +314,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX - 1;
             ret.forward_pY = pY;
-            for(int I=1; I<=i; I++)
+            for(int32_t I=1; I<=i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX-I, pY-i));
                 BREAK_ON_DONE
@@ -332,7 +332,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX - 1;
             ret.forward_pY = pY - 1;
-            for(int I=0; I<i; I++)
+            for(int32_t I=0; I<i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+I, pY-i));
                 BREAK_ON_DONE
@@ -350,7 +350,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX;
             ret.forward_pY = pY - 1;
-            for(int I=1; I<=i; I++)
+            for(int32_t I=1; I<=i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY-I));
                 BREAK_ON_DONE
@@ -368,7 +368,7 @@ Perception Agent_View()
         {
             ret.forward_pX = pX + 1;
             ret.forward_pY = pY - 1;
-            for(int I=0; I<i; I++)
+            for(int32_t I=0; I<i; I++)
             {
                 overwriteViewfield(i, &collided[0], &ret.viewfield[0], Cell_State(pX+i, pY+I));
                 BREAK_ON_DONE
@@ -403,8 +403,8 @@ Perception Agent_View()
     return ret;
 }
 
-int eaten = 0;
-int moves = 0;
+int32_t eaten = 0;
+int32_t moves = 0;
 
 //Forward move
 void NAR_Robot_Forward()
@@ -424,10 +424,10 @@ void NAR_Robot_Forward()
 
 void buildRooms()
 {
-    int roomsize=20;
-    for(int x=0; x<worldsizeX; x++)
+    int32_t roomsize=20;
+    for(int32_t x=0; x<worldsizeX; x++)
     {
-        for(int y=0; y<worldsizeY; y++)
+        for(int32_t y=0; y<worldsizeY; y++)
         {
             if(x%roomsize == 0 || y%roomsize == 0)
             {
@@ -437,7 +437,7 @@ void buildRooms()
             {
                 if(x-roomsize/2 > 0 && y-roomsize/2 > 0 && x-roomsize/2 < worldsizeX-1 && y-roomsize/2 < worldsizeY-1)
                 {
-                    for(int k=-2; k<=2; k++) //door size
+                    for(int32_t k=-2; k<=2; k++) //door size
                     {
                         world[x-roomsize/2+k][y].wall = false;
                         world[x][y-roomsize/2+k].wall = false;
@@ -488,8 +488,8 @@ void NAR_Robot(int32_t iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
     NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
     buildRooms();
-    for(int i=0; i<30; i++) { spawnFood(false); }
-    for(int i=0; i<30; i++) { spawnFood(true); }
+    for(int32_t i=0; i<30; i++) { spawnFood(false); }
+    for(int32_t i=0; i<30; i++) { spawnFood(true); }
     int32_t t=0;
     while(1)
     {

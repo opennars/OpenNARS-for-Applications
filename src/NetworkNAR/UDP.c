@@ -24,9 +24,9 @@
 
 #include "UDP.h"
 
-int UDP_INIT_Receiver(char *ip, int port)
+int32_t UDP_INIT_Receiver(char *ip, int32_t port)
 {
-    int sockfd;
+    int32_t sockfd;
     struct sockaddr_in address_me = {0};
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     address_me.sin_family = AF_INET;
@@ -36,12 +36,12 @@ int UDP_INIT_Receiver(char *ip, int port)
     return sockfd;
 }
 
-int UDP_INIT_Sender()
+int32_t UDP_INIT_Sender()
 {
     return socket(PF_INET, SOCK_DGRAM, 0);
 }
 
-void UDP_ReceiveData(int sockfd, char *buffer, int buffersize)
+void UDP_ReceiveData(int32_t sockfd, char *buffer, int32_t buffersize)
 {
     struct sockaddr_in address_other;
     socklen_t addr_size = sizeof(address_other);
@@ -49,7 +49,7 @@ void UDP_ReceiveData(int sockfd, char *buffer, int buffersize)
     IN_DEBUG( printf("//UDP Data received: %s\n", buffer); )
 }
 
-void UDP_SendData(int sockfd, char *ip, int port, char *buffer, int buffersize)
+void UDP_SendData(int32_t sockfd, char *ip, int32_t port, char *buffer, int32_t buffersize)
 {
     struct sockaddr_in address_destination = {0};
     address_destination.sin_family = AF_INET;

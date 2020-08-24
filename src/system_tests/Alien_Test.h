@@ -50,8 +50,8 @@ void NAR_Alien(int32_t iterations)
     double alien0X = 0.5;
     double defenderX = 0.5;
     double alienWidth = 0.18;
-    int hits = 0;
-    int shots = 0;
+    int32_t hits = 0;
+    int32_t shots = 0;
     int32_t t=0;
     while(1)
     {

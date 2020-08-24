@@ -28,7 +28,7 @@ Implication *Table_Add(Table *table, Implication *imp)
 {
     assert(imp->sourceConcept != NULL, "Attempted to add an implication without source concept!");
     double impTruthExp = Truth_Expectation(imp->truth);
-    for(int i=0; i<TABLE_SIZE; i++)
+    for(int32_t i=0; i<TABLE_SIZE; i++)
     {
         bool same_term = Term_Equal(&table->array[i].term, &imp->term);
         //either it's not yet full and we reached a new space,
@@ -37,7 +37,7 @@ Implication *Table_Add(Table *table, Implication *imp)
         if(i==table->itemsAmount || (!same_term && impTruthExp > Truth_Expectation(table->array[i].truth)) || (same_term && imp->truth.confidence > table->array[i].truth.confidence))
         {
             //ok here it has to go, move down the rest, evicting the last element if we hit TABLE_SIZE-1.
-            for(int j=MIN(table->itemsAmount, TABLE_SIZE-1); j>i; j--)
+            for(int32_t j=MIN(table->itemsAmount, TABLE_SIZE-1); j>i; j--)
             {
                 table->array[j] = table->array[j-1];
             }
@@ -49,10 +49,10 @@ Implication *Table_Add(Table *table, Implication *imp)
     return NULL;
 }
 
-void Table_Remove(Table *table, int index)
+void Table_Remove(Table *table, int32_t index)
 {
     //move up the rest beginning at index
-    for(int j=index; j<table->itemsAmount; j++)
+    for(int32_t j=index; j<table->itemsAmount; j++)
     {
         table->array[j] = j == table->itemsAmount-1 ? (Implication) {0} : table->array[j+1];
     }
@@ -61,9 +61,9 @@ void Table_Remove(Table *table, int index)
 
 static void Table_SantiyCheck(Table *table)
 {
-    for(int i=0; i<table->itemsAmount; i++)
+    for(int32_t i=0; i<table->itemsAmount; i++)
     {
-        for(int j=0; j<table->itemsAmount; j++)
+        for(int32_t j=0; j<table->itemsAmount; j++)
         {
             if(i != j)
             {
@@ -77,8 +77,8 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
 {
     IN_DEBUG ( Table_SantiyCheck(table); )
     //1. find element with same Term
-    int same_i = -1;
-    for(int i=0; i<table->itemsAmount; i++)
+    int32_t same_i = -1;
+    for(int32_t i=0; i<table->itemsAmount; i++)
     {
         if(Term_Equal(&imp->term, &table->array[i].term))
         {

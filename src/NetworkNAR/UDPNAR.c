@@ -54,7 +54,7 @@ void* Receive_Thread_Run(void *sockfd_address)
     pthread_mutex_lock(&start_mutex);
     pthread_cond_signal(&start_cond);
     pthread_mutex_unlock(&start_mutex);
-    int sockfd = *((int*) sockfd_address);
+    int32_t sockfd = *((int*) sockfd_address);
     for(;;)
     {
         char buffer[NARSESE_LEN_MAX];
@@ -64,7 +64,7 @@ void* Receive_Thread_Run(void *sockfd_address)
             break;
         }
         pthread_mutex_lock(&nar_mutex);
-        int cmd = Shell_ProcessInput(buffer);
+        int32_t cmd = Shell_ProcessInput(buffer);
         if(cmd == SHELL_RESET) //reset?
         {
             Shell_NARInit();
@@ -76,8 +76,8 @@ void* Receive_Thread_Run(void *sockfd_address)
 
 pthread_t thread_reasoner, thread_receiver;
 bool Started = false;
-int receiver_sockfd; 
-void UDPNAR_Start(char *ip, int port, int32_t timestep)
+int32_t receiver_sockfd; 
+void UDPNAR_Start(char *ip, int32_t port, int32_t timestep)
 {
     assert(!Stopped, "UDPNAR was already started!");
     Shell_NARInit();

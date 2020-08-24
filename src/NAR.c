@@ -37,10 +37,10 @@ void NAR_INIT()
     initialized = true;
 }
 
-void NAR_Cycles(int cycles)
+void NAR_Cycles(int32_t cycles)
 {
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    for(int i=0; i<cycles; i++)
+    for(int32_t i=0; i<cycles; i++)
     {
         IN_DEBUG( puts("\nNew system cycle:\n----------"); )
         Cycle_Perform(currentTime);
@@ -76,7 +76,7 @@ Event NAR_AddInputGoal(Term term)
 void NAR_AddOperation(Term term, Action procedure)
 {
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
+    char* term_name = Narsese_atomNames[(int32_t) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
     Memory_AddOperation(Narsese_OperatorIndex(term_name), (Operation) { .term = term, .action = procedure });
 }
@@ -107,7 +107,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         fputs("?", stdout);
         puts(isEvent ? " :|:" : ""); 
         fflush(stdout);
-        for(int i=0; i<concepts.itemsAmount; i++)
+        for(int32_t i=0; i<concepts.itemsAmount; i++)
         {
             Concept *c = concepts.items[i].address;
             //compare the predicate of implication, or if it's not an implication, the term
@@ -119,8 +119,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             if(isImplication)
             {
                 Term subject = Term_ExtractSubterm(&term, 1);
-                int op_k = Narsese_getOperationID(&subject);
-                for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
+                int32_t op_k = Narsese_getOperationID(&subject);
+                for(int32_t j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                 {
                     Implication *imp = &c->precondition_beliefs[op_k].array[j];
                     if(!Variable_Unify(&term, &imp->term).success)

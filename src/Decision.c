@@ -55,8 +55,8 @@ void Decision_Execute(Decision *decision)
 static Decision Decision_MotorBabbling()
 {
     Decision decision = (Decision) {0};
-    int n_ops = 0;
-    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
+    int32_t n_ops = 0;
+    for(int32_t i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
     {
         n_ops = i+1;
     }
@@ -71,7 +71,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(uint32_t currentTime, Event *goal, int considered_opi, Implication *imp)
+static Decision Decision_ConsiderImplication(uint32_t currentTime, Event *goal, int32_t considered_opi, Implication *imp)
 {
     Decision decision = (Decision) {0};
     IN_DEBUG
@@ -113,7 +113,7 @@ static Decision Decision_ConsiderImplication(uint32_t currentTime, Event *goal, 
     return decision;
 }
 
-int stampID = -1;
+int32_t stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, uint32_t currentTime)
 {
     Decision decision = (Decision) {0};
@@ -127,9 +127,9 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, uint32_t curr
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int32_t opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
         {
-            for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
+            for(int32_t j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {
                 if(!Memory_ImplicationValid(&goalconcept->precondition_beliefs[opi].array[j]))
                 {
@@ -145,7 +145,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, uint32_t curr
                     assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
                     Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                    for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
+                    for(int32_t cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
                         Concept *cmatch = concepts.items[cmatch_k].address;
                         if(!Variable_hasVariable(&cmatch->term, true, true, true))
@@ -219,13 +219,13 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, uint32_t curr
     return decision;
 }
 
-void Decision_AssumptionOfFailure(int operationID, uint32_t currentTime)
+void Decision_AssumptionOfFailure(int32_t operationID, uint32_t currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
-    for(int j=0; j<concepts.itemsAmount; j++)
+    for(int32_t j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = concepts.items[j].address;
-        for(int  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
+        for(int32_t  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
         {
             if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
             {
@@ -274,7 +274,7 @@ Decision Decision_Suggest(Concept *postc, Event *goal, uint32_t currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance
-    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
+    if(myrand() < (uint32_t)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
     {
         babble_decision = Decision_MotorBabbling();
     }

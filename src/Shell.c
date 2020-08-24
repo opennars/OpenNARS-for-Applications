@@ -69,7 +69,7 @@ void Shell_NARInit()
     fflush(stdout);
     NAR_INIT();
     PRINT_DERIVATIONS = true;
-    int k=0; if(k >= OPERATIONS_MAX) { return; };
+    int32_t k=0; if(k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); if(++k >= OPERATIONS_MAX) { return; };
@@ -83,10 +83,10 @@ void Shell_NARInit()
     assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 
-int Shell_ProcessInput(char *line)
+int32_t Shell_ProcessInput(char *line)
 {
     //trim string, for IRC etc. convenience
-    for(int i=strlen(line)-1; i>=0; i--)
+    for(int32_t i=strlen(line)-1; i>=0; i--)
     {
         if(!isspace(line[i]))
         {
@@ -94,7 +94,7 @@ int Shell_ProcessInput(char *line)
         }
         line[i] = 0;
     }
-    int size = strlen(line);
+    int32_t size = strlen(line);
     if(size==0)
     {
         NAR_Cycles(1);
@@ -131,7 +131,7 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*concepts"))
         {
-            for(int i=0; i<concepts.itemsAmount; i++)
+            for(int32_t i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
                 assert(c != NULL, "Concept is null");
@@ -142,7 +142,7 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*cycling_belief_events"))
         {
-            for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+            for(int32_t i=0; i<cycling_belief_events.itemsAmount; i++)
             {
                 Event *e = cycling_belief_events.items[i].address;
                 assert(e != NULL, "Event is null");
@@ -153,7 +153,7 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*cycling_goal_events"))
         {
-            for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+            for(int32_t i=0; i<cycling_goal_events.itemsAmount; i++)
             {
                 Event *e = cycling_goal_events.items[i].address;
                 assert(e != NULL, "Event is null");
@@ -184,7 +184,7 @@ int Shell_ProcessInput(char *line)
         else
         if(strspn(line, "0123456789"))
         {
-            unsigned int steps;
+            uint32_t steps;
             sscanf(line, "%u", &steps);
             printf("performing %u inference steps:\n", steps); fflush(stdout);
             NAR_Cycles(steps);
@@ -210,7 +210,7 @@ void Shell_Start()
             Stats_Print(currentTime);
             break;
         }
-        int cmd = Shell_ProcessInput(line);
+        int32_t cmd = Shell_ProcessInput(line);
         if(cmd == SHELL_RESET) //reset?
         {
             Shell_NARInit();

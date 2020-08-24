@@ -84,7 +84,7 @@ void NAR_TestChamber()
     NAR_AddOperation(Narsese_AtomicTerm("^goto_l1"), NAR_TestChamber_goto_l1); 
     NAR_AddOperation(Narsese_AtomicTerm("^activate"), NAR_TestChamber_activate); 
     NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), NAR_TestChamber_deactivate); 
-    int size = 7;
+    int32_t size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
                           "| (0)-0 |-0  ",
@@ -93,14 +93,14 @@ void NAR_TestChamber()
                           " l1  s3   .< ",
                           " (0)-0       " };
     //positions:
-    const int pos_s0 = 0;
-    const int pos_s1 = 1;
-    const int pos_s2 = 2;
-    const int pos_s3 = 3;
-    const int pos_l0 = 4;
-    const int pos_l1 = 5;
+    const int32_t pos_s0 = 0;
+    const int32_t pos_s1 = 1;
+    const int32_t pos_s2 = 2;
+    const int32_t pos_s3 = 3;
+    const int32_t pos_l0 = 4;
+    const int32_t pos_l1 = 5;
     //states:
-    int pos = pos_s0; //agent position
+    int32_t pos = pos_s0; //agent position
     bool s1 = false;
     bool s2 = false;
     bool s3 = false;
@@ -348,9 +348,9 @@ void NAR_TestChamber()
         puts("y ... you should be at l0!");
         puts("z ... you should be at l1!");
         puts("other ... Next timestep (same command)\n");
-        for(int i=0; i<size; i++)
+        for(int32_t i=0; i<size; i++)
         {
-            for(int j=0; j<13; j++)
+            for(int32_t j=0; j<13; j++)
             {
                 putchar(world[i][j]);
             }

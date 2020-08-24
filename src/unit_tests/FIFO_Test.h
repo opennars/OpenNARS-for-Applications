@@ -27,7 +27,7 @@ void FIFO_Test()
     puts(">>FIFO test start");
     FIFO fifo = {0};
     //First, evaluate whether the fifo works, not leading to overflow
-    for(uint32_t i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
+    for(int32_t i=FIFO_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
         Event event1 = { .term = Narsese_AtomicTerm("test"), 
                          .type = EVENT_TYPE_BELIEF, 
@@ -36,20 +36,20 @@ void FIFO_Test()
                          .occurrenceTime = FIFO_SIZE*200 - i*10 };
         FIFO_Add(&event1, &fifo);
     }
-    for(uint32_t i=0; i<FIFO_SIZE; i++)
+    for(int32_t i=0; i<FIFO_SIZE; i++)
     {
         assert(FIFO_SIZE-i == fifo.array[0][i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     //now see whether a new item is revised with the correct one:
-    int i=3; //revise with item 10, which has occurrence time 10
-    int newbase = FIFO_SIZE*2+1;
+    int32_t i=3; //revise with item 10, which has occurrence time 10
+    int32_t newbase = FIFO_SIZE*2+1;
     Event event2 = { .term = Narsese_AtomicTerm("test"), 
                      .type = EVENT_TYPE_BELIEF, 
                      .truth = { .frequency = 1.0, .confidence = 0.9 },
                      .stamp = { .evidentalBase = { newbase } }, 
                      .occurrenceTime = i*10+3 };
     FIFO fifo2 = {0};
-    for(int i=0; i<FIFO_SIZE*2; i++)
+    for(int32_t i=0; i<FIFO_SIZE*2; i++)
     {
         Term zero = (Term) {0};
         FIFO_Add(&event2, &fifo2);

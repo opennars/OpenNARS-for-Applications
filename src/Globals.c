@@ -36,10 +36,10 @@ void Globals_assert(bool b, char* message)
     }
 }
 
-HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces)
+HASH_TYPE Globals_Hash(HASH_TYPE *data, int32_t pieces)
 {
     HASH_TYPE hash = 0;
-    for(int i=0; i<pieces; i++, data++)
+    for(int32_t i=0; i<pieces; i++, data++)
     {
         hash ^= *data;
         hash += ~(hash << 15);
@@ -57,13 +57,13 @@ HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces)
 static uint32_t next = 1;
 
 /* RAND_MAX assumed to be 32767 */
-int myrand(void)
+uint32_t myrand(void)
 {
    next = next * 1103515245 + 12345;
-   return((unsigned)(next/65536) % 32768);
+   return ((uint32_t) (next/65536) % 32768);
 }
 
-void mysrand(unsigned int seed)
+void mysrand(uint32_t seed)
 {
    next = seed;
 }

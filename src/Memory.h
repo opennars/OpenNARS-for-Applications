@@ -58,10 +58,10 @@ typedef struct
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
-extern int beliefsSelectedCnt;
+extern int32_t beliefsSelectedCnt;
 extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
-extern int goalsSelectedCnt;
+extern int32_t goalsSelectedCnt;
 //Concepts in main memory:
 extern PriorityQueue concepts;
 //cycling events cycling in main memory:
@@ -87,7 +87,7 @@ Concept* Memory_Conceptualize(Term *term, uint32_t currentTime);
 void Memory_AddEvent(Event *event, uint32_t currentTime, double priority, uint32_t occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted);
 void Memory_AddInputEvent(Event *event, uint32_t currentTime);
 //Add operation to memory
-void Memory_AddOperation(int id, Operation op);
+void Memory_AddOperation(int32_t id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
 //print added implication

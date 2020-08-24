@@ -59,7 +59,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, uint32_t currentTime)
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
-    for(int i=0; i<UNIFICATION_DEPTH; i++)
+    for(int32_t i=0; i<UNIFICATION_DEPTH; i++)
     {
         ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&e->term), .next = InvertedAtomIndex_GetConceptChain(e->term.atoms[i]) };
         ConceptChainElement* chain = &chain_extended;
@@ -107,10 +107,10 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, uint32_t currentTime)
     return best_decision;
 }
 
-void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *selectedCnt, PriorityQueue *queue, int cnt)
+void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int32_t *selectedCnt, PriorityQueue *queue, int32_t cnt)
 {
     *selectedCnt = 0;
-    for(int i=0; i<cnt; i++)
+    for(int32_t i=0; i<cnt; i++)
     {
         Event *e;
         double priority = 0;
@@ -131,7 +131,7 @@ static Decision Cycle_PropagateSubgoals(uint32_t currentTime)
 {
     Decision best_decision = {0};
     //process selected goals
-    for(int i=0; i<goalsSelectedCnt; i++)
+    for(int32_t i=0; i<goalsSelectedCnt; i++)
     {
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
@@ -142,11 +142,11 @@ static Decision Cycle_PropagateSubgoals(uint32_t currentTime)
         }
     }
     //pass goal spikes on to the next
-    for(int i=0; i<goalsSelectedCnt; i++)
+    for(int32_t i=0; i<goalsSelectedCnt; i++)
     {
         conceptProcessID++; //process subgoaling for the related concepts for each selected goal
         Event *goal = &selectedGoals[i];
-        for(int k=0; k<UNIFICATION_DEPTH; k++)
+        for(int32_t k=0; k<UNIFICATION_DEPTH; k++)
         {
             ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(&goal->term), .next = InvertedAtomIndex_GetConceptChain(goal->term.atoms[k]) };
             ConceptChainElement* chain = &chain_extended;
@@ -159,9 +159,9 @@ static Decision Cycle_PropagateSubgoals(uint32_t currentTime)
                     c->processID = conceptProcessID;
                     bool revised;
                     c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                    for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                    for(int32_t opi=0; opi<=OPERATIONS_MAX; opi++)
                     {
-                        for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
+                        for(int32_t j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                         {
                             Implication *imp = &c->precondition_beliefs[opi].array[j];
                             if(!Memory_ImplicationValid(imp))
@@ -212,7 +212,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     {
                         NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
-                    int operationID = Narsese_getOperationID(&a->term);
+                    int32_t operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG( fputs("Formed implication: ", stdout); Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); )
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
                     if(revised_precon != NULL)
@@ -231,11 +231,11 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
 
 void Cycle_PushEvents(uint32_t currentTime)
 {
-    for(int i=0; i<beliefsSelectedCnt; i++)
+    for(int32_t i=0; i<beliefsSelectedCnt; i++)
     {
         Memory_AddEvent(&selectedBeliefs[i], currentTime, selectedBeliefsPriority[i], 0, false, false, true, false, false);
     }
-    for(int i=0; i<goalsSelectedCnt; i++)
+    for(int32_t i=0; i<goalsSelectedCnt; i++)
     {
         Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
     }
@@ -247,7 +247,7 @@ void Cycle_ProcessInputBeliefEvents(uint32_t currentTime)
     if(belief_events.itemsAmount > 0)
     {
         //form concepts for the sequences of different length
-        for(int len=0; len<MAX_SEQUENCE_LEN; len++)
+        for(int32_t len=0; len<MAX_SEQUENCE_LEN; len++)
         {
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
@@ -258,19 +258,19 @@ void Cycle_ProcessInputBeliefEvents(uint32_t currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
+                    int32_t op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
                     //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<beliefsSelectedCnt; k++)
+                    for(int32_t k=0; k<beliefsSelectedCnt; k++)
                     {
                         if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
                         {
                             Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition);
                         }
                     }
-                    for(int k=1; k<belief_events.itemsAmount; k++)
+                    for(int32_t k=1; k<belief_events.itemsAmount; k++)
                     {
-                        for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
+                        for(int32_t len2=0; len2<MAX_SEQUENCE_LEN; len2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
                             if(len2 > 0)
@@ -325,7 +325,7 @@ void Cycle_Inference(uint32_t currentTime)
 {
     //Inferences
 #if STAGE==2
-    for(int i=0; i<beliefsSelectedCnt; i++)
+    for(int32_t i=0; i<beliefsSelectedCnt; i++)
     {
         conceptProcessID++; //process the related belief concepts
         uint32_t countConceptsMatched = 0;
@@ -347,7 +347,7 @@ void Cycle_Inference(uint32_t currentTime)
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-            for(int k=0; k<UNIFICATION_DEPTH; k++)
+            for(int32_t k=0; k<UNIFICATION_DEPTH; k++)
             {
                 ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
                 while(chain != NULL)
@@ -421,25 +421,25 @@ void Cycle_Inference(uint32_t currentTime)
 
 void Cycle_Prediction(uint32_t currentTime)
 {
-    for(int h=0; h<beliefsSelectedCnt; h++)
+    for(int32_t h=0; h<beliefsSelectedCnt; h++)
     {
         Event *e = &selectedBeliefs[h];
         double parentpriority = selectedBeliefsPriority[h];
         #pragma omp parallel for
-        for(int j=0; j<concepts.itemsAmount; j++)
+        for(int32_t j=0; j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
             if(c->priority < conceptPriorityThreshold)
             {
                 continue;
             }
-            for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
+            for(int32_t k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
             {
                 Implication imp = c->precondition_beliefs[0].array[k];
                 Term subject = Term_ExtractSubterm(&imp.term, 1);
                 if(Variable_Unify(&subject, &e->term).success)
                 {
-                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
+                    for(int32_t i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
                     {
                         if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[i]))
                         {
@@ -480,16 +480,16 @@ void Cycle_Prediction(uint32_t currentTime)
 void Cycle_RelativeForgetting(uint32_t currentTime)
 {
     //Apply event forgetting:
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
+    for(int32_t i=0; i<cycling_belief_events.itemsAmount; i++)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
-    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    for(int32_t i=0; i<cycling_goal_events.itemsAmount; i++)
     {
         cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
-    for(int i=0; i<concepts.itemsAmount; i++)
+    for(int32_t i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
@@ -499,7 +499,7 @@ void Cycle_RelativeForgetting(uint32_t currentTime)
     if(ontology_handling)
     {
         //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
-        for(int i=0; i<concepts.itemsAmount; i++)
+        for(int32_t i=0; i<concepts.itemsAmount; i++)
         {
             Concept *c = concepts.items[i].address;
             if(c->hasUserKnowledge)

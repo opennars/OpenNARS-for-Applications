@@ -40,14 +40,14 @@ void NAR_Follow_Test()
     puts(">>NAR Follow test start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Follow_Test_Left); 
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Follow_Test_Right); 
-    int simsteps = 1000000;
-    int LEFT = 0;
-    int RIGHT = 1;
-    int BALL = RIGHT;
-    int score = 0;
-    int goods = 0;
-    int bads = 0;
-    for(int i=0;i<simsteps; i++)
+    int32_t simsteps = 1000000;
+    int32_t LEFT = 0;
+    int32_t RIGHT = 1;
+    int32_t BALL = RIGHT;
+    int32_t score = 0;
+    int32_t goods = 0;
+    int32_t bads = 0;
+    for(int32_t i=0;i<simsteps; i++)
     {
         puts(BALL == LEFT ? "LEFT" : "RIGHT");
         NAR_AddInputBelief(BALL == LEFT ? Narsese_AtomicTerm("ball_left") : Narsese_AtomicTerm("ball_right"));

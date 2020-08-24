@@ -29,7 +29,7 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
     Stamp ret = {0};
     bool processStamp1 = true;
     bool processStamp2 = true;
-    for (int j=0, i=0; i<STAMP_SIZE; i++)
+    for (int32_t j=0, i=0; i<STAMP_SIZE; i++)
     {
         if(processStamp1)
         {
@@ -73,13 +73,13 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
 
 bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
-    for (int i=0;i<STAMP_SIZE;i++)
+    for (int32_t i=0;i<STAMP_SIZE;i++)
     {
         if (a->evidentalBase[i] == STAMP_FREE) 
         {
             break;
         }
-        for (int j=0;j<STAMP_SIZE;j++)
+        for (int32_t j=0;j<STAMP_SIZE;j++)
         {
             if (b->evidentalBase[j] == STAMP_FREE)
             {
@@ -97,7 +97,7 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 void Stamp_print(Stamp *stamp)
 {
     fputs("stamp=", stdout);
-    for(int i=0; i<STAMP_SIZE; i++)
+    for(int32_t i=0; i<STAMP_SIZE; i++)
     {
         if(stamp->evidentalBase[i] == STAMP_FREE)
         {

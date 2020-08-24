@@ -33,7 +33,7 @@
 #include "Shell.h"
 #include "./NetworkNAR/UDPNAR.h"
 
-void Process_Args(int argc, char *argv[])
+void Process_Args(int32_t argc, char *argv[])
 {
     bool inspectionOnExit = false;
     int32_t iterations = -1;
@@ -94,7 +94,7 @@ void Process_Args(int argc, char *argv[])
         if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
         {
             char *ip = argv[2];
-            int port = atoi(argv[3]);
+            int32_t port = atoi(argv[3]);
             int32_t timestep = atol(argv[4]);
             bool printDerivations = !strcmp("true", argv[5]);
             PRINT_DERIVATIONS = printDerivations;
@@ -134,7 +134,7 @@ void Display_Help()
     puts("NAR shell (starts the interactive NAL shell)");
 }
 
-int main(int argc, char *argv[])
+int main(int32_t argc, char *argv[])
 {
     mysrand(1337);
     Process_Args(argc, argv);

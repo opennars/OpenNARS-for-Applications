@@ -26,15 +26,15 @@ void PriorityQueue_Test()
 {
     puts(">>PriorityQueue test start");
     PriorityQueue queue;
-    int n_items = 10;
+    int32_t n_items = 10;
     Item items[n_items];
-    for(int i=0; i<n_items; i++)
+    for(int32_t i=0; i<n_items; i++)
     {
         items[i].address = (void*) ((uint32_t) i+1);
         items[i].priority = 0;
     }
     PriorityQueue_RESET(&queue, items, n_items);
-    for(int i=0, evictions=0; i<n_items*2; i++)
+    for(int32_t i=0, evictions=0; i<n_items*2; i++)
     {
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0/((double) (n_items*2-i)));
         if(feedback.added)
