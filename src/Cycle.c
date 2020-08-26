@@ -260,14 +260,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
-                    //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<beliefsSelectedCnt; k++)
-                    {
-                        if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
-                        {
-                            Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition);
-                        }
-                    }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
