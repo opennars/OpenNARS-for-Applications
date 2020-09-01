@@ -260,14 +260,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
-                    //build link between internal derivations and external event to explain it:
-                    for(int k=0; k<beliefsSelectedCnt; k++)
-                    {
-                        if(selectedBeliefs[k].occurrenceTime < postcondition.occurrenceTime)
-                        {
-                            Cycle_ReinforceLink(&selectedBeliefs[k], &postcondition);
-                        }
-                    }
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
@@ -342,19 +334,14 @@ void Cycle_Inference(long currentTime)
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
             Event *e = &selectedBeliefs[i];
-            Term subterms_of_e[2] = {0}; //subterms up to level 1
-            for(int j=0; j<2; j++)
-            {
-                subterms_of_e[j] = Term_ExtractSubterm(&e->term, j+1);
-            }
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
-            for(int i=0; i<UNIFICATION_DEPTH; i++)
+            for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
-                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[i], i);
+                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k], k);
                 while(chain != NULL)
                 {
                     Concept *c = chain->c;
