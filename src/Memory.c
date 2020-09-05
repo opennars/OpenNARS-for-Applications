@@ -253,7 +253,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
-                                .occurrenceTimeOffset = occurrenceTimeOffset,
+                                .occurrenceTimeOffset = 2, //occurrenceTimeOffset,
                                 .creationTime = currentTime,
                                 .isUserKnowledge = event->isUserKnowledge };
             Term sourceConceptTerm = subject;
