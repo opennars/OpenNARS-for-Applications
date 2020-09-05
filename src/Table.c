@@ -90,11 +90,13 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     if(same_i != -1)
     {
         //revision adds the revised element, removing the old implication from the table
-        Implication OldImp = table->array[same_i];
+        Implication OldImp = table->array[same_i]; //TODO use ptr, no need to copy the old implication!
         assert(OldImp.truth.frequency >= 0.0 && OldImp.truth.frequency <= 1.0, "(1) frequency out of bounds");
         assert(OldImp.truth.confidence >= 0.0 && OldImp.truth.confidence <= 1.0, "(1) confidence out of bounds");
         assert(imp->truth.frequency >= 0.0 && imp->truth.frequency <= 1.0, "(2) frequency out of bounds");
         assert(imp->truth.confidence >= 0.0 && imp->truth.confidence <= 1.0, "(2) confidence out of bounds");
+        printf("TABLE REVISION on same_i=%d OccurrenceTimeOffset=%ld\n", same_i, OldImp.occurrenceTimeOffset);
+        Narsese_PrintTerm(&OldImp.term); fputs(" = ", stdout); Narsese_PrintTerm(&imp->term); puts("");
         Implication revised = Inference_ImplicationRevision(&OldImp, imp);
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
