@@ -517,7 +517,7 @@ void Cycle_Perform(long currentTime)
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_ProcessInputGoalEvents(currentTime);
+    //Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     Cycle_Prediction(currentTime);
