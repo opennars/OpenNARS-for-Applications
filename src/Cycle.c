@@ -220,7 +220,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                         revised_precon->creationTime = currentTime; //for evaluation
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptId = A->id;
-                        /*IN_DEBUG( fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); )*/
+                        //IN_DEBUG( fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); )
                         Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
                     }
                 }
@@ -337,7 +337,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
+            //RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
             IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
             for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
@@ -356,6 +356,7 @@ void Cycle_Inference(long currentTime)
                         }
                         countConceptsMatchedNew++;
                         countConceptsMatched++;
+                        fputs("MATCHED ", stdout); Narsese_PrintTerm(&c->term); printf("time=%d\n", currentTime);
                         Stats_countConceptsMatchedTotal++;
                         if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
                         {

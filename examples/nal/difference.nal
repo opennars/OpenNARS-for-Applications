@@ -1,0 +1,50 @@
+//NEW EXAMPLE
+//Shape1 is a rectangle
+<{shape1} --> rectangle>. :|:
+//shape1 is filled
+<{shape1} --> [filled]>. :|:
+//shape1 is left of shape2
+<({shape1} * {shape2}) --> leftOf>. :|:
+//shape1 is above of shape3
+<({shape1} * {shape3}) --> aboveOf>. :|:
+//shape2 is a circle
+<{shape2} --> circle>. :|:
+//shape2 is unfilled
+<{shape2} --> [unfilled]>. :|:
+//shape2 is above of shape3
+<({shape2} * {shape3}) --> aboveOf>. :|:
+//shape3 is a triangle
+<{shape3} --> triangle>. :|:
+//shape3 is unfilled
+<{shape3} --> [unfilled]>. :|:
+//shape3 is left of shape2
+<({shape3} * {shape2}) --> leftOf>. :|:
+111
+//the filled rectangle is left of what?
+<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape2})>. :|:
+
+//NEW EXAMPLE
+//Shape1 is a rectangle
+<{shape1} --> rectangle>. :|:
+//shape1 is filled
+<{shape1} --> [filled]>. :|:
+//shape1 is left of shape9
+<({shape1} * {shape9}) --> leftOf>. :|:
+//shape1 is above of shape3
+<({shape1} * {shape3}) --> aboveOf>. :|:
+//shape9 is a circle
+<{shape9} --> circle>. :|:
+//shape9 is unfilled
+<{shape9} --> [unfilled]>. :|:
+//shape9 is above of shape3
+<({shape9} * {shape3}) --> aboveOf>. :|:
+//shape3 is a triangle
+<{shape3} --> triangle>. :|:
+//shape3 is unfilled
+<{shape3} --> [unfilled]>. :|:
+//shape3 is left of shape9
+<({shape3} * {shape9}) --> leftOf>. :|:
+111
+<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape9})>. :|:

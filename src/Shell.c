@@ -208,6 +208,7 @@ void Shell_Start()
         if(fgets(line, 1024, stdin) == NULL)
         {
             Stats_Print(currentTime);
+            InvertedAtomIndex_Print();
             break;
         }
         int cmd = Shell_ProcessInput(line);

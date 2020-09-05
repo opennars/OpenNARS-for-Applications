@@ -1,0 +1,14 @@
+*volume=0
+*motorbabbling=false
+<corridor --> in>. :|:
+<({SELF} * kitchen) --> ^go>. :|:
+<({cat} * kitchen) --> in>. :|:
+80
+<corridor --> in>. :|:
+<({SELF} * bedroom) --> ^go>. :|:
+<({cat} * bedroom) --> in>. :|:
+<corridor --> in>. :|:
+<(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
+G! :|:
+10
+//expected: ^say executed with args ({SELF} * bedroom)
