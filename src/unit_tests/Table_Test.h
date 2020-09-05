@@ -29,7 +29,7 @@ void Table_Test()
     Table table = {0};
     for(int i=TABLE_SIZE*2; i>=1; i--)
     {
-        Implication imp = { .term = Narsese_AtomicTerm("test"), 
+        Implication imp = { .term = { .atoms = {i} }, 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
                             .stamp = { .evidentalBase = { i } },
                             .occurrenceTimeOffset = 10,
