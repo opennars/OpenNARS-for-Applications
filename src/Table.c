@@ -26,6 +26,7 @@
 
 Implication *Table_Add(Table *table, Implication *imp)
 {
+    printf("ADD implication occurrenceTimeOffset=%ld\n", imp->occurrenceTimeOffset);
     assert(imp->sourceConcept != NULL, "Attempted to add an implication without source concept!");
     double impTruthExp = Truth_Expectation(imp->truth);
     for(int i=0; i<TABLE_SIZE; i++)
@@ -75,7 +76,8 @@ static void Table_SantiyCheck(Table *table)
 
 Implication *Table_AddAndRevise(Table *table, Implication *imp)
 {
-    IN_DEBUG ( Table_SantiyCheck(table); )
+    printf("ADD&REV implication occurrenceTimeOffset=%ld\n", imp->occurrenceTimeOffset);
+    Table_SantiyCheck(table);
     //1. find element with same Term
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)

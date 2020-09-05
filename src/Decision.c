@@ -234,6 +234,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                 continue;
             }
             Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
+            Narsese_PrintTerm(&imp.term); printf("Assum.OfFailure: imp.occOffset=%ld\n", imp.occurrenceTimeOffset);
             Concept *current_prec = imp.sourceConcept;
             Event *precondition = &current_prec->belief_spike; //a. :|:
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)

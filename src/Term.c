@@ -41,14 +41,15 @@ void Term_Print(Term *term)
 
 bool Term_Equal(Term *a, Term *b)
 {
-    if(Term_Hash(a) == Term_Hash(b))
+    return memcmp(a, b, sizeof(Term)) == 0;
+    /*if(Term_Hash(a) == Term_Hash(b))
     {
         return memcmp(a, b, sizeof(Term)) == 0;
     }
     else
     {
         return false;
-    }
+    }*/
 }
 
 static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
