@@ -86,6 +86,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
+    printf("occurrenceTimeoffsetAvg %ld %ld %f %f=%f\n", a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence), occurrenceTimeOffsetAvg);
     return (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
                            .stamp = conclusionStamp, 

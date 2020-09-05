@@ -1,4 +1,4 @@
-*volume=0
+*volume=100
 *motorbabbling=false
 <corridor --> in>. :|:
 <({SELF} * kitchen) --> ^go>. :|:
