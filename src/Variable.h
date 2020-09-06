@@ -58,8 +58,8 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
 Substitution Variable_Unify(Term *general, Term *specific);
 //Applying the substitution to a term, returning success
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
-//Introduce variables in an implications
-Term IntroduceImplicationVariables(Term implication, bool *success);
+//Introduce variables in an implication
+Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.
 void Variable_Normalize(Term *term);
 
