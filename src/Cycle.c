@@ -206,23 +206,22 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 precondition_implication.sourceConceptId = A->id;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
+                    //extensional var intro:
                     bool success;
-                    Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
-                    if(success && Variable_hasVariable(&general_implication_term, true, true, false))
+                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
+                    if(success && Variable_hasVariable(&general_implication_term_ext, true, true, false))
                     {
-                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
-                    int operationID = Narsese_getOperationID(&a->term);
-                    IN_DEBUG( fputs("Formed implication: ", stdout); Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); )
-                    Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
-                    if(revised_precon != NULL)
+                    //intensional var intro:
+                    bool success2;
+                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
+                    if(success2 && Variable_hasVariable(&general_implication_term_int, true, true, false))
                     {
-                        revised_precon->creationTime = currentTime; //for evaluation
-                        revised_precon->sourceConcept = A;
-                        revised_precon->sourceConceptId = A->id;
-                        /*IN_DEBUG( fputs("REVISED pre-condition implication: ", stdout); Implication_Print(revised_precon); )*/
-                        Memory_printAddedImplication(&revised_precon->term, &revised_precon->truth, false, revised_precon->truth.confidence > precondition_implication.truth.confidence);
+                        NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
+                    //specific implication
+                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                 }
             }
         }

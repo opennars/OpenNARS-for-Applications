@@ -114,23 +114,23 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 
 //Search for variables which appear twice extensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countExtensionTerms(Term *cur_inheritance, int *appearing)
+static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally)
 {
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':')) //inheritance
     {
-        Term subject = Term_ExtractSubterm(cur_inheritance, 1);
+        Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
-            Atom atom = subject.atoms[i];
+            Atom atom = side.atoms[i];
             if(Narsese_IsNonCopulaAtom(atom))
             {
-                appearing[(int) subject.atoms[i]] += 1;
+                appearing[(int) side.atoms[i]] += 1;
             }
         }
     }
 }
 
-Term IntroduceImplicationVariables(Term implication, bool *success)
+Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
@@ -139,7 +139,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     int appearing[ATOMS_MAX] = {0};
     if(Narsese_copulaEquals(right_side.atoms[0], ':')) //inheritance
     {
-        Term subject = Term_ExtractSubterm(&right_side, 1);
+        Term subject = Term_ExtractSubterm(&right_side, extensionally ? 1 : 2);
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = subject.atoms[i];
@@ -153,10 +153,10 @@ Term IntroduceImplicationVariables(Term implication, bool *success)
     while(Narsese_copulaEquals(left_side.atoms[0], '+')) //sequence
     {
         Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
-        countExtensionTerms(&potential_inheritance, appearing);
+        countAtoms(&potential_inheritance, appearing, extensionally);
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
-    countExtensionTerms(&left_side, appearing);
+    countAtoms(&left_side, appearing, extensionally);
     char depvar_i = 1;
     char indepvar_i = 1;
     char variable_id[ATOMS_MAX] = {0};
