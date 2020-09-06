@@ -210,14 +210,14 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     Term general_implication_term = IntroduceImplicationVariables(precondition_implication.term, &success);
                     if(success && Variable_hasVariable(&general_implication_term, true, true, false))
                     {
-                        //NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        NAL_DerivedEvent(general_implication_term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     int operationID = Narsese_getOperationID(&a->term);
                     IN_DEBUG( fputs("Formed implication: ", stdout); Narsese_PrintTerm(&precondition_implication.term); Truth_Print(&precondition_implication.truth); puts("\n"); )
                     Implication *revised_precon = Table_AddAndRevise(&B->precondition_beliefs[operationID], &precondition_implication);
-                    printf("precOffset %ld OCC OFFSET %ld occ times: %ld %ld\n", precondition_implication.occurrenceTimeOffset, revised_precon->occurrenceTimeOffset, a->occurrenceTime, b->occurrenceTime);
                     if(revised_precon != NULL)
                     {
+                        printf("precOffset %ld OCC OFFSET %ld occ times: %ld %ld\n", precondition_implication.occurrenceTimeOffset, revised_precon->occurrenceTimeOffset, a->occurrenceTime, b->occurrenceTime);
                         revised_precon->creationTime = currentTime; //for evaluation
                         revised_precon->sourceConcept = A;
                         revised_precon->sourceConceptId = A->id;

@@ -41,6 +41,7 @@
 #include "Implication.h"
 #include "Globals.h"
 #include <string.h>
+extern long save_debug;
 
 //Methods//
 //-------//

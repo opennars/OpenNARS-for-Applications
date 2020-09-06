@@ -81,13 +81,14 @@ static Event Inference_EventRevision(Event *a, Event *b)
                      .creationTime = creationTime };
 }
 
+//long save_debug = 0;
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>.
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
-    double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
-    printf("occurrenceTimeoffsetAvg %ld %ld %f %f=%f\n", a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence), occurrenceTimeOffsetAvg);
-    return (Implication) { .term = a->term,
+    double occurrenceTimeOffsetAvg = round(weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence)));
+    printf("occurrenceTimeoffsetAvg %ld %ld %f %f=%f %ld\n", a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence), occurrenceTimeOffsetAvg, (long) occurrenceTimeOffsetAvg);
+    Implication ret = (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
                            .stamp = conclusionStamp, 
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
@@ -95,6 +96,11 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .sourceConceptId = a->sourceConceptId,
                            .creationTime = creationTime,
                            .isUserKnowledge = a->isUserKnowledge || b->isUserKnowledge };
+    ret.occurrenceTimeOffset = occurrenceTimeOffsetAvg;
+    assert(ret.occurrenceTimeOffset == (long) occurrenceTimeOffsetAvg, "WHAT");
+    //save_debug = occurrenceTimeOffsetAvg;
+    printf("TEST: avg=%f, offset=%ld\n", occurrenceTimeOffsetAvg, ret.occurrenceTimeOffset);
+    return ret;
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
