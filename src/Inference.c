@@ -85,7 +85,7 @@ static Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
-    double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
+    double occurrenceTimeOffsetAvg = round(weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence)));
     return (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
                            .stamp = conclusionStamp, 
