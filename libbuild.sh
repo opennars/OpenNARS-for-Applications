@@ -20,11 +20,11 @@ rm -rf *.o NAR_first_stage
 gcc -c -fPIC -DSTAGE=2 $BaseFlags $Str src/RuleTable.c
 gcc -shared -o libONA.so *.o
 rm -rf *.o
-sudo mkdir /usr/local/include/ona/
-sudo cp src/*.h /usr/local/include/ona/
-sudo mkdir /usr/local/include/ona/NetworkNAR/
-sudo cp src/NetworkNAR/*.h /usr/local/include/ona/NetworkNAR/
-sudo cp *.a /usr/local/lib/
-sudo cp *.so /usr/local/lib/
+sudo mkdir /usr/include/ona/
+sudo cp src/*.h /usr/include/ona/
+sudo mkdir /usr/include/ona/NetworkNAR/
+sudo cp src/NetworkNAR/*.h /usr/include/ona/NetworkNAR/
+sudo cp *.a /usr/lib/
+sudo cp *.so /usr/lib/
 mv src/main_ src/main.c
 echo "Done."
