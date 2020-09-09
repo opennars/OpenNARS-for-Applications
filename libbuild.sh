@@ -17,7 +17,7 @@ Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 gcc -c -DSTAGE=2 $BaseFlags $Str src/RuleTable.c
 ar rcs libONA.a *.o
 rm -rf *.o NAR_first_stage
-gcc -c -fPIC -DSTAGE=2 $BaseFlags src/RuleTable.c
+gcc -c -fPIC -DSTAGE=2 $BaseFlags $Str src/RuleTable.c
 gcc -shared -o libONA.so *.o
 rm -rf *.o
 sudo mkdir /usr/local/include/ona/
