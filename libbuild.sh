@@ -8,7 +8,7 @@ sudo rm /usr/lib/libONA.so
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 echo $Str
 echo "Compilation started:"
-BaseFlags="-mfpmath=sse -msse2 -pthread -lpthread -D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -lm"
+BaseFlags="-mfpmath=sse -msse2 -pthread -lpthread -lm -D_POSIX_C_SOURCE=199506L -pedantic -std=c99"
 gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $BaseFlags $Str -oNAR_first_stage
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 mv src/main.c src/main_
