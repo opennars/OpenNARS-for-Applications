@@ -32,6 +32,7 @@
 
 //References//
 //////////////
+#include <math.h>
 #include "Concept.h"
 #include "InvertedAtomIndex.h"
 #include "PriorityQueue.h"
