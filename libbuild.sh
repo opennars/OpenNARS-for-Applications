@@ -2,9 +2,9 @@
 rm NAR_first_stage *.o
 rm src/RuleTable.c
 mv src/main_ src/main.c
-sudo rm -rf /usr/local/include/ona
-sudo rm /usr/local/lib/libONA.a
-sudo rm /usr/local/lib/libONA.so
+sudo rm -rf /usr/include/ona
+sudo rm /usr/lib/libONA.a
+sudo rm /usr/lib/libONA.so
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 echo $Str
 echo "Compilation started:"
