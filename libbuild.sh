@@ -1,16 +1,23 @@
 #!/bin/sh
+install_dir="/usr/local"
+
+if [ $# -eq 1 ]; then
+    echo "[ALERT] The defauld base_dir [$install_dir] is changed in $1."
+    install_dir=$1
+fi
+
 rm NAR_first_stage *.o
 rm src/RuleTable.c
 mv src/main_ src/main.c
-sudo rm -rf /usr/include/ona
-sudo rm /usr/lib/libONA.a
-sudo rm /usr/lib/libONA.so
+sudo rm -rf $install_dir/include/ona
+sudo rm $install_dir/lib/libONA.*
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
-echo $Str
+
 echo "Compilation started:"
-BaseFlags="-mfpmath=sse -msse2 -pthread -lpthread -lm -D_POSIX_C_SOURCE=199506L -pedantic -std=c99"
-gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $BaseFlags $Str -oNAR_first_stage
+BaseFlags="-D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -mfpmath=sse -msse2 -pthread -lpthread -lm"
+gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $Str $BaseFlags -oNAR_first_stage
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
+
 mv src/main.c src/main_
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 ./NAR_first_stage NAL_GenerateRuleTable > ./src/RuleTable.c
@@ -20,11 +27,15 @@ rm -rf *.o NAR_first_stage
 gcc -c -fPIC -DSTAGE=2 $BaseFlags $Str src/RuleTable.c
 gcc -shared -o libONA.so *.o
 rm -rf *.o
-sudo mkdir /usr/include/ona/
-sudo cp src/*.h /usr/include/ona/
-sudo mkdir /usr/include/ona/NetworkNAR/
-sudo cp src/NetworkNAR/*.h /usr/include/ona/NetworkNAR/
-sudo cp *.a /usr/lib/
-sudo cp *.so /usr/lib/
+
+echo "Installing libONA in [ $install_dir ]."
+
+sudo mkdir $install_dir/include/ona/
+sudo cp src/*.h $install_dir/include/ona/
+sudo mkdir $install_dir/include/ona/NetworkNAR/
+sudo cp src/NetworkNAR/*.h $install_dir/include/ona/NetworkNAR/
+sudo mv *.a $install_dir/lib/
+sudo mv *.so $install_dir/lib/
 mv src/main_ src/main.c
+
 echo "Done."
