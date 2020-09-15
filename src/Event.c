@@ -24,11 +24,6 @@
 
 #include "Event.h"
 
-void Event_SetTerm(Event *event, Term term)
-{
-    event->term = term;
-}
-
 long base = 1;
 Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
 {

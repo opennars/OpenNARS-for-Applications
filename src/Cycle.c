@@ -55,7 +55,6 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
-    Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
     IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
