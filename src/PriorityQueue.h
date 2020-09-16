@@ -44,14 +44,12 @@ typedef struct
     double priority;
     void *address;
 } Item;
-
 typedef struct
 {
     Item *items;
     int itemsAmount;
     int maxElements;
 } PriorityQueue;
-
 typedef struct
 {
     bool added;

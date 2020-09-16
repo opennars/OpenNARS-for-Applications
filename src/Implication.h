@@ -50,11 +50,6 @@ typedef struct {
     bool isUserKnowledge;
 } Implication;
 
-//Methods//
-//-------//
-//Assign a new name to an implication
-void Implication_Print(Implication *implication);
-
 #endif
 
 

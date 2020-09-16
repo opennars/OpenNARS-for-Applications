@@ -55,7 +55,6 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
-    IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     for(int i=0; i<UNIFICATION_DEPTH; i++)
@@ -335,8 +334,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
-            IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0);
             for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
                 ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);

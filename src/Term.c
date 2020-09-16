@@ -24,21 +24,6 @@
 
 #include "Term.h"
 
-void Term_Print(Term *term)
-{
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-    {
-        if(term->atoms[i] != 0)
-        {
-            printf("%d", (int) term->atoms[i]);
-        }
-        else
-        {
-            fputs("@", stdout);
-        }
-    }
-}
-
 bool Term_Equal(Term *a, Term *b)
 {
     if(Term_Hash(a) == Term_Hash(b))
