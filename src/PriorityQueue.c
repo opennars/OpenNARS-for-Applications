@@ -99,10 +99,10 @@ static int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
     {
         return i;
     }
+    Item lv = at(l);
     int min = l;
     for(int r=l+1; r<queue->itemsAmount && r < l+4; r++) 
     { //iterate on three grandsiblings (they are consecutive)
-        Item lv = at(l);
         Item rv = at(r);
         if((rv.priority < lv.priority)^invert)
         {
