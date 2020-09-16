@@ -59,23 +59,8 @@ void Table_Remove(Table *table, int index)
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
 
-static void Table_SantiyCheck(Table *table)
-{
-    for(int i=0; i<table->itemsAmount; i++)
-    {
-        for(int j=0; j<table->itemsAmount; j++)
-        {
-            if(i != j)
-            {
-                assert(!Term_Equal(&table->array[i].term, &table->array[j].term), "THEY CANNOT BE THE SAME\n");
-            }
-        }
-    }
-}
-
 Implication *Table_AddAndRevise(Table *table, Implication *imp)
 {
-    IN_DEBUG ( Table_SantiyCheck(table); )
     //1. find element with same Term
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
