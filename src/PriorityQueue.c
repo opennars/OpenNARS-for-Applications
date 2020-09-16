@@ -24,7 +24,7 @@
 
 #include "PriorityQueue.h"
 
-void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
+void PriorityQueue_INIT(PriorityQueue *queue, Item *items, int maxElements)
 {
     queue->items = items;
     queue->maxElements = maxElements;
@@ -114,7 +114,7 @@ static int smallestGrandChild(PriorityQueue *queue, int i, bool invert)
 }
   
 void trickleDown(PriorityQueue *queue, int i, bool invert)
-{   //assert(invert == isOnMaxLevel(i));
+{
     while(1)
     {
         //enforce min-max property on level(i), we need to check children and grandchildren

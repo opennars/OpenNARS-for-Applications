@@ -72,7 +72,6 @@ extern PriorityQueue cycling_goal_events;
 extern HashTable HTconcepts;
 //Input event buffers:
 extern FIFO belief_events;
-extern FIFO goal_events;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
 

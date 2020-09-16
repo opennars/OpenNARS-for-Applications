@@ -43,6 +43,5 @@ void Memory_Test()
     Memory_Conceptualize(&e2.term, 1);
     Concept *c2 = Memory_FindConceptByTerm(&e2.term);
     assert(c2 != NULL, "Concept should have been created!");
-    Concept_Print(c2);
     puts("<<Memory test successful");
 }

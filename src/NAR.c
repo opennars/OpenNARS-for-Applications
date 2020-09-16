@@ -78,7 +78,7 @@ void NAR_AddOperation(Term term, Action procedure)
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
-    Memory_AddOperation(Narsese_OperatorIndex(term_name), (Operation) { .term = term, .action = procedure });
+    operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
 }
 
 void NAR_AddInputNarsese(char *narsese_sentence)

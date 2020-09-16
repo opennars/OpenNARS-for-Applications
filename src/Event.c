@@ -24,11 +24,6 @@
 
 #include "Event.h"
 
-void Event_SetTerm(Event *event, Term term)
-{
-    event->term = term;
-}
-
 long base = 1;
 Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
 {
@@ -43,16 +38,6 @@ Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
 void Event_INIT()
 {
     base = 1;
-}
-
-void Event_Print(Event *event)
-{
-    printf("Event: \n");
-    Term_Print(&event->term);
-    printf(event->type == EVENT_TYPE_GOAL ? "type=goal\n" : (EVENT_TYPE_BELIEF ? "type=belief\n" : "type=deleted\n" ));
-    Truth_Print(&event->truth);
-    Stamp_print(&event->stamp);
-    printf("occurrenceTime=%ld\n\n", event->occurrenceTime);
 }
 
 bool Event_Equal(Event *event, Event *existing)

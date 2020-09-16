@@ -24,19 +24,6 @@
 
 #include "FIFO.h"
 
-void FIFO_RESET(FIFO *fifo)
-{
-    fifo->itemsAmount = 0;
-    fifo->currentIndex = 0;
-    for(int len=0; len<MAX_SEQUENCE_LEN; len++)
-    {
-        for(int i=0; i<FIFO_SIZE; i++)
-        {
-            fifo->array[len][i] = (Event) {0};
-        }
-    }
-}
-
 void FIFO_Add(Event *event, FIFO *fifo)
 {
     //build sequence elements:

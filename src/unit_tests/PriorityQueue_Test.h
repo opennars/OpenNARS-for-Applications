@@ -33,7 +33,7 @@ void PriorityQueue_Test()
         items[i].address = (void*) ((long) i+1);
         items[i].priority = 0;
     }
-    PriorityQueue_RESET(&queue, items, n_items);
+    PriorityQueue_INIT(&queue, items, n_items);
     for(int i=0, evictions=0; i<n_items*2; i++)
     {
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&queue, 1.0/((double) (n_items*2-i)));

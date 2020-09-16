@@ -54,7 +54,6 @@ typedef struct {
 
 //Methods//
 //-------//
-//print a concept
-void Concept_Print(Concept *concept);
+//todo
 
 #endif

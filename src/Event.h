@@ -54,12 +54,8 @@ typedef struct {
 //-------//
 //Init/Reset module
 void Event_INIT();
-//Assign a new name to an event
-void Event_SetTerm(Event *event, Term term);
 //construct an input event
 Event Event_InputEvent(Term term, char type, Truth truth, long currentTime);
-//print event
-void Event_Print(Event *event);
 //Whether two events are the same
 bool Event_Equal(Event *event, Event *existing);
 

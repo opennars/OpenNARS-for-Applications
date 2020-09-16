@@ -29,7 +29,7 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
-void Decision_Execute(Decision *decision)
+void Decision_Execute(Decision *decision, long currentTime)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
@@ -67,6 +67,7 @@ static Decision Decision_MotorBabbling()
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
         decision.execute = true;
+        decision.desire = 1.0;
     }
     return decision;
 }

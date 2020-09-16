@@ -57,8 +57,6 @@ typedef struct
 
 //Methods//
 //-------//
-// print indices of true bits
-void Term_Print(Term *term);
 //Whether two Term's are equal completely
 bool Term_Equal(Term *a, Term *b);
 //Overwrites a subterm

@@ -54,8 +54,6 @@ typedef struct
 
 //Methods//
 //-------//
-//Resets the FIFO
-void FIFO_RESET(FIFO *fifo);
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Get the newest element

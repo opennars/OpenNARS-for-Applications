@@ -31,9 +31,8 @@ PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
-//Input event buffers:
+//Input event fifo:
 FIFO belief_events;
-FIFO goal_events;
 //Operations
 Operation operations[OPERATIONS_MAX];
 //Parameters
@@ -53,10 +52,9 @@ bool ontology_handling = false;
 
 static void Memory_ResetEvents()
 {
-    FIFO_RESET(&belief_events);
-    FIFO_RESET(&goal_events);
-    PriorityQueue_RESET(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    PriorityQueue_RESET(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
+    belief_events = (FIFO) {0};
+    PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
+    PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
@@ -71,7 +69,7 @@ static void Memory_ResetEvents()
 
 static void Memory_ResetConcepts()
 {
-    PriorityQueue_RESET(&concepts, concept_items_storage, CONCEPTS_MAX);
+    PriorityQueue_INIT(&concepts, concept_items_storage, CONCEPTS_MAX);
     for(int i=0; i<CONCEPTS_MAX; i++)
     {
         concept_storage[i] = (Concept) {0};
@@ -384,11 +382,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             {
                 FIFO_Add(event, &belief_events); //not revised yet
             }
-            else
-            if(event->type == EVENT_TYPE_GOAL)
-            {
-                FIFO_Add(event, &goal_events);
-            }
         }
     }
     if(event->type == EVENT_TYPE_BELIEF)
@@ -419,11 +412,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
-}
-
-void Memory_AddOperation(int id, Operation op)
-{
-    operations[id - 1] = op;
 }
 
 bool Memory_ImplicationValid(Implication *imp)

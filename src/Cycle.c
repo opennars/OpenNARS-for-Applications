@@ -55,8 +55,6 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
-    Event_SetTerm(e, e->term); // TODO make sure that hash needs to be calculated once instead already
-    IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     for(int i=0; i<UNIFICATION_DEPTH; i++)
@@ -127,7 +125,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Propagate subgoals, leading to decisions
-static Decision Cycle_PropagateSubgoals(long currentTime)
+static Decision Cycle_ProcessInputGoalEvents(long currentTime)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -141,8 +139,16 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             best_decision = decision;
         }
     }
+    if(best_decision.execute && best_decision.operationID > 0)
+    {
+        Decision_Execute(&best_decision, currentTime);
+        //reset cycling goal events after execution to avoid "residue actions"
+        PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
+        //also don't re-add the selected goal:
+        goalsSelectedCnt = 0;
+    }
     //pass goal spikes on to the next
-    for(int i=0; i<goalsSelectedCnt; i++)
+    for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
     {
         conceptProcessID++; //process subgoaling for the related concepts for each selected goal
         Event *goal = &selectedGoals[i];
@@ -180,7 +186,6 @@ static Decision Cycle_PropagateSubgoals(long currentTime)
             }
         }
     }
-    return best_decision;
 }
 
 //Reinforce link between concept a and b (creating it if non-existent)
@@ -284,34 +289,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
-void Cycle_ProcessInputGoalEvents(long currentTime)
-{
-    //process goals
-    Decision decision = {0};
-    if(goal_events.itemsAmount > 0)
-    {
-        Event *goal = FIFO_GetNewestSequence(&goal_events, 0);
-        if(!goal->processed && goal->type!=EVENT_TYPE_DELETED)
-        {
-            assert(goal->type == EVENT_TYPE_GOAL, "A different event type made it into goal events!");
-            decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        }
-    }
-    //allow reasoning into the future by propagating spikes from goals back to potential current events
-    if(!decision.execute)
-    {
-        decision = Cycle_PropagateSubgoals(currentTime);
-    }
-    if(decision.execute && decision.operationID > 0)
-    {
-        Decision_Execute(&decision);
-        //reset cycling goal events after execution to avoid "residue actions"
-        PriorityQueue_RESET(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
-        //also don't re-add the selected goal:
-        goalsSelectedCnt = 0;
-    }
-}
-
 void Cycle_Inference(long currentTime)
 {
     //Inferences
@@ -336,8 +313,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0); 
-            IN_DEBUG( puts("Event was selected:"); Event_Print(e); )
+            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0);
             for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
                 ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
@@ -512,9 +488,9 @@ void Cycle_Perform(long currentTime)
     //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
-    //2. Process incoming belief events from FIFO, building implications utilizing input sequences and in 1. retrieved events.
+    //2. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessInputBeliefEvents(currentTime);
-    //3. Process incoming goal events from FIFO, propagating subgoals according to implications, triggering decisions when above decision threshold
+    //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
