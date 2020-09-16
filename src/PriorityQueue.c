@@ -24,7 +24,7 @@
 
 #include "PriorityQueue.h"
 
-void PriorityQueue_RESET(PriorityQueue *queue, Item *items, int maxElements)
+void PriorityQueue_INIT(PriorityQueue *queue, Item *items, int maxElements)
 {
     queue->items = items;
     queue->maxElements = maxElements;
