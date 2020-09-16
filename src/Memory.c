@@ -421,11 +421,6 @@ void Memory_AddInputEvent(Event *event, long currentTime)
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
 }
 
-void Memory_AddOperation(int id, Operation op)
-{
-    operations[id - 1] = op;
-}
-
 bool Memory_ImplicationValid(Implication *imp)
 {
     return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
