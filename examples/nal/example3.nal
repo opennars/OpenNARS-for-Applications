@@ -1,4 +1,5 @@
 *volume=0
+*motorbabbling=false
 //if there is a pedestrian on the street, inform using op ^say
 <(<pedestrian --> (on /1 street)> &/ <({SELF} * (pedestrian * jaywalking)) --> ^say>) =/> <{SELF} --> [informative]>>.
 //if a car has crashed, inform using op ^pick (till args are supported)

@@ -31,9 +31,8 @@ PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
-//Input event buffers:
+//Input event fifo:
 FIFO belief_events;
-FIFO goal_events;
 //Operations
 Operation operations[OPERATIONS_MAX];
 //Parameters
@@ -54,7 +53,6 @@ bool ontology_handling = false;
 static void Memory_ResetEvents()
 {
     belief_events = (FIFO) {0};
-    goal_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
@@ -383,11 +381,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
             if(event->type == EVENT_TYPE_BELIEF)
             {
                 FIFO_Add(event, &belief_events); //not revised yet
-            }
-            else
-            if(event->type == EVENT_TYPE_GOAL)
-            {
-                FIFO_Add(event, &goal_events);
             }
         }
     }

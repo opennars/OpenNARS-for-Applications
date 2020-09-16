@@ -1,4 +1,5 @@
 *volume=0
+*motorbabbling=false
 //you are at start position
 <{start} --> [at]>. :|:
 //you go to switch1

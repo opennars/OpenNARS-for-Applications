@@ -488,8 +488,8 @@ void NAR_Robot(long iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
     NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
     buildRooms();
-    for(int i=0; i<30; i++) { spawnFood(false); }
-    for(int i=0; i<30; i++) { spawnFood(true); }
+    for(int i=0; i<23; i++) { spawnFood(false); }
+    for(int i=0; i<23; i++) { spawnFood(true); }
     long t=0;
     while(1)
     {
