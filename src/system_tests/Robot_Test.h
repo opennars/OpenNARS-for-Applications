@@ -113,17 +113,17 @@ void Cell_Draw(Cell *cell)
 {
     if(cell->wall)
     {
-        fputs("\x1B[97;47m#\x1B[0m", stdout);
+        fputs(COLOR("\x1B[97;47m") "#" COLOR("\x1B[0m"), stdout);
     }
     else
     {
         if(cell->food)
         {
-            fputs("\x1B[32;43m+\x1B[0m", stdout);
+            fputs(COLOR("\x1B[32;43m") "+" COLOR("\x1B[0m"), stdout);
         }
         else
         {
-            fputs("\x1B[30;43m \x1B[0m", stdout);
+            fputs(COLOR("\x1B[30;43m") " " COLOR("\x1B[0m"), stdout);
         }
     }
 }
@@ -162,9 +162,9 @@ void World_Draw()
             if(j == pX && i == pY)
             {
                 char sdir[2] = { direction, 0 };
-                fputs("\x1B[31;43;1m", stdout);
+                fputs(COLOR("\x1B[31;43;1m"), stdout);
                 fputs(sdir, stdout);
-                fputs("\x1B[0m", stdout);
+                fputs(COLOR("\x1B[0m"), stdout);
             }
             else
             {

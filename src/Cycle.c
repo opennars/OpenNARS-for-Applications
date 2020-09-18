@@ -125,7 +125,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Propagate subgoals, leading to decisions
-static Decision Cycle_ProcessInputGoalEvents(long currentTime)
+static void Cycle_ProcessInputGoalEvents(long currentTime)
 {
     Decision best_decision = {0};
     //process selected goals

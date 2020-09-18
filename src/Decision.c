@@ -33,6 +33,7 @@ void Decision_Execute(Decision *decision, long currentTime)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
+    Term feedback = decision->op.term; //atomic operation / operator
     //and add operator feedback
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
@@ -42,13 +43,13 @@ void Decision_Execute(Decision *decision, long currentTime)
         {
             return;
         }
-        NAR_AddInputBelief(operation);
+        feedback = operation;
     }
-    else //atomic operation / operator
-    {
-        NAR_AddInputBelief(decision->op.term);
-    }
+    fputs(COLOR("\x1B[0;31m"), stdout);
     (*decision->op.action)(decision->arguments);
+    fputs(COLOR("\x1B[0m"), stdout);
+    NAR_AddInputBelief(feedback);
+    
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -214,8 +215,8 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
     }
     //set execute and return execution
-    printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); puts("");
+    printf(COLOR("\x1B[0;31m") "decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+    Narsese_PrintTerm(&bestImp.term); puts(COLOR("\x1B[0m"));
     decision.execute = true;
     return decision;
 }
