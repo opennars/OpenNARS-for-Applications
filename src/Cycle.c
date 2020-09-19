@@ -141,11 +141,12 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     }
     if(best_decision.execute && best_decision.operationID > 0)
     {
-        Decision_Execute(&best_decision);
         //reset cycling goal events after execution to avoid "residue actions"
         PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
         //also don't re-add the selected goal:
         goalsSelectedCnt = 0;
+        //execute decision
+        Decision_Execute(&best_decision);
     }
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)

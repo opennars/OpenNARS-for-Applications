@@ -106,7 +106,7 @@ typedef struct
 }Cell;
 #define worldsizeX 41
 #define worldsizeY 21
-Cell world[worldsizeX+1][worldsizeY+1] = {0}; //+1 for the maze generator
+Cell world[worldsizeX][worldsizeY] = {0}; //+1 for the maze generator
 
 //Draw cells
 void Cell_Draw(Cell *cell)
@@ -435,9 +435,9 @@ void buildRooms()
             }
             if(x%roomsize == 0 && y%roomsize == 0) //corner
             {
-                if(x-roomsize/2 > 0 && y-roomsize/2 > 0 && x-roomsize/2 < worldsizeX-1 && y-roomsize/2 < worldsizeY-1)
+                for(int k=-2; k<=2; k++) //door size
                 {
-                    for(int k=-2; k<=2; k++) //door size
+                    if(x-roomsize/2+k >= 0 && y-roomsize/2+k >= 0 && x-roomsize/2+k < worldsizeX && y-roomsize/2+k < worldsizeY)
                     {
                         world[x-roomsize/2+k][y].wall = false;
                         world[x][y-roomsize/2+k].wall = false;
