@@ -29,9 +29,9 @@
 #include <string.h>
 #include <ctype.h> 
 
-/*-------*/
-/* Flags */
-/*-------*/
+/*---------*/
+/* Globals */
+/*---------*/
 //Whether debug mode should be on
 #define DEBUG false
 //Whether input should be printed
@@ -42,14 +42,7 @@
 #define PRINT_CONTROL_INFO false
 //Priority threshold for printing derivations
 #define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
-
 //Debug macros, debug printing, assert:
-#define DEBUG_INFO(x) {if(DEBUG == 1){}}
-#ifdef DEBUG
-#define PRINTD printf
-#else
-#define PRINTD(format, args...) ((void)0)
-#endif
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
 void Globals_assert(bool b, char* message);
