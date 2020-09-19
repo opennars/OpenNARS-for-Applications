@@ -45,7 +45,7 @@ void Decision_Execute(Decision *decision)
         }
         feedback = operation;
     }
-    fputs(COLOR_RED, stdout);
+    fputs(COLOR_BOLD COLOR_RED, stdout);
     (*decision->op.action)(decision->arguments);
     fputs(COLOR_RESET, stdout);
     NAR_AddInputBelief(feedback);

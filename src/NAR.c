@@ -102,7 +102,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
-        fputs(COLOR_GREEN "Input: ", stdout);
+        fputs(COLOR_BOLD COLOR_GREEN "Input: " COLOR_RESET, stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
         puts(isEvent ? " :|:" : "");
@@ -175,7 +175,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             Continue:;
         }
-        fputs(COLOR_RED "Answer: ", stdout);
+        fputs(COLOR_BOLD COLOR_RED "Answer: " COLOR_RESET, stdout);
         if(best_truth.confidence == 1.0)
         {
             puts("None.");

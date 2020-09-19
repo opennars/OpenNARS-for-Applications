@@ -104,7 +104,7 @@ int Shell_ProcessInput(char *line)
         //accept comments, commands, timestep, and narsese
         if(line[0] == '/' && line[1] == '/')
         {
-            fputs(COLOR_MAGENTA "Comment: ", stdout);
+            fputs(COLOR_BOLD COLOR_MAGENTA "Comment: " COLOR_RESET COLOR_MAGENTA, stdout);
             puts(&line[2]);
             fputs(COLOR_RESET, stdout);
             fflush(stdout);

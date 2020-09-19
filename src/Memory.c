@@ -204,7 +204,8 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
 {
     if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
-        fputs(revised ? (COLOR_YELLOW "Revised: ") : (input ? (COLOR_GREEN "Input: ") : (COLOR_YELLOW "Derived: ")), stdout);
+        fputs(revised ? (COLOR_BOLD COLOR_YELLOW "Revised: " COLOR_RESET) : 
+                        (input ? (COLOR_BOLD COLOR_GREEN "Input: " COLOR_RESET) : (COLOR_BOLD COLOR_YELLOW "Derived: " COLOR_RESET)), stdout);
         Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         if(occurrenceTime != OCCURRENCE_ETERNAL)
