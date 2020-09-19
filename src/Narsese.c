@@ -503,6 +503,30 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     bool isExtSet = Narsese_copulaEquals(atom, '"');
     bool isIntSet = Narsese_copulaEquals(atom, '\'');
     bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=');
+    //syntax highlighting:
+#define SHIGH    if(Narsese_copulaEquals(atom, '$'))\
+    {\
+        fputs(COLOR_RED, stdout);\
+    }\
+    else if(Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '='))\
+    {\
+        fputs(COLOR_YELLOW, stdout);\
+    }\
+    else if(Narsese_copulaEquals(atom, '+') || isNegation)\
+    {\
+        fputs(COLOR_MAGENTA, stdout);\
+    }\
+    else if(Narsese_copulaEquals(atom, '#') || Narsese_copulaEquals(atom, '\\') || Narsese_copulaEquals(atom, '%') || Narsese_copulaEquals(atom, '/') || isExtSet || isIntSet || Narsese_copulaEquals(atom, '*') || Narsese_copulaEquals(atom, '&') || Narsese_copulaEquals(atom, '|') || Narsese_copulaEquals(atom, '-') || Narsese_copulaEquals(atom, '~'))\
+    {\
+        fputs(COLOR_CYAN, stdout);\
+    }\
+    else if(Narsese_IsNonCopulaAtom(atom) || Narsese_atomNames[(int) atom - 1][0] == '#'|| Narsese_atomNames[(int) atom - 1][0] == '?' || Narsese_atomNames[(int) atom - 1][0] == '$')\
+    {\
+        fputs(COLOR_GREEN, stdout);\
+    }
+    
+    SHIGH
+    
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);
@@ -538,6 +562,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     {
         if(!isNegation)
         {
+            SHIGH
             Narsese_PrintAtom(atom);
             fputs(hasLeftChild ? " " : "", stdout);
         }
@@ -546,6 +571,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     {
         Narsese_PrintTermPrettyRecursive(term, child2);
     }
+    SHIGH
     if(isExtSet)
     {
         fputs(hasLeftChild ? "}" : "", stdout);
@@ -569,6 +595,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
 void Narsese_PrintTerm(Term *term)
 {
     Narsese_PrintTermPrettyRecursive(term, 1);
+    fputs(COLOR_RESET, stdout);
 }
 
 HASH_TYPE Narsese_StringHash(char *name)

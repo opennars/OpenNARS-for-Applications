@@ -47,6 +47,7 @@
 #define COLOR_RED COLOR("\x1B[0;31m")
 #define COLOR_GREEN COLOR("\x1B[0;32m")
 #define COLOR_YELLOW COLOR("\x1B[0;33m")
+#define COLOR_BLUE COLOR("\x1B[0;34m")
 #define COLOR_MAGENTA COLOR("\x1B[0;35m")
 #define COLOR_CYAN COLOR("\x1B[0;36m")
 #define COLOR_RESET COLOR("\x1B[0m")

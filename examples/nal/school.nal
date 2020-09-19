@@ -1,5 +1,5 @@
 *motorbabbling=false
-*volume=0
+*volume=100
 //to open the entry door you need to use a knob
 <(<#1 --> knob> &/ <({SELF} * #1) --> ^pick>) =/> <door --> [open]>>.
 //a knob is a metallic object attached to a door
