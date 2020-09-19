@@ -64,7 +64,7 @@ void NAR_Cartpole(long iterations)
             break;
         }
         fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
-        printf("position=%f, velocity=%f, angle=%f, angleV=%f\nsuccesses=%f, failures=%f, ratio=%f\n", position, velocity, angle, angle_velocity, successes, failures, successes/(successes+failures));
+        printf("position=%f, velocity=%f, angle=%f, angleV=%f\nsuccesses=%f, failures=%f, ratio=%f, time=%d\n", position, velocity, angle, angle_velocity, successes, failures, successes/(successes+failures), t);
         if(fabs(angle) < 0.1) //in balance
         {
             NAR_AddInputNarsese("good. :|:");

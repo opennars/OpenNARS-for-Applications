@@ -29,10 +29,11 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
-void Decision_Execute(Decision *decision, long currentTime)
+void Decision_Execute(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
+    Term feedback = decision->op.term; //atomic operation / operator
     //and add operator feedback
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
@@ -42,13 +43,10 @@ void Decision_Execute(Decision *decision, long currentTime)
         {
             return;
         }
-        NAR_AddInputBelief(operation);
-    }
-    else //atomic operation / operator
-    {
-        NAR_AddInputBelief(decision->op.term);
+        feedback = operation;
     }
     (*decision->op.action)(decision->arguments);
+    NAR_AddInputBelief(feedback);
 }
 
 //"reflexes" to try different operations, especially important in the beginning

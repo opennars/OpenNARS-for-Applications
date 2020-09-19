@@ -11,8 +11,8 @@ def parseTask(s):
         s = s.replace(" :|:","")
         if "occurrenceTime" in s:
             M["occurrenceTime"] = s.split("occurrenceTime=")[1].split(" ")[0]
-    sentence = s.split(" Priority=")[0]
-    M["punctuation"] = sentence[-1]
+    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0]
+    M["punctuation"] = sentence[-4] if ":|:" in sentence else sentence[-1]
     M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
