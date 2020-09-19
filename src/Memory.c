@@ -204,7 +204,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
 {
     if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
-        fputs(revised ? (COLOR("\x1B[0;33m") "Revised: ") : (input ? (COLOR("\x1B[0;32m") "Input: ") : (COLOR("\x1B[0;33m") "Derived: ")), stdout);
+        fputs(revised ? (COLOR_YELLOW "Revised: ") : (input ? (COLOR_GREEN "Input: ") : (COLOR_YELLOW "Derived: ")), stdout);
         Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         if(occurrenceTime != OCCURRENCE_ETERNAL)
@@ -213,7 +213,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         }
         printf("Priority=%f ", priority);
         Truth_Print(truth);
-        fputs(COLOR("\x1B[0m"), stdout);
+        fputs(COLOR_RESET, stdout);
         fflush(stdout);
     }
 }

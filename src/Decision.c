@@ -45,9 +45,9 @@ void Decision_Execute(Decision *decision, long currentTime)
         }
         feedback = operation;
     }
-    fputs(COLOR("\x1B[0;31m"), stdout);
+    fputs(COLOR_RED, stdout);
     (*decision->op.action)(decision->arguments);
-    fputs(COLOR("\x1B[0m"), stdout);
+    fputs(COLOR_RESET, stdout);
     NAR_AddInputBelief(feedback);
     
 }
@@ -215,8 +215,9 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
     }
     //set execute and return execution
-    printf(COLOR("\x1B[0;31m") "decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); puts(COLOR("\x1B[0m"));
+    printf(COLOR_RED "decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+    Narsese_PrintTerm(&bestImp.term);
+    puts(COLOR_RESET);
     decision.execute = true;
     return decision;
 }

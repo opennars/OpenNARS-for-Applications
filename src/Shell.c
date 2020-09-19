@@ -104,8 +104,10 @@ int Shell_ProcessInput(char *line)
         //accept comments, commands, timestep, and narsese
         if(line[0] == '/' && line[1] == '/')
         {
-            fputs("Comment: ", stdout);
-            puts(&line[2]); fflush(stdout);
+            fputs(COLOR_MAGENTA "Comment: ", stdout);
+            fputs(&line[2], stdout);
+            puts(COLOR_RESET);
+            fflush(stdout);
             return SHELL_CONTINUE;
         }
         else
@@ -186,9 +188,9 @@ int Shell_ProcessInput(char *line)
         {
             unsigned int steps;
             sscanf(line, "%u", &steps);
-            printf("performing %u inference steps:\n", steps); fflush(stdout);
+            printf(COLOR_CYAN "performing %u inference steps:\n" COLOR_RESET, steps); fflush(stdout);
             NAR_Cycles(steps);
-            printf("done with %u additional inference steps.\n", steps); fflush(stdout);
+            printf(COLOR_CYAN "done with %u additional inference steps.\n" COLOR_RESET, steps); fflush(stdout);
         }
         else
         {

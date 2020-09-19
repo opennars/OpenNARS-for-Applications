@@ -102,10 +102,11 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
-        fputs("Input: ", stdout);
+        fputs(COLOR_GREEN "Input: ", stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
-        puts(isEvent ? " :|:" : ""); 
+        puts(isEvent ? " :|:" : "");
+        fputs(COLOR_RESET, stdout);
         fflush(stdout);
         for(int i=0; i<concepts.itemsAmount; i++)
         {
@@ -174,7 +175,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             Continue:;
         }
-        fputs("Answer: ", stdout);
+        fputs(COLOR_RED "Answer: ", stdout);
         if(best_truth.confidence == 1.0)
         {
             puts("None.");
@@ -192,6 +193,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             Truth_Print(&best_truth);
         }
+        fputs(COLOR_RESET, stdout);
         fflush(stdout);
     }
     //input beliefs and goals
