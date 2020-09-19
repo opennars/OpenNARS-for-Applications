@@ -184,7 +184,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         else
         {
             Narsese_PrintTerm(&best_term);
-            fputs(COLOR_RED, stdout);
+            fputs(COLOR_BOLD COLOR_RED, stdout);
             if(answerOccurrenceTime == OCCURRENCE_ETERNAL)
             {
                 printf(". creationTime=%ld ", answerCreationTime);
