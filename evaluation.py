@@ -64,11 +64,11 @@ def Test(Example, outputString):
     AnswerRatioTest = True
     for i in range(len(lines)):
         line = lines[i].strip()
-        if line.startswith(expect_condition):
+        if expect_condition in line:
             QuestionsTotal += 1.0
             QuestionsTotalGlobal += 1.0
-            isAnswerCondition = line.startswith(expect_condition_answer)
-            isExecutionCondition = line.startswith(expect_condition_execution)
+            isAnswerCondition = expect_condition_answer in line
+            isExecutionCondition = expect_condition_execution in line
             if isAnswerCondition:
                 ConfidenceExpected = 0
                 ExpectedOutput = line.split(expect_condition_answer)[1].strip() + " "
@@ -83,7 +83,7 @@ def Test(Example, outputString):
                 CreationTimeOfMax = 0
                 for j in reversed(range(i)): #go in reverse, don't jump over previous expects
                     line_before = lines[j].strip()
-                    if line_before.startswith("Answer:") and ExpectedOutput in line_before:
+                    if "Answer:" in line_before and ExpectedOutput in line_before:
                         ConfidenceObtained = float(line_before.split("confidence=")[1])
                         CreationTime = int(line_before.split("creationTime=")[1].split(" ")[0])
                         if ConfidenceObtained > ConfidenceObtainedMax:
@@ -92,7 +92,7 @@ def Test(Example, outputString):
                         FoundOutput = True
                         QuestionsAnswered += 1.0
                         QuestionsAnsweredGlobal += 1.0
-                    if line_before.startswith(expect_condition):
+                    if expect_condition in line_before:
                         break
                 if not AnswerRatioTest:
                     if not FoundOutput or ConfidenceObtainedMax < ConfidenceExpected:
@@ -107,8 +107,8 @@ def Test(Example, outputString):
                 Message = line.split(expect_condition)[1]
                 for j in reversed(range(i)):
                     line_before = lines[j].strip()
-                    if line_before.startswith("^"):
-                        if Message != line_before:
+                    if "executed with args" in line_before:
+                        if Message != "^" + (line_before + "^").split("^")[1]:
                             print("Failure for " + line + " in "+ Example)
                             exit(0)
                         else:
@@ -166,5 +166,5 @@ ctests("Pong", "./NAR pong 10000", True)
 ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 10000", True)
 ctests("Cartpole", "./NAR cartpole 10000", True)
-ctests("Robot", "./NAR robot 2020", True)
+ctests("Robot", "./NAR robot 1000", True)
 print("\nProcedure learning metrics done");

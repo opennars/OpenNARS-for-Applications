@@ -29,7 +29,7 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 //Inject action event after execution or babbling
-void Decision_Execute(Decision *decision, long currentTime)
+void Decision_Execute(Decision *decision)
 {
     assert(decision->operationID > 0, "Operation 0 is reserved for no action");
     decision->op = operations[decision->operationID-1];
@@ -217,7 +217,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     //set execute and return execution
     printf(COLOR_RED "decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
     Narsese_PrintTerm(&bestImp.term);
-    puts(COLOR_RESET);
+    fputs("\n" COLOR_RESET, stdout);
     decision.execute = true;
     return decision;
 }

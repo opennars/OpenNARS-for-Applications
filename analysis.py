@@ -38,9 +38,9 @@ for l in lines:
         term = L[0].strip()
         information = eval(":".join(L[1:]).strip())
         concepts[term] = information
-    elif l.startswith("*concepts"):
+    elif "*concepts" in l:
         Active = True
-    elif l.startswith("*done"):
+    elif "*done" in l:
         break
         
 ConceptPriorities=[]

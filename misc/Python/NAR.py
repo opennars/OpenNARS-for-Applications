@@ -11,17 +11,18 @@ def parseTask(s):
         s = s.replace(" :|:","")
         if "occurrenceTime" in s:
             M["occurrenceTime"] = s.split("occurrenceTime=")[1].split(" ")[0]
-    sentence = s.split(" Priority=")[0]
-    M["punctuation"] = sentence[-1]
+    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0]
+    M["punctuation"] = sentence[-4] if ":|:" in sentence else sentence[-1]
     M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
     return M
     
 def parseExecution(e):
+    Op = "^" + (e.split(" ")[0]+"^").split("^")[1]
     if "args " not in e:
-        return {"operator" : e.split(" ")[0], "arguments" : []}
-    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
+        return {"operator" : Op, "arguments" : []}
+    return {"operator" : Op, "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
 
 def GetRawOutput():
     NAR.sendline("0")
@@ -30,10 +31,10 @@ def GetRawOutput():
 
 def GetOutput():
     lines = GetRawOutput()
-    executions = [parseExecution(l) for l in lines if l.startswith('^')]
-    inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
-    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
-    answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
+    executions = [parseExecution(l) for l in lines if "executed with args" in l]
+    inputs = [parseTask(l.split("Input: ")[1]) for l in lines if 'Input:' in l]
+    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if 'Derived:' in l]
+    answers = [parseTask(l.split("Answer: ")[1]) for l in lines if 'Answer:' in l]
     return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions}
 
 def GetStats():

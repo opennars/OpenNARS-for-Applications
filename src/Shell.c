@@ -105,8 +105,8 @@ int Shell_ProcessInput(char *line)
         if(line[0] == '/' && line[1] == '/')
         {
             fputs(COLOR_MAGENTA "Comment: ", stdout);
-            fputs(&line[2], stdout);
-            puts(COLOR_RESET);
+            puts(&line[2]);
+            fputs(COLOR_RESET, stdout);
             fflush(stdout);
             return SHELL_CONTINUE;
         }

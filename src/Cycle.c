@@ -141,7 +141,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     }
     if(best_decision.execute && best_decision.operationID > 0)
     {
-        Decision_Execute(&best_decision, currentTime);
+        Decision_Execute(&best_decision);
         //reset cycling goal events after execution to avoid "residue actions"
         PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
         //also don't re-add the selected goal:
