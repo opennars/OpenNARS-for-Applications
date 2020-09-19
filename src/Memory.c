@@ -207,6 +207,8 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         fputs(revised ? (COLOR_BOLD COLOR_YELLOW "Revised: " COLOR_RESET) : 
                         (input ? (COLOR_BOLD COLOR_GREEN "Input: " COLOR_RESET) : (COLOR_BOLD COLOR_YELLOW "Derived: " COLOR_RESET)), stdout);
         Narsese_PrintTerm(term);
+        fputs(revised ? (COLOR_YELLOW) : 
+                        (input ? (COLOR_GREEN) : (COLOR_YELLOW)), stdout);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
         if(occurrenceTime != OCCURRENCE_ETERNAL)
         {

@@ -104,6 +104,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
         fputs(COLOR_BOLD COLOR_GREEN "Input: " COLOR_RESET, stdout);
         Narsese_PrintTerm(&term);
+        fputs(COLOR_GREEN, stdout);
         fputs("?", stdout);
         puts(isEvent ? " :|:" : "");
         fputs(COLOR_RESET, stdout);
@@ -175,7 +176,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             Continue:;
         }
-        fputs(COLOR_BOLD COLOR_RED "Answer: " COLOR_RESET, stdout);
+        fputs(COLOR_BOLD COLOR_RED "Answer: " COLOR_RESET COLOR_RED, stdout);
         if(best_truth.confidence == 1.0)
         {
             puts("None.");
@@ -183,6 +184,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         else
         {
             Narsese_PrintTerm(&best_term);
+            fputs(COLOR_RED, stdout);
             if(answerOccurrenceTime == OCCURRENCE_ETERNAL)
             {
                 printf(". creationTime=%ld ", answerCreationTime);
