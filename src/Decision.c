@@ -49,7 +49,6 @@ void Decision_Execute(Decision *decision)
     (*decision->op.action)(decision->arguments);
     fputs(COLOR_RESET, stdout);
     NAR_AddInputBelief(feedback);
-    
 }
 
 //"reflexes" to try different operations, especially important in the beginning
