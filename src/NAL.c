@@ -34,7 +34,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
             printf("subtree = Term_ExtractSubterm(&term%d, %d);\n", premiseIndex, i);
-            printf("if(substitutions[%d].atoms[0]!=0) { nal6subs = Variable_UnifyIncremental(&subtree, &substitutions[%d], nal6subs); }", atom, atom);
+            printf("if(substitutions[%d].atoms[0]!=0){ nal6subs = Variable_UnifyIncremental(&subtree, &substitutions[%d], nal6subs); }", atom, atom);
             printf("if(substitutions[%d].atoms[0]!=0 && !nal6subs.success){ goto RULE_%d; }\n", atom, ruleID);
             printf("substitutions[%d] = subtree;\n", atom);
         }
@@ -84,7 +84,7 @@ static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* con
             NAL_GeneratePremisesUnifier(i, term2.atoms[i], 2);
         }
     }
-    puts("Term conclusion = {0}; bool nal6apply_success;");
+    puts("Term conclusion = {0}; bool nal6apply_success = true;");
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         NAL_GenerateConclusionSubstitution(i, conclusion_term.atoms[i]);
@@ -102,8 +102,8 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     }
-    puts("if(nal6subs.success) { conclusion = Variable_ApplySubstitute(RuleTable_Reduce(conclusion, false), nal6subs, &nal6apply_success); }");
-    puts("if(nal6apply_success) { NAL_DerivedEvent(conclusion, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, 0, validation_concept, validation_cid); }\n}\n");
+    puts("if(nal6subs.success){ conclusion = Variable_ApplySubstitute(conclusion, nal6subs, &nal6apply_success); }");
+    puts("if(nal6apply_success){ NAL_DerivedEvent(RuleTable_Reduce(conclusion, false), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, 0, validation_concept, validation_cid); }\n}\n");
 }
 
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
