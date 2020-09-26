@@ -264,7 +264,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 if(len == 0) //postcondition always len1
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
-                    Decision_AssumptionOfFailure(op_id, currentTime); //collection of negative evidence, new way
+                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)

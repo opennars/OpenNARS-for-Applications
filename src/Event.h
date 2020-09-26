@@ -48,6 +48,7 @@ typedef struct {
     bool processed;
     long creationTime;
     bool isUserKnowledge;
+    bool usedToPredict;
 } Event;
 
 //Methods//

@@ -12,6 +12,10 @@ BOLD = "\x1B[1m"
 for line in sys.stdin:
     line = line.rstrip()
     COLOR = "\x1B[0m"
+    if line.startswith("performing ") or line.startswith("done with"):
+        COLOR = CYAN
+    if line.startswith("Comment:"):
+        COLOR = MAGENTA
     if line.startswith("Input:"):
         COLOR = GREEN
     if line.startswith("Derived:"):
