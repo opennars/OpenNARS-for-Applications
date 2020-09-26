@@ -218,7 +218,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
-void Decision_AssumptionOfFailure(int operationID, long currentTime)
+void Decision_Anticipate(int operationID, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
@@ -234,7 +234,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
             }
             Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
             Concept *current_prec = imp.sourceConcept;
-            Event *precondition = &current_prec->belief_spike; //a. :|:
+            Event *precondition = &current_prec->belief_spike;
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
@@ -243,7 +243,7 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                              .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime };
                 bool success;
-                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success); //(&/,a,op). :|:
+                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
                 if(success)
                 {
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
@@ -254,14 +254,33 @@ void Decision_AssumptionOfFailure(int operationID, long currentTime)
                         Truth TPast = Truth_Projection(precondition->truth, 0, imp.occurrenceTimeOffset);
                         negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
                         negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
+                        stampID--;
                         assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
                         Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
                         if(added != NULL)
                         {
                             added->sourceConcept = negative_confirmation.sourceConcept;
                             added->sourceConceptId = negative_confirmation.sourceConceptId;
-                        }                                
-                        stampID--;
+                        } 
+                        Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
+                        if(subs.success)
+                        {
+                            bool success2;
+                            result.term = Variable_ApplySubstitute(result.term, subs, &success2);
+                            if(success2)
+                            {
+                                Concept *c = Memory_Conceptualize(&result.term, currentTime);
+                                if(c != NULL)
+                                {
+                                    c->usage = Usage_use(c->usage, currentTime, false);
+                                    c->predicted_belief = result;
+                                    Event eternal = result;
+                                    eternal.truth = Truth_Eternalize(eternal.truth);
+                                    eternal.occurrenceTime = OCCURRENCE_ETERNAL;
+                                    c->belief = Inference_RevisionAndChoice(&c->belief, &eternal, currentTime, NULL);
+                                }
+                            }
+                        }
                     }
                 }
             }
