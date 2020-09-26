@@ -106,8 +106,6 @@ R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
 R2( A, (A ==> B), |-, B, Truth_Deduction )
 R2( B, (A ==> B), |-, A, Truth_Abduction )
 R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
-R2( (M --> A), (M --> B), |-, ((M --> B) && (M --> A)), Truth_Intersection )
-R2( (A --> M), (B --> M), |-, ((B --> M) && (A --> M)), Truth_Intersection )
 //NAL6 variable introduction
 R2Ordered( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
 R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
