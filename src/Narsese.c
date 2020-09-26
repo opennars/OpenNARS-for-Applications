@@ -95,9 +95,9 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
-            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
+            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes .
             {
-                narsese_replaced[j] = ';';
+                narsese_replaced[j] = '.';
                 i+=2; j++;
             }
             else
@@ -145,9 +145,9 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                     i+=3; j++;
                 }
                 else
-                if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes $
+                if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes ?
                 {
-                    narsese_replaced[j] = '$';
+                    narsese_replaced[j] = '?';
                     i+=3; j++;
                 }
                 else
@@ -443,6 +443,11 @@ void Narsese_PrintAtom(Atom atom)
             fputs("=/>", stdout);
         }
         else
+        if(Narsese_copulaEquals(atom, '?'))
+        {
+            fputs("==>", stdout);
+        }
+        else
         if(Narsese_copulaEquals(atom, '+'))
         {
             fputs("&/", stdout);
@@ -451,6 +456,11 @@ void Narsese_PrintAtom(Atom atom)
         if(Narsese_copulaEquals(atom, ';'))
         {
             fputs("&|", stdout);
+        }
+        else
+        if(Narsese_copulaEquals(atom, '.'))
+        {
+            fputs("&&", stdout);
         }
         else
         if(Narsese_copulaEquals(atom, '='))
@@ -502,7 +512,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     bool isNegation = Narsese_copulaEquals(atom, '!');
     bool isExtSet = Narsese_copulaEquals(atom, '"');
     bool isIntSet = Narsese_copulaEquals(atom, '\'');
-    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=');
+    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=') || Narsese_copulaEquals(atom, '?');
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);

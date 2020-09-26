@@ -57,9 +57,8 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
     return false;
 }
 
-Substitution Variable_Unify(Term *general, Term *specific)
+Substitution Variable_UnifyIncremental(Term *general, Term *specific, Substitution substitution)
 {
-    Substitution substitution = {0};
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general->atoms[i];
@@ -90,6 +89,12 @@ Substitution Variable_Unify(Term *general, Term *specific)
     }
     substitution.success = true;
     return substitution;
+}
+
+Substitution Variable_Unify(Term *general, Term *specific)
+{
+    Substitution substitution = {0};
+    return Variable_UnifyIncremental(general, specific, substitution);
 }
 
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
