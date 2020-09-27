@@ -16,13 +16,15 @@ for line in sys.stdin:
     COLOR = GREEN
     if line.startswith("performing ") or line.startswith("done with"):
         COLOR = CYAN
-    if line.startswith("Comment:") or line.startswith("//"):
+    elif line.startswith("Comment: expected:"):
+        COLOR = BOLD + MAGENTA
+    elif line.startswith("Comment:") or line.startswith("//"):
         COLOR = MAGENTA
-    if line.startswith("Input:"):
+    elif line.startswith("Input:"):
         COLOR = GREEN
-    if line.startswith("Derived:"):
+    elif line.startswith("Derived:"):
         COLOR = YELLOW
-    if line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
+    elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
         COLOR = BOLD + RED
     #Ext and Int set
     l = re.sub(r"{([^><:\(\)\*]*)}", MAGENTA+r"{" + GREEN + r"\1" + MAGENTA + "}" + COLOR, line)
