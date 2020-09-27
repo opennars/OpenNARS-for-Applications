@@ -105,7 +105,7 @@ R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Inductio
 R2Ordered( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
 R2Ordered( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
 R2Ordered( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
-//NAL5/7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
+//Other NAL5/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
 
 #endif
 

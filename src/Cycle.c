@@ -314,7 +314,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, e->stamp, currentTime, priority, 1, false, NULL, 0);
+            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
             for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
                 ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
@@ -368,7 +368,12 @@ void Cycle_Inference(long currentTime)
                                     Narsese_PrintTerm(&c->term);
                                     puts("");
                                 }
-                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                long occurrenceTimeDistance = 0;
+                                if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
+                                {
+                                    occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
+                                }
+                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                             }
                         }
                     }

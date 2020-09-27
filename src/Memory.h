@@ -90,9 +90,5 @@ void Memory_AddInputEvent(Event *event, long currentTime);
 void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
-//print added implication
-void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, bool revised);
-//print added event
-void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised);
 
 #endif
