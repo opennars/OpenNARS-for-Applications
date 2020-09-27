@@ -1,4 +1,5 @@
 *volume=0
+*stats
 //NEW EXAMPLE
 //Shape1 is a rectangle
 <{shape1} --> rectangle>. :|:
@@ -25,6 +26,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape2})>. :|:
 
+*stats
 //NEW EXAMPLE
 //Shape1 is a rectangle
 <{shape1} --> rectangle>. :|:
@@ -50,6 +52,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape9})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape6 is a rectangle
 <{shape6} --> rectangle>. :|:
@@ -75,6 +78,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape7})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape6 is a rectangle
 <{shape6} --> rectangle>. :|:
@@ -100,6 +104,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape5})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape11 is a rectangle
 <{shape11} --> trapezoid>. :|:
@@ -125,6 +130,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape12})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape91 is a rectangle
 <{shape91} --> rectangle>. :|:
@@ -151,6 +157,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape92})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape91 is a rectangle
 <{shape91} --> rectangle>. :|:
@@ -176,6 +183,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape99})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape96 is a rectangle
 <{shape96} --> rectangle>. :|:
@@ -201,6 +209,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape97})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape56 is a rectangle
 <{shape56} --> rectangle>. :|:
@@ -226,6 +235,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape95})>. :|:
 
+*stats
 //NEW EXAMPLE
 //shape911 is a rectangle
 <{shape911} --> trapezoid>. :|:
@@ -251,6 +261,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape912})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form1 is a rectangle
 <{form1} --> rectangle>. :|:
@@ -277,6 +288,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form2})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form1 is a rectangle
 <{form1} --> rectangle>. :|:
@@ -302,6 +314,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form9})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form6 is a rectangle
 <{form6} --> rectangle>. :|:
@@ -327,6 +340,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form7})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form6 is a rectangle
 <{form6} --> rectangle>. :|:
@@ -352,6 +366,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form5})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form11 is a rectangle
 <{form11} --> trapezoid>. :|:
@@ -377,6 +392,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form12})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form91 is a rectangle
 <{form91} --> rectangle>. :|:
@@ -403,6 +419,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form92})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form91 is a rectangle
 <{form91} --> rectangle>. :|:
@@ -428,6 +445,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form99})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form96 is a rectangle
 <{form96} --> rectangle>. :|:
@@ -453,6 +471,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form97})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form56 is a rectangle
 <{form56} --> rectangle>. :|:
@@ -478,6 +497,7 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form95})>. :|:
 
+*stats
 //NEW EXAMPLE
 //form911 is a rectangle
 <{form911} --> trapezoid>. :|:

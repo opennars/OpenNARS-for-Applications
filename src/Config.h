@@ -69,7 +69,7 @@
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth (2^n-1, so 7 leads to 2 levels)
-#define UNIFICATION_DEPTH 7
+#define UNIFICATION_DEPTH 15
 
 /*------------------*/
 /* Space parameters */

@@ -107,11 +107,11 @@ R2( A, (A ==> B), |-, B, Truth_Deduction )
 R2( B, (A ==> B), |-, A, Truth_Abduction )
 R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
 //NAL6 variable introduction
-R2Ordered( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
-R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
-R2Ordered( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
-R2Ordered( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
-R2Ordered( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
+R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
+R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
+R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
+R2( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
+R2( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
 //NAL7/8 temporal induction and conditional inference is handled by MSC links, see Inference.h!
 
 #endif
