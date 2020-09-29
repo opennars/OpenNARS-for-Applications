@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef H_MEMORY
+#define H_MEMORY
 
 /////////////////
 //  NAR Memory //

@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef STAMP_H
-#define STAMP_H
+#ifndef H_STAMP
+#define H_STAMP
 
-//////////////////////
-//  Stamp           //
-//////////////////////
+/////////////
+//  Stamp  //
+/////////////
 //keeps track of evidental bases
 
 //References//

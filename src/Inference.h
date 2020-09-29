@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef INFERENCE_H
-#define INFERENCE_H
+#ifndef H_INFERENCE
+#define H_INFERENCE
 
 ///////////////////
 //  INFERENCE    //
@@ -33,7 +33,7 @@
 //the commented derivations are all that need to happen in NAR.
 
 //References//
-//-----------//
+//----------//
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>

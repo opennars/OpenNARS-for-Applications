@@ -1,13 +1,3 @@
-#ifndef BELIEF_H
-#define BELIEF_H
-
-//////////////////////
-//  Implication     //
-//////////////////////
-//essentially allowing concepts to predict activations of others
-
-//References//
-//-----------//
 /* 
  * The MIT License
  *
@@ -32,6 +22,16 @@
  * THE SOFTWARE.
  */
 
+#ifndef H_IMPLICATION
+#define H_IMPLICATION
+
+//////////////////////
+//  Implication     //
+//////////////////////
+//essentially allowing concepts to predict activations of others
+
+//References//
+//----------//
 #include "Term.h"
 #include "Stamp.h"
 

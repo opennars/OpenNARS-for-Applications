@@ -31,7 +31,7 @@
 //Support for NAL-6 variables
 
 //References//
-//-----------//
+//----------//
 #include "Narsese.h"
 
 //Data structure//

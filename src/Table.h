@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef H_TABLE
+#define H_TABLE
 
-//////////////////////
-//  Table           //
-//////////////////////
+///////////////
+//   Table   //
+///////////////
 //A table of implications, ranked by truth expectation
 
 //References//

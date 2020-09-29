@@ -28,11 +28,11 @@
 /////////////////////////////////////
 //  First in first out (forgotten) //
 /////////////////////////////////////
-//A FIFO-like structure, that only supports put in and overwrites
-//the oldest task when full
+//A FIFO-like structure for event sequencing, which overwrites
+//the oldest task when full on Add
 
 //References//
-//-----------//
+//----------//
 #include "Inference.h"
 #include "Globals.h"
 #include "Narsese.h"

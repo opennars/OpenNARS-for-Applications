@@ -32,7 +32,7 @@
 //the oldest task when full
 
 //References//
-//-----------//
+//----------//
 #include "Globals.h"
 #include "Decision.h"
 #include "Inference.h"

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef UDPNAR_H
-#define UDPNAR_H
+#ifndef H_UDPNAR
+#define H_UDPNAR
 
 //////////////
 //  UDPNAR  //

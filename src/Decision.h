@@ -22,8 +22,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef DECISION_H
-#define DECISION_H
+#ifndef H_DECISION
+#define H_DECISION
+
+////////////////////
+//  NAR Decision  //
+////////////////////
+//Realization of goals
 
 //References//
 //----------//
@@ -32,11 +37,6 @@
 #include "Memory.h"
 #include "NAR.h"
 #include "Config.h"
-
-////////////////////
-//  NAR Decision  //
-////////////////////
-//Realization of goals
 
 //Parameters//
 //----------//

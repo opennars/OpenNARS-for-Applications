@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef STACK_H
-#define STACK_H
+#ifndef H_STACK
+#define H_STACK
 
 /////////////
 //  Stack  //
@@ -31,7 +31,7 @@
 //The stack for use by the hashtable
 
 //References//
-//-----------//
+//----------//
 #include <stdlib.h>
 #include <stdbool.h>
 #include "Concept.h"

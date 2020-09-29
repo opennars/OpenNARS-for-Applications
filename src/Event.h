@@ -26,11 +26,12 @@
 #define EVENT_H
 
 ///////////////////
-//  Term Event   //
+//   Event       //
 ///////////////////
+//An event named by a term
 
 //References//
-//-----------//
+//----------//
 #include "Term.h"
 #include "Stamp.h"
 

@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONCEPT_H
-#define CONCEPT_H
+#ifndef H_CONCEPT
+#define H_CONCEPT
 
 ///////////////////
-//  Term Concept  //
+//   Concept     //
 ///////////////////
-//A concept named by a Term
+//A concept named by a term
 
 //References//
 //-----------//
