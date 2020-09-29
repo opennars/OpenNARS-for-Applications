@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef H_CONFIG
+#define H_CONFIG
 
 /*-------------------------*/
 /* Anticipation parameters */

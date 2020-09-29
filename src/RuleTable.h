@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef RULETABLE_H
-#define RULETABLE_H
+#ifndef H_RULETABLE
+#define H_RULETABLE
 
 /////////////////
 //  RuleTable  //

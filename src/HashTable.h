@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef HASHTABLE_H
-#define HASHTABLE_H
+#ifndef H_HASHTABLE
+#define H_HASHTABLE
 
 /////////////////
 //  HashTable  //
@@ -31,7 +31,7 @@
 //The hashtable HT[Term] -> Concept*
 
 //References//
-//-----------//
+//----------//
 #include <stdlib.h>
 #include <stdbool.h>
 #include "Stack.h"

@@ -32,7 +32,7 @@
 //and dictates the format of the internal compound term encoding
 
 //References//
-//-----------//
+//----------//
 #include <string.h>
 #include <stdio.h>
 #include "Term.h"

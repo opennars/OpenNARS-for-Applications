@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef PRIORITYQUEUE_H
-#define PRIORITYQUEUE_H
+#ifndef H_PRIORITYQUEUE
+#define H_PRIORITYQUEUE
 
 /////////////////////
 //  Priority queue //
@@ -33,7 +33,7 @@
 //Ported from https://github.com/quxiaofeng/python-stl/blob/master/meshlab/MeshLabSrc_AllInc_v132/meshlab/src/plugins_experimental/edit_ocme/src/cache/old/mmheap.h
 
 //References//
-//-----------//
+//----------//
 #include <stdlib.h>
 #include <stdbool.h>
 

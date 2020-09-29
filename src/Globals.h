@@ -22,16 +22,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef H_GLOBALS
+#define H_GLOBALS
 
+//////////////
+//  Globals //
+//////////////
+
+//References//
+//////////////
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h> 
 
-/*---------*/
-/* Globals */
-/*---------*/
+//Macros//
+//////////
 //Whether debug mode should be on
 #define DEBUG false
 //Whether input should be printed

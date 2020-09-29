@@ -31,7 +31,7 @@
 //Support for UDP packet transfer
 
 //References//
-//-----------//
+//----------//
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef INVERTEDATOMINDEX_H
-#define INVERTEDATOMINDEX_H
+#ifndef H_INVERTEDATOMINDEX
+#define H_INVERTEDATOMINDEX
 
 ///////////////////////////
 //  Inverted atom table  //

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef NAR_H
-#define NAR_H
+#ifndef H_NAR
+#define H_NAR
 
 //////////////////////////////
 //  NAR - Yet Another NARS  //

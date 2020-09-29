@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef H_SHELL
+#define H_SHELL
 
 /////////////
 //  Shell  //

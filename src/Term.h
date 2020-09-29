@@ -22,12 +22,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef Term_H
-#define Term_H
+#ifndef H_TERM
+#define H_TERM
 
-///////////////////
-//   Term        //
-///////////////////
+//////////////
+//   Term   //
+//////////////
 
 //Description//
 //-----------//
@@ -35,7 +35,7 @@
 //(that way no Hash ops are necessary, it's faster for this Term size)
 
 //References//
-//-----------//
+//----------//
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

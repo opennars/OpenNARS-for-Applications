@@ -22,15 +22,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef TRUTH_H
-#define TRUTH_H
+#ifndef H_TRUTH
+#define H_TRUTH
 
 ////////////////////////////////////////////
 //  NAL truth value and truth functions   //
 ////////////////////////////////////////////
 
 //References//
-//-----------//
+//----------//
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>

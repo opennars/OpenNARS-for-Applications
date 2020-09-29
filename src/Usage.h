@@ -22,15 +22,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef USAGE_H
-#define USAGE_H
+#ifndef H_USAGE
+#define H_USAGE
 
-/////////////////////////////
-//  NAR usefulness value //
-/////////////////////////////
+////////////////////////////////
+//  concept usefulness value  //
+////////////////////////////////
 
 //References//
-//-----------//
+//----------//
 #include <stdio.h>
 #include <stdbool.h>
 #include "Config.h"
