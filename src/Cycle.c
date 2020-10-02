@@ -260,11 +260,11 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
+                int op_id = Narsese_getOperationID(&postcondition.term);
+                Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
-                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)

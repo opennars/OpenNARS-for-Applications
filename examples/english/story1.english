@@ -7,6 +7,6 @@ who left the forest?
 //expected: Answer: <cat --> (leave /1 forest)>. :|: occurrenceTime=1 Truth: frequency=1.000000, confidence=0.900000
 1000
 the wolf leaves the forest
-100
+200
 the hunter sees the wolf?
 //expected: Answer: <hunter --> (see /1 wolf)>. :|: occurrenceTime=1005 Truth: frequency=1.000000, confidence=0.186674

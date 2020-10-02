@@ -55,7 +55,7 @@
 //Additional event priority decay of an event which was used
 #define EVENT_DURABILITY_ON_USAGE 0.0
 //Concept priority decay of events per cycle
-#define CONCEPT_DURABILITY 0.9
+#define CONCEPT_DURABILITY 0.95
 //Minimum confidence to accept events
 #define MIN_CONFIDENCE 0.01
 //Minimum priority to accept events
@@ -79,9 +79,9 @@
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
-#define CYCLING_BELIEF_EVENTS_MAX 40
+#define CYCLING_BELIEF_EVENTS_MAX 80
 //Maximum amount of goal events attention buffer holds
-#define CYCLING_GOAL_EVENTS_MAX 40
+#define CYCLING_GOAL_EVENTS_MAX 80
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's

@@ -3,27 +3,27 @@
 <corridor --> in>. :|:
 <({SELF} * kitchen) --> ^go>. :|:
 <({cat} * kitchen) --> in>. :|:
-100
+15
 <corridor --> in>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-100
+15
 <corridor --> in>. :|:
 <({SELF} * livingroom) --> ^go>. :|:
 //no cat this time, it doesn't like the livingroom :)
-100
+15
 <corridor --> in>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
 100
-//Ok you are in corridor now
+//Ok now you are in corridor
 <corridor --> in>. :|:
 //NARS, where is the cat?
 //Passive question <({cat} * ?where) --> in>? :|: wouldn't trigger a decision
 //Active question however does:
 <(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
 G! :|:
-100
+15
 //expected: ^go executed with args ({SELF} * bedroom)
 
 //ok, feedback of NARS going to the bedroom, the cat is there!
