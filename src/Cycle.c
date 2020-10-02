@@ -408,42 +408,33 @@ void Cycle_Prediction(long currentTime)
             }
             for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
             {
-                Implication imp = c->precondition_beliefs[0].array[k];
-                Term subject = Term_ExtractSubterm(&imp.term, 1);
-                if(Variable_Unify(&subject, &e->term).success)
+                if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[k]))
                 {
-                    for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
+                    Table_Remove(&c->precondition_beliefs[0], k--);
+                    continue;
+                }
+                Implication *imp = &c->precondition_beliefs[0].array[k];
+                Term precondition = Term_ExtractSubterm(&imp->term, 1);
+                Substitution subs = Variable_Unify(&precondition, &e->term);
+                if(subs.success)
+                {
+                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
+                    Concept *c_pre = Memory_FindConceptByTerm(&precondition);
+                    if(c_pre != NULL)
                     {
-                        if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[i]))
+                        Substitution subs = Variable_Unify(&precondition, &e->term);
+                        Implication updated_imp = *imp;
+                        bool success;
+                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                        if(success)
                         {
-                            Table_Remove(&c->precondition_beliefs[0], i--);
-                            continue;
-                        }
-                        Implication *imp = &c->precondition_beliefs[0].array[i];
-                        assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                        Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                        Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                        Concept *c_pre = Memory_FindConceptByTerm(&precondition);
-                        if(c_pre != NULL)
-                        {
-                            Substitution subs = Variable_Unify(&precondition, &e->term);
-                            if(subs.success)
+                            Event predicted = Inference_BeliefDeduction(e, &updated_imp);
+                            #pragma omp critical(Memory)
                             {
-                                Implication updated_imp = *imp;
-                                bool success;
-                                updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                                if(success)
-                                {
-                                    Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                                    #pragma omp critical(Memory)
-                                    {
-                                        Memory_AddEvent(&predicted, currentTime, parentpriority*Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
-                                    }
-                                }
+                                Memory_AddEvent(&predicted, currentTime, parentpriority*Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
                             }
                         }
                     }
-                    break;
                 }
             }
         }
