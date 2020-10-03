@@ -230,12 +230,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
-    Event eternal_event = *event;
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
-    {
-        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-        eternal_event.truth = Truth_Eternalize(event->truth);
-    }
+    Event eternal_event = Inference_Eternalize(event);
     if(event->isUserKnowledge)
     {
         ontology_handling = true;
@@ -412,9 +407,4 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
-}
-
-bool Memory_ImplicationValid(Implication *imp)
-{
-    return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
 }

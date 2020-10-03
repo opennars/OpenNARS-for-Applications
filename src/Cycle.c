@@ -164,14 +164,13 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                 if(c != NULL && c->processID != conceptProcessID && Variable_Unify(&c->term, &goal->term).success) //could be <a --> M>! matching to some <... =/> <$1 --> M>>.
                 {
                     c->processID = conceptProcessID;
-                    bool revised;
-                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                    c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, NULL);
                     for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                     {
                         for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                         {
                             Implication *imp = &c->precondition_beliefs[opi].array[j];
-                            if(!Memory_ImplicationValid(imp))
+                            if(!Concept_ImplicationValid(imp))
                             {
                                 Table_Remove(&c->precondition_beliefs[opi], j);
                                 j--;
@@ -335,30 +334,12 @@ void Cycle_Inference(long currentTime)
                         Stats_countConceptsMatchedTotal++;
                         if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
                         {
-                            //use eternal belief as belief
-                            Event* belief = &c->belief;
-                            Event future_belief = c->predicted_belief;
-                            //but if there is a predicted one in the event's window, use this one
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                                future_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &future_belief;
-                            }
-                            //unless there is an actual belief which falls into the event's window
-                            Event project_belief = c->belief_spike;
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                                project_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &project_belief;
-                            }
+                            //select a belief from the concept
+                            Event belief = Concept_SelectBelief(c, e->occurrenceTime);
                             //Check for overlap and apply inference rules
-                            if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                            if(!Stamp_checkOverlap(&e->stamp, &belief.stamp))
                             {
-                                Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                                Stamp stamp = Stamp_make(&e->stamp, &belief.stamp);
                                 if(PRINT_CONTROL_INFO)
                                 {
                                     fputs("Apply rule table on ", stdout);
@@ -369,11 +350,11 @@ void Cycle_Inference(long currentTime)
                                     puts("");
                                 }
                                 long occurrenceTimeDistance = 0;
-                                if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
+                                if(belief.occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
                                 {
-                                    occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
+                                    occurrenceTimeDistance = labs(belief.occurrenceTime - e->occurrenceTime);
                                 }
-                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                RuleTable_Apply(e->term, c->term, e->truth, belief.truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                             }
                         }
                     }
@@ -408,7 +389,7 @@ void Cycle_Prediction(long currentTime)
             }
             for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
             {
-                if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[k]))
+                if(!Concept_ImplicationValid(&c->precondition_beliefs[0].array[k]))
                 {
                     Table_Remove(&c->precondition_beliefs[0], k--);
                     continue;

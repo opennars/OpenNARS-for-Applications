@@ -88,7 +88,5 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
 void Memory_AddInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);
-//check if implication is still valid (source concept might be forgotten)
-bool Memory_ImplicationValid(Implication *imp);
 
 #endif

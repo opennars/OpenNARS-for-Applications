@@ -130,7 +130,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         {
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {
-                if(!Memory_ImplicationValid(&goalconcept->precondition_beliefs[opi].array[j]))
+                if(!Concept_ImplicationValid(&goalconcept->precondition_beliefs[opi].array[j]))
                 {
                     Table_Remove(&goalconcept->precondition_beliefs[opi], j--);
                     continue;
@@ -226,7 +226,7 @@ void Decision_Anticipate(int operationID, long currentTime)
         Concept *postc = concepts.items[j].address;
         for(int  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
         {
-            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
+            if(!Concept_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
             {
                 Table_Remove(&postc->precondition_beliefs[operationID], h);
                 h--;

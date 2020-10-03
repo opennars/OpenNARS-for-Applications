@@ -54,6 +54,9 @@ typedef struct {
 
 //Methods//
 //-------//
-//todo
+//Select a belief from the concept (belief, predicted_belief or belief_spike if close to queryTime distance)
+Event Concept_SelectBelief(Concept *c, long queryTime);
+//Whether a concept's implication is still valid (source concept might be forgotten!)
+bool Concept_ImplicationValid(Implication *imp);
 
 #endif
