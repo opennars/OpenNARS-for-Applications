@@ -172,7 +172,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                         for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                         {
                             Implication *imp = &c->precondition_beliefs[opi].array[j];
-                            if(!Memory_ImplicationValid(imp))
+                            if(!Concept_ImplicationValid(imp))
                             {
                                 Table_Remove(&c->precondition_beliefs[opi], j);
                                 j--;
@@ -391,7 +391,7 @@ void Cycle_Prediction(long currentTime)
             }
             for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
             {
-                if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[k]))
+                if(!Concept_ImplicationValid(&c->precondition_beliefs[0].array[k]))
                 {
                     Table_Remove(&c->precondition_beliefs[0], k--);
                     continue;
@@ -461,7 +461,7 @@ void Cycle_Perform(long currentTime)
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     Cycle_Prediction(currentTime);
-    //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
+    //5. Apply relative forgetting to events according to BELIEF_EVENT_DURABILITY, and update concept priorities
     Cycle_RelativeForgetting(currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on BELIEF_EVENT_DURABILITY_ON_USAGE
     Cycle_PushEvents(currentTime);

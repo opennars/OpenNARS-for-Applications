@@ -48,13 +48,29 @@ Event Concept_SelectBelief(Concept *c, long queryTime)
     return belief;
 }
 
+bool Concept_ImplicationValid(Implication *imp)
+{
+    return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
+}
 
 double Concept_Priority(Concept *c, long currentTime)
 {
-    double belief_prio = MAX(MAX(Event_Priority(&c->belief, currentTime), 
-                                 Event_Priority(&c->belief_spike, currentTime)),
-                                 Event_Priority(&c->predicted_belief, currentTime));
-    double goal_prio = MAX(Event_Priority(&c->goal_spike, currentTime), 
-                           Event_Priority(&c->goal, currentTime));
-    return MAX(belief_prio, goal_prio);
+    double link_qual = 0.0;
+    for(int operationID=0; operationID<=OPERATIONS_MAX; operationID++)
+    {
+        for(int h=0; h<c->precondition_beliefs[operationID].itemsAmount; h++)
+        {
+            if(!Concept_ImplicationValid(&c->precondition_beliefs[operationID].array[h]))
+            {
+                Table_Remove(&c->precondition_beliefs[operationID], h--);
+                continue;
+            }
+            link_qual = MAX(link_qual, Truth_Expectation(c->precondition_beliefs[operationID].array[h].truth));
+        }
+    }
+    double quality = QUALITY_RESCALE * MAX(link_qual, MAX(Event_Priority(&c->belief, currentTime), Event_Priority(&c->goal, currentTime)));
+    double belief_prio = MAX(Event_Priority(&c->belief_spike, currentTime),
+                             Event_Priority(&c->predicted_belief, currentTime));
+    double goal_prio = Event_Priority(&c->goal_spike, currentTime);
+    return MAX(quality, MAX(belief_prio, goal_prio));
 }

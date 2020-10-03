@@ -401,8 +401,3 @@ void Memory_AddInputEvent(Event *event, long currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, 0, true, false, false, false, false);
 }
-
-bool Memory_ImplicationValid(Implication *imp)
-{
-    return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
-}

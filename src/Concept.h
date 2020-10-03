@@ -57,5 +57,7 @@ typedef struct {
 Event Concept_SelectBelief(Concept *c, long queryTime);
 //The priority of a concept in respect to the current time
 double Concept_Priority(Concept *c, long currentTime);
+//Whether a concept's implication is still valid (source concept might be forgotten!)
+bool Concept_ImplicationValid(Implication *imp);
 
 #endif
