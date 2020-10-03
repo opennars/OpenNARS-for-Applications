@@ -65,6 +65,7 @@ extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be globa
 extern int goalsSelectedCnt;
 //Concepts in main memory:
 extern PriorityQueue concepts;
+extern PriorityQueue matching_beliefs;
 //cycling events cycling in main memory:
 extern PriorityQueue cycling_belief_events;
 extern PriorityQueue cycling_goal_events;

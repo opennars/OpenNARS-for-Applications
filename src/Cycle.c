@@ -296,96 +296,84 @@ void Cycle_Inference(long currentTime)
 #if STAGE==2
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
+        PriorityQueue_INIT(&matching_beliefs, matching_beliefs.items, matching_beliefs.maxElements);
         conceptProcessID++; //process the related belief concepts
-        long countConceptsMatched = 0;
-        for(;;)
+        Event *e = &selectedBeliefs[i];
+        double priority = selectedBeliefsPriority[i];
+        Term dummy_term = {0};
+        Truth dummy_truth = {0};
+        RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
+        for(int k=0; k<UNIFICATION_DEPTH; k++)
         {
-            long countConceptsMatchedNew = 0;
-            //Adjust dynamic firing threshold: (proportional "self"-control)
-            double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
-            long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
-            double set_point = BELIEF_CONCEPT_MATCH_TARGET;
-            double process_value = countConceptsMatchedAverage; 
-            double error = process_value - set_point;
-            double increment = error*CONCEPT_THRESHOLD_ADAPTATION;
-            conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
-            //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
-            Event *e = &selectedBeliefs[i];
-            double priority = selectedBeliefsPriority[i];
-            Term dummy_term = {0};
-            Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
-            for(int k=0; k<UNIFICATION_DEPTH; k++)
+            ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
+            while(chain != NULL)
             {
-                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
-                while(chain != NULL)
+                Concept *c = chain->c;
+                chain = chain->next;
+                if(c != NULL && c->processID != conceptProcessID)
                 {
-                    Concept *c = chain->c;
-                    chain = chain->next;
-                    if(c != NULL && c->processID != conceptProcessID)
+                    c->processID = conceptProcessID;
+                    double c_priority = 0;
+                    //use eternal belief as belief
+                    Event* belief = &c->belief;
+                    Event future_belief = c->predicted_belief;
+                    //but if there is a predicted one in the event's window, use this one
+                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
+                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                     {
-                        c->processID = conceptProcessID;
-                        long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
-                        if(c->priority < conceptPriorityThresholdCurrent)
+                        future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
+                        future_belief.occurrenceTime = e->occurrenceTime;
+                        belief = &future_belief;
+                    }
+                    //unless there is an actual belief which falls into the event's window
+                    Event project_belief = c->belief_spike;
+                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+                    {
+                        project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
+                        project_belief.occurrenceTime = e->occurrenceTime;
+                        belief = &project_belief;
+                    }
+                    if(belief->type != EVENT_TYPE_DELETED)
+                    {
+                        c_priority = Truth_Expectation(belief->truth);
+                        PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&matching_beliefs, c_priority);
+                        if(feedback.added)
                         {
-                            continue;
-                        }
-                        countConceptsMatchedNew++;
-                        countConceptsMatched++;
-                        Stats_countConceptsMatchedTotal++;
-                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
-                        {
-                            //use eternal belief as belief
-                            Event* belief = &c->belief;
-                            Event future_belief = c->predicted_belief;
-                            //but if there is a predicted one in the event's window, use this one
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                                future_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &future_belief;
-                            }
-                            //unless there is an actual belief which falls into the event's window
-                            Event project_belief = c->belief_spike;
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                                project_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &project_belief;
-                            }
-                            //Check for overlap and apply inference rules
-                            if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
-                            {
-                                Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
-                                if(PRINT_CONTROL_INFO)
-                                {
-                                    fputs("Apply rule table on ", stdout);
-                                    Narsese_PrintTerm(&e->term);
-                                    printf(" Priority=%f\n", priority);
-                                    fputs(" and ", stdout);
-                                    Narsese_PrintTerm(&c->term);
-                                    puts("");
-                                }
-                                long occurrenceTimeDistance = 0;
-                                if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
-                                {
-                                    occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
-                                }
-                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                            }
+                            Event *toRecyle = feedback.addedItem.address;
+                            *toRecyle = *belief;
                         }
                     }
                 }
             }
-            if(countConceptsMatched > Stats_countConceptsMatchedMax)
+        }
+        for(int k=0; k<matching_beliefs.itemsAmount; k++)
+        {
+            Event *belief = matching_beliefs.items[k].address;
+            Concept *c = Memory_FindConceptByTerm(&belief->term);
+            if(c != NULL && belief != NULL && belief->type != EVENT_TYPE_DELETED && matching_beliefs.items[k].priority > 0)
             {
-                Stats_countConceptsMatchedMax = countConceptsMatched;
-            }
-            if(countConceptsMatched >= BELIEF_CONCEPT_MATCH_TARGET || countConceptsMatchedNew == 0)
-            {
-                break;
+                long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked) TODO!
+                //Check for overlap and apply inference rules
+                if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                {
+                    Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                    if(PRINT_CONTROL_INFO)
+                    {
+                        fputs("Apply rule table on ", stdout);
+                        Narsese_PrintTerm(&e->term);
+                        printf(" Priority=%f\n", priority);
+                        fputs(" and ", stdout);
+                        Narsese_PrintTerm(&c->term);
+                        puts("");
+                    }
+                    long occurrenceTimeDistance = 0;
+                    if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
+                    {
+                        occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
+                    }
+                    RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                }
             }
         }
     }
@@ -394,6 +382,7 @@ void Cycle_Inference(long currentTime)
 
 void Cycle_Prediction(long currentTime)
 {
+    return;
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *e = &selectedBeliefs[h];

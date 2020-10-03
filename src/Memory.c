@@ -29,6 +29,7 @@ PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events;
+PriorityQueue matching_beliefs;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event fifo:
@@ -45,6 +46,8 @@ Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
 Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+Event matching_beliefs_storage[BELIEF_CONCEPT_MATCH_TARGET];
+Item matching_beliefs_items_storage[BELIEF_CONCEPT_MATCH_TARGET];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
 //Special ontology handling if demanded
@@ -55,6 +58,7 @@ static void Memory_ResetEvents()
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
+    PriorityQueue_INIT(&matching_beliefs, matching_beliefs_items_storage, BELIEF_CONCEPT_MATCH_TARGET);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
@@ -64,6 +68,11 @@ static void Memory_ResetEvents()
     {
         cycling_goal_event_storage[i] = (Event) {0};
         cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
+    }
+    for(int i=0; i<BELIEF_CONCEPT_MATCH_TARGET; i++)
+    {
+        matching_beliefs_storage[i] = (Event) {0};
+        matching_beliefs.items[i] = (Item) { .address = &(matching_beliefs_storage[i]) };
     }
 }
 
