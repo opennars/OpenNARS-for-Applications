@@ -44,3 +44,17 @@ bool Event_Equal(Event *event, Event *existing)
 {
     return Truth_Equal(&event->truth, &existing->truth) && Term_Equal(&event->term, &existing->term);
 }
+
+double Event_Priority(Event *event, long currentTime)
+{
+    if(event->type == EVENT_TYPE_DELETED)
+    {
+        return 0.0;
+    }
+    else
+    if(event->occurrenceTime == OCCURRENCE_ETERNAL)
+    {
+        return Truth_Expectation(event->truth);
+    }
+    return Truth_Expectation(Truth_Projection(event->truth, event->occurrenceTime, currentTime));
+}

@@ -32,7 +32,6 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
-        c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
         {
@@ -166,6 +165,8 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                     c->processID = conceptProcessID;
                     bool revised;
                     c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                    Event eternal_goal = Inference_Eternalize(&c->goal_spike);
+                    c->goal = Inference_RevisionAndChoice(&c->goal, &eternal_goal, currentTime, NULL);
                     for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                     {
                         for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
@@ -333,32 +334,14 @@ void Cycle_Inference(long currentTime)
                         countConceptsMatchedNew++;
                         countConceptsMatched++;
                         Stats_countConceptsMatchedTotal++;
-                        if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
+                        if(countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
                         {
-                            //use eternal belief as belief
-                            Event* belief = &c->belief;
-                            Event future_belief = c->predicted_belief;
-                            //but if there is a predicted one in the event's window, use this one
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                                future_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &future_belief;
-                            }
-                            //unless there is an actual belief which falls into the event's window
-                            Event project_belief = c->belief_spike;
-                            if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                               labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                            {
-                                project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                                project_belief.occurrenceTime = e->occurrenceTime;
-                                belief = &project_belief;
-                            }
+                            //select a belief from the concept
+                            Event belief = Concept_SelectBelief(c, e->occurrenceTime);
                             //Check for overlap and apply inference rules
-                            if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                            if(belief.type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&e->stamp, &belief.stamp))
                             {
-                                Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                                Stamp stamp = Stamp_make(&e->stamp, &belief.stamp);
                                 if(PRINT_CONTROL_INFO)
                                 {
                                     fputs("Apply rule table on ", stdout);
@@ -369,11 +352,11 @@ void Cycle_Inference(long currentTime)
                                     puts("");
                                 }
                                 long occurrenceTimeDistance = 0;
-                                if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
+                                if(belief.occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
                                 {
-                                    occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
+                                    occurrenceTimeDistance = labs(belief.occurrenceTime - e->occurrenceTime);
                                 }
-                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                RuleTable_Apply(e->term, c->term, e->truth, belief.truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                             }
                         }
                     }
@@ -456,23 +439,9 @@ void Cycle_RelativeForgetting(long currentTime)
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
-        c->priority *= CONCEPT_DURABILITY;
-        concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
+        c->priority = Concept_Priority(c, currentTime);
+        concepts.items[i].priority = c->priority;
     }
-    //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
-    if(ontology_handling)
-    {
-        //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
-        for(int i=0; i<concepts.itemsAmount; i++)
-        {
-            Concept *c = concepts.items[i].address;
-            if(c->hasUserKnowledge)
-            {
-                c->usage = Usage_use(c->usage, currentTime, false); //user implication won't be forgotten
-            }
-        }
-    }
-    //END SPECIAL HANDLING FOR USER KNOWLEDGE
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_belief_events);

@@ -136,7 +136,7 @@ int Shell_ProcessInput(char *line)
                 Concept *c = concepts.items[i].address;
                 assert(c != NULL, "Concept is null");
                 Narsese_PrintTerm(&c->term);
-                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+                printf(": { \"priority\": %f}\n", c->priority);
             }
         }
         else

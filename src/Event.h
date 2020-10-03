@@ -59,5 +59,7 @@ void Event_INIT();
 Event Event_InputEvent(Term term, char type, Truth truth, long currentTime);
 //Whether two events are the same
 bool Event_Equal(Event *event, Event *existing);
+//The priority of an event
+double Event_Priority(Event *event, long currentTime);
 
 #endif

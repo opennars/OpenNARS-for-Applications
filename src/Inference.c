@@ -195,3 +195,15 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                                                                     OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset,
                      .creationTime = creationTime };
 }
+
+//Event a to eternal belief
+Event Inference_Eternalize(Event *event)
+{
+    Event eternal_event = *event;
+    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    {
+        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+        eternal_event.truth = Truth_Eternalize(event->truth);
+    }
+    return eternal_event;
+}

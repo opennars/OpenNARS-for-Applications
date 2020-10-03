@@ -203,14 +203,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     }
     //increase usefulness
     assert(cbest_predicate != NULL, "Above decision threshold but postcondition concept is NULL!");
-    cbest_predicate->usage = Usage_use(cbest_predicate->usage, currentTime, false);
-    Term subject_with_op = Term_ExtractSubterm(&bestImp.term, 1);
-    Term subject = Narsese_GetPreconditionWithoutOp(&subject_with_op);
-    Concept *cbest_subject = Memory_Conceptualize(&subject, currentTime);
-    if(cbest_subject != NULL)
-    {
-        cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
-    }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
     Narsese_PrintTerm(&bestImp.term); puts("");
@@ -272,7 +264,6 @@ void Decision_Anticipate(int operationID, long currentTime)
                                 Concept *c = Memory_Conceptualize(&result.term, currentTime);
                                 if(c != NULL)
                                 {
-                                    c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
                                     Event eternal = result;
                                     eternal.truth = Truth_Eternalize(eternal.truth);

@@ -132,7 +132,6 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
             *recycleConcept = (Concept) {0};
             recycleConcept->term = *term;
             recycleConcept->id = concept_id;
-            recycleConcept->usage = (Usage) { .useCount = 1, .lastUsed = currentTime };
             concept_id++;
             //also add added concept to HashMap:
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to add already exists!"); )
@@ -229,13 +228,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, bool input, b
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool revised, bool predicted, bool isImplication)
 {
-    bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
-    Event eternal_event = *event;
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
-    {
-        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-        eternal_event.truth = Truth_Eternalize(event->truth);
-    }
+    Event eternal_event = Inference_Eternalize(event);
     if(event->isUserKnowledge)
     {
         ontology_handling = true;
@@ -248,7 +241,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
         if(target_concept != NULL)
         {
-            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
@@ -277,7 +269,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
             if(source_concept != NULL)
             {
-                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
                 source_concept->hasUserKnowledge |= event->isUserKnowledge;
                 target_concept->hasUserKnowledge |= event->isUserKnowledge;
                 imp.sourceConceptId = source_concept->id;
@@ -293,8 +284,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
         {
-            c->usage = Usage_use(c->usage, currentTime, eternalInput);
-            c->priority = MAX(c->priority, priority);
             c->hasUserKnowledge |= event->isUserKnowledge;
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {
@@ -340,7 +329,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
                                         if(success)
                                         {
-                                            cpost->usage = Usage_use(cpost->usage, currentTime, false);
                                             Event predicted = Inference_BeliefDeduction(event, &updated_imp);
                                             Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
                                         }

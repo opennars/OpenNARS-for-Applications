@@ -34,18 +34,17 @@
 //-----------//
 #include "FIFO.h"
 #include "Table.h"
-#include "Usage.h"
 
 //Data structure//
 //--------------//
 typedef struct {
     long id;
-    Usage usage;
     Term term;
     Event belief; //the highest confident eternal belief
     Event belief_spike;
     Event predicted_belief;
     Event goal_spike;
+    Event goal; //overall desire for this concept
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
     bool hasUserKnowledge;
@@ -54,6 +53,9 @@ typedef struct {
 
 //Methods//
 //-------//
-//todo
+//Select a belief from the concept (belief, predicted_belief or belief_spike if close to queryTime distance)
+Event Concept_SelectBelief(Concept *c, long queryTime);
+//The priority of a concept in respect to the current time
+double Concept_Priority(Concept *c, long currentTime);
 
 #endif
