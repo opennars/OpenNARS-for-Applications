@@ -246,6 +246,70 @@ void Cycle_PushEvents(long currentTime)
     }
 }
 
+long conceptProcessID2 = 0;
+static void Memory_CategoricInference(Event *e, double priority, long currentTime)
+{
+    Term *term = &e->term;
+    if(!Narsese_copulaEquals(term->atoms[0], ':'))
+    {
+        return;
+    }
+    conceptProcessID2++;
+    Term predicate = Term_ExtractSubterm(term, 2);
+    double best_expectation = 0.0;
+    Concept *best_concept = NULL;
+    for(int k=0; k<UNIFICATION_DEPTH; k++)
+    {
+        ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(term->atoms[k]);
+        while(chain != NULL)
+        {
+            Concept *c = chain->c;
+            chain = chain->next;
+            if(c != NULL && c->processID2 != conceptProcessID2 && c->belief.type != EVENT_TYPE_DELETED)
+            {
+                c->processID2 = conceptProcessID2; //priming for inheritance without self-priming:
+                if(!Narsese_copulaEquals(c->term.atoms[0], ':') || Term_Equal(term, &c->term))
+                {
+                    continue;
+                }
+                Term predicate_c = Term_ExtractSubterm(&c->term, 2);
+                if(Term_Equal(&predicate_c, &predicate))
+                {
+                    double expectation = Truth_Expectation(c->belief.truth);
+                    if(expectation > best_expectation)
+                    {
+                        best_concept = c;
+                        best_expectation = expectation;
+                    }
+                }
+            }
+        }
+    }
+    if(best_concept != NULL)
+    {
+        Term subject_c = Term_ExtractSubterm(&best_concept->term, 1);
+        Term predicate_c = Term_ExtractSubterm(&best_concept->term, 2);
+        if(Term_Equal(&subject_c, &predicate_c))
+        {
+            return; //a-->a isn't a useful priming result
+        }
+        Event *e2 = &best_concept->belief;
+        Stamp stamp = Stamp_make(&e->stamp, &e2->stamp);
+#if STAGE==2
+        RuleTable_Apply(e->term, e2->term, e->truth, e2->truth, currentTime, 0, stamp, currentTime, 
+         1.0, best_concept->priority, true, best_concept, best_concept->id);
+#endif
+        //RuleTable_Apply(e->term, e2->term, e->truth, e2->truth, currentTime, 0, stamp, 
+        //             currentTime, 1, best_concept->priority, true, best_concept, best_concept->id);
+        best_concept->usage = Usage_use(best_concept->usage, currentTime, true);
+        //if(PRINT_CONTROL_INFO)
+        {
+            fputs("ACTIVATE PRIMING WINNER:", stdout); Narsese_PrintTerm(&best_concept->term); fputs(" ", stdout);
+            Truth_Print(&best_concept->belief.truth); puts("");
+        }
+    }
+}
+
 void Cycle_ProcessInputBeliefEvents(long currentTime)
 {
     //1. process newest event
@@ -260,11 +324,12 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
+                int op_id = Narsese_getOperationID(&postcondition.term);
+                Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
-                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
+                    Memory_CategoricInference(&postcondition, 1, currentTime);
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)

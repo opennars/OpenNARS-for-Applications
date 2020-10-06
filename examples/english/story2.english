@@ -10,4 +10,4 @@ the person feels satisfied
 the burger is in the oven
 100
 the person takes our what?
-//expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1105 Truth: frequency=0.987152, confidence=0.181304
+//expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1105 Truth: frequency=0.987152, confidence=0.171197
