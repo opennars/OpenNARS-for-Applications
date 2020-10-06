@@ -353,7 +353,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 }
 
 long conceptProcessID2 = 0;
-static void Memory_PrimeConceptsExtensioAndIntension(Term *term, double priority, long currentTime)
+static void Memory_PrimeConcepts(Term *term, double priority, long currentTime)
 {
     if(!Narsese_copulaEquals(term->atoms[0], ':'))
     {
@@ -372,17 +372,12 @@ static void Memory_PrimeConceptsExtensioAndIntension(Term *term, double priority
             chain = chain->next;
             if(c != NULL && c->processID2 != conceptProcessID2 && c->belief.type != EVENT_TYPE_DELETED)
             {
-                c->processID2 = conceptProcessID2;
-                if(!Narsese_copulaEquals(c->term.atoms[0], ':'))
+                c->processID2 = conceptProcessID2; //priming for inheritance without self-priming:
+                if(!Narsese_copulaEquals(c->term.atoms[0], ':') || Term_Equal(term, &c->term))
                 {
                     continue;
                 }
-                Term subject_c = Term_ExtractSubterm(&c->term, 1);
                 Term predicate_c = Term_ExtractSubterm(&c->term, 2);
-                if(Term_Equal(term, &c->term)) //it cannot prime itself
-                {
-                    continue;
-                }
                 if(Term_Equal(&predicate_c, &predicate))
                 {
                     double expectation = Truth_Expectation(c->belief.truth);
@@ -399,15 +394,19 @@ static void Memory_PrimeConceptsExtensioAndIntension(Term *term, double priority
     {
         Term subject_c = Term_ExtractSubterm(&best_concept->term, 1);
         Term predicate_c = Term_ExtractSubterm(&best_concept->term, 2);
-        if(Term_Equal(&subject_c, &predicate_c)) //avoid priming for a-->a
+        if(Term_Equal(&subject_c, &predicate_c))
         {
-            return;
+            return; //a-->a isn't a useful priming result
         }
-        best_concept->priority = MAX(best_concept->priority, priority);
-        best_concept->usage = Usage_use(best_concept->usage, currentTime, false);
-        if(PRINT_CONTROL_INFO)
+        Event event_from_eternal = best_concept->belief;
+        event_from_eternal.occurrenceTime = currentTime;
+        Memory_AddEvent(&event_from_eternal, currentTime, priority, 0, false, true, false, false, false);
+        //best_concept->priority = MAX(best_concept->priority, priority);
+        best_concept->usage = Usage_use(best_concept->usage, currentTime, true);
+        //if(PRINT_CONTROL_INFO)
         {
-            fputs("PRIMED FOR:", stdout); Narsese_PrintTerm(&best_concept->term); puts("");
+            fputs("ACTIVATE PRIMING WINNER:", stdout); Narsese_PrintTerm(&best_concept->term); fputs(" ", stdout);
+            Truth_Print(&best_concept->belief.truth); puts("");
         }
     }
 }
@@ -427,10 +426,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
         return;
-    }
-    if(input && event->type == EVENT_TYPE_BELIEF)
-    {
-        Memory_PrimeConceptsExtensioAndIntension(&event->term, priority, currentTime);
     }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
@@ -464,6 +459,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     if(input || !readded) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised);
+    }
+    if(input && event->type == EVENT_TYPE_BELIEF)
+    {
+        Memory_PrimeConcepts(&event->term, priority, currentTime);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
