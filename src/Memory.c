@@ -301,11 +301,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
             }
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
-            {
-                c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, event, currentTime, NULL);
-                c->predicted_belief.creationTime = currentTime;
-            }
             bool revision_happened = false;
             c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
             c->belief.creationTime = currentTime; //for metrics

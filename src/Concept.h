@@ -44,7 +44,6 @@ typedef struct {
     Term term;
     Event belief; //the highest confident eternal belief
     Event belief_spike;
-    Event predicted_belief;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;

@@ -261,25 +261,6 @@ void Decision_Anticipate(int operationID, long currentTime)
                         {
                             added->sourceConcept = negative_confirmation.sourceConcept;
                             added->sourceConceptId = negative_confirmation.sourceConceptId;
-                        } 
-                        Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
-                        if(subs.success)
-                        {
-                            bool success2;
-                            result.term = Variable_ApplySubstitute(result.term, subs, &success2);
-                            if(success2)
-                            {
-                                Concept *c = Memory_Conceptualize(&result.term, currentTime);
-                                if(c != NULL)
-                                {
-                                    c->usage = Usage_use(c->usage, currentTime, false);
-                                    c->predicted_belief = result;
-                                    Event eternal = result;
-                                    eternal.truth = Truth_Eternalize(eternal.truth);
-                                    eternal.occurrenceTime = OCCURRENCE_ETERNAL;
-                                    c->belief = Inference_RevisionAndChoice(&c->belief, &eternal, currentTime, NULL);
-                                }
-                            }
                         }
                     }
                 }
