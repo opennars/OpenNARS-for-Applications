@@ -252,7 +252,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     if(belief_events.itemsAmount > 0)
     {
         //form concepts for the sequences of different length
-        for(int len=0; len<MAX_SEQUENCE_LEN; len++)
+        for(int len=MAX_SEQUENCE_LEN-1; len>=0; len--)
         {
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)

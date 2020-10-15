@@ -229,7 +229,7 @@ void overwriteViewfield(int distance, bool* collided, char *original, char newva
 Perception Agent_View()
 {
     Perception ret = { .viewfield = {'o', 'o', 'o'} };
-    int viewdist = 10;
+    int viewdist = 50;
     bool collided[3] = {0};
     for(int i=1;i<=viewdist; i++)
     {
@@ -458,14 +458,16 @@ void Agent_Invoke()
     narseseL[2] = percept.viewfield[0];
     narseseM[2] = percept.viewfield[1];
     narseseR[2] = percept.viewfield[2];
-    if(percept.viewfield[0] != 'o')
-    {
-        NAR_AddInputNarsese(narseseL);
-    }
     if(percept.viewfield[1] != 'o')
     {
         NAR_AddInputNarsese(narseseM);
     }
+    else
+    if(percept.viewfield[0] != 'o')
+    {
+        NAR_AddInputNarsese(narseseL);
+    }
+    else
     if(percept.viewfield[2] != 'o')
     {
         NAR_AddInputNarsese(narseseR);
