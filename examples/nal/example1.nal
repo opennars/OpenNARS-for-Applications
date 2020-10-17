@@ -20,7 +20,7 @@
 <{shape3} --> [unfilled]>. :|:
 //shape3 is left of shape2
 <({shape3} * {shape2}) --> leftOf>. :|:
-111
+50
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape2})>. :|:
@@ -46,7 +46,7 @@
 <{shape3} --> [unfilled]>. :|:
 //shape3 is left of shape9
 <({shape3} * {shape9}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape9})>. :|:
 
@@ -71,7 +71,7 @@
 <{shape3} --> [unfilled]>. :|:
 //shape3 is left of shape7
 <({shape3} * {shape7}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape7})>. :|:
 
@@ -96,7 +96,7 @@
 <{shape3} --> [unfilled]>. :|:
 //shape3 is left of shape5
 <({shape3} * {shape5}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape5})>. :|:
 
@@ -121,8 +121,8 @@
 <{shape13} --> [unfilled]>. :|:
 //shape13 is left of shape12
 <({shape13} * {shape12}) --> leftOf>. :|:
-111
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+50
+<([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape12})>. :|:
 
 //NEW EXAMPLE
@@ -146,7 +146,7 @@
 <{shape93} --> [unfilled]>. :|:
 //shape93 is left of shape92
 <({shape93} * {shape92}) --> leftOf>. :|:
-111
+50
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape92})>. :|:
@@ -172,7 +172,7 @@
 <{shape93} --> [unfilled]>. :|:
 //shape93 is left of shape99
 <({shape93} * {shape99}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape99})>. :|:
 
@@ -197,7 +197,7 @@
 <{shape93} --> [unfilled]>. :|:
 //shape93 is left of shape97
 <({shape93} * {shape97}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape97})>. :|:
 
@@ -222,7 +222,7 @@
 <{shape93} --> [unfilled]>. :|:
 //shape93 is left of shape95
 <({shape93} * {shape95}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape95})>. :|:
 
@@ -247,8 +247,8 @@
 <{shape913} --> [unfilled]>. :|:
 //shape913 is left of shape912
 <({shape913} * {shape912}) --> leftOf>. :|:
-111
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+50
+<([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape912})>. :|:
 
 //NEW EXAMPLE
@@ -272,7 +272,7 @@
 <{form3} --> [unfilled]>. :|:
 //form3 is left of form2
 <({form3} * {form2}) --> leftOf>. :|:
-111
+50
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form2})>. :|:
@@ -298,7 +298,7 @@
 <{form3} --> [unfilled]>. :|:
 //form3 is left of form9
 <({form3} * {form9}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form9})>. :|:
 
@@ -323,7 +323,7 @@
 <{form3} --> [unfilled]>. :|:
 //form3 is left of form7
 <({form3} * {form7}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form7})>. :|:
 
@@ -348,7 +348,7 @@
 <{form3} --> [unfilled]>. :|:
 //form3 is left of form5
 <({form3} * {form5}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form5})>. :|:
 
@@ -373,8 +373,8 @@
 <{form13} --> [unfilled]>. :|:
 //form13 is left of form12
 <({form13} * {form12}) --> leftOf>. :|:
-111
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+50
+<([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form12})>. :|:
 
 //NEW EXAMPLE
@@ -398,7 +398,7 @@
 <{form93} --> [unfilled]>. :|:
 //form93 is left of form92
 <({form93} * {form92}) --> leftOf>. :|:
-111
+50
 //the filled rectangle is left of what?
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form92})>. :|:
@@ -424,7 +424,7 @@
 <{form93} --> [unfilled]>. :|:
 //form93 is left of form99
 <({form93} * {form99}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form99})>. :|:
 
@@ -449,7 +449,7 @@
 <{form93} --> [unfilled]>. :|:
 //form93 is left of form97
 <({form93} * {form97}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form97})>. :|:
 
@@ -474,7 +474,7 @@
 <{form93} --> [unfilled]>. :|:
 //form93 is left of form95
 <({form93} * {form95}) --> leftOf>. :|:
-111
+50
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {form95})>. :|:
 
@@ -499,6 +499,6 @@
 <{form913} --> [unfilled]>. :|:
 //form913 is left of form912
 <({form913} * {form912}) --> leftOf>. :|:
-111
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
+50
+<([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form912})>. :|:
