@@ -197,7 +197,15 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     //input beliefs and goals
     else
     {
-        NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !isEvent, isUserKnowledge);
+        // dont add the input if it is an eternal goal
+        if(punctuation == '!' && !isEvent)
+        {
+            puts("Warning: Eternal goals are not supported, input is ignored!\n");
+        }
+        else
+        {
+            NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !isEvent, isUserKnowledge);
+        }
     }
 }
 
