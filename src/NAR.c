@@ -200,7 +200,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         // dont add the input if it is an eternal goal
         if(punctuation == '!' && !isEvent)
         {
-            printf("Eternal goals are not supported, input is ignored!\n");
+            puts("Warning: Eternal goals are not supported, input is ignored!\n");
         }
         else
         {
