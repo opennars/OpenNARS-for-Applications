@@ -1,8 +1,8 @@
 <div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/74609985-02087e80-50e7-11ea-9562-218dec34714d.png" height="250"></div>
 
-This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C and is extremely capable. 
+This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations, and has also been experimentally compared with Reinforcement Learning [5]. 
 
-The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [5, 6] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [7] which was developed for research purposes. 
+The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [6, 7] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [8] which was developed for research purposes. 
 
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
@@ -87,8 +87,11 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 [4] Lofthouse, T. (2019). ALANN: An event driven control mechanism for a non-axiomatic reasoning system (NARS).
 
-[5] Wang, P. (2013). Non-axiomatic logic: A model of intelligent reasoning. World Scientific.
+[5] Eberding, L. M., Sheikhlar, A., Thórisson, K. R., & Andrason, S. P. (2020). SAGE: Task-Environment Platform for Autonomy and Generality Evaluation. In International Conference on Artificial General Intelligence. Springer, Cham.
 
-[6] Wang, P. (2009, October). Insufficient Knowledge and Resources-A Biological Constraint and Its Functional Implications. In AAAI Fall Symposium: Biologically Inspired Cognitive Architectures.
+[6] Wang, P. (2013). Non-axiomatic logic: A model of intelligent reasoning. World Scientific.
 
-[7] Hammer, P., Lofthouse, T., & Wang, P. (2016, July). The OpenNARS implementation of the non-axiomatic reasoning system. In International conference on artificial general intelligence (pp. 160-170). Springer, Cham.
+[7] Wang, P. (2009, October). Insufficient Knowledge and Resources-A Biological Constraint and Its Functional Implications. In AAAI Fall Symposium: Biologically Inspired Cognitive Architectures.
+
+[8] Hammer, P., Lofthouse, T., & Wang, P. (2016, July). The OpenNARS implementation of the non-axiomatic reasoning system. In International conference on artificial general intelligence (pp. 160-170). Springer, Cham.
+
