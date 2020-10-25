@@ -357,6 +357,58 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
+long conceptProcessID2 = 0;
+static void Memory_PrimeConcepts(Term *term, double priority, long currentTime)
+{
+    if(!Narsese_copulaEquals(term->atoms[0], ':') && !Narsese_copulaEquals(term->atoms[0], '='))
+    {
+        return;
+    }
+    conceptProcessID2++;
+    Term subject = Term_ExtractSubterm(term, 1);
+    Term predicate = Term_ExtractSubterm(term, 2);
+    Concept* best_concept = NULL;
+    for(int k=0; k<UNIFICATION_DEPTH; k++)
+    {
+        ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(term->atoms[k]);
+        while(chain != NULL)
+        {
+            Concept *c = chain->c;
+            chain = chain->next;
+            if(c != NULL && c->processID2 != conceptProcessID2)
+            {
+                c->processID2 = conceptProcessID2;
+                if(!Narsese_copulaEquals(c->term.atoms[0], ':') && !Narsese_copulaEquals(c->term.atoms[0], '='))
+                {
+                    continue;
+                }
+                Term subject_c = Term_ExtractSubterm(&c->term, 1);
+                Term predicate_c = Term_ExtractSubterm(&c->term, 2);
+                if(Term_Equal(&subject_c, &subject) || Term_Equal(&subject_c, &predicate) ||
+                   Term_Equal(&predicate_c, &subject) || Term_Equal(&predicate_c, &predicate))
+                {
+                    if(c->belief.type != EVENT_TYPE_DELETED && (best_concept == NULL || Truth_Expectation(c->belief.truth) > Truth_Expectation(best_concept->belief.truth)))
+                    {
+                        Term subject_belief = Term_ExtractSubterm(&c->belief.term, 1);
+                        Term predicate_belief = Term_ExtractSubterm(&c->belief.term, 2);
+                        Term subject_event = Term_ExtractSubterm(term, 1);
+                        if(!Term_Equal(&subject_belief, &subject_event) && !Term_Equal(&subject_belief, &predicate_belief))
+                        {
+                            best_concept = c;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if(best_concept != NULL)
+    {
+        best_concept->priority = MAX(best_concept->priority, priority);
+        best_concept->usage = Usage_use(best_concept->usage, currentTime, false);
+        fputs("PRIMED FOR:", stdout); Narsese_PrintTerm(&best_concept->term); puts("");
+    }
+}
+
 void Memory_AddEvent(Event *event, long currentTime, double priority, long occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
@@ -405,6 +457,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, long occur
     if(input || !readded) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised);
+    }
+    if(input)
+    {
+        Memory_PrimeConcepts(&event->term, priority, currentTime);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
