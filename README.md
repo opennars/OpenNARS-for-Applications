@@ -87,7 +87,7 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 [4] Lofthouse, T. (2019). ALANN: An event driven control mechanism for a non-axiomatic reasoning system (NARS).
 
-[5] Eberding, L. M., Sheikhlar, A., Thórisson, K. R., & Andrason, S. P. (2020). SAGE: Task-Environment Platform for Autonomy and Generality Evaluation. In International Conference on Artificial General Intelligence. Springer, Cham.
+[5] Eberding, L. M., Thórisson, K. R., Sheikhlar, A., & Andrason, S. P. (2020). SAGE: Task-Environment Platform for Evaluating a Broad Range of AI Learners. In Artificial General Intelligence: 13th International Conference, AGI 2020, St. Petersburg, Russia, September 16–19, 2020, Proceedings (Vol. 12177, p. 72). Springer Nature.
 
 [6] Wang, P. (2013). Non-axiomatic logic: A model of intelligent reasoning. World Scientific.
 
