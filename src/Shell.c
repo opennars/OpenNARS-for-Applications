@@ -182,7 +182,7 @@ int Shell_ProcessInput(char *line)
             MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
         }
         else
-        if(strspn(line, "0123456789"))
+        if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))
         {
             unsigned int steps;
             sscanf(line, "%u", &steps);
