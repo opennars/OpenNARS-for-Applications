@@ -87,11 +87,11 @@
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
 //Maximum event FIFO size
-#define FIFO_SIZE 20
+#define FIFO_SIZE 1
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum length of sequences
-#define MAX_SEQUENCE_LEN 3
+#define MAX_SEQUENCE_LEN 1
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)

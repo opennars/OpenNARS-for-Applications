@@ -315,13 +315,10 @@ void Cycle_Inference(long currentTime)
             Term dummy_term = {0};
             Truth dummy_truth = {0};
             RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
-            for(int k=0; k<UNIFICATION_DEPTH; k++)
             {
-                ConceptChainElement* chain = InvertedAtomIndex_GetConceptChain(e->term.atoms[k]);
-                while(chain != NULL)
+                for(int j=0; j<concepts.itemsAmount; j++)
                 {
-                    Concept *c = chain->c;
-                    chain = chain->next;
+                    Concept *c = concepts.items[j].address;
                     if(c != NULL && c->processID != conceptProcessID)
                     {
                         c->processID = conceptProcessID;

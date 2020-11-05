@@ -106,6 +106,9 @@ R2Ordered( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $
 R2Ordered( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
 R2Ordered( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
 //Other NAL5/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
+//NAL7 sequences:
+R2Ordered( A, B, |-, (B =/> A), Truth_Induction )
+R2Ordered( A, B, |-, (B &/ A), Truth_Intersection )
 
 #endif
 
