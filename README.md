@@ -1,8 +1,8 @@
 **Minimal Sensorimotor Component 2**
 
-<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/98208148-be83c800-1f34-11eb-8ab4-d6a0eb0eef77.png" height="250"></div>
+<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/98208148-be83c800-1f34-11eb-8ab4-d6a0eb0eef77.png" height="350"></div>
 
-This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA v0.8.5)
+This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA v0.8.5
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
