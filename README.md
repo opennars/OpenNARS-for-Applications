@@ -1,9 +1,6 @@
-<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/74609985-02087e80-50e7-11ea-9562-218dec34714d.png" height="250"></div>
+*Minimal Sensorimotor Component 2*
 
-This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations, and has also been experimentally compared with Reinforcement Learning [5]. 
-
-The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [6, 7] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [8] which was developed for research purposes. 
-
+This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA v0.8.5)
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
