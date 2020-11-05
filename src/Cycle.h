@@ -36,7 +36,6 @@
 #include "Globals.h"
 #include "Decision.h"
 #include "Inference.h"
-#include "RuleTable.h"
 #include "Variable.h"
 #include "Stats.h"
 #include "./NetworkNAR/Metric.h"

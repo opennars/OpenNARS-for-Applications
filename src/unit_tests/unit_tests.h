@@ -28,7 +28,6 @@
 #include "Memory_Test.h"
 #include "InvertedAtomIndex_Test.h"
 #include "Narsese_Test.h"
-#include "RuleTable_Test.h"
 #include "Stack_Test.h"
 #include "Table_Test.h"
 #include "HashTable_Test.h"
@@ -43,7 +42,6 @@ void Run_Unit_Tests()
     Memory_Test();
     InvertedAtomIndex_Test();
     Narsese_Test();
-    RuleTable_Test();
     Stack_Test();
     HashTable_Test();
     UDP_Test();

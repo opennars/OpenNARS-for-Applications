@@ -57,12 +57,6 @@ void Process_Args(int argc, char *argv[])
     }
     if(argc >= 2)
     {
-        if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
-        {
-            NAR_INIT();
-            NAL_GenerateRuleTable();
-            exit(0);
-        }
         if(!strcmp(argv[1],"pong"))
         {
             NAR_Pong(iterations);

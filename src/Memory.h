@@ -56,17 +56,12 @@ typedef struct
     Term term;
     Action action;
 }Operation;
-extern bool ontology_handling;
-extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
-extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
-extern int beliefsSelectedCnt;
 extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 extern int goalsSelectedCnt;
 //Concepts in main memory:
 extern PriorityQueue concepts;
 //cycling events cycling in main memory:
-extern PriorityQueue cycling_belief_events;
 extern PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 extern HashTable HTconcepts;

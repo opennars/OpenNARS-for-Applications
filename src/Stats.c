@@ -29,12 +29,6 @@ long Stats_countConceptsMatchedMax = 0;
 
 void Stats_Print(long currentTime)
 {
-    double Stats_averageBeliefEventPriority = 0.0;
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
-    {
-        Stats_averageBeliefEventPriority += cycling_belief_events.items[i].priority;
-    }
-    Stats_averageBeliefEventPriority /= (double) CYCLING_BELIEF_EVENTS_MAX;
     double Stats_averageGoalEventPriority = 0.0;
     for(int i=0; i<cycling_goal_events.itemsAmount; i++)
     {
@@ -63,9 +57,7 @@ void Stats_Print(long currentTime)
     printf("total concepts:\t\t\t%d\n", concepts.itemsAmount);
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
-    printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
     printf("curring goal events cnt:\t\t%d\n", cycling_goal_events.itemsAmount);
-    printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
     printf("current average goal event priority:\t%f\n", Stats_averageGoalEventPriority);
     printf("Maximum chain length in concept hashtable: %d\n", HashTable_MaximumChainLength(&HTconcepts));
     printf("Maximum chain length in atoms hashtable: %d\n", HashTable_MaximumChainLength(&HTatoms));

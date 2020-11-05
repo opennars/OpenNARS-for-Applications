@@ -47,8 +47,6 @@ Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
-//Special ontology handling if demanded
-bool ontology_handling = false;
 
 static void Memory_ResetEvents()
 {
@@ -94,7 +92,6 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     concept_id = 0;
-    ontology_handling = false;
 }
 
 Concept *Memory_FindConceptByTerm(Term *term)
@@ -236,10 +233,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
         eternal_event.truth = Truth_Eternalize(event->truth);
     }
-    if(event->isUserKnowledge)
-    {
-        ontology_handling = true;
-    }
     if(isImplication)
     {
         //get predicate and add the subject to precondition table as an implication
@@ -252,8 +245,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
-                                .creationTime = currentTime,
-                                .isUserKnowledge = event->isUserKnowledge };
+                                .creationTime = currentTime };
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
@@ -278,8 +270,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             if(source_concept != NULL)
             {
                 source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-                source_concept->hasUserKnowledge |= event->isUserKnowledge;
-                target_concept->hasUserKnowledge |= event->isUserKnowledge;
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
@@ -295,7 +285,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
             c->priority = MAX(c->priority, priority);
-            c->hasUserKnowledge |= event->isUserKnowledge;
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
@@ -313,46 +302,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
             }
-            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
-            if(ontology_handling && !predicted)
-            {
-                for(int j=0; j<concepts.itemsAmount; j++)
-                {
-                    Concept *cpost = concepts.items[j].address;
-                    if(cpost->hasUserKnowledge)
-                    {
-                        for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
-                        {
-                            Implication *imp = &cpost->precondition_beliefs[0].array[k];
-                            if(imp->isUserKnowledge)
-                            {
-                                Term subject = Term_ExtractSubterm(&imp->term, 1);
-                                if(Variable_Unify(&subject, &event->term).success)
-                                {
-                                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                                    Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                                    Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                                    Substitution subs = Variable_Unify(&precondition, &event->term);
-                                    if(subs.success)
-                                    {
-                                        Implication updated_imp = *imp;
-                                        bool success;
-                                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                                        if(success)
-                                        {
-                                            cpost->usage = Usage_use(cpost->usage, currentTime, false);
-                                            Event predicted = Inference_BeliefDeduction(event, &updated_imp);
-                                            Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            //END SPECIAL HANDLING FOR USER KNOWLEDGE
         }
     }
 }

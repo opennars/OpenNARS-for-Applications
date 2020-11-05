@@ -46,8 +46,4 @@
 <(w * x) --> like>. :|:
 <(x * w) --> like>. :|:
 <<($1 * $2) --> like> =/> <($2 * $1) --> like>>?
-20
-<(y * z) --> like>. :|:
-10
-<(z * y) --> like>? :|:
-//expected: Answer: <(z * y) --> like>. :|: occurrenceTime=266 Truth: frequency=0.990587, confidence=0.726151
+//expected: Answer: <<($1 * $2) --> like> =/> <($2 * $1) --> like>>. Truth: frequency=0.983550, confidence=0.827508
