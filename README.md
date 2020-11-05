@@ -1,4 +1,4 @@
-*Minimal Sensorimotor Component 2*
+**Minimal Sensorimotor Component 2**
 
 This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA v0.8.5)
 

@@ -158,7 +158,7 @@ if TimeCntGlobal > 0:
 print("\nQ&A answer rate global")
 print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
-print("Answer ratio = " + str(0 if QuestionsTotalGlobal==0 else QuestionsAnsweredGlobal / QuestionsTotalGlobal))
+print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")
