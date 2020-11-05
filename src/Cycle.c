@@ -246,6 +246,7 @@ void Cycle_PushEvents(long currentTime)
     }
 }
 
+Event Cycle_lastOp = {0};
 void Cycle_ProcessInputBeliefEvents(long currentTime)
 {
     //1. process newest event
@@ -263,6 +264,10 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(len == 0) //postcondition always len1
                 {
+                    if(Narsese_isOperation(&postcondition.term) && postcondition.occurrenceTime == currentTime) //don't conceptualize operations
+                    {
+                        Cycle_lastOp = postcondition;
+                    }
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
@@ -335,6 +340,7 @@ void Cycle_Inference(long currentTime)
                             //use eternal belief as belief
                             Event* belief = &c->belief;
                             Event future_belief = c->predicted_belief;
+                            Event* belief_original = &c->belief;
                             //but if there is a predicted one in the event's window, use this one
                             if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
                                labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
@@ -342,6 +348,7 @@ void Cycle_Inference(long currentTime)
                                 future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
                                 future_belief.occurrenceTime = e->occurrenceTime;
                                 belief = &future_belief;
+                                belief_original = &c->predicted_belief;
                             }
                             //unless there is an actual belief which falls into the event's window
                             Event project_belief = c->belief_spike;
@@ -351,6 +358,7 @@ void Cycle_Inference(long currentTime)
                                 project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
                                 project_belief.occurrenceTime = e->occurrenceTime;
                                 belief = &project_belief;
+                                belief_original = &c->belief_spike;
                             }
                             //Check for overlap and apply inference rules
                             if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
@@ -370,7 +378,24 @@ void Cycle_Inference(long currentTime)
                                 {
                                     occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
                                 }
-                                RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                bool ruletable_applied = false;
+                                if(Cycle_lastOp.type != EVENT_TYPE_DELETED && belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
+                                {
+                                    if(e->occurrenceTime > Cycle_lastOp.occurrenceTime && Cycle_lastOp.occurrenceTime > belief_original->occurrenceTime && !Narsese_isOperation(&belief->term) && !Narsese_isOperation(&e->term))
+                                    {
+                                        bool success;
+                                        Event belief_op = Inference_BeliefIntersection(belief_original, &Cycle_lastOp, &success); //(belief &/ op)
+                                        if(success)
+                                        {
+                                            RuleTable_Apply(e->term, belief_op.term, e->truth, belief_op.truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                            ruletable_applied = true;
+                                        }
+                                    }
+                                }
+                                if(!ruletable_applied && !Narsese_isOperation(&e->term)) //could be relaxed
+                                {
+                                    RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                                }
                             }
                         }
                     }
