@@ -1,4 +1,4 @@
-*Minimal Sensorimotor Component 2*
+**Minimal Sensorimotor Component 2**
 
 <div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/98208148-be83c800-1f34-11eb-8ab4-d6a0eb0eef77.png" height="350"></div>
 
