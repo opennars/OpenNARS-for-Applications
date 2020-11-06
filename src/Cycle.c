@@ -177,10 +177,18 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                                 j--;
                                 continue;
                             }
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, imp);
-                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            Term postcondition = Term_ExtractSubterm(&imp->term, 2);
+                            Substitution subs = Variable_Unify(&postcondition, &c->goal_spike.term);
+                            Implication updated_imp = *imp;
+                            bool success;
+                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                            if(success)
+                            {
+                                Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp);
+                                Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                                IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            }
                         }
                     }
                 }
