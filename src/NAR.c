@@ -43,13 +43,42 @@ void NAR_Cycles(int cycles)
     for(int i=0; i<cycles; i++)
     {
         IN_DEBUG( puts("\nNew system cycle:\n----------"); )
-        Cycle_Perform(currentTime);
+        //Cycle_Perform(currentTime);
         currentTime++;
     }
 }
 
+int state = 0;
+bool isGoalAtom[ATOMS_MAX] = {0};
 Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserKnowledge)
 {
+    int state_new = term.atoms[0];
+    if(type == EVENT_TYPE_BELIEF)
+    {
+        int action = 0;
+        if(isGoalAtom[state_new])
+        {
+            action = QLearner_Update(state, 1.0); //rewarded, update QLearner with current state
+        }
+        else
+        {
+            state = state_new;
+            action = QLearner_Update(state, 0.0); //update QLearner with current state
+        }
+        if(action > 0) //0 reserved for do nothing
+        {
+            Operation op = operations[action-1];
+            Term args = {0};
+            if(op.action != NULL)
+            {
+                op.action(args);
+            }
+        }
+    }
+    if(type == EVENT_TYPE_GOAL)
+    {
+        isGoalAtom[state_new] = true;
+    }
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     Event ev = Event_InputEvent(term, type, truth, currentTime);
     if(eternal)
@@ -57,7 +86,8 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
         ev.isUserKnowledge = isUserKnowledge;
     }
-    Memory_AddInputEvent(&ev, currentTime);
+    return ev;
+    //Memory_AddInputEvent(&ev, currentTime);
     NAR_Cycles(1);
     return ev;
 }
