@@ -40,7 +40,7 @@ def ctests(Example, Args, DoneAfterMetric):
             else:
                 print(line)
     print("\n" + Example + " successful!")
-ctests("System tests", "./NAR", False)
+"""ctests("System tests", "./NAR", False)
 
 #Q&A metrics for the Narsese and English files:
 TimeCntGlobal = 0
@@ -159,6 +159,7 @@ print("\nQ&A answer rate global")
 print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
+"""
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")

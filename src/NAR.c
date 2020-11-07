@@ -59,12 +59,26 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
         int action = 0;
         if(isGoalAtom[state_new])
         {
-            action = QLearner_Update(state, 1.0); //rewarded, update QLearner with current state
+            action = QLearner_Update(state, 1.0, -1); //rewarded, update QLearner with current state
         }
         else
         {
-            state = state_new;
-            action = QLearner_Update(state, 0.0); //update QLearner with current state
+            if(Narsese_isOperation(&term))
+            {
+                for(int i=0; i<OPERATIONS_MAX; i++)
+                {
+                    if(operations[i].action != NULL && Term_Equal(&term, &operations[i].term))
+                    {
+                        action = QLearner_Update(state, 0.0, i+1);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                state = state_new;
+                action = QLearner_Update(state, 0.0, -1); //update QLearner with current state
+            }
         }
         if(action > 0) //0 reserved for do nothing
         {
@@ -87,7 +101,6 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
         ev.isUserKnowledge = isUserKnowledge;
     }
-    return ev;
     //Memory_AddInputEvent(&ev, currentTime);
     NAR_Cycles(1);
     return ev;

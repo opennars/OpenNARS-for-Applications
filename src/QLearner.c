@@ -17,29 +17,33 @@ void QLearner_INIT()
     }
 }
 
-int QLearner_Update(int State, float reward)
+int QLearner_Update(int state, float reward, int forcedAction)
 {
     int maxk = 0;
     float maxval = -999999;
     for(int k=0; k<nActions; k++)
     {
-        if(Q[State][k] > maxval)
+        if(Q[state][k] > maxval)
         {
             maxk = k;
-            maxval = Q[State][k];
+            maxval = Q[state][k];
         }
     }
-    int Action=0;
+    int action=0;
     double Alpha = MOTOR_BABBLING_CHANCE;
     if(myrand() < (int)(Alpha * MY_RAND_MAX))
     {
-        Action = myrand() % nActions;
+        action = myrand() % nActions;
     }
     else
     {
-        Action = maxk;
+        action = maxk;
     }
-    float DeltaQ = reward+Gamma*Q[State][Action]-Q[lastState][lastAction];
+    if(forcedAction != -1)
+    {
+        action = forcedAction;
+    }
+    float DeltaQ = reward+Gamma*Q[state][action]-Q[lastState][lastAction];
     et[lastState][lastAction] = et[lastState][lastAction]+1;
     for(int i=0; i<nStates; i++)
     {
@@ -49,7 +53,7 @@ int QLearner_Update(int State, float reward)
             et[i][k] = Gamma*Lambda*et[i][k];
         }
     }
-    lastState = State;
-    lastAction = Action;
+    lastState = state;
+    lastAction = action;
     return lastAction;
 }
