@@ -35,6 +35,7 @@ void NAR_INIT()
     Narsese_INIT();
     currentTime = 1; //reset time
     initialized = true;
+    QLearner_INIT();
 }
 
 void NAR_Cycles(int cycles)
