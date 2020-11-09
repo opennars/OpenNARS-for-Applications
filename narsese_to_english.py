@@ -50,7 +50,7 @@ for line in sys.stdin:
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
         COLOR = BOLD + RED
-    if not ("|" in line or "/1" in line or "/2" in line or "\\1" in line or "\\2" in line or " - " in line or " ~ " in line):
+    if not (" | " in line or " /1 " in line or " /2 " in line or " \\1 " in line or " \\2 " in line or " - " in line or " ~ " in line):
         #Ext and Int set
         l = re.sub(r"{([^><:\(\)\*]*)}", MAGENTA+r"" + GREEN + r"\1" + MAGENTA + "" + COLOR, line)
         l = re.sub(r"\[([^><:\(\)\*]*)\]", MAGENTA+r"" + GREEN + r"\1" + MAGENTA + "" + COLOR, l)
