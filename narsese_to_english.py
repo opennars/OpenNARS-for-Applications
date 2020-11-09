@@ -50,7 +50,7 @@ for line in sys.stdin:
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
         COLOR = BOLD + RED
-    if not (" | " in line or " /1 " in line or " /2 " in line or " \\1 " in line or " \\2 " in line or " - " in line or " ~ " in line):
+    if not (" | " in line or " \\1 " in line or " \\2 " in line or " - " in line or " ~ " in line):
         #Ext and Int set
         l = re.sub(r"{([^><:\(\)\*]*)}", MAGENTA+r"" + GREEN + r"\1" + MAGENTA + "" + COLOR, line)
         l = re.sub(r"\[([^><:\(\)\*]*)\]", MAGENTA+r"" + GREEN + r"\1" + MAGENTA + "" + COLOR, l)
@@ -65,4 +65,4 @@ for line in sys.stdin:
         l = re.sub(r"<([^><:]*)\s(<->)\s([^><:]*)>", RED+ STATEMENT_OPENER + GREEN + r"\1" + RED + r" resembles " + GREEN + r"\3" + RED + STATEMENT_CLOSER + COLOR, l)
         #Other compound term copulas (not higher order)
         l = re.sub(r"\(([^><:]*)\s(\*|&)\s([^><:]*)\)", YELLOW+r"" + GREEN + r"\1" + YELLOW + r" " + GREEN + r"\3" + YELLOW + "" + COLOR, l)
-        print(COLOR + l.replace(")","").replace("(","").replace("&/","and").replace(" * "," ").replace(" & "," ") + RESET)
+        print(COLOR + l.replace(")","").replace("(","").replace("&/","and").replace(" * "," ").replace(" & "," ").replace("/1","to").replace("/2","by") + RESET)
