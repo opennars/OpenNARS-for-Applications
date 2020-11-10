@@ -22,33 +22,60 @@
  * THE SOFTWARE.
  * """
 
+import pickle
 import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-def Plot(Example):
+with open ('branches', 'rb') as fp:
+    branches = pickle.load(fp)
+with open ('seeds', 'rb') as fp:
+    seeds = pickle.load(fp)
+with open ('examples', 'rb') as fp:
+    examples = pickle.load(fp)
+
+def Plot(example):
     plt.figure()
-    plt.title(Example)
+    plt.title(example)
     plt.ylabel("Success ratio")
     plt.xlabel("Time")
-    colors = ['r', 'g']
-    red_patch = mpatches.Patch(color = "red", label = "ONA")
-    green_patch = mpatches.Patch(color = "green", label = "QL")
-    plt.legend(handles=[red_patch, green_patch])
+    colors = ['g', 'y', 'r', 'b']
+    p1 = mpatches.Patch(color = "green", label = "ONA")
+    p2 = mpatches.Patch(color = "yellow", label = "QL")
+    p3 = mpatches.Patch(color = "red", label = "ONA avg.")
+    p4 = mpatches.Patch(color = "blue", label = "QL avg.")
+    plt.legend(handles=[p1, p2, p3, p4])
+    BranchRatios = {}
     k=-1
-    for Branch in ["master", "QLearningComparison"]:
+    for Branch in branches:
         k+=1
-        Filename = Example + "_" + Branch
-        with open(Filename+".txt", 'r') as f:
-            lines = f.readlines()
-        lines = reversed(lines)
-        ratios = []
-        for l in lines:
-            if l.strip() == "":
-                continue
-            ratios.append(float(l.split("ratio=")[1].split(" ")[0].split(",")[0].replace("-nan","0").replace("nan","0")))
-        plt.plot(ratios[0:5000], colors[k])
-    plt.savefig(Filename + ".png")
+        for seed in seeds:
+            filename = example + "_" + Branch + "_" + str(seed)
+            with open(filename + ".txt", 'r') as f:
+                lines = f.readlines()
+            lines = reversed(lines)
+            ratios = []
+            t = 0
+            for l in lines:
+                if l.strip() == "":
+                    continue
+                t += 1
+                ratio = float(l.split("ratio=")[1].split(" ")[0].split(",")[0].replace("-nan","0").replace("nan","0"))
+                ratios.append(ratio)
+                if Branch not in BranchRatios:
+                    BranchRatios[Branch] = {}
+                if t not in BranchRatios[Branch]:
+                    BranchRatios[Branch][t] = []
+                BranchRatios[Branch][t].append(ratio)
+            plt.plot(ratios, colors[k])
+    for Branch in branches:
+        k += 1
+        BranchRatioAvgs = []
+        for t in range(1, 1+len(BranchRatios[Branch])):
+            BranchRatioAvg = sum(BranchRatios[Branch][t]) / float(len(BranchRatios[Branch][t]))
+            BranchRatioAvgs.append(BranchRatioAvg)
+        plt.plot(BranchRatioAvgs, colors[k])
+    plt.savefig(example + ".png")
 
-for example in ["Pong", "Pong2", "Alien", "Cartpole"]:
+for example in examples:
     Plot(example)

@@ -23,33 +23,51 @@
  * """
 
 from copy import deepcopy
+from pathlib import Path
 from subprocess import PIPE, run
+import os
 import subprocess
 import glob
+import pickle
+import random
 
-Branch1 = "master"
-Branch2 = "QLearningComparison"
+branches = ["master", "QLearnerComparison"]
+examples = ["pong", "pong2", "alien", "cartpole"]
+steps = 5000
+seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876] 
+#alternatively, but it won't produce same plot:
+#seeds=[random.randint(0,100000) for i in range(10)]
 
 #NAR C tests & metrics, only print fully output on failure, always print the metrics:
-def ctests(Branch, Example, Args):
-    Filename = Example + "_" + Branch + ".txt"
-    result = run(Args.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)
+def ctests(branch, example, steps, seed):
+    folder = "./" + branch + "/OpenNARS-for-Applications/"
+    print("sh " + folder + "build.sh -DSEED="+str(seed))
+    os.system("cd " + folder)
+    basePath = Path.cwd()
+    os.chdir(folder)
+    os.system("sh ./build.sh -DSEED="+str(seed))
+    os.chdir(basePath)
+    binAndArgs = folder + "NAR " + example + " " + str(steps)
+    filename = example + "_" + branch + "_" + str(seed) + ".txt"
+    result = run(binAndArgs.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)
     if result.returncode != 0:
         print(result.stdout, result.stderr)
         exit(result.returncode)
-    with open(Filename, 'w') as f:
+    with open(filename, 'w') as f:
         for line in reversed(result.stdout.split("\n")):
             if "ratio=" in line:
                 print(line)
                 f.write(line + "\n")
-    print("\n" + Example + " successful!")
+    print("\n" + example + " successful!")
 
-steps = "5000"
-ctests(Branch1, "Pong", "./"+Branch1+"/OpenNARS-for-Applications/NAR pong "+steps)
-ctests(Branch2, "Pong", "./"+Branch2+"/OpenNARS-for-Applications/NAR pong "+steps)
-ctests(Branch1, "Pong2", "./"+Branch1+"/OpenNARS-for-Applications/NAR pong2 "+steps)
-ctests(Branch2, "Pong2", "./"+Branch2+"/OpenNARS-for-Applications/NAR pong2 "+steps)
-ctests(Branch1, "Alien", "./"+Branch1+"/OpenNARS-for-Applications/NAR alien "+steps)
-ctests(Branch2, "Alien", "./"+Branch2+"/OpenNARS-for-Applications/NAR alien "+steps)
-ctests(Branch1, "Cartpole", "./"+Branch1+"/OpenNARS-for-Applications/NAR cartpole "+steps)
-ctests(Branch2, "Cartpole", "./"+Branch2+"/OpenNARS-for-Applications/NAR cartpole "+steps)
+with open('branches', 'wb') as fp:
+    pickle.dump(branches, fp)
+with open('seeds', 'wb') as fp:
+    pickle.dump(seeds, fp)
+with open('examples', 'wb') as fp:
+    pickle.dump(examples, fp)
+for example in examples:
+    for seed in seeds:
+        for branch in branches:
+            ctests(branch, example, steps, str(seed))
+
