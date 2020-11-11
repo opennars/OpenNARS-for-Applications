@@ -400,6 +400,10 @@ Perception Agent_View()
         world[pX][pY].food = false;
         spawnFood(true);
     }
+    if(ret.forward_pX != pX || ret.forward_pY != pY)
+    {
+        ret.moved = true;    
+    }
     return ret;
 }
 
@@ -448,17 +452,16 @@ void buildRooms()
     }
 }
 
+bool collided = false;
 void Agent_Invoke()
 {
     Perception percept = Agent_View();
     //Use events for the objects seen left, middle, right instead:
-    char narseseL[16] = "<l_ --> L>. :|:";
-    char narseseM[16] = "<m_ --> M>. :|:";
-    char narseseR[16] = "<r_ --> R>. :|:";
-    narseseL[2] = percept.viewfield[0];
-    narseseM[2] = percept.viewfield[1];
-    narseseR[2] = percept.viewfield[2];
-    if(percept.viewfield[1] != 'o')
+    char narsese[16] = "l___. :|:";
+    narsese[1] = percept.viewfield[0];
+    narsese[2] = percept.viewfield[1];
+    narsese[3] = percept.viewfield[2];
+    /*if(percept.viewfield[1] != 'o')
     {
         NAR_AddInputNarsese(narseseM);
     }
@@ -471,6 +474,16 @@ void Agent_Invoke()
     if(percept.viewfield[2] != 'o')
     {
         NAR_AddInputNarsese(narseseR);
+    }*/
+    NAR_AddInputNarsese(narsese);
+    if(percept.moved && collided)
+    {
+        collided = false;
+        NAR_AddInputNarsese("notcollision. :|:");
+    }
+    if(percept.viewfield[1] == 'w') //distance or touch sensor
+    {
+        collided = true;
     }
     if(percept.reward)
     {
@@ -478,7 +491,14 @@ void Agent_Invoke()
         NAR_AddInputNarsese("eaten. :|:");
     }
     allowAction = true;
-    NAR_AddInputNarsese("eaten! :|:");
+    if(collided)
+    {
+        NAR_AddInputNarsese("notcollision! :|:");
+    }
+    else
+    {
+        NAR_AddInputNarsese("eaten! :|:");
+    }
 }
 
 void NAR_Robot(long iterations)
