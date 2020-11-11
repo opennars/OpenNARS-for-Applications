@@ -400,6 +400,10 @@ Perception Agent_View()
         world[pX][pY].food = false;
         spawnFood(true);
     }
+    if(ret.forward_pX != pX || ret.forward_pY != pY)
+    {
+        ret.moved = true;    
+    }
     return ret;
 }
 
@@ -448,6 +452,7 @@ void buildRooms()
     }
 }
 
+bool collided = false;
 void Agent_Invoke()
 {
     Perception percept = Agent_View();
@@ -472,13 +477,29 @@ void Agent_Invoke()
     {
         NAR_AddInputNarsese(narseseR);
     }
+    if(percept.moved && collided)
+    {
+        collided = false;
+        NAR_AddInputNarsese("(! collision). :|:");
+    }
+    if(percept.viewfield[1] == 'w') //distance or touch sensor
+    {
+        collided = true;
+    }
     if(percept.reward)
     {
         eaten++;
         NAR_AddInputNarsese("eaten. :|:");
     }
     allowAction = true;
-    NAR_AddInputNarsese("eaten! :|:");
+    if(collided)
+    {
+        NAR_AddInputNarsese("(! collision)! :|:");
+    }
+    else
+    {
+        NAR_AddInputNarsese("eaten! :|:");
+    }
 }
 
 void NAR_Robot(long iterations)
