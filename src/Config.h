@@ -39,7 +39,7 @@
 //Truth expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
-#define MOTOR_BABBLING_CHANCE_INITIAL 0.1
+#define MOTOR_BABBLING_CHANCE_INITIAL 0.3
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
 
@@ -83,7 +83,7 @@
 //Maximum amount of goal events attention buffer holds
 #define CYCLING_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered
-#define OPERATIONS_MAX 10
+#define OPERATIONS_MAX 3
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
 //Maximum event FIFO size
