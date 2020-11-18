@@ -641,7 +641,8 @@ bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ 
     return Narsese_isOperator(term->atoms[0]) ||
            (Narsese_copulaEquals(term->atoms[0], ':') && Narsese_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
             Narsese_isOperator(term->atoms[2]) && //^op
-            Narsese_copulaEquals(term->atoms[3], '"') && term->atoms[7] == SELF); //  { SELF }
+            Narsese_copulaEquals(term->atoms[3], '"') && 
+            (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7]))); //  { SELF } or { VAR }
 }
 
 int Narsese_getOperationID(Term *term)

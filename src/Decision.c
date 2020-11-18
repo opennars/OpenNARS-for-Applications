@@ -104,7 +104,13 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
         {
             assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
-            decision.arguments = Term_ExtractSubterm(&imp->term, 9); 
+            Term arguments = Term_ExtractSubterm(&imp->term, 9); //[* ' ARG SELF]
+            if(arguments.atoms[3] != SELF) //either wasn't SELF or var didn't resolve to SELF
+            {
+                return decision;
+            }
+            decision.arguments = arguments;
+            
         }
         decision.operationID = considered_opi;
         decision.desire = operationGoalTruthExpectation;
