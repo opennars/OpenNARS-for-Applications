@@ -195,9 +195,9 @@ BackgroundKnowledge = """
 <(<bottle --> [smallerX]> &/ ^left) =/> <mission --> [progressed]>>.
 <(<bottle --> [largerX]> &/ ^right) =/> <mission --> [progressed]>>.
 //2. Grab it if it's in front
-<((closed &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
+<((open &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
 //3. Put it to other bottle
-<((open &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
+<((closed &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
 """
 
 k=0
