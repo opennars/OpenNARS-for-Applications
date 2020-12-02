@@ -58,8 +58,7 @@ void NAR_Pong2(long iterations)
     int t=0;
     while(1)
     {
-        t++;
-        if(iterations != -1 && t++ > iterations)
+        if(t++ > iterations && iterations != -1)
         {
             break;
         }
@@ -175,7 +174,7 @@ void NAR_Pong2(long iterations)
             batVX = 0;
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
-        printf("Hits=%d misses=%d ratio=%f time=%ld\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), currentTime);
+        printf("Hits=%d misses=%d ratio=%f time=%d\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), t);
         if(iterations == -1)
         {
             nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep

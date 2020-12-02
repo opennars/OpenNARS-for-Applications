@@ -55,11 +55,11 @@ void NAR_Alien(long iterations)
     int t=0;
     while(1)
     {
-        if(iterations != -1 && t++ > iterations)
+        if(t++ > iterations && iterations != -1)
         {
             break;
         }
-        if(t++%10000 == 0)
+        if(iterations == -1 && t%10000 == 0)
         {
             getchar();
         }
@@ -100,7 +100,7 @@ void NAR_Alien(long iterations)
             NAR_Alien_Right_executed = false;
             defenderX = MIN(1.0, defenderX+0.1);
         }
-        printf("shots=%d hits=%d ratio=%f time=%ld\n", shots, hits, (float) (((float) hits) / ((float) shots)), currentTime);
+        printf("shots=%d hits=%d ratio=%f time=%d\n", shots, hits, (float) (((float) hits) / ((float) shots)), t);
         //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
         //NAR_Cycles(10);
     }
