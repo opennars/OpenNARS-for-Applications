@@ -85,7 +85,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);

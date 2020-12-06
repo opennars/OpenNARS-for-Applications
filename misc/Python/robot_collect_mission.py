@@ -190,13 +190,13 @@ BackgroundKnowledge = """
 <(<nothing --> [observed]> &/ ^up) =/> forward>.
 //and to move left when an obstacle is in front (due to innate collision pain to avoid)
 <(<obstacle --> [observed]> &/ ^left) =/> (! collision)>.
+//Also easily learnable from observations with bottles:
+<(<bottle --> [smallerX]> &/ ^left) =/> <bottle --> [equalX]>>.
+<(<bottle --> [largerX]> &/ ^right) =/> <bottle --> [equalX]>>.
 //Mission description:
-//1. Find a bottle
-<(<bottle --> [smallerX]> &/ ^left) =/> <mission --> [progressed]>>.
-<(<bottle --> [largerX]> &/ ^right) =/> <mission --> [progressed]>>.
-//2. Grab it if it's in front
+//2. Grab a bottle if it's in front
 <((open &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
-//3. Put it to other bottle
+//3. Put grabbed to other bottles
 <((closed &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
 """
 

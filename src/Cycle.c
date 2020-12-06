@@ -124,6 +124,69 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
     }
 }
 
+//Derive a subgoal from a sequence goal
+//{Event (a, b)!, Event a.} |- Event b! Truth_Deduction
+//if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
+//{Event (a, b)!} |- Event a! Truth_StructuralDeduction
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
+{
+    //1. Extract potential subgoals
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    {
+        return false;
+    }
+    Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
+    Term cur_seq = selectedGoal->term;
+    int i=0;
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    {
+        assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
+        componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
+        cur_seq = Term_ExtractSubterm(&cur_seq, 1);
+    }
+    componentGoalsTerm[i] = cur_seq; //the last element at this point
+    //2. Find first subgoal which isn't fulfilled
+    int lastComponentOccurrenceTime = -1;
+    Event newGoal = Inference_EventUpdate(selectedGoal, currentTime);
+    int j=i;
+    for(; j>=0; j--)
+    {
+        Term *componentGoal = &componentGoalsTerm[j];
+        Concept *c = Memory_FindConceptByTerm(componentGoal);
+        //no corresponding belief
+        if(c == NULL || c->belief_spike.type == EVENT_TYPE_DELETED)
+        {
+            break;
+        }
+        //belief too weak (not recent enough or not true enough)
+        if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < ANTICIPATION_THRESHOLD)
+        {
+            break;
+        }
+        //the temporal order is violated
+        if(c->belief_spike.occurrenceTime < lastComponentOccurrenceTime) 
+        {
+            break;
+        }
+        //all components fulfilled? Then nothing to do
+        if(j == 0)
+        {
+            return true; 
+        }
+        //build component subgoal according to {(a, b)!, a} |- b! Truth_Deduction
+        lastComponentOccurrenceTime = c->belief_spike.occurrenceTime;
+        newGoal = Inference_GoalSequenceDeduction(&newGoal, &c->belief_spike, currentTime);
+        newGoal.term = componentGoalsTerm[j-1];
+    }
+    if(j == i) //we derive first component according to {(a,b)!} |- a! Truth_StructuralDeduction
+    {
+        newGoal.term = componentGoalsTerm[i];
+        newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
+    }
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+    return true;
+}
+
 //Propagate subgoals, leading to decisions
 static void Cycle_ProcessInputGoalEvents(long currentTime)
 {
@@ -133,6 +196,11 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     {
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
+        //if goal is a sequence, overwrite with first deduced non-fulfilled element
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i])) //the goal was a sequence which leaded to a subgoal derivation
+        {
+            continue;
+        }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
         if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
         {
