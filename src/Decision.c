@@ -28,6 +28,7 @@ double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+int BABBLING_OPS = OPERATIONS_MAX;
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
@@ -60,7 +61,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (n_ops));
+        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )

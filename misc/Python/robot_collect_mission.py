@@ -60,22 +60,20 @@ def interrupt():
             open()
         exit(0)
 
-def forward(power=64, mul=1):
+def forward(mul=1):
     interrupt()
-    m_left.run(power=power*mul)
-    m_right.run(power=power*mul)
-    sleep(1.1)
+    m_left.run(power=64*mul)
+    m_right.run(power=64*mul)
+    sleep(1.3)
     m_left.idle()
     m_right.idle()
     return "forward"
-
-SCANSPEED = 0.35
-TURNSPEED = 0.55
+    
 def left(doScan=False):
     interrupt()
     m_left.run(power=64)
     m_right.run(power=-64)
-    sleep(SCANSPEED if doScan==True else TURNSPEED)
+    sleep(0.45 if doScan==True else 1.0)
     m_left.idle()
     m_right.idle()
     return "left"
@@ -84,7 +82,7 @@ def right(doScan=False):
     interrupt()
     m_left.run(power=-64)
     m_right.run(power=64)
-    sleep(SCANSPEED if doScan==True else TURNSPEED)
+    sleep(0.45 if doScan==True else 1.0)
     m_left.idle()
     m_right.idle()
     return "right"
@@ -137,9 +135,9 @@ def ExecMotorCommands(executions, DisableForward=False):
         elif execution["operator"] == "^up" and not DisableForward: #forward or gripper-pick
             if execution["operator"] == "^up":
                 action = forward() #if the hardware is strong enough, this line is fine however
-        elif execution["operator"] == "^down":
+        elif execution["operator"] == "^down" and not DisableForward:
                 action = gripper_pick()
-        elif execution["operator"] == "^say": #currently used for gripper-drop
+        elif execution["operator"] == "^say" and not DisableForward: #currently used for gripper-drop
             action = gripper_drop()
     return action
 
@@ -149,17 +147,15 @@ def NARAddInput(narsese):
 
 VisibleObjects = ["bottle"]
 
-hadProximity = False
 def NAR_Invoke(Proximity, VisualEvents):
-    global hadProximity
     SeenSomethingMissionRelevant = False
     if Proximity:
         NARAddInput("<obstacle --> [observed]>. :|:") #TODO also encode color
     else:
         if closed_gripper:
-            NARAddInput("closed. :|:")
+            NARAddInput("<gripper --> [closed]>. :|:")
         else:
-            NARAddInput("open. :|:")
+            NARAddInput("<gripper --> [open]>. :|:")
         if len(VisualEvents) > 0:
             Observed = False
             for obj in VisibleObjects:
@@ -169,35 +165,32 @@ def NAR_Invoke(Proximity, VisualEvents):
                         NARAddInput(v)
                         SeenSomethingMissionRelevant = True
         if not SeenSomethingMissionRelevant:
-            NARAddInput("<nothing --> [observed]>. :|:") #TODO also encode color
+            NARAddInput("(! <obstacle --> [observed]>). :|:") #TODO also encode color
     action = None
     if Proximity and not SeenSomethingMissionRelevant: #Don't allow forward as a reflex to not damage hardware
-        executions = NARAddInput("(! collision)! :|:")["executions"]
+        executions = NARAddInput("(! <obstacle --> [observed]>)! :|:")["executions"]
         action = ExecMotorCommands(executions, DisableForward=True)
     else:
-        executions = NARAddInput("<mission --> [progressed]>! :|:" if SeenSomethingMissionRelevant else "forward! :|:")["executions"]
+        executions = NARAddInput("<mission --> [progressed]>! :|:" if SeenSomethingMissionRelevant else "<{SELF} --> [moved]>! :|:")["executions"]
+        executions += NARAddInput("5")["executions"]
         action = ExecMotorCommands(executions)
-        executions.append(NARAddInput("5")["executions"])
-    if not Proximity and hadProximity and action == "forward":
-        NARAddInput("(! collision). :|:") #moved away from collision state
     if action == "forward":
-        NARAddInput("forward. :|:")
-    hadProximity = Proximity
+        NARAddInput("<{SELF} --> [moved]>. :|:")
 
 BackgroundKnowledge = """
-//Let's say robot already learned to navigate from previous experiment:
-//meaning to move forward if nothing is seen (due to innate boredom/forward goal)
-<(<nothing --> [observed]> &/ ^up) =/> forward>.
-//and to move left when an obstacle is in front (due to innate collision pain to avoid)
-<(<obstacle --> [observed]> &/ ^left) =/> (! collision)>.
-//Also easily learnable from observations with bottles:
+//What's expected by the robot to learn:
+//move forward if nothing is seen (due to innate boredom/forward goal)
+//<((! <obstacle --> [observed]>) &/ ^up) =/> <{SELF} --> [moved]>>.
+//move left when an obstacle is in front (due to innate collision pain to avoid)
+//<(<obstacle --> [observed]> &/ ^left) =/> (! <obstacle --> [observed]>)>.
+//How to focus on a bottle (comment out if it should also be learned!)
 <(<bottle --> [smallerX]> &/ ^left) =/> <bottle --> [equalX]>>.
 <(<bottle --> [largerX]> &/ ^right) =/> <bottle --> [equalX]>>.
 //Mission description:
-//2. Grab a bottle if it's in front
-<((open &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
-//3. Put grabbed to other bottles
-<((closed &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
+//1. Grab a bottle if it's in front
+<((<gripper --> [open]> &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
+//2. Put grabbed to other bottles
+<((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
 """
 
 k=0
@@ -205,8 +198,7 @@ for bg in BackgroundKnowledge.split("\n"):
     bgstr = bg.strip()
     if len(bgstr) > 0:
         NAR.AddInput(bgstr)
-NARAddInput("*motorbabbling=false")
-
+NARAddInput("*babblingops=3")
 while True:
     #1. Actively retrieve sensor input
     Proximity = scan()

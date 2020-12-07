@@ -172,6 +172,11 @@ int Shell_ProcessInput(char *line)
             PRINT_DERIVATIONS = true;
         }
         else
+        if(!strncmp("*babblingops=", line, strlen("*babblingops=")))
+        {
+            sscanf(&line[strlen("*babblingops=")], "%d", &BABBLING_OPS);
+        }
+        else
         if(!strcmp(line,"*motorbabbling=false"))
         {
             MOTOR_BABBLING_CHANCE = 0.0;
