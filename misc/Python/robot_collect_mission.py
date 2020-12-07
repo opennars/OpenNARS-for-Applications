@@ -199,6 +199,7 @@ for bg in BackgroundKnowledge.split("\n"):
     if len(bgstr) > 0:
         NAR.AddInput(bgstr)
 NARAddInput("*babblingops=3")
+NARAddInput("*motorbabbling=0.3")
 while True:
     #1. Actively retrieve sensor input
     Proximity = scan()

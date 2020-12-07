@@ -1,1 +1,0 @@
-MOTOR_BABBLING_CHANCE_INITIAL = 0.3 for faster learning
