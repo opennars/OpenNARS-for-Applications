@@ -125,9 +125,9 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 }
 
 //Derive a subgoal from a sequence goal
-//{Event (a, b)!, Event a.} |- Event b! Truth_Deduction
+//{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 //if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
-//{Event (a, b)!} |- Event a! Truth_StructuralDeduction
+//{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
 bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
 {
     //1. Extract potential subgoals
