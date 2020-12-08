@@ -125,19 +125,18 @@ def scan():
     return Proximity < 20
 
 def ExecMotorCommands(executions, DisableForward=False):
-    action = None
+    action = None  #DisableForward as an optional reflex to preserve hardware integrity if already too close
     for execution in executions:
         print(execution)
-        if execution["operator"] == "^right":
-            action = right()
-        elif execution["operator"] == "^left":
+        if execution["operator"] == "^left":
             action = left()
-        elif execution["operator"] == "^up" and not DisableForward: #forward or gripper-pick
-            if execution["operator"] == "^up":
-                action = forward() #if the hardware is strong enough, this line is fine however
-        elif execution["operator"] == "^down" and not DisableForward:
-                action = gripper_pick()
-        elif execution["operator"] == "^say" and not DisableForward: #currently used for gripper-drop
+        elif execution["operator"] == "^right":
+            action = right()
+        elif execution["operator"] == "^forward" and not DisableForward: #forward or gripper-pick
+            action = forward()
+        elif execution["operator"] == "^pick" and not DisableForward:
+            action = gripper_pick()
+        elif execution["operator"] == "^drop" and not DisableForward: #currently used for gripper-drop
             action = gripper_drop()
     return action
 
@@ -180,17 +179,17 @@ def NAR_Invoke(Proximity, VisualEvents):
 BackgroundKnowledge = """
 //What's expected by the robot to learn:
 //move forward if nothing is seen (due to innate boredom/forward goal)
-//<((! <obstacle --> [observed]>) &/ ^up) =/> <{SELF} --> [moved]>>.
+//<((! <obstacle --> [observed]>) &/ ^forward) =/> <{SELF} --> [moved]>>.
 //move left when an obstacle is in front (due to innate collision pain to avoid)
 //<(<obstacle --> [observed]> &/ ^left) =/> (! <obstacle --> [observed]>)>.
 //How to focus on a bottle (comment out if it should also be learned!)
 <(<bottle --> [smallerX]> &/ ^left) =/> <bottle --> [equalX]>>.
 <(<bottle --> [largerX]> &/ ^right) =/> <bottle --> [equalX]>>.
 //Mission description:
-//1. Grab a bottle if it's in front
-<((<gripper --> [open]> &/ <bottle --> [equalX]>) &/ ^down) =/> <mission --> [progressed]>>.
-//2. Put grabbed to other bottles
-<((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^say) =/> <mission --> [progressed]>>.
+//1. Pick a bottle if it's in front
+<((<gripper --> [open]> &/ <bottle --> [equalX]>) &/ ^pick) =/> <mission --> [progressed]>>.
+//2. Drop grabbed to other bottles
+<((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^drop) =/> <mission --> [progressed]>>.
 """
 
 k=0
@@ -200,6 +199,11 @@ for bg in BackgroundKnowledge.split("\n"):
         NAR.AddInput(bgstr)
 NARAddInput("*babblingops=3")
 NARAddInput("*motorbabbling=0.3")
+NARAddInput("*setopname 1 ^left")
+NARAddInput("*setopname 2 ^right")
+NARAddInput("*setopname 3 ^forward")
+NARAddInput("*setopname 4 ^pick")
+NARAddInput("*setopname 5 ^drop")
 while True:
     #1. Actively retrieve sensor input
     Proximity = scan()

@@ -26,43 +26,43 @@
 
 static void Shell_op_left(Term args)
 {
-    fputs("^left executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_right(Term args)
 {
-    fputs("^right executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[1], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_up(Term args)
 {
-    fputs("^up executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[2], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_down(Term args)
 {
-    fputs("^down executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[3], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_say(Term args)
 {
-    fputs("^say executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[4], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_pick(Term args)
 {
-    fputs("^pick executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[5], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_drop(Term args)
 {
-    fputs("^drop executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[6], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_go(Term args)
 {
-    fputs("^go executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[7], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_activate(Term args)
 {
-    fputs("^activate executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[8], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_deactivate(Term args)
 {
-    fputs("^deactivate executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 void Shell_NARInit()
 {
@@ -190,6 +190,16 @@ int Shell_ProcessInput(char *line)
         if(!strncmp("*motorbabbling=", line, strlen("*motorbabbling=")))
         {
             sscanf(&line[strlen("*motorbabbling=")], "%lf", &MOTOR_BABBLING_CHANCE);
+        }
+        else
+        if(!strncmp("*setopname ", line, strlen("*setopname ")))
+        {
+            int opID;
+            char opname[ATOMIC_TERM_LEN_MAX] = {0};
+            sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
+            Term previousOpAtom = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
+            strncpy(Narsese_operatorNames[opID-1], opname, ATOMIC_TERM_LEN_MAX);
+            strncpy(Narsese_atomNames[previousOpAtom.atoms[0]-1], opname, ATOMIC_TERM_LEN_MAX);
         }
         else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))
