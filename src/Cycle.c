@@ -152,19 +152,75 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
     for(; j>=0; j--)
     {
         Term *componentGoal = &componentGoalsTerm[j];
-        Concept *c = Memory_FindConceptByTerm(componentGoal);
+        Substitution best_subs = {0};
+        Concept *best_c = NULL;
+        double best_exp = 0.0;
+        //the concept with belief event of highest truth exp
+        conceptProcessID++;
+        for(int i=0; i<UNIFICATION_DEPTH; i++)
+        {
+            ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(componentGoal), .next = InvertedAtomIndex_GetConceptChain(componentGoal->atoms[i]) };
+            ConceptChainElement* chain = &chain_extended;
+            while(chain != NULL)
+            {
+                Concept *c = chain->c;
+                chain = chain->next;
+                if(c != NULL && c->processID != conceptProcessID)
+                {
+                    c->processID = conceptProcessID;
+                    if(!Variable_hasVariable(&c->term, true, true, true))  //concept matched to the event which doesn't have variables
+                    {
+                        Substitution subs = Variable_Unify(componentGoal, &c->term); //event with variable matched to concept
+                        if(subs.success)
+                        {
+                            bool success = true;
+                            if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                            {
+                                //check whether the temporal order is violated
+                                if(c->belief_spike.occurrenceTime < lastComponentOccurrenceTime) 
+                                {
+                                    continue;
+                                }
+                                //check whether belief is too weak (not recent enough or not true enough)
+                                if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < ANTICIPATION_THRESHOLD)
+                                {
+                                    continue;
+                                }
+                                //check whether the substitution works for the subgoals coming after it
+                                for(int u=j-1; u>=0; u--)
+                                {
+                                    bool goalsubs_success;
+                                    Variable_ApplySubstitute(componentGoalsTerm[u], subs, &goalsubs_success);
+                                    if(!goalsubs_success)
+                                    {
+                                        success = false;
+                                        break;
+                                    }
+                                }
+                                //Use this specific concept for subgoaling if it has the strongest belief event
+                                if(success)
+                                {
+                                    double expectation = Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime));
+                                    if(expectation > best_exp)
+                                    {
+                                        best_exp = expectation;
+                                        best_c = c;
+                                        best_subs = subs;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //no need to search another concept, as it didn't have a var so the concept we just iterated is the only one
+                if(!Variable_hasVariable(componentGoal, true, true, true))
+                {
+                    break;
+                }
+            }
+        }
         //no corresponding belief
-        if(c == NULL || c->belief_spike.type == EVENT_TYPE_DELETED)
-        {
-            break;
-        }
-        //belief too weak (not recent enough or not true enough)
-        if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < ANTICIPATION_THRESHOLD)
-        {
-            break;
-        }
-        //the temporal order is violated
-        if(c->belief_spike.occurrenceTime < lastComponentOccurrenceTime) 
+        if(best_c == NULL)
         {
             break;
         }
@@ -173,9 +229,16 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         {
             return true; 
         }
+        //Apply substitution implied by the event satisfying the current subgoal to the next subgoals
+        for(int u=j-1; u>=0; u--)
+        {
+            bool goalsubs_success;
+            componentGoalsTerm[u] = Variable_ApplySubstitute(componentGoalsTerm[u], best_subs, &goalsubs_success);
+            assert(goalsubs_success, "Cycle_GoalSequenceDecomposition: The subsitution succeeded before but not now!");
+        }
         //build component subgoal according to {(a, b)!, a} |- b! Truth_Deduction
-        lastComponentOccurrenceTime = c->belief_spike.occurrenceTime;
-        newGoal = Inference_GoalSequenceDeduction(&newGoal, &c->belief_spike, currentTime);
+        lastComponentOccurrenceTime = best_c->belief_spike.occurrenceTime;
+        newGoal = Inference_GoalSequenceDeduction(&newGoal, &best_c->belief_spike, currentTime);
         newGoal.term = componentGoalsTerm[j-1];
     }
     if(j == i) //we derive first component according to {(a,b)!} |- a! Truth_StructuralDeduction
