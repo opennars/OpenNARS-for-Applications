@@ -94,6 +94,11 @@ void Truth_Print(Truth *truth)
     printf("Truth: frequency=%f, confidence=%f\n", truth->frequency, truth->confidence);
 }
 
+Truth Truth_StructuralDeduction(Truth v1, Truth v2)
+{
+    return Truth_Deduction(v1, STRUCTURAL_TRUTH);
+}
+
 bool Truth_Equal(Truth *v1, Truth *v2)
 {
     return v1->confidence == v2->confidence && v1->frequency == v2->frequency;

@@ -64,6 +64,7 @@ Truth Truth_Induction(Truth v1, Truth v2);
 Truth Truth_Intersection(Truth v1, Truth v2);
 Truth Truth_Eternalize(Truth v);
 Truth Truth_Projection(Truth v, long originalTime, long targetTime);
+Truth Truth_StructuralDeduction(Truth v1, Truth v2);
 void Truth_Print(Truth *truth);
 bool Truth_Equal(Truth *v1, Truth *v2);
 
