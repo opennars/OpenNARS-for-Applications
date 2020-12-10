@@ -124,6 +124,132 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
     }
 }
 
+//Derive a subgoal from a sequence goal
+//{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
+//if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
+//{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
+{
+    //1. Extract potential subgoals
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    {
+        return false;
+    }
+    Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
+    Term cur_seq = selectedGoal->term;
+    int i=0;
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    {
+        assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
+        componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
+        cur_seq = Term_ExtractSubterm(&cur_seq, 1);
+    }
+    componentGoalsTerm[i] = cur_seq; //the last element at this point
+    //2. Find first subgoal which isn't fulfilled
+    int lastComponentOccurrenceTime = -1;
+    Event newGoal = Inference_EventUpdate(selectedGoal, currentTime);
+    int j=i;
+    for(; j>=0; j--)
+    {
+        Term *componentGoal = &componentGoalsTerm[j];
+        Substitution best_subs = {0};
+        Concept *best_c = NULL;
+        double best_exp = 0.0;
+        //the concept with belief event of highest truth exp
+        conceptProcessID++;
+        for(int i=0; i<UNIFICATION_DEPTH; i++)
+        {
+            ConceptChainElement chain_extended = { .c = Memory_FindConceptByTerm(componentGoal), .next = InvertedAtomIndex_GetConceptChain(componentGoal->atoms[i]) };
+            ConceptChainElement* chain = &chain_extended;
+            while(chain != NULL)
+            {
+                Concept *c = chain->c;
+                chain = chain->next;
+                if(c != NULL && c->processID != conceptProcessID)
+                {
+                    c->processID = conceptProcessID;
+                    if(!Variable_hasVariable(&c->term, true, true, true))  //concept matched to the event which doesn't have variables
+                    {
+                        Substitution subs = Variable_Unify(componentGoal, &c->term); //event with variable matched to concept
+                        if(subs.success)
+                        {
+                            bool success = true;
+                            if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                            {
+                                //check whether the temporal order is violated
+                                if(c->belief_spike.occurrenceTime < lastComponentOccurrenceTime) 
+                                {
+                                    continue;
+                                }
+                                //check whether belief is too weak (not recent enough or not true enough)
+                                if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < ANTICIPATION_THRESHOLD)
+                                {
+                                    continue;
+                                }
+                                //check whether the substitution works for the subgoals coming after it
+                                for(int u=j-1; u>=0; u--)
+                                {
+                                    bool goalsubs_success;
+                                    Variable_ApplySubstitute(componentGoalsTerm[u], subs, &goalsubs_success);
+                                    if(!goalsubs_success)
+                                    {
+                                        success = false;
+                                        break;
+                                    }
+                                }
+                                //Use this specific concept for subgoaling if it has the strongest belief event
+                                if(success)
+                                {
+                                    double expectation = Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime));
+                                    if(expectation > best_exp)
+                                    {
+                                        best_exp = expectation;
+                                        best_c = c;
+                                        best_subs = subs;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //no need to search another concept, as it didn't have a var so the concept we just iterated is the only one
+                if(!Variable_hasVariable(componentGoal, true, true, true))
+                {
+                    break;
+                }
+            }
+        }
+        //no corresponding belief
+        if(best_c == NULL)
+        {
+            break;
+        }
+        //all components fulfilled? Then nothing to do
+        if(j == 0)
+        {
+            return true; 
+        }
+        //Apply substitution implied by the event satisfying the current subgoal to the next subgoals
+        for(int u=j-1; u>=0; u--)
+        {
+            bool goalsubs_success;
+            componentGoalsTerm[u] = Variable_ApplySubstitute(componentGoalsTerm[u], best_subs, &goalsubs_success);
+            assert(goalsubs_success, "Cycle_GoalSequenceDecomposition: The subsitution succeeded before but not now!");
+        }
+        //build component subgoal according to {(a, b)!, a} |- b! Truth_Deduction
+        lastComponentOccurrenceTime = best_c->belief_spike.occurrenceTime;
+        newGoal = Inference_GoalSequenceDeduction(&newGoal, &best_c->belief_spike, currentTime);
+        newGoal.term = componentGoalsTerm[j-1];
+    }
+    if(j == i) //we derive first component according to {(a,b)!} |- a! Truth_StructuralDeduction
+    {
+        newGoal.term = componentGoalsTerm[i];
+        newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
+    }
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+    return true;
+}
+
 //Propagate subgoals, leading to decisions
 static void Cycle_ProcessInputGoalEvents(long currentTime)
 {
@@ -133,6 +259,11 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     {
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
+        //if goal is a sequence, overwrite with first deduced non-fulfilled element
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i])) //the goal was a sequence which leaded to a subgoal derivation
+        {
+            continue;
+        }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
         if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
         {

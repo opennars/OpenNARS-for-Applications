@@ -119,8 +119,8 @@ Event Inference_EventUpdate(Event *ev, long currentTime)
     return ret;
 }
 
-//{Event (&/,a,op())!, Event a.} |- Event op()!
-Event Inference_OperationDeduction(Event *compound, Event *component, long currentTime)
+//{Event (&/,a,b)!, Event a.} |- Event b! Truth_Deduction
+Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long currentTime)
 {
     DERIVATION_STAMP(component,compound)
     Event compoundUpdated = Inference_EventUpdate(compound, currentTime);
@@ -129,7 +129,7 @@ Event Inference_OperationDeduction(Event *compound, Event *component, long curre
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = compound->occurrenceTime,
+                     .occurrenceTime = currentTime,
                      .creationTime = creationTime };
 }
 

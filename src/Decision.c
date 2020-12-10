@@ -28,6 +28,7 @@ double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+int BABBLING_OPS = OPERATIONS_MAX;
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
@@ -60,7 +61,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (n_ops));
+        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
@@ -85,7 +86,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);

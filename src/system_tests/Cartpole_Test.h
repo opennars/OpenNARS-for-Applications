@@ -59,7 +59,7 @@ void NAR_Cartpole(long iterations)
             NAR_AddInputNarsese("good. :|: {0.0 0.9}");
             puts("WRAPAROUND");
         }
-        if(iterations != -1 && t++ > iterations)
+        if(t++ > iterations && iterations != -1)
         {
             break;
         }
