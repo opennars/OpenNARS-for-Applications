@@ -178,7 +178,7 @@ def NAR_Invoke(Proximity, VisualEvents):
 
 BackgroundKnowledge = """
 //What's expected by the robot to learn:
-//move forward if nothing is seen (due to innate boredom/forward goal)
+//move forward if nothing is seen (due to innate boredom/move goal)
 //<((! <obstacle --> [observed]>) &/ ^forward) =/> <{SELF} --> [moved]>>.
 //move left when an obstacle is in front (due to innate collision pain to avoid)
 //<(<obstacle --> [observed]> &/ ^left) =/> (! <obstacle --> [observed]>)>.
