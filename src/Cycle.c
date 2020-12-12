@@ -391,7 +391,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     if(belief_events.itemsAmount > 0)
     {
         //form concepts for the sequences of different length
-        for(int state=POW2_OF_MAX_SEQUENCE_LEN-1; state>=1; state--)
+        for(int state=(1 << MAX_SEQUENCE_LEN)-1; state>=1; state--)
         {
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
@@ -406,7 +406,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                     Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
-                        for(int state2=1; state2<POW2_OF_MAX_SEQUENCE_LEN; state2++)
+                        for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
                             //TODO don't do across op barrier

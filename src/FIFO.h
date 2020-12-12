@@ -44,7 +44,7 @@ typedef struct
 {
     int itemsAmount;
     int currentIndex;
-    Event array[POW2_OF_MAX_SEQUENCE_LEN][FIFO_SIZE];
+    Event array[(1 << MAX_SEQUENCE_LEN)][FIFO_SIZE];
 } FIFO;
 typedef struct
 {
