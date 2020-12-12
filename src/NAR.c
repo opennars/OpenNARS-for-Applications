@@ -29,6 +29,7 @@ static bool initialized = false;
 
 void NAR_INIT()
 {
+    //assert(pow(2,MAX_SEQUENCE_LEN)/2 == POW2_MAX_SEQUENCE_LEN_DIV2, "MAX_SEQUENCE_LEN_POW2 is not 2 to the power of MAX_SEQUENCE_LEN!");
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter

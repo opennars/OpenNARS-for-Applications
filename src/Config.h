@@ -92,6 +92,7 @@
 #define TABLE_SIZE 20
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
+#define POW2_OF_MAX_SEQUENCE_LEN 8 //pow(2,MAX_SEQUENCE_LEN)
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)

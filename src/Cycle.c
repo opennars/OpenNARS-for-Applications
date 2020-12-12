@@ -391,32 +391,33 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     if(belief_events.itemsAmount > 0)
     {
         //form concepts for the sequences of different length
-        for(int len=MAX_SEQUENCE_LEN-1; len>=0; len--)
+        for(int state=POW2_OF_MAX_SEQUENCE_LEN-1; state>=1; state--)
         {
-            Event *toProcess = FIFO_GetNewestSequence(&belief_events, len);
+            Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
-                if(len == 0) //postcondition always len1
+                if(state == 1) //postcondition always len1
                 {
                     int op_id = Narsese_getOperationID(&postcondition.term);
                     Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
-                        for(int len2=0; len2<MAX_SEQUENCE_LEN; len2++)
+                        for(int state2=1; state2<POW2_OF_MAX_SEQUENCE_LEN; state2++)
                         {
-                            Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, len2);
-                            if(len2 > 0)
+                            Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
+                            //TODO don't do across op barrier
+                            /*if(len2 > 0)
                             {
                                 Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+len2, 0);
                                 if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
                                 {
                                     break;
                                 }
-                            }
+                            }*/
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
                                 Cycle_ReinforceLink(precondition, &postcondition);
