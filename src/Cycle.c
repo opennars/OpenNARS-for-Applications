@@ -409,17 +409,32 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
-                            //TODO don't do across op barrier
-                            /*if(len2 > 0)
-                            {
-                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+len2, 0);
-                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
-                                {
-                                    break;
-                                }
-                            }*/
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
+                                //TODO fix start
+                                if(state2 > 1)
+                                {
+                                    int substate = state2 >> 1;
+                                    int shift = 1;
+                                    while((substate >> 1))
+                                    {
+                                        substate = (substate >> 1);
+                                        shift++;
+                                        /*if(!(substate & 1)) //for testing, this lets it behave like old FIFO
+                                        {
+                                            continue;
+                                        }*/
+                                    }
+                                    if(k+shift < FIFO_SIZE)
+                                    {
+                                        Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+shift, 1);
+                                        if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                                //TODO fix end
                                 Cycle_ReinforceLink(precondition, &postcondition);
                             }
                         }
