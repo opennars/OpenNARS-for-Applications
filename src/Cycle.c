@@ -406,12 +406,11 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                     Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
-                        for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2 = (state2 << 1) | 1) //state2++) TODO
+                        for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                //TODO fix start
                                 if(state2 > 1)
                                 {
                                     int substate = state2 >> 1;
@@ -430,7 +429,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                                         }
                                     }
                                 }
-                                //TODO fix end
                                 Cycle_ReinforceLink(precondition, &postcondition);
                             }
                         }
