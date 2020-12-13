@@ -36,7 +36,9 @@
 /*---------------------*/
 /* Decision parameters */
 /*---------------------*/
-//Truth expectation needed for executions
+//Truth expectation to move on to next component goal in sequence
+#define CONDITION_THRESHOLD_INITIAL 0.501
+//Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.1

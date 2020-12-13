@@ -182,7 +182,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
                                     continue;
                                 }
                                 //check whether belief is too weak (not recent enough or not true enough)
-                                if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < ANTICIPATION_THRESHOLD)
+                                if(Truth_Expectation(Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime)) < CONDITION_THRESHOLD)
                                 {
                                     continue;
                                 }
