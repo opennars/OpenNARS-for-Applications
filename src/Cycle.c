@@ -413,23 +413,27 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                             {
                                 if(state2 > 1)
                                 {
-                                    int substate = state2 >> 1;
-                                    int shift = 1;
-                                    while((substate >> 1))
+                                    int substate = state2;
+                                    int shift = 0;
+                                    while(substate)
                                     {
                                         substate = (substate >> 1);
                                         shift++;
-                                    }
-                                    if(k+shift < FIFO_SIZE)
-                                    {
-                                        Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+shift, 1);
-                                        if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                        if(substate & 1)
                                         {
-                                            break;
+                                            if(k+shift < FIFO_SIZE)
+                                            {
+                                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+shift, 1);
+                                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                                {
+                                                    goto CONTINUE;
+                                                }
+                                            }
                                         }
                                     }
                                 }
                                 Cycle_ReinforceLink(precondition, &postcondition);
+                                CONTINUE:;
                             }
                         }
                     }
