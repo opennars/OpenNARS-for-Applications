@@ -1,0 +1,12 @@
+A mouse is a animal.
+It is dead if the cat eats it.
+The cat is eating a mouse in the jungle.
+70
+What is in the garden?
+Answer: <cat --> (in /1 garden)>. :|: occurrenceTime=4 creationTime=4 Truth: frequency=1.000000, confidence=0.900000
+The cat is in the garden?
+Answer: <cat --> (in /1 garden)>. :|: occurrenceTime=4 creationTime=4 Truth: frequency=1.000000, confidence=0.900000
+The mouse is dead?
+//expected: Answer: <mouse --> [dead]>. :|: occurrenceTime=3 creationTime=3 Truth: frequency=0.999502, confidence=0.809637
+The cat is eating an animal?
+//expected: Answer: <cat --> (eat /1 animal)>. :|: occurrenceTime=3 creationTime=69 Truth: frequency=1.000000, confidence=0.239539
