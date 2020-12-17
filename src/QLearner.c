@@ -3,7 +3,7 @@
 float Q[nStates][nActions] = {0}; //state, action
 float et[nStates][nActions] = {0};
 int lastState = 0, lastAction = 0;
-float Gamma = 0.8, Lambda = 0.1;
+float Gamma = 0.8, Lambda = 0.1, Alpha = 0.1;
 
 void QLearner_INIT()
 {
@@ -30,8 +30,8 @@ int QLearner_Update(int state, float reward, int forcedAction)
         }
     }
     int action=0;
-    double Alpha = MOTOR_BABBLING_CHANCE;
-    if(myrand() < (int)(Alpha * MY_RAND_MAX))
+    double Epsilon = MOTOR_BABBLING_CHANCE;
+    if(myrand() < (int)(Epsilon * MY_RAND_MAX))
     {
         action = myrand() % nActions;
     }
