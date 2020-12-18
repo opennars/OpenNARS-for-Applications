@@ -182,9 +182,9 @@ BackgroundKnowledge = """
 //<((! <obstacle --> [observed]>) &/ ^forward) =/> <{SELF} --> [moved]>>.
 //move left when an obstacle is in front (due to innate collision pain to avoid)
 //<(<obstacle --> [observed]> &/ ^left) =/> (! <obstacle --> [observed]>)>.
-//How to focus on a bottle (comment out if it should also be learned!)
-<(<bottle --> [smallerX]> &/ ^left) =/> <bottle --> [equalX]>>.
-<(<bottle --> [largerX]> &/ ^right) =/> <bottle --> [equalX]>>.
+//How to focus on objects (comment out if it should also be learned!)
+<(<$1 --> [smallerX]> &/ ^left) =/> <$1 --> [equalX]>>.
+<(<$1 --> [largerX]> &/ ^right) =/> <$1 --> [equalX]>>.
 //Mission description:
 //1. Pick a bottle if it's in front
 <((<gripper --> [open]> &/ <bottle --> [equalX]>) &/ ^pick) =/> <mission --> [progressed]>>.
