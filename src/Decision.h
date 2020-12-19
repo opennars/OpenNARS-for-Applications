@@ -40,6 +40,7 @@
 
 //Parameters//
 //----------//
+extern double CONDITION_THRESHOLD;
 extern double DECISION_THRESHOLD;
 extern double ANTICIPATION_THRESHOLD;
 extern double ANTICIPATION_CONFIDENCE;
