@@ -192,11 +192,6 @@ BackgroundKnowledge = """
 <((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^drop) =/> <mission --> [progressed]>>.
 """
 
-k=0
-for bg in BackgroundKnowledge.split("\n"):
-    bgstr = bg.strip()
-    if len(bgstr) > 0:
-        NAR.AddInput(bgstr)
 NARAddInput("*babblingops=3")
 NARAddInput("*motorbabbling=0.3")
 NARAddInput("*setopname 1 ^left")
@@ -204,6 +199,13 @@ NARAddInput("*setopname 2 ^right")
 NARAddInput("*setopname 3 ^forward")
 NARAddInput("*setopname 4 ^pick")
 NARAddInput("*setopname 5 ^drop")
+
+k=0
+for bg in BackgroundKnowledge.split("\n"):
+    bgstr = bg.strip()
+    if len(bgstr) > 0:
+        NAR.AddInput(bgstr)
+
 while True:
     #1. Actively retrieve sensor input
     Proximity = scan()
