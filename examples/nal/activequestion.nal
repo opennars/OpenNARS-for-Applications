@@ -15,7 +15,7 @@
 <corridor --> in>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-100
+110
 //Ok you are in corridor now
 <corridor --> in>. :|:
 //NARS, where is the cat?

@@ -154,6 +154,11 @@ Truth Truth_StructuralDeduction(Truth v1, Truth v2)
     return Truth_Deduction(v1, STRUCTURAL_TRUTH);
 }
 
+Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2)
+{
+    return Truth_Negation(Truth_Deduction(v1, STRUCTURAL_TRUTH), v2);
+}
+
 Truth Truth_StructuralAbduction(Truth v1, Truth v2)
 {
     return Truth_Abduction(v1, STRUCTURAL_TRUTH);
@@ -162,4 +167,37 @@ Truth Truth_StructuralAbduction(Truth v1, Truth v2)
 bool Truth_Equal(Truth *v1, Truth *v2)
 {
     return v1->confidence == v2->confidence && v1->frequency == v2->frequency;
+}
+
+Truth Truth_DecomposePNN(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double fn = f1 * (1.0 - f2);
+    return (Truth) { .frequency = 1.0 - fn, .confidence = fn * c1 * c2 };
+}
+	
+Truth Truth_DecomposeNPP(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double f = (1.0 - f1) * f2;
+    return (Truth) { .frequency = f, .confidence = f * c1 * c2 };
+}
+	
+Truth Truth_DecomposePNP(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double f = f1 * (1.0 - f2);
+    return (Truth) { .frequency = f, .confidence = f * c1 * c2 };
+}
+
+Truth Truth_DecomposePPP(Truth v1, Truth v2)
+{
+    return Truth_DecomposeNPP(Truth_Negation(v1, v2), v2);
+}
+
+Truth Truth_DecomposeNNN(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    double fn = (1.0 - f1) * (1.0 - f2);
+    return (Truth) { .frequency = 1.0 - fn, .confidence = fn * c1 * c2 };
 }
