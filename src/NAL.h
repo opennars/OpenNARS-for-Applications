@@ -80,6 +80,10 @@ R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
 //NAL3 rules
+R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
+R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [A]>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [B]>, Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (S --> M), Truth_StructuralDeduction )
 R1( (M --> (S & P)), |-, (M --> S), Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (P --> M), Truth_StructuralDeduction )
@@ -119,5 +123,8 @@ ReduceStatement( (A && A), A )
 ReduceTerm( ({A} | {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
+//Reduce for set element copula
+ReduceTerm( {(A . B)}, {A B} )
+ReduceTerm( [(A . B)], [A B] )
 
 #endif

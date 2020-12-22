@@ -77,6 +77,10 @@ Substitution Variable_Unify(Term *general, Term *specific)
                 {
                     return substitution;
                 }
+                if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
+                {
+                    return substitution;	
+                }
                 substitution.map[(int) general_atom] = subtree;
             }
             else
