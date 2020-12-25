@@ -215,7 +215,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     }
     if(decision.desire < DECISION_THRESHOLD)
     {
-		bool curiosityAllowed = preconditionAboveConditionThreshold && implicationAboveConditionThresholdConfidence < CURIOSITY_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
+        bool curiosityAllowed = preconditionAboveConditionThreshold && implicationAboveConditionThresholdConfidence < CURIOSITY_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
         if(!curiosityAllowed)
         {
             return (Decision) {0};
