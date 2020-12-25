@@ -241,7 +241,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
         if(target_concept != NULL)
         {
-            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
+			target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = occurrenceTimeOffset,
