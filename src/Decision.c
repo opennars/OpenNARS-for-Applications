@@ -72,9 +72,9 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, bool *preconditionAboveConditionThreshold)
 {
-    Decision decision = (Decision) {0};
+    Decision decision = {0};
     IN_DEBUG
     (
         printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp->truth.frequency, imp->truth.confidence);
@@ -86,6 +86,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
+        *preconditionAboveConditionThreshold |= Truth_Expectation(Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime)) > CONDITION_THRESHOLD;
         Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
         double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
         IN_DEBUG
@@ -123,10 +124,13 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
-    Decision decision = (Decision) {0};
+    bool preconditionAboveConditionThreshold = false;
+    double implicationAboveConditionThresholdConfidence = 1.0;
+    Decision minConfImplicationDecision = {0};
+    Decision decision = {0};
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
-    Decision decisionGeneral = (Decision) {0};
+    Decision decisionGeneral = {0};
     Implication bestImpGeneral = {0};
     long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
@@ -165,7 +169,14 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                    bool preconditionAboveConditionThresholdCur = false;
+                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &preconditionAboveConditionThresholdCur);
+                                    preconditionAboveConditionThreshold |= preconditionAboveConditionThresholdCur;
+                                    if(preconditionAboveConditionThresholdCur && specific_imp.truth.confidence < implicationAboveConditionThresholdConfidence)
+                                    {
+                                        minConfImplicationDecision = considered;
+                                        implicationAboveConditionThresholdConfidence = specific_imp.truth.confidence;
+                                    }
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
@@ -200,9 +211,13 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         decision = decisionGeneral;
         bestImp = bestImpGeneral;
     }
-    if(decision.desire < DECISION_THRESHOLD)
+    if(decision.desire < DECISION_THRESHOLD && !preconditionAboveConditionThreshold)
     {
         return (Decision) {0};
+    }
+    if(preconditionAboveConditionThreshold)
+    {
+        decision = minConfImplicationDecision;    
     }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
