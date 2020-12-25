@@ -126,6 +126,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
 {
     bool preconditionAboveConditionThreshold = false;
     double implicationAboveConditionThresholdConfidence = 1.0;
+    Implication minConfImpAboveConditionThreshold = {0};
     Decision minConfImplicationDecision = {0};
     Decision decision = {0};
     Implication bestImp = {0};
@@ -174,6 +175,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     preconditionAboveConditionThreshold |= preconditionAboveConditionThresholdCur;
                                     if(preconditionAboveConditionThresholdCur && specific_imp.truth.confidence < implicationAboveConditionThresholdConfidence)
                                     {
+                                        minConfImpAboveConditionThreshold = imp;
                                         minConfImplicationDecision = considered;
                                         implicationAboveConditionThresholdConfidence = specific_imp.truth.confidence;
                                     }
@@ -211,13 +213,15 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         decision = decisionGeneral;
         bestImp = bestImpGeneral;
     }
-    if(decision.desire < DECISION_THRESHOLD && !preconditionAboveConditionThreshold)
+    if(decision.desire < DECISION_THRESHOLD)
     {
-        return (Decision) {0};
-    }
-    if(preconditionAboveConditionThreshold)
-    {
-        decision = minConfImplicationDecision;    
+		bool curiosityAllowed = preconditionAboveConditionThreshold && implicationAboveConditionThresholdConfidence < CURIOSITY_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
+        if(!curiosityAllowed)
+        {
+            return (Decision) {0};
+        }
+        decision = minConfImplicationDecision;   
+        bestImp = minConfImpAboveConditionThreshold; 
     }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
