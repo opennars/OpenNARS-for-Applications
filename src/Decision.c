@@ -217,7 +217,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         }
         if(k > 0)
         {
-            int index = 1+(myrand() % k);
+            int index = myrand() % k;
             decision = (Decision) { .desire = 1.0,
                                     .operationID = unknownOpiIndices[index],
                                     .specialized = true };
