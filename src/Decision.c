@@ -51,27 +51,6 @@ void Decision_Execute(Decision *decision)
     NAR_AddInputBelief(feedback);
 }
 
-//"reflexes" to try different operations, especially important in the beginning
-static Decision Decision_MotorBabbling()
-{
-    Decision decision = (Decision) {0};
-    int n_ops = 0;
-    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
-    {
-        n_ops = i+1;
-    }
-    if(n_ops > 0)
-    {
-        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
-        IN_DEBUG (
-            printf(" NAR BABBLE %d\n", decision.operationID);
-        )
-        decision.execute = true;
-        decision.desire = 1.0;
-    }
-    return decision;
-}
-
 static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, bool *preconditionAboveConditionThreshold)
 {
     Decision decision = {0};
@@ -124,9 +103,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
-    bool preconditionAboveConditionThreshold = false;
     double implicationAboveConditionThresholdConfidence = 1.0;
-    Implication minConfImpAboveConditionThreshold = {0};
     Decision minConfImplicationDecision = {0};
     Decision decision = {0};
     Implication bestImp = {0};
@@ -135,6 +112,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Implication bestImpGeneral = {0};
     long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
+    bool applyingOpis[OPERATIONS_MAX+1] = {0};
     if(subs.success)
     {
         for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
@@ -172,10 +150,12 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     specific_imp.sourceConceptId = cmatch->id;
                                     bool preconditionAboveConditionThresholdCur = false;
                                     Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &preconditionAboveConditionThresholdCur);
-                                    preconditionAboveConditionThreshold |= preconditionAboveConditionThresholdCur;
-                                    if(preconditionAboveConditionThresholdCur && specific_imp.truth.confidence < implicationAboveConditionThresholdConfidence)
+                                    if(opi <= BABBLING_OPS)
                                     {
-                                        minConfImpAboveConditionThreshold = imp;
+                                        applyingOpis[opi] |= preconditionAboveConditionThresholdCur;
+                                    }
+                                    if(opi <= BABBLING_OPS && preconditionAboveConditionThresholdCur && specific_imp.truth.confidence < implicationAboveConditionThresholdConfidence)
+                                    {
                                         minConfImplicationDecision = considered;
                                         implicationAboveConditionThresholdConfidence = specific_imp.truth.confidence;
                                     }
@@ -213,19 +193,46 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         decision = decisionGeneral;
         bestImp = bestImpGeneral;
     }
-    if(decision.desire < DECISION_THRESHOLD)
+    bool curiousDecision = decision.desire <= MOTOR_BABBLING_SUPPRESSION_THRESHOLD && myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX);
+    bool intentionalDecision = decision.desire >= DECISION_THRESHOLD;
+    if(!intentionalDecision && !curiousDecision)
     {
-        bool curiosityAllowed = preconditionAboveConditionThreshold && implicationAboveConditionThresholdConfidence < CURIOSITY_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
-        if(!curiosityAllowed)
+        return (Decision) {0};
+    }
+    if(curiousDecision)
+    {
+        int k=0;
+        int unknownOpiIndices[OPERATIONS_MAX] = {0};
+        int n_ops = 0;
+        for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
         {
-            return (Decision) {0};
+            n_ops = i+1;
         }
-        decision = minConfImplicationDecision;   
-        bestImp = minConfImpAboveConditionThreshold; 
+        for(int i=1; i<=n_ops; i++)
+        {
+            if(!applyingOpis[i])
+            {
+                unknownOpiIndices[k++] = i;
+            }
+        }
+        if(k > 0)
+        {
+            int index = 1+(myrand() % k);
+            decision = (Decision) { .desire = 1.0,
+                                    .operationID = unknownOpiIndices[index],
+                                    .specialized = true };
+        }
+        else
+        {
+            decision = minConfImplicationDecision;
+        }
     }
     //set execute and return execution
-    printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); puts("");
+    if(intentionalDecision)
+    {
+        printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+        Narsese_PrintTerm(&bestImp.term); puts("");
+    }
     decision.execute = true;
     return decision;
 }
@@ -298,21 +305,4 @@ void Decision_Anticipate(int operationID, long currentTime)
             }
         }
     }
-}
-
-Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
-{
-    Decision babble_decision = {0};
-    //try motor babbling with a certain chance
-    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
-    {
-        babble_decision = Decision_MotorBabbling();
-    }
-    //try matching op if didn't motor babble
-    Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
-    if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
-    {
-       return decision_suggested;
-    }
-    return babble_decision;
 }
