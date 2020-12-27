@@ -51,6 +51,27 @@ void Decision_Execute(Decision *decision)
     NAR_AddInputBelief(feedback);
 }
 
+//"reflexes" to try different operations, especially important in the beginning
+static Decision Decision_MotorBabbling()
+{
+    Decision decision = (Decision) {0};
+    int n_ops = 0;
+    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
+    {
+        n_ops = i+1;
+    }
+    if(n_ops > 0)
+    {
+        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
+        IN_DEBUG (
+            printf(" NAR BABBLE %d\n", decision.operationID);
+        )
+        decision.execute = true;
+        decision.desire = 1.0;
+    }
+    return decision;
+}
+
 static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, bool *preconditionAboveConditionThreshold)
 {
     Decision decision = {0};
@@ -193,7 +214,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         decision = decisionGeneral;
         bestImp = bestImpGeneral;
     }
-    bool curiousDecision = decision.desire <= MOTOR_BABBLING_SUPPRESSION_THRESHOLD && myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX);
+    bool curiousDecision = decision.desire <= CURIOSITY_SUPPRESSION_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
     bool intentionalDecision = decision.desire >= DECISION_THRESHOLD;
     if(!intentionalDecision && !curiousDecision)
     {
@@ -305,4 +326,21 @@ void Decision_Anticipate(int operationID, long currentTime)
             }
         }
     }
+}
+
+Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
+{
+    Decision babble_decision = {0};
+    //try motor babbling with a certain chance
+    if(myrand() < (int)(MOTOR_BABBLING_CHANCE * MY_RAND_MAX))
+    {
+        babble_decision = Decision_MotorBabbling();
+    }
+    //try matching op if didn't motor babble
+    Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
+    if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
+    {
+       return decision_suggested;
+    }
+    return babble_decision;
 }

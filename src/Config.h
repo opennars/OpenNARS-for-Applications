@@ -41,9 +41,13 @@
 //Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
-#define MOTOR_BABBLING_CHANCE_INITIAL 0.3
+#define MOTOR_BABBLING_CHANCE_INITIAL 0.1
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
+//Decisions above the following threshold will suppress play actions
+#define CURIOSITY_SUPPRESSION_THRESHOLD 0.55
+//Chance to try a curious action if no operation has been invoked
+#define CURIOSITY_CHANCE 0.3
 
 /*----------------------*/
 /* Attention parameters */
