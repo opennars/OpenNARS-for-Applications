@@ -228,7 +228,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         }
     }
     //set execute and return execution
-    if(intentionalDecision)
+    if(intentionalDecision && !curiousDecision)
     {
         printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
         Narsese_PrintTerm(&bestImp.term); puts("");
