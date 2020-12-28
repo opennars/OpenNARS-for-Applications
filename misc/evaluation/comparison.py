@@ -33,11 +33,11 @@ import pickle
 import random
 
 try:
-    branches = [sys.argv[1], sys.argv[2]]
+    branches = list(set(sys.argv[1:])-set(["SkipFolderSetup"]))
 except:
-    print("Usage: python3 comparison.py branchName1 branchName2")
+    print("Usage: python3 comparison.py branchName1 [branchName2] ... [branchNameN]")
     exit(0)
-SkipFolderSetup = (len(sys.argv) > 3 and sys.argv[3] == "SkipFolderSetup")
+SkipFolderSetup = "SkipFolderSetup" in sys.argv
 if not SkipFolderSetup:
     os.system("rm -rf OpenNARS-for-Applications")
     os.system("git clone https://github.com/opennars/OpenNARS-for-Applications")

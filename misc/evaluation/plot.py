@@ -22,13 +22,17 @@
  * THE SOFTWARE.
  * """
 
+import sys
 import pickle
 import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-with open('branches', 'rb') as fp:
-    branches = pickle.load(fp)
+if len(sys.argv) == 3:
+    branches = [sys.argv[1], sys.argv[2]]
+else:
+    with open('branches', 'rb') as fp:
+        branches = pickle.load(fp)
 with open('seeds', 'rb') as fp:
     seeds = pickle.load(fp)
 with open('examples', 'rb') as fp:
