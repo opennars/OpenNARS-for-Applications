@@ -37,16 +37,18 @@ try:
 except:
     print("Usage: python3 comparison.py branchName1 branchName2")
     exit(0)
-os.system("rm -rf OpenNARS-for-Applications")
-os.system("git clone https://github.com/opennars/OpenNARS-for-Applications")
-for b in branches:
-    scriptroot = os.getcwd()
-    os.system("rm -rf " + b)
-    os.system("mkdir " + b)
-    os.system("cp -r OpenNARS-for-Applications ./" + b + "/")
-    os.chdir("./" + b + "/OpenNARS-for-Applications/")
-    os.system("git checkout " + b)
-    os.chdir(scriptroot)
+SkipFolderSetup = (len(sys.argv) > 3 and sys.argv[3] == "SkipFolderSetup")
+if not SkipFolderSetup:
+    os.system("rm -rf OpenNARS-for-Applications")
+    os.system("git clone https://github.com/opennars/OpenNARS-for-Applications")
+    for b in branches:
+        scriptroot = os.getcwd()
+        os.system("rm -rf " + b)
+        os.system("mkdir " + b)
+        os.system("cp -r OpenNARS-for-Applications ./" + b + "/")
+        os.chdir("./" + b + "/OpenNARS-for-Applications/")
+        os.system("git checkout " + b)
+        os.chdir(scriptroot)
 examples = ["pong", "pong2", "alien", "cartpole", "robot"]
 steps = [10000, 10000, 10000, 10000, 1500]
 successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten"]
