@@ -26,6 +26,7 @@
 #Can "parse" English with roughly the following structure to Narsese:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
+import re
 import sys
 import time
 import subprocess
@@ -75,7 +76,7 @@ outputs = []
 def output(negated, text, replaceQuestionWords=True, command=False):
     if replaceQuestionWords:
         for x in questionwords:
-            text = text.replace(x, "?1")
+            text = re.sub(r'[^\W]'+text+"[^\W]", '?1', text)
     if command or text.startswith("//"):
         print(text) #direct print
     else:
@@ -87,7 +88,6 @@ def output(negated, text, replaceQuestionWords=True, command=False):
     
 def outputFinish():
     global conditional_appeared
-    #print("//HHHHHSADHSHASDHASDHASDAH"+str(outputs) + " " + str(conditional_appeared))
     if len(outputs) == 2 and conditional_appeared:
         punctuation = outputs[1][-1]
         print(("<" + outputs[1][:-1] + " ==> " + outputs[0][:-1] + ">"+punctuation).replace("?1", "$1"))
