@@ -76,7 +76,7 @@ outputs = []
 def output(negated, text, replaceQuestionWords=True, command=False):
     if replaceQuestionWords:
         for x in questionwords:
-            text = re.sub(r'[^\W]'+text+"[^\W]", '?1', text)
+            text = re.sub(r'([^a-zA-Z0-9])(' + x + r')([^a-zA-Z0-9])', r'\1?1\3', text)
     if command or text.startswith("//"):
         print(text) #direct print
     else:
