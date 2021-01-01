@@ -80,6 +80,10 @@ R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
 //NAL3 rules
+R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
+R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [A]>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [B]>, Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (S --> M), Truth_StructuralDeduction )
 R1( (M --> (S & P)), |-, (M --> S), Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (P --> M), Truth_StructuralDeduction )
@@ -97,8 +101,8 @@ RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //NAL5 rules
 R1( (! A), |-, A, Truth_Negation )
-R1( (&& A B), |-, A, Truth_StructuralDeduction )
-R1( (&& A B), |-, B, Truth_StructuralDeduction )
+R1( (A && B), |-, A, Truth_StructuralDeduction )
+R1( (A && B), |-, B, Truth_StructuralDeduction )
 //NAL6 variable introduction
 R2Ordered( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
 R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
@@ -119,5 +123,8 @@ ReduceStatement( (A && A), A )
 ReduceTerm( ({A} | {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
+//Reduce for set element copula
+ReduceTerm( {(A . B)}, {A B} )
+ReduceTerm( [(A . B)], [A B] )
 
 #endif

@@ -22,28 +22,34 @@
  * THE SOFTWARE.
  * """
 
+import sys
 import pickle
 import subprocess
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-with open ('branches', 'rb') as fp:
-    branches = pickle.load(fp)
-with open ('seeds', 'rb') as fp:
+if len(sys.argv) == 3:
+    branches = [sys.argv[1], sys.argv[2]]
+else:
+    with open('branches', 'rb') as fp:
+        branches = pickle.load(fp)
+with open('seeds', 'rb') as fp:
     seeds = pickle.load(fp)
-with open ('examples', 'rb') as fp:
+with open('examples', 'rb') as fp:
     examples = pickle.load(fp)
+with open('successCriterias', 'rb') as fp:
+    successCriterias = pickle.load(fp)
 
-def Plot(example):
+def Plot(example, successCriteria):
     plt.figure()
     plt.title(example)
     plt.ylabel("Success ratio")
     plt.xlabel("Time")
     colors = ['g', 'y', 'r', 'b']
-    p1 = mpatches.Patch(color = "green", label = "ONA")
-    p2 = mpatches.Patch(color = "yellow", label = "QL")
-    p3 = mpatches.Patch(color = "red", label = "ONA avg.")
-    p4 = mpatches.Patch(color = "blue", label = "QL avg.")
+    p1 = mpatches.Patch(color = "green", label = branches[0])
+    p2 = mpatches.Patch(color = "yellow", label = branches[1])
+    p3 = mpatches.Patch(color = "red", label = branches[0] + " avg.")
+    p4 = mpatches.Patch(color = "blue", label = branches[1] + " avg.")
     plt.legend(handles=[p1, p2, p3, p4])
     BranchRatios = {}
     k=-1
@@ -60,7 +66,7 @@ def Plot(example):
                 if l.strip() == "":
                     continue
                 t += 1
-                ratio = float(l.split("ratio=")[1].split(" ")[0].split(",")[0].replace("-nan","0").replace("nan","0"))
+                ratio = float(l.split(successCriteria+"=")[1].split(" ")[0].split(",")[0].replace("-nan","0").replace("nan","0"))
                 ratios.append(ratio)
                 if Branch not in BranchRatios:
                     BranchRatios[Branch] = {}
@@ -77,5 +83,5 @@ def Plot(example):
         plt.plot(BranchRatioAvgs, colors[k])
     plt.savefig(example + ".png")
 
-for example in examples:
-    Plot(example)
+for i in range(len(examples)):
+    Plot(examples[i], successCriterias[i])

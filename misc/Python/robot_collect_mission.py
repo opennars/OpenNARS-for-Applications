@@ -31,23 +31,26 @@ import random
 import nxt.locator
 import NAR
 import subprocess
+import time
 from nxt.sensor import *
 from nxt.motor import *
+from nxt.bluesock import *
 from time import sleep
 
-b = nxt.locator.find_one_brick()
+b = nxt.bluesock.BlueSock('00:16:53:0D:6B:42').connect() #use if Bluetooth and already paired, use right address!
+#b = nxt.locator.find_one_brick() #use instead if USB is desired
 m_gripper = Motor(b, PORT_A)
 m_left = Motor(b, PORT_B)
 m_right = Motor(b, PORT_C)
 
 def close():
-    m_gripper.run(power=-60)
-    sleep(0.5)
-    m_gripper.idle()
+    m_gripper.run(power=-70)
+    sleep(4.0)
+    #m_gripper.idle() #no idle since grab&lift demands power to keep the object lifted up
 
 def open():
-    m_gripper.run(power=60)
-    sleep(0.5)
+    m_gripper.run(power=70)
+    sleep(2.0)
     m_gripper.idle()
 
 closed_gripper = False #already picked something
@@ -62,8 +65,9 @@ def interrupt():
 
 def forward(mul=1):
     interrupt()
-    m_left.run(power=64*mul)
-    m_right.run(power=64*mul)
+    P = 70 if closed_gripper else 64
+    m_left.run(power=P*mul)
+    m_right.run(power=P*mul)
     sleep(1.3)
     m_left.idle()
     m_right.idle()
@@ -71,8 +75,9 @@ def forward(mul=1):
     
 def left(doScan=False):
     interrupt()
-    m_left.run(power=64)
-    m_right.run(power=-64)
+    P = 70 if closed_gripper else 64
+    m_left.run(power=P)
+    m_right.run(power=-P)
     sleep(0.45 if doScan==True else 1.0)
     m_left.idle()
     m_right.idle()
@@ -80,8 +85,9 @@ def left(doScan=False):
     
 def right(doScan=False):
     interrupt()
-    m_left.run(power=-64)
-    m_right.run(power=64)
+    P = 70 if closed_gripper else 64
+    m_left.run(power=-P)
+    m_right.run(power=P)
     sleep(0.45 if doScan==True else 1.0)
     m_left.idle()
     m_right.idle()
@@ -182,9 +188,9 @@ BackgroundKnowledge = """
 //<((! <obstacle --> [observed]>) &/ ^forward) =/> <{SELF} --> [moved]>>.
 //move left when an obstacle is in front (due to innate collision pain to avoid)
 //<(<obstacle --> [observed]> &/ ^left) =/> (! <obstacle --> [observed]>)>.
-//How to focus on a bottle (comment out if it should also be learned!)
-<(<bottle --> [smallerX]> &/ ^left) =/> <bottle --> [equalX]>>.
-<(<bottle --> [largerX]> &/ ^right) =/> <bottle --> [equalX]>>.
+//How to focus on objects (comment out if it should also be learned!)
+<(<$1 --> [smallerX]> &/ ^left) =/> <$1 --> [equalX]>>.
+<(<$1 --> [largerX]> &/ ^right) =/> <$1 --> [equalX]>>.
 //Mission description:
 //1. Pick a bottle if it's in front
 <((<gripper --> [open]> &/ <bottle --> [equalX]>) &/ ^pick) =/> <mission --> [progressed]>>.
@@ -192,11 +198,6 @@ BackgroundKnowledge = """
 <((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^drop) =/> <mission --> [progressed]>>.
 """
 
-k=0
-for bg in BackgroundKnowledge.split("\n"):
-    bgstr = bg.strip()
-    if len(bgstr) > 0:
-        NAR.AddInput(bgstr)
 NARAddInput("*babblingops=3")
 NARAddInput("*motorbabbling=0.3")
 NARAddInput("*setopname 1 ^left")
@@ -204,6 +205,13 @@ NARAddInput("*setopname 2 ^right")
 NARAddInput("*setopname 3 ^forward")
 NARAddInput("*setopname 4 ^pick")
 NARAddInput("*setopname 5 ^drop")
+
+k=0
+for bg in BackgroundKnowledge.split("\n"):
+    bgstr = bg.strip()
+    if len(bgstr) > 0:
+        NAR.AddInput(bgstr)
+
 while True:
     #1. Actively retrieve sensor input
     Proximity = scan()

@@ -24,6 +24,7 @@
 
 #include "Decision.h"
 
+double CONDITION_THRESHOLD = CONDITION_THRESHOLD_INITIAL;
 double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
@@ -125,11 +126,9 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Decision decision = (Decision) {0};
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
-    Concept *cbest_predicate = NULL;
     Decision decisionGeneral = (Decision) {0};
     Implication bestImpGeneral = {0};
     long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
-    Concept *cbest_predicateGeneral = NULL;
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
@@ -173,7 +172,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                         if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
                                         {
                                             decisionGeneral = considered;
-                                            cbest_predicateGeneral = cmatch;
                                             bestComplexityGeneral = specific_imp_complexity;
                                             bestImpGeneral = imp;
                                         }
@@ -184,7 +182,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                         {
                                             decision = considered;
                                             decision.specialized = true;
-                                            cbest_predicate = cmatch;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
                                         }
@@ -201,22 +198,11 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     if(decisionGeneral.desire > decision.desire && decision.desire < DECISION_THRESHOLD)
     {
         decision = decisionGeneral;
-        cbest_predicate = cbest_predicateGeneral;
         bestImp = bestImpGeneral;
     }
     if(decision.desire < DECISION_THRESHOLD)
     {
         return (Decision) {0};
-    }
-    //increase usefulness
-    assert(cbest_predicate != NULL, "Above decision threshold but postcondition concept is NULL!");
-    cbest_predicate->usage = Usage_use(cbest_predicate->usage, currentTime, false);
-    Term subject_with_op = Term_ExtractSubterm(&bestImp.term, 1);
-    Term subject = Narsese_GetPreconditionWithoutOp(&subject_with_op);
-    Concept *cbest_subject = Memory_Conceptualize(&subject, currentTime);
-    if(cbest_subject != NULL)
-    {
-        cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
     }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);

@@ -26,6 +26,7 @@
 #Can "parse" English with roughly the following structure to Narsese:  
 #...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
 
+import re
 import sys
 import time
 import subprocess
@@ -64,36 +65,53 @@ def words_and_types(text):
     sys.stdout.flush()
     return tokens, wordtypes
 
+def isCommand(sentence):
+    return sentence.startswith("*") or sentence.startswith("//") or sentence.isdigit() or sentence.startswith('(') or sentence.startswith('<')
+
 #output the Narsese, replacing question words with question variables
 questionwords = set(["what", "where", "which", "when", "who"])
-def output(text, replaceQuestionWords=True):
+negationwords = set(["cannot", "not"])
+conditional_appeared = False
+outputs = []
+def output(negated, text, replaceQuestionWords=True, command=False):
     if replaceQuestionWords:
         for x in questionwords:
-            text = text.replace(x, "?1")
-    print(text)
+            text = re.sub(r'([^a-zA-Z0-9])(' + x + r')([^a-zA-Z0-9])', r'\1?1\3', text)
+    if command or text.startswith("//"):
+        print(text) #direct print
+    else:
+        punctuation = text[-1]
+        if negated:
+            text = "(! " + text[:-1] + ")" + punctuation
+        outputs.append(text)
     sys.stdout.flush()
     
+def outputFinish():
+    global conditional_appeared
+    if len(outputs) == 2 and conditional_appeared:
+        punctuation = outputs[1][-1]
+        print(("<" + outputs[1][:-1] + " ==> " + outputs[0][:-1] + ">"+punctuation).replace("?1", "$1"))
+    else:
+        for text in outputs:
+            print(text + " :|:")
+
+def Conditional(word):
+    return word == "if" or word == "then"
+
 #return word type for a word, treating question words (who, what etc.) also as nouns
 def isWordType(word, wordtype):
     global questionwords
+    if Conditional(word):
+        return False
     if word in wordtypes:
         if wordtypes[word] == "PRON" and wordtype == "NOUN":
             questionwords.add(word)
             return True
         return wordtype == wordtypes[word]
 
-while True:
-    try:
-        sentence = input().strip()
-    except:
-        break
-    if sentence.startswith("*") or sentence.startswith("//") or sentence.isdigit() or sentence.startswith('(') or sentence.startswith('<'):
-        output(sentence)
-        continue
-    output("//Input sentence: " + sentence)
-    (words, wordtypes) = words_and_types(sentence + " and")
-    punctuation = "?" if "?" in sentence else "."
-    output("//Word types: " + str(wordtypes))
+def RESET_STATE(word=""):
+    global negated, outputs, subject, subject_modifiers, predicate, predicate_modifiers, object, object_modifiers, prep, prep_object, prep_object_modifiers, lastsubject, lastpredicate
+    negated = False
     subject = ""
     subject_modifiers = "_subject_"
     predicate = ""
@@ -105,12 +123,24 @@ while True:
     prep_object_modifiers = "_prep_object_"
     lastsubject = ""
     lastpredicate = ""
+
+RESET_STATE()
+
+def semanticParse(sentence):
+    global negated, words, wordtypes, outputs, subject, subject_modifiers, predicate, predicate_modifiers, object, object_modifiers, prep, prep_object, prep_object_modifiers, lastsubject, lastpredicate
+    (words, wordtypes) = words_and_types(sentence + " and")
+    punctuation = "?" if "?" in sentence else "."
+    output(False, "//Word types: " + str(wordtypes))
+    RESET_STATE()
     for i in range(len(words)):
         word = words[i]
+        if word in negationwords:
+            negated = True
+            continue
         if prep != "":
             if isWordType(word, 'CONJ'): #we reached the end of the sentence, if there was a preposition, build relation between subject and the preposition verb (in/at etc.) and noun (garden, forest...)
                 if subject != "" and prep_object != "":
-                    output("<" + subject_modifiers.replace("_subject_", subject) + " --> (" + prep + " /1 " + prep_object_modifiers.replace("_prep_object_", prep_object)+")>" + punctuation + " :|:")
+                    output(negated, "<" + subject_modifiers.replace("_subject_", subject) + " --> (" + prep + " /1 " + prep_object_modifiers.replace("_prep_object_", prep_object)+")>" + punctuation)
             elif isWordType(word, "NOUN"): #bind the object of the preposition
                 prep_object = word
             elif isWordType(word, 'ADJ'): #allow modifying the object of the preposition with adjectives
@@ -123,7 +153,7 @@ while True:
                     object = word
             elif isWordType(word, 'ADJ') or isWordType(word, 'ADV'): #adjectives/adverbs modify the next coming noun/verb
                 if predicate == "be" and i+1 < len(words) and isWordType(words[i+1], 'CONJ'): #for is-a sentences where the adjective serves as object
-                    output(("<" + subject_modifiers + " --> [" + word + "]>" + punctuation + " :|:").replace("_subject_", subject))
+                    output(negated, ("<" + subject_modifiers + " --> [" + word + "]>" + punctuation).replace("_subject_", subject))
                 if subject == "":
                     subject_modifiers = "(& [" + word + "] _subject_ )".replace("_subject_", subject_modifiers)
                 elif predicate == "":
@@ -146,12 +176,12 @@ while True:
                 if subject != "" and predicate != "" and object != "" and not (subject in questionwords and object in questionwords): #output Narsese relation if all pieces are together, with a special case for be/Inheritance
                     if lastpredicate == "be":
                         if subject_modifiers.replace("_subject_", subject) != object_modifiers.replace("_object_", object):
-                            output(("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation + " :|:").replace("_subject_", subject).replace("_object_", object))
+                            output(negated, ("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation).replace("_subject_", subject).replace("_object_", object))
                     else:
                         if object == subject:
-                            output(("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate))
+                            output(negated, ("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate))
                         else:
-                            output(("<" + subject_modifiers + " --> (" + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation + " :|:").replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
+                            output(negated, ("<" + subject_modifiers + " --> (" + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
                 if isWordType(word, 'ADP'): #identify prepositions in which case we keep the assignments
                     prep = word
                 else: #if not we are in a new sentence segement, reset variables
@@ -161,3 +191,20 @@ while True:
                     subject_modifiers = "_subject_"
                     predicate_modifiers = "_predicate_"
                     object_modifiers = "_object_"
+
+while True:
+    conditional_appeared = False
+    outputs = []
+    try:
+        sentence = input().strip()
+    except:
+        break
+    if isCommand(sentence):
+        output(False, sentence, command=True)
+        continue
+    conditional_appeared = " if " in sentence
+    output(False, "//Input sentence: " + sentence)
+    for subsentence in sentence.split(" if "):
+        RESET_STATE()
+        semanticParse(subsentence)
+    outputFinish()
