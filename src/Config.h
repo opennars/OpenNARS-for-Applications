@@ -36,7 +36,9 @@
 /*---------------------*/
 /* Decision parameters */
 /*---------------------*/
-//Truth expectation needed for executions
+//Truth expectation to move on to next component goal in sequence
+#define CONDITION_THRESHOLD_INITIAL 0.501
+//Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.1
@@ -68,7 +70,7 @@
 #define CONCEPT_THRESHOLD_ADAPTATION 0.000001
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
-//Unification depth (2^n-1, so 7 leads to 2 levels)
+//Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 7
 
 /*------------------*/

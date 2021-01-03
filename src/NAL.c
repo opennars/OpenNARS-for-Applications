@@ -34,7 +34,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
             printf("subtree = Term_ExtractSubterm(&term%d, %d);\n", premiseIndex, i);
-            printf("if(substitutions[%d].atoms[0]!=0 && !Term_Equal(&substitutions[%d], &subtree)){ goto RULE_%d; }\n", atom, atom, ruleID);
+            printf("if((substitutions[%d].atoms[0]!=0 && !Term_Equal(&substitutions[%d], &subtree)) || Narsese_copulaEquals(subtree.atoms[0], '@')){ goto RULE_%d; }\n", atom, atom, ruleID);
             printf("substitutions[%d] = subtree;\n", atom);
         }
         else
