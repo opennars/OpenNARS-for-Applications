@@ -46,12 +46,15 @@ def GetStats():
 		    Stats[leftside] = rightside
 	return Stats
 
-def AddInput(narsese):
+def AddInput(narsese, Print=True):
     NAR.sendline(narsese)
     ReturnStats = narsese == "*stats"
     if ReturnStats:
         return GetStats()
-    return GetOutput()
+    ret = GetOutput()
+    if Print:
+        print(ret["raw"])
+    return ret
 
 def Exit():
     NAR.sendline("quit")
