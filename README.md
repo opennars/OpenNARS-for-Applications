@@ -2,7 +2,9 @@
 
 <div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/98208148-be83c800-1f34-11eb-8ab4-d6a0eb0eef77.png" height="350"></div>
 
-This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA v0.8.5
+This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of ONA.
+
+Video tutorials and demo videos of ONA (some of which also work with MSC2, especially the procedure learning examples), can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 

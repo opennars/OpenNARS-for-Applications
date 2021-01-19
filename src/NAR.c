@@ -111,7 +111,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             Concept *c = concepts.items[i].address;
             //compare the predicate of implication, or if it's not an implication, the term
             Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
-            if(!Variable_Unify(&toCompare, &c->term).success)
+            if(!Variable_Unify2(&toCompare, &c->term, true).success)
             {
                 goto Continue;
             }
@@ -122,7 +122,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                 {
                     Implication *imp = &c->precondition_beliefs[op_k].array[j];
-                    if(!Variable_Unify(&term, &imp->term).success)
+                    if(!Variable_Unify2(&term, &imp->term, true).success)
                     {
                         continue;
                     }

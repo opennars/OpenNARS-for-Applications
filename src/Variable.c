@@ -57,7 +57,7 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
     return false;
 }
 
-Substitution Variable_Unify(Term *general, Term *specific)
+Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
 {
     Substitution substitution = {0};
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -65,7 +65,8 @@ Substitution Variable_Unify(Term *general, Term *specific)
         Atom general_atom = general->atoms[i];
         if(general_atom)
         {
-            if(Variable_isVariable(general_atom))
+            bool is_allowed_var = unifyQueryVarOnly ? Variable_isQueryVariable(general_atom) : Variable_isVariable(general_atom);
+            if(is_allowed_var)
             {
                 assert(general_atom <= 27, "Variable_Unify: Problematic variable encountered, only $1-$9, #1-#9 and ?1-?9 are allowed!");
                 Term subtree = Term_ExtractSubterm(specific, i);
@@ -94,6 +95,11 @@ Substitution Variable_Unify(Term *general, Term *specific)
     }
     substitution.success = true;
     return substitution;
+}
+
+Substitution Variable_Unify(Term *general, Term *specific)
+{
+    return Variable_Unify2(general, specific, false);
 }
 
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
