@@ -45,36 +45,38 @@ double Truth_Expectation(Truth v)
 
 Truth Truth_Revision(Truth v1, Truth v2)
 {
-    TruthValues(v1,v2, f1,c1, f2,c2);
-    double w1 = Truth_c2w(c1);
-    double w2 = Truth_c2w(c2);
-    double w = w1 + w2;
-    return (Truth) { .frequency = MIN(1.0, (w1 * f1 + w2 * f2) / w), 
-                     .confidence = MIN(MAX_CONFIDENCE, MAX(MAX(Truth_w2c(w), c1), c2)) };
+    TruthValues(v1,v2, s1,c1, s2,c2);
+    double n1 = Truth_c2w(c1);
+    double n2 = Truth_c2w(c2);
+    double n = n1 + n2;
+    double s = (n1/(n1+n2)*s1 + n2/(n1+n2)*s2);
+    return (Truth) { .frequency = MIN(1.0, s), 
+                     .confidence = MIN(MAX_CONFIDENCE, MAX(MAX(Truth_w2c(n), c1), c2)) };
 }
 
-Truth Truth_Deduction(Truth v1, Truth v2)
+//Note: this is used for <A ==> B>. <B ==> VirtualDesiredStateC>. corresponding to <A ==> B>. and goal B!
+Truth Truth_Deduction(Truth vAB, Truth vBC)
 {
-    TruthValues(v1,v2, f1,c1, f2,c2);
-    double f = f1 * f2;
-    return (Truth) { .frequency = f, .confidence = c1 * c2 * f };
+    TruthValues(vAB,vBC, sAB,cAB, sBC,cBC);
+    //concept-geometry based:
+    double s = (sAB*sBC) / MIN(sAB+sBC, 1.0);
+    return (Truth) { .frequency = s, .confidence = MIN(cAB, cBC) };
 }
 
-Truth Truth_Abduction(Truth v1, Truth v2)
+Truth Truth_Induction(Truth vB, Truth vA)
 {
-    TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f2, .confidence = Truth_w2c(f1 * c1 * c2) };
+    TruthValues(vB,vA, sB,cB, sA,cA);
+    //P(B|A) = P(B intersect A) / P(A) where P(B intersect A) = P(A)*P(B) when A and B are independent
+    double s /* = (sA*sB)/sA */ = sB;
+    double n = MIN(cA, cB);
+    return (Truth) { .frequency = s, .confidence = Truth_w2c(n) };
 }
 
-Truth Truth_Induction(Truth v1, Truth v2)
+//"stolen" from https://github.com/opencog/pln/blob/master/opencog/pln/rules/propositional/fuzzy-conjunction-introduction.scm
+Truth Truth_Intersection(Truth v1, Truth v2) //for MSC to form sequences {a, b} |-  (a &/ b)
 {
-    return Truth_Abduction(v2, v1);
-}
-
-Truth Truth_Intersection(Truth v1, Truth v2)
-{
-    TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 };
+    TruthValues(v1,v2, s1,c1, s2,c2);
+    return (Truth) { .frequency = MIN(s1, s2), .confidence = MIN(c1, c2) };
 }
 
 Truth Truth_Eternalize(Truth v)
