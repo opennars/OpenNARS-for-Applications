@@ -57,6 +57,7 @@ typedef struct
     Operation op;
     Term arguments;
     bool specialized;
+    Event *reason;
 }Decision;
 
 //Methods//

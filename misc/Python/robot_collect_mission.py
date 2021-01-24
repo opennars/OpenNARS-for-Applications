@@ -146,41 +146,37 @@ def ExecMotorCommands(executions, DisableForward=False):
             action = gripper_drop()
     return action
 
-def NARAddInput(narsese):
-    print(narsese)
-    return NAR.AddInput(narsese)
-
 VisibleObjects = ["bottle"]
 
 def NAR_Invoke(Proximity, VisualEvents):
     SeenSomethingMissionRelevant = False
     if Proximity:
-        NARAddInput("<obstacle --> [observed]>. :|:") #TODO also encode color
+        NAR.AddInput("<obstacle --> [observed]>. :|:") #TODO also encode color
     else:
         if closed_gripper:
-            NARAddInput("<gripper --> [closed]>. :|:")
+            NAR.AddInput("<gripper --> [closed]>. :|:")
         else:
-            NARAddInput("<gripper --> [open]>. :|:")
+            NAR.AddInput("<gripper --> [open]>. :|:")
         if len(VisualEvents) > 0:
             Observed = False
             for obj in VisibleObjects:
                 for v in VisualEvents:
                     print(v)
                     if obj in v:
-                        NARAddInput(v)
+                        NAR.AddInput(v)
                         SeenSomethingMissionRelevant = True
         if not SeenSomethingMissionRelevant:
-            NARAddInput("(! <obstacle --> [observed]>). :|:") #TODO also encode color
+            NAR.AddInput("(! <obstacle --> [observed]>). :|:") #TODO also encode color
     action = None
     if Proximity and not SeenSomethingMissionRelevant: #Don't allow forward as a reflex to not damage hardware
-        executions = NARAddInput("(! <obstacle --> [observed]>)! :|:")["executions"]
+        executions = NAR.AddInput("(! <obstacle --> [observed]>)! :|:")["executions"]
         action = ExecMotorCommands(executions, DisableForward=True)
     else:
-        executions = NARAddInput("<mission --> [progressed]>! :|:" if SeenSomethingMissionRelevant else "<{SELF} --> [moved]>! :|:")["executions"]
-        executions += NARAddInput("5")["executions"]
+        executions = NAR.AddInput("<mission --> [progressed]>! :|:" if SeenSomethingMissionRelevant else "<{SELF} --> [moved]>! :|:")["executions"]
+        executions += NAR.AddInput("5")["executions"]
         action = ExecMotorCommands(executions)
     if action == "forward":
-        NARAddInput("<{SELF} --> [moved]>. :|:")
+        NAR.AddInput("<{SELF} --> [moved]>. :|:")
 
 BackgroundKnowledge = """
 //What's expected by the robot to learn:
@@ -198,13 +194,13 @@ BackgroundKnowledge = """
 <((<gripper --> [closed]> &/ <bottle --> [equalX]>) &/ ^drop) =/> <mission --> [progressed]>>.
 """
 
-NARAddInput("*babblingops=3")
-NARAddInput("*motorbabbling=0.3")
-NARAddInput("*setopname 1 ^left")
-NARAddInput("*setopname 2 ^right")
-NARAddInput("*setopname 3 ^forward")
-NARAddInput("*setopname 4 ^pick")
-NARAddInput("*setopname 5 ^drop")
+NAR.AddInput("*babblingops=3")
+NAR.AddInput("*motorbabbling=0.3")
+NAR.AddInput("*setopname 1 ^left")
+NAR.AddInput("*setopname 2 ^right")
+NAR.AddInput("*setopname 3 ^forward")
+NAR.AddInput("*setopname 4 ^pick")
+NAR.AddInput("*setopname 5 ^drop")
 
 k=0
 for bg in BackgroundKnowledge.split("\n"):

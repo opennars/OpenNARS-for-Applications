@@ -4,10 +4,10 @@ It is dead if the cat eats it.
 The cat is eating a mouse in the garden.
 70
 What is in the garden?
-//expected: Answer: <cat --> (in /1 garden)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(cat * garden) --> in>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
 The cat is in the garden?
-//expected: Answer: <cat --> (in /1 garden)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(cat * garden) --> in>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
 The mouse is dead?
 //expected: Answer: <mouse --> [dead]>. :|: occurrenceTime=3 Truth: frequency=0.999502, confidence=0.809637
 The cat is eating an animal?
-//expected: Answer: <cat --> (eat /1 animal)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.239539
+//expected: Answer: <(cat * animal) --> eat>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.286319
