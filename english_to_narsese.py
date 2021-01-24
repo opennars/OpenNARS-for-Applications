@@ -140,7 +140,7 @@ def semanticParse(sentence):
         if prep != "":
             if isWordType(word, 'CONJ'): #we reached the end of the sentence, if there was a preposition, build relation between subject and the preposition verb (in/at etc.) and noun (garden, forest...)
                 if subject != "" and prep_object != "":
-                    output(negated, "<" + subject_modifiers.replace("_subject_", subject) + " --> (" + prep + " /1 " + prep_object_modifiers.replace("_prep_object_", prep_object)+")>" + punctuation)
+                    output(negated, "<(" + subject_modifiers.replace("_subject_", subject) + " * " + prep_object_modifiers.replace("_prep_object_", prep_object) + ") --> " + prep + ">" + punctuation)
             elif isWordType(word, "NOUN"): #bind the object of the preposition
                 prep_object = word
             elif isWordType(word, 'ADJ'): #allow modifying the object of the preposition with adjectives
@@ -181,7 +181,7 @@ def semanticParse(sentence):
                         if object == subject:
                             output(negated, ("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate))
                         else:
-                            output(negated, ("<" + subject_modifiers + " --> (" + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
+                            output(negated, ("<(" + subject_modifiers + " * " + object_modifiers + ") --> " + predicate_modifiers + ">" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
                 if isWordType(word, 'ADP'): #identify prepositions in which case we keep the assignments
                     prep = word
                 else: #if not we are in a new sentence segement, reset variables
