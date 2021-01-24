@@ -6,21 +6,23 @@
 *setopname 4 ^unscrew
 
 //If something is made of plastic, applying the lighter on it will make it heated
-<(&/,<(*,$1,plastic) --> made_of>,<(*,{SELF},$1) --> ^lighter>) =/> <$1 --> [heated]>>.
+<(&/,<(*,{$1},plastic) --> made_of>,<(*,{SELF},{$1}) --> ^lighter>) =/> <{$1} --> [heated]>>.
 //If it's heated it will be melted
-<<$1 --> [heated]> =/> <$1 --> [melted]>>.
+<<{$1} --> [heated]> =/> <{$1} --> [melted]>>.
 //If it's melted it will be pliable
-<<$1 --> [melted]> =/> <$1 --> [pliable]>>.
+<<{$1} --> [melted]> =/> <{$1} --> [pliable]>>.
 //If it's pliable and reshape is applied, it will be screwlike
-<(&/,<$1 --> [pliable]>,<(*,{SELF},$1) --> ^reshape>) =/> <$1 --> [screwlike]>>.
+<(&/,<{$1} --> [pliable]>,<(*,{SELF},{$1}) --> ^reshape>) =/> <{$1} --> [screwlike]>>.
 //If it's screwlike and we wait, it will be hardened
-<(&/,<$1 --> [screwlike]>,<(*,{SELF},$1) --> ^wait>) =/> <$1 --> [hardened]>>.
+<(&/,<{$1} --> [screwlike]>,<(*,{SELF},{$1}) --> ^wait>) =/> <{$1} --> [hardened]>>.
 //If it's hardened, we can use it for unscrewing to remove the screw
-<(&/,<#1 --> [hardened]>,<(*,{SELF},#1) --> ^unscrew>) =/> <{screw1} --> [removed]>>.
+<(&/,<{#1} --> [hardened]>,<(*,{SELF},{#1}) --> ^unscrew>) =/> <{screw1} --> [removed]>>.
+<plastic --> [bendable]>.
 
 //let's try an example:
-//toothbrush1 is made of plastic
-<(*,{toothbrush1},plastic) --> made_of>. :|:
+//toothbrush1 is madeof bendable material
+<(*,{toothbrush1},[bendable]) --> made_of>. :|:
+10
 //remove the screw1!
 <{screw1} --> [removed]>! :|:
 10
