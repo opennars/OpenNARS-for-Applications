@@ -26,16 +26,34 @@ from copy import deepcopy
 from pathlib import Path
 from subprocess import PIPE, run
 import os
+import sys
 import subprocess
 import glob
 import pickle
 import random
 
-branches = ["master", "QLearnerComparison"]
-examples = ["pong", "pong2", "alien", "cartpole"]
-steps = 5000
+try:
+    branches = list(set(sys.argv[1:])-set(["SkipFolderSetup"]))
+except:
+    print("Usage: python3 comparison.py branchName1 [branchName2] ... [branchNameN]")
+    exit(0)
+SkipFolderSetup = "SkipFolderSetup" in sys.argv
+if not SkipFolderSetup:
+    os.system("rm -rf OpenNARS-for-Applications")
+    os.system("git clone https://github.com/opennars/OpenNARS-for-Applications")
+    for b in branches:
+        scriptroot = os.getcwd()
+        os.system("rm -rf " + b)
+        os.system("mkdir " + b)
+        os.system("cp -r OpenNARS-for-Applications ./" + b + "/")
+        os.chdir("./" + b + "/OpenNARS-for-Applications/")
+        os.system("git checkout " + b)
+        os.chdir(scriptroot)
+examples = ["pong", "pong2", "alien", "cartpole", "robot"]
+steps = [10000, 10000, 10000, 10000, 1500]
+successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten"]
 seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876] 
-#alternatively, but it won't produce same plot:
+#alternatively, but it won't produce reproducible plots:
 #seeds=[random.randint(0,100000) for i in range(10)]
 
 #NAR C tests & metrics, only print fully output on failure, always print the metrics:
@@ -64,10 +82,13 @@ with open('branches', 'wb') as fp:
     pickle.dump(branches, fp)
 with open('seeds', 'wb') as fp:
     pickle.dump(seeds, fp)
+with open('successCriterias', 'wb') as fp:
+    pickle.dump(successCriterias, fp)
 with open('examples', 'wb') as fp:
     pickle.dump(examples, fp)
-for example in examples:
+for i in range(len(examples)):
+    example = examples[i]
     for seed in seeds:
         for branch in branches:
-            ctests(branch, example, steps, str(seed))
+            ctests(branch, example, steps[i], str(seed))
 

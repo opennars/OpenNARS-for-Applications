@@ -115,6 +115,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
             decision.arguments = arguments;
             
         }
+        decision.reason = precondition;
         decision.operationID = considered_opi;
         decision.desire = operationGoalTruthExpectation;
     }
@@ -225,7 +226,8 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); puts("");
+    Narsese_PrintTerm(&bestImp.term); fputs(" precondition: ", stdout); 
+    Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout); printf("occurrenceTime=%ld ", decision.reason->occurrenceTime); Truth_Print(&decision.reason->truth);
     decision.execute = true;
     return decision;
 }

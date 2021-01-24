@@ -4,6 +4,7 @@ This is a completely new platform and not branched from the existing OpenNARS co
 
 The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [6, 7] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [8] which was developed for research purposes. 
 
+Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 

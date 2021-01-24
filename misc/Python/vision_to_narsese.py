@@ -83,5 +83,6 @@ while True:
     for line in output.decode("utf-8").split('\n'):
         if "%" in line: #
             LineToNarsese(line)
+    sys.stdout.flush()
     if len(sys.argv) > 1 and sys.argv[1] == "once":
         break
