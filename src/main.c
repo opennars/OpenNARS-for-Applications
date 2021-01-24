@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 #ifdef SEED
     mysrand(SEED);
 #else
-    mysrand(1337);
+    mysrand(666);
 #endif
     Process_Args(argc, argv);
     if(argc == 1)
