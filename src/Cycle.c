@@ -269,6 +269,11 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
         {
             best_decision = decision;
         }
+        Concept *c_goal = Memory_FindConceptByTerm(&goal->term);
+        if(c_goal != NULL)
+        {
+            c_goal->priority = MAX(c_goal->priority, selectedGoalsPriority[i]);
+        }
     }
     if(best_decision.execute && best_decision.operationID > 0)
     {
