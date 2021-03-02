@@ -90,7 +90,7 @@ def outputFinish():
     global conditional_appeared
     if len(outputs) == 2 and conditional_appeared:
         punctuation = outputs[1][-1]
-        print(("<" + outputs[1][:-1] + " ==> " + outputs[0][:-1] + ">"+punctuation).replace("?1", "$1"))
+        print(("<" + outputs[1][:-1] + " ==> " + outputs[0][:-1] + ">"+punctuation).replace("?1", "$1") + " :|:")
     else:
         for text in outputs:
             print(text + " :|:")
