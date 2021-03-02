@@ -124,7 +124,17 @@ void Process_Args(int argc, char *argv[])
 
 void Display_Help()
 {
-    puts("\nAll tests ran successfully, if you wish to run examples now, just pass the corresponding parameter:");
+    puts("\nAll C tests ran successfully, run python3 evaluation.py for more comprehensive evaluation!"); 
+    puts("");
+    puts("Welcome to OpenNARS for Applications!");
+    puts("`````````````````````````````````````");
+    puts(" __        ");
+    puts("/_\\`-+-.__ ");
+    puts("     |  /o\\");
+    puts("     |     ");
+    puts("  __/ \\__  ");
+    puts("  ```````");
+    puts("If you wish to run examples now, just pass the corresponding parameter:");
     puts("NAR pong (starts Pong example)");
     puts("NAR pong2 (starts Pong2 example)");
     puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
