@@ -129,9 +129,9 @@ void Display_Help()
     puts("Welcome to `OpenNARS for Applications`!");
     puts("```````````````````````````````````````");
     puts(" __        ");
-    puts("/_\\`-+-.__ ");
-    puts("     |  /o\\");
-    puts("     |     ");
+    puts("/ \\`-+-.__ ");
+    puts("```  |  /o\\");
+    puts("     |  ```");
     puts("  __/ \\__  ");
     puts("  ```````  ");
     puts("If you wish to run examples now, just pass the corresponding parameter:");
