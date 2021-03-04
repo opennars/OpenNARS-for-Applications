@@ -73,7 +73,6 @@ StatementRepresentRelations = [
     (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99)),
     (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99)),
     (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99)),
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_([0-9]*) ", r" <( ADJ_NOUN_\1 * [ ADJ_\3 ] ) --> ADV_VERB_\2 > ", (1.0, 0.99))
 ]
 
 #convert universal tag set to the wordnet word types
