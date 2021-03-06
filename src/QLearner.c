@@ -2,11 +2,10 @@
 
 float Q[nStates][nActions] = {0}; //state, action
 float et[nStates][nActions] = {0};
-int lastState = 0, lastAction = 0;
+int lastState = 0, QLearner_lastAction;
 float Gamma = 0.8, Lambda = 0.1, Alpha = 0.1;
 float Alpha_decay = 0.9999999999;
 float Epsilon_decay = 0.9999999999;
-int QLearner_lastAction;
 
 void QLearner_INIT()
 {
@@ -20,7 +19,7 @@ void QLearner_INIT()
     }
 }
 
-int QLearner_Update(int state, float reward)
+int QLearner_ChooseAction(int state, bool AllowBabble)
 {
     int maxk = 0;
     float maxval = -999999;
@@ -33,10 +32,8 @@ int QLearner_Update(int state, float reward)
         }
     }
     int action=0;
-    Alpha = Alpha * Alpha_decay;
-    MOTOR_BABBLING_CHANCE = Epsilon_decay * MOTOR_BABBLING_CHANCE;
     double Epsilon = MOTOR_BABBLING_CHANCE;
-    if(myrand() < (int)(Epsilon * MY_RAND_MAX))
+    if(AllowBabble && myrand() < (int)(Epsilon * MY_RAND_MAX))
     {
         action = myrand() % (BABBLING_OPS + 1);
     }
@@ -44,7 +41,16 @@ int QLearner_Update(int state, float reward)
     {
         action = maxk;
     }
+    QLearner_lastAction = action;
+    return action;
+}
+
+void QLearner_Reward(int state, float reward)
+{
     int lastAction = QLearner_lastAction;
+    int action = QLearner_ChooseAction(state, false);
+    Alpha = Alpha * Alpha_decay;
+    MOTOR_BABBLING_CHANCE = Epsilon_decay * MOTOR_BABBLING_CHANCE;
     float DeltaQ = reward+Gamma*Q[state][action]-Q[lastState][lastAction];
     et[lastState][lastAction] = et[lastState][lastAction]+1;
     for(int i=0; i<nStates; i++)
@@ -56,6 +62,5 @@ int QLearner_Update(int state, float reward)
         }
     }
     lastState = state;
-    QLearner_lastAction = action;
-    return QLearner_lastAction;
+    printf("//obtained reward %f\n", reward);
 }

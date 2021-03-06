@@ -74,43 +74,40 @@ void NAR_Cartpole(long iterations)
         {
             failures += 1.0;
         }
-        char PositionAndVelocity[10] = "11PV. :|:";
+        char PositionAndVelocityAngleAndAngleVelocity[20] = "11PV11AV. :|:";
         if(position < 0)
         {
-            PositionAndVelocity[1] = '0';
+            PositionAndVelocityAngleAndAngleVelocity[0] = '0';
         }
         if(position > 0)
         {
-            PositionAndVelocity[1] = '2';
+            PositionAndVelocityAngleAndAngleVelocity[0] = '2';
         }
         if(velocity > 0)
         {
-            PositionAndVelocity[2] = '2';
+            PositionAndVelocityAngleAndAngleVelocity[1] = '2';
         }
         if(velocity < 0)
         {
-            PositionAndVelocity[2] = '0';
+            PositionAndVelocityAngleAndAngleVelocity[1] = '0';
         }
-        NAR_AddInputNarsese(PositionAndVelocity);
-        NAR_Cycles(5);
-        char AngleAndAngleVelocity[10] = "11AV. :|:";
         if(angle < 0)
         {
-            AngleAndAngleVelocity[0] = '0';
+            PositionAndVelocityAngleAndAngleVelocity[4] = '0';
         }
         if(angle > 0)
         {
-            AngleAndAngleVelocity[0] = '2';
+            PositionAndVelocityAngleAndAngleVelocity[4] = '2';
         }
         if(angle_velocity > 0)
         {
-            AngleAndAngleVelocity[1] = '2';
+            PositionAndVelocityAngleAndAngleVelocity[5] = '2';
         }
         if(angle_velocity < 0)
         {
-            AngleAndAngleVelocity[1] = '0';
+            PositionAndVelocityAngleAndAngleVelocity[5] = '0';
         }
-        NAR_AddInputNarsese(AngleAndAngleVelocity);
+        NAR_AddInputNarsese(PositionAndVelocityAngleAndAngleVelocity);
         NAR_AddInputNarsese("good! :|:");
         fflush(stdout);
         if(iterations == -1)

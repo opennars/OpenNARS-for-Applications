@@ -50,17 +50,16 @@ void NAR_Cycles(int cycles)
 }
 
 int state = 0;
-double reward = 0.0;
 Truth goalTruth[ATOMS_MAX] = {0};
 Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserKnowledge)
 {
     int state_new = term.atoms[0];
     if(type == EVENT_TYPE_BELIEF)
     {
+        float satisfaction = 0.0;
         if(goalTruth[state_new].confidence > 0.0)
         {
-            float satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
-            reward += satisfaction; //so that fulfilling more goals gives higher utility
+            satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
         }
         else
         {
@@ -80,10 +79,11 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
                 state = state_new;
             }
         }
+        QLearner_Reward(state, satisfaction);
     }
     if(type == EVENT_TYPE_GOAL)
     {
-        int action = QLearner_Update(state, reward);
+        int action = QLearner_ChooseAction(state, true);
         if(action > 0) //0 reserved for do nothing
         {
             Operation op = operations[action-1];
@@ -93,7 +93,6 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
                 op.action(args);
             }
         }
-        reward = 0.0; //reset reward
         goalTruth[state_new] = truth;
     }
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
@@ -167,7 +166,6 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             if(isImplication)
             {
-                Term subject = Term_ExtractSubterm(&term, 1);
                 for(int op_k = 0; op_k<OPERATIONS_MAX; op_k++)
                 {
                     for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)

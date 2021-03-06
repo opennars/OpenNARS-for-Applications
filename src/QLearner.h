@@ -45,6 +45,8 @@ extern int QLearner_lastAction;
 //-------//
 //Init QLearner
 void QLearner_INIT();
-//Choose action and provide state and reward
-int QLearner_Update(int state, float reward);
+//Choose best action given state, or babbled action if allowed
+int QLearner_ChooseAction(int state, bool AllowBabble);
+//Update Q-Learner with reward
+void QLearner_Reward(int state, float reward);
 #endif
