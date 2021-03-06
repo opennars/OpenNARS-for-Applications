@@ -56,10 +56,10 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
     int state_new = term.atoms[0];
     if(type == EVENT_TYPE_BELIEF)
     {
-        float satisfaction = 0.0;
         if(goalTruth[state_new].confidence > 0.0)
         {
-            satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
+            double satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
+            QLearner_Reward(state, satisfaction);
         }
         else
         {
@@ -77,9 +77,9 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
             else
             {
                 state = state_new;
+                QLearner_Reward(state, 0.0);
             }
         }
-        QLearner_Reward(state, satisfaction);
     }
     if(type == EVENT_TYPE_GOAL)
     {
