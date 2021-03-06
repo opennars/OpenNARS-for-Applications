@@ -200,6 +200,7 @@ int Shell_ProcessInput(char *line)
             Term previousOpAtom = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
             strncpy(Narsese_operatorNames[opID-1], opname, ATOMIC_TERM_LEN_MAX);
             strncpy(Narsese_atomNames[previousOpAtom.atoms[0]-1], opname, ATOMIC_TERM_LEN_MAX);
+            operations[opID-1].term = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
         }
         else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))
