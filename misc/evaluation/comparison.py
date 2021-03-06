@@ -49,9 +49,9 @@ if not SkipFolderSetup:
         os.chdir("./" + b + "/OpenNARS-for-Applications/")
         os.system("git checkout " + b)
         os.chdir(scriptroot)
-examples = ["pong", "pong2", "alien", "cartpole", "robot"]
-steps = [10000, 10000, 10000, 10000, 1500]
-successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten"]
+examples = ["cartpole"]
+steps = [10000]
+successCriterias = ["ratio"]
 seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876] 
 #alternatively, but it won't produce reproducible plots:
 #seeds=[random.randint(0,100000) for i in range(10)]
