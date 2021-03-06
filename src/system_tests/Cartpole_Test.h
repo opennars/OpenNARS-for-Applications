@@ -75,7 +75,7 @@ void NAR_Cartpole(long iterations)
             failures += 1.0;
         }
         char PositionAndVelocityAngleAndAngleVelocity[20] = "11PV11AV. :|:";
-        if(position < 0)
+        /*if(position < 0)
         {
             PositionAndVelocityAngleAndAngleVelocity[0] = '0';
         }
@@ -90,7 +90,7 @@ void NAR_Cartpole(long iterations)
         if(velocity < 0)
         {
             PositionAndVelocityAngleAndAngleVelocity[1] = '0';
-        }
+        }*/
         if(angle < 0)
         {
             PositionAndVelocityAngleAndAngleVelocity[4] = '0';
