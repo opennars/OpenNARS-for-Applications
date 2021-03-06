@@ -119,20 +119,21 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             if(isImplication)
             {
-                Term subject = Term_ExtractSubterm(&term, 1);
-                int op_k = Narsese_getOperationID(&subject);
-                for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
+                for(int op_k = 0; op_k<OPERATIONS_MAX; op_k++)
                 {
-                    Implication *imp = &c->precondition_beliefs[op_k].array[j];
-                    if(!Variable_Unify2(&term, &imp->term, true).success)
+                    for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                     {
-                        continue;
-                    }
-                    if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
-                    {
-                        best_truth = imp->truth;
-                        best_term = imp->term;
-                        answerCreationTime = imp->creationTime;
+                        Implication *imp = &c->precondition_beliefs[op_k].array[j];
+                        if(!Variable_Unify2(&term, &imp->term, true).success)
+                        {
+                            continue;
+                        }
+                        if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                        {
+                            best_truth = imp->truth;
+                            best_term = imp->term;
+                            answerCreationTime = imp->creationTime;
+                        }
                     }
                 }
             }

@@ -77,22 +77,21 @@ void NAR_Cartpole(long iterations)
         char PositionAndVelocity[10] = "11PV. :|:";
         if(position < 0)
         {
-            PositionAndVelocity[1] = '0';
+            PositionAndVelocity[0] = '0';
         }
         if(position > 0)
         {
-            PositionAndVelocity[1] = '2';
+            PositionAndVelocity[0] = '2';
         }
         if(velocity > 0)
         {
-            PositionAndVelocity[2] = '2';
+            PositionAndVelocity[1] = '2';
         }
         if(velocity < 0)
         {
-            PositionAndVelocity[2] = '0';
+            PositionAndVelocity[1] = '0';
         }
         NAR_AddInputNarsese(PositionAndVelocity);
-        NAR_Cycles(5);
         char AngleAndAngleVelocity[10] = "11AV. :|:";
         if(angle < 0)
         {
