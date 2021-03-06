@@ -49,17 +49,18 @@ void NAR_Cycles(int cycles)
     }
 }
 
+double reward = 0.0;
 int state = 0;
-bool isGoalAtom[ATOMS_MAX] = {0};
+Truth goalTruth[ATOMS_MAX] = {0};
 Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserKnowledge)
 {
     int state_new = term.atoms[0];
     if(type == EVENT_TYPE_BELIEF)
     {
-        int action = 0;
-        if(isGoalAtom[state_new])
+        if(goalTruth[state_new].confidence > 0.0)
         {
-            action = QLearner_Update(state, 1.0, -1); //rewarded, update QLearner with current state
+            float satisifaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
+            reward = satisifaction;
         }
         else
         {
@@ -69,7 +70,7 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
                 {
                     if(operations[i].action != NULL && Term_Equal(&term, &operations[i].term))
                     {
-                        action = QLearner_Update(state, 0.0, i+1);
+                        QLearner_lastAction = i+1;
                         break;
                     }
                 }
@@ -77,9 +78,14 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
             else
             {
                 state = state_new;
-                action = QLearner_Update(state, 0.0, -1); //update QLearner with current state
             }
         }
+    }
+    if(type == EVENT_TYPE_GOAL)
+    {
+        int action = QLearner_Update(state, reward);
+        reward = 0.0; //reset reward
+        goalTruth[state_new] = truth;
         if(action > 0) //0 reserved for do nothing
         {
             Operation op = operations[action-1];
@@ -89,10 +95,6 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
                 op.action(args);
             }
         }
-    }
-    if(type == EVENT_TYPE_GOAL)
-    {
-        isGoalAtom[state_new] = true;
     }
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     Event ev = Event_InputEvent(term, type, truth, currentTime);
