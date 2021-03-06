@@ -58,7 +58,7 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
     {
         if(goalTruth[state_new].confidence > 0.0)
         {
-            double satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
+            double satisfaction = 1.0 - fabs(truth.frequency - goalTruth[state_new].frequency);
             QLearner_Reward(state, satisfaction);
         }
         else

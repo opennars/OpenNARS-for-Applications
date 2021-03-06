@@ -8,7 +8,7 @@ replete! :|:
 //Training example1: System getting a bit of immediate repletion from eating the marshmallow
 marshmallow1. :|:
 ^eat. :|:
-replete. :|: {0.02 1.0}
+replete. :|: {0.05 1.0}
 
 //Training example2: The system getting another marshmallow after leaving it be,
 //then getting a lot of repletion from eating
