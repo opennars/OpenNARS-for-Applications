@@ -49,8 +49,8 @@ void NAR_Cycles(int cycles)
     }
 }
 
-double reward = 0.0;
 int state = 0;
+double reward = 0.0;
 Truth goalTruth[ATOMS_MAX] = {0};
 Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserKnowledge)
 {
@@ -59,8 +59,8 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
     {
         if(goalTruth[state_new].confidence > 0.0)
         {
-            float satisifaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
-            reward = satisifaction;
+            float satisfaction = 1.0 - fabs(Truth_Expectation(truth) - Truth_Expectation(goalTruth[state_new]));
+            reward += satisfaction; //so that fulfilling more goals gives higher utility
         }
         else
         {
@@ -84,8 +84,6 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
     if(type == EVENT_TYPE_GOAL)
     {
         int action = QLearner_Update(state, reward);
-        reward = 0.0; //reset reward
-        goalTruth[state_new] = truth;
         if(action > 0) //0 reserved for do nothing
         {
             Operation op = operations[action-1];
@@ -95,6 +93,8 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, bool isUserK
                 op.action(args);
             }
         }
+        reward = 0.0; //reset reward
+        goalTruth[state_new] = truth;
     }
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     Event ev = Event_InputEvent(term, type, truth, currentTime);
