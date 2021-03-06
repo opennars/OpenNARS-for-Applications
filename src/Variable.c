@@ -57,7 +57,7 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
     return false;
 }
 
-Substitution Variable_Unify(Term *general, Term *specific)
+Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
 {
     Substitution substitution = {0};
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -65,7 +65,8 @@ Substitution Variable_Unify(Term *general, Term *specific)
         Atom general_atom = general->atoms[i];
         if(general_atom)
         {
-            if(Variable_isVariable(general_atom))
+            bool is_allowed_var = unifyQueryVarOnly ? Variable_isQueryVariable(general_atom) : Variable_isVariable(general_atom);
+            if(is_allowed_var)
             {
                 assert(general_atom <= 27, "Variable_Unify: Problematic variable encountered, only $1-$9, #1-#9 and ?1-?9 are allowed!");
                 Term subtree = Term_ExtractSubterm(specific, i);
@@ -76,6 +77,10 @@ Substitution Variable_Unify(Term *general, Term *specific)
                 if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
                 {
                     return substitution;
+                }
+                if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
+                {
+                    return substitution;	
                 }
                 substitution.map[(int) general_atom] = subtree;
             }
@@ -90,6 +95,11 @@ Substitution Variable_Unify(Term *general, Term *specific)
     }
     substitution.success = true;
     return substitution;
+}
+
+Substitution Variable_Unify(Term *general, Term *specific)
+{
+    return Variable_Unify2(general, specific, false);
 }
 
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
@@ -116,7 +126,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 //then introduce as independent variable, else as dependent variable
 static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally)
 {
-    if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':')) //inheritance
+    if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':') || Narsese_copulaEquals(cur_inheritance->atoms[0], '=')) //inheritance and similarity
     {
         Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -135,28 +145,16 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
-    bool right_contains[ATOMS_MAX] = {0};
-    int appearing[ATOMS_MAX] = {0};
-    if(Narsese_copulaEquals(right_side.atoms[0], ':')) //inheritance
-    {
-        Term subject = Term_ExtractSubterm(&right_side, extensionally ? 1 : 2);
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-        {
-            Atom atom = subject.atoms[i];
-            if(Narsese_IsNonCopulaAtom(atom))
-            {
-                right_contains[(int) atom] = true;
-                appearing[(int) atom] += 1;
-            }
-        }
-    }
+    int appearing_left[ATOMS_MAX] = {0};
+    int appearing_right[ATOMS_MAX] = {0};
     while(Narsese_copulaEquals(left_side.atoms[0], '+')) //sequence
     {
         Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
-        countAtoms(&potential_inheritance, appearing, extensionally);
+        countAtoms(&potential_inheritance, appearing_left, extensionally);
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
-    countAtoms(&left_side, appearing, extensionally);
+    countAtoms(&left_side, appearing_left, extensionally);
+    countAtoms(&right_side, appearing_right, extensionally);
     char depvar_i = 1;
     char indepvar_i = 1;
     char variable_id[ATOMS_MAX] = {0};
@@ -164,9 +162,9 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = implication_copy.atoms[i];
-        if(appearing[(int) atom] > 1)
+        if(appearing_left[(int) atom] >= 2 || (appearing_left[(int) atom] && appearing_right[(int) atom]))
         {
-            if(right_contains[(int) atom])
+            if(appearing_right[(int) atom])
             {
                 int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables

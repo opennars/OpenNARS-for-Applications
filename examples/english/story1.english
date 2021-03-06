@@ -3,10 +3,9 @@ the cat leaves the forest
 the hunter sees the cat
 nars hears a boom
 the cat is dead
-who left the forest?
-//expected: Answer: <cat --> (leave /1 forest)>. :|: occurrenceTime=1 Truth: frequency=1.000000, confidence=0.900000
-1000
-the wolf leaves the forest
+who has left the forest?
+//expected: Answer: <(cat * forest) --> leave>. :|: occurrenceTime=1 Truth: frequency=1.000000, confidence=0.900000
 100
+the wolf leaves the forest
 the hunter sees the wolf?
-//expected: Answer: <hunter --> (see /1 wolf)>. :|: occurrenceTime=1005 Truth: frequency=1.000000, confidence=0.186674
+//expected: Answer: <(hunter * wolf) --> see>. :|: occurrenceTime=106 Truth: frequency=0.990960, confidence=0.253355

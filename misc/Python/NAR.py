@@ -1,5 +1,6 @@
 import pexpect
-NAR = pexpect.spawn('./../../NAR shell')
+import os.path
+NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1]}
@@ -34,7 +35,7 @@ def GetOutput():
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "raw": "\n".join(lines)}
 
 def GetStats():
 	Stats = {}
@@ -46,12 +47,15 @@ def GetStats():
 		    Stats[leftside] = rightside
 	return Stats
 
-def AddInput(narsese):
+def AddInput(narsese, Print=True):
     NAR.sendline(narsese)
     ReturnStats = narsese == "*stats"
     if ReturnStats:
         return GetStats()
-    return GetOutput()
+    ret = GetOutput()
+    if Print:
+        print(ret["raw"])
+    return ret
 
 def Exit():
     NAR.sendline("quit")

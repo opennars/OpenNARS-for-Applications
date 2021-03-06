@@ -45,7 +45,6 @@ void NAL_GenerateRuleTable();
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true);
-#define R2Ordered(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false);
 //macro for syntactic representation, increases readability, single premise inference
 #define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
 //macro for bidirectional transformation rules
@@ -80,16 +79,36 @@ R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
 //NAL3 rules
+R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
+R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [A]>, Truth_StructuralDeduction )
+R1( (M --> [A B]), |-, <M --> [B]>, Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (S --> M), Truth_StructuralDeduction )
 R1( (M --> (S & P)), |-, (M --> S), Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (P --> M), Truth_StructuralDeduction )
 R1( (M --> (S & P)), |-, (M --> P), Truth_StructuralDeduction )
-R2( (P --> M), (S --> M), |-, ((S | P) --> M), Truth_Intersection )
-R2( (P --> M), (S --> M), |-, ((S & P) --> M), Truth_Union )
-R2( (P --> M), (S --> M), |-, ((S ~ P) --> M), Truth_Difference )
+R1( ((A ~ S) --> M), |-, (A --> M), Truth_StructuralDeduction )
+R1( (M --> (B - S)), |-, (M --> B), Truth_StructuralDeduction )
+R1( ((A ~ S) --> M), |-, (S --> M), Truth_StructuralDeductionNegated )
+R1( (M --> (B - S)), |-, (M --> S), Truth_StructuralDeductionNegated )
+R2( (P --> M), (S --> M), |-, ((P | S) --> M), Truth_Intersection )
+R2( (P --> M), (S --> M), |-, ((P & S) --> M), Truth_Union )
+R2( (P --> M), (S --> M), |-, ((P ~ S) --> M), Truth_Difference )
 R2( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
 R2( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
 R2( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
+R2( (S --> M), ((S | P) --> M), |-, (P --> M), Truth_DecomposePNN )
+R2( (P --> M), ((S | P) --> M), |-, (S --> M), Truth_DecomposePNN )
+R2( (S --> M), ((S & P) --> M), |-, (P --> M), Truth_DecomposeNPP )
+R2( (P --> M), ((S & P) --> M), |-, (S --> M), Truth_DecomposeNPP )
+R2( (S --> M), ((S ~ P) --> M), |-, (P --> M), Truth_DecomposePNP )
+R2( (S --> M), ((P ~ S) --> M), |-, (P --> M), Truth_DecomposeNNN )
+R2( (M --> S), (M --> (S & P)), |-, (M --> P), Truth_DecomposePNN )
+R2( (M --> P), (M --> (S & P)), |-, (M --> S), Truth_DecomposePNN )
+R2( (M --> S), (M --> (S | P)), |-, (M --> P), Truth_DecomposeNPP )
+R2( (M --> P), (M --> (S | P)), |-, (M --> S), Truth_DecomposeNPP )
+R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
+R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 //NAL4 rules
 RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
 RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
@@ -97,15 +116,9 @@ RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //NAL5 rules
 R1( (! A), |-, A, Truth_Negation )
-R1( (&& A B), |-, A, Truth_StructuralDeduction )
-R1( (&& A B), |-, B, Truth_StructuralDeduction )
-//NAL6 variable introduction
-R2Ordered( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
-R2Ordered( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
-R2Ordered( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction ) //symmetry
-R2Ordered( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction ) //antisymmetry
-R2Ordered( ((A * C) --> R), (((A * B) | (B * C)) --> R), |-, (((($1 * #1) | (#1 * $2)) --> R) ==> (($1 * $2) --> R)), Truth_Induction ) //transitivity
-//Other NAL5/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
+R1( (A && B), |-, A, Truth_StructuralDeduction )
+R1( (A && B), |-, B, Truth_StructuralDeduction )
+//Other NAL5/6/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
 
 #endif
 
@@ -119,5 +132,8 @@ ReduceStatement( (A && A), A )
 ReduceTerm( ({A} | {B}), {A B} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
+//Reduce for set element copula
+ReduceTerm( {(A . B)}, {A B} )
+ReduceTerm( [(A . B)], [A B] )
 
 #endif

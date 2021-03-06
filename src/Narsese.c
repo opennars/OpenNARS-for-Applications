@@ -133,7 +133,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                     i+=3; j++;
                 }
                 else
-                if(narsese[i] == '<' && narsese[i+1] == '-' && narsese[i+2] == '>') // -<-> becomes :
+                if(narsese[i] == '<' && narsese[i+1] == '-' && narsese[i+2] == '>') // <-> becomes =
                 {
                     narsese_replaced[j] = '=';
                     i+=3; j++;
@@ -642,7 +642,8 @@ bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ 
     return Narsese_isOperator(term->atoms[0]) ||
            (Narsese_copulaEquals(term->atoms[0], ':') && Narsese_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
             Narsese_isOperator(term->atoms[2]) && //^op
-            Narsese_copulaEquals(term->atoms[3], '"') && term->atoms[7] == SELF); //  { SELF }
+            Narsese_copulaEquals(term->atoms[3], '"') && 
+            (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7]))); //  { SELF } or { VAR }
 }
 
 int Narsese_getOperationID(Term *term)

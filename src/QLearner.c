@@ -33,7 +33,7 @@ int QLearner_Update(int state, float reward, int forcedAction)
     double Epsilon = MOTOR_BABBLING_CHANCE;
     if(myrand() < (int)(Epsilon * MY_RAND_MAX))
     {
-        action = myrand() % nActions;
+        action = myrand() % (BABBLING_OPS + 1);
     }
     else
     {

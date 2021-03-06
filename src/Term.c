@@ -45,6 +45,7 @@ static bool Term_RelativeOverride(Term *term, int i, Term *subterm, int j)
     if(j < COMPOUND_TERM_SIZE_MAX)
     {
         term->atoms[i] = subterm->atoms[j];
+        term->hashed = false;
         int left_in_subterm = (j+1)*2-1;
         if(left_in_subterm < COMPOUND_TERM_SIZE_MAX && subterm->atoms[left_in_subterm] != 0)
         {

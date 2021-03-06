@@ -122,6 +122,7 @@ void NAR_AddOperation(Term term, Action procedure)
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
+    assert(Narsese_OperatorIndex(term_name) <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
     operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
 }
 
@@ -137,6 +138,12 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     //apply reduction rules to term:
     term = RuleTable_Reduce(term, false);
 #endif    
+    fputs("Input: ", stdout);
+    Narsese_PrintTerm(&term);
+    char punctuation_str[2] = {0};
+    punctuation_str[0] = punctuation;
+    fputs(punctuation_str, stdout);
+    puts(isEvent ? " :|:" : ""); 
     if(punctuation == '?')
     {
         //answer questions:
@@ -146,36 +153,34 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
-        fputs("Input: ", stdout);
-        Narsese_PrintTerm(&term);
-        fputs("?", stdout);
-        puts(isEvent ? " :|:" : ""); 
         fflush(stdout);
         for(int i=0; i<concepts.itemsAmount; i++)
         {
             Concept *c = concepts.items[i].address;
             //compare the predicate of implication, or if it's not an implication, the term
             Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
-            if(!Variable_Unify(&toCompare, &c->term).success)
+            if(!Variable_Unify2(&toCompare, &c->term, true).success)
             {
                 goto Continue;
             }
             if(isImplication)
             {
                 Term subject = Term_ExtractSubterm(&term, 1);
-                int op_k = Narsese_getOperationID(&subject);
-                for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
+                for(int op_k = 0; op_k<OPERATIONS_MAX; op_k++)
                 {
-                    Implication *imp = &c->precondition_beliefs[op_k].array[j];
-                    if(!Variable_Unify(&term, &imp->term).success)
+                    for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                     {
-                        continue;
-                    }
-                    if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
-                    {
-                        best_truth = imp->truth;
-                        best_term = imp->term;
-                        answerCreationTime = imp->creationTime;
+                        Implication *imp = &c->precondition_beliefs[op_k].array[j];
+                        if(!Variable_Unify2(&term, &imp->term, true).success)
+                        {
+                            continue;
+                        }
+                        if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                        {
+                            best_truth = imp->truth;
+                            best_term = imp->term;
+                            answerCreationTime = imp->creationTime;
+                        }
                     }
                 }
             }

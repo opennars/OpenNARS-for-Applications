@@ -24,10 +24,12 @@
 
 #include "Decision.h"
 
+double CONDITION_THRESHOLD = CONDITION_THRESHOLD_INITIAL;
 double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
+int BABBLING_OPS = OPERATIONS_MAX;
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
@@ -60,7 +62,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (n_ops));
+        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
@@ -70,9 +72,9 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, bool *preconditionAboveConditionThreshold)
 {
-    Decision decision = (Decision) {0};
+    Decision decision = {0};
     IN_DEBUG
     (
         printf("CONSIDERED IMPLICATION: impTruth=(%f, %f)", imp->truth.frequency, imp->truth.confidence);
@@ -84,8 +86,9 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
+        *preconditionAboveConditionThreshold |= Truth_Expectation(Truth_Projection(precondition->truth, precondition->occurrenceTime, currentTime)) > CONDITION_THRESHOLD;
         Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_OperationDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
@@ -104,8 +107,15 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
         {
             assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
-            decision.arguments = Term_ExtractSubterm(&imp->term, 9); 
+            Term arguments = Term_ExtractSubterm(&imp->term, 9); //[* ' ARG SELF]
+            if(arguments.atoms[3] != SELF) //either wasn't SELF or var didn't resolve to SELF
+            {
+                return decision;
+            }
+            decision.arguments = arguments;
+            
         }
+        decision.reason = precondition;
         decision.operationID = considered_opi;
         decision.desire = operationGoalTruthExpectation;
     }
@@ -115,14 +125,16 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
-    Decision decision = (Decision) {0};
+    bool preconditionAboveConditionThreshold = false;
+    double implicationAboveConditionThresholdConfidence = 1.0;
+    Implication minConfImpAboveConditionThreshold = {0};
+    Decision minConfImplicationDecision = {0};
+    Decision decision = {0};
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
-    Concept *cbest_predicate = NULL;
-    Decision decisionGeneral = (Decision) {0};
+    Decision decisionGeneral = {0};
     Implication bestImpGeneral = {0};
     long bestComplexityGeneral = COMPOUND_TERM_SIZE_MAX+1;
-    Concept *cbest_predicateGeneral = NULL;
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
@@ -159,14 +171,21 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                    bool preconditionAboveConditionThresholdCur = false;
+                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, &preconditionAboveConditionThresholdCur);
+                                    preconditionAboveConditionThreshold |= preconditionAboveConditionThresholdCur;
+                                    if(preconditionAboveConditionThresholdCur && specific_imp.truth.confidence < implicationAboveConditionThresholdConfidence)
+                                    {
+                                        minConfImpAboveConditionThreshold = imp;
+                                        minConfImplicationDecision = considered;
+                                        implicationAboveConditionThresholdConfidence = specific_imp.truth.confidence;
+                                    }
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
                                         if(considered.desire > decisionGeneral.desire || (considered.desire == decisionGeneral.desire && specific_imp_complexity < bestComplexityGeneral))
                                         {
                                             decisionGeneral = considered;
-                                            cbest_predicateGeneral = cmatch;
                                             bestComplexityGeneral = specific_imp_complexity;
                                             bestImpGeneral = imp;
                                         }
@@ -177,7 +196,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                         {
                                             decision = considered;
                                             decision.specialized = true;
-                                            cbest_predicate = cmatch;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
                                         }
@@ -194,26 +212,22 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     if(decisionGeneral.desire > decision.desire && decision.desire < DECISION_THRESHOLD)
     {
         decision = decisionGeneral;
-        cbest_predicate = cbest_predicateGeneral;
         bestImp = bestImpGeneral;
     }
     if(decision.desire < DECISION_THRESHOLD)
     {
-        return (Decision) {0};
-    }
-    //increase usefulness
-    assert(cbest_predicate != NULL, "Above decision threshold but postcondition concept is NULL!");
-    cbest_predicate->usage = Usage_use(cbest_predicate->usage, currentTime, false);
-    Term subject_with_op = Term_ExtractSubterm(&bestImp.term, 1);
-    Term subject = Narsese_GetPreconditionWithoutOp(&subject_with_op);
-    Concept *cbest_subject = Memory_Conceptualize(&subject, currentTime);
-    if(cbest_subject != NULL)
-    {
-        cbest_subject->usage = Usage_use(cbest_subject->usage, currentTime, false);
+        bool curiosityAllowed = preconditionAboveConditionThreshold && implicationAboveConditionThresholdConfidence < CURIOSITY_THRESHOLD && myrand() < (int)(CURIOSITY_CHANCE * MY_RAND_MAX);
+        if(!curiosityAllowed)
+        {
+            return (Decision) {0};
+        }
+        decision = minConfImplicationDecision;   
+        bestImp = minConfImpAboveConditionThreshold; 
     }
     //set execute and return execution
     printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); puts("");
+    Narsese_PrintTerm(&bestImp.term); fputs(" precondition: ", stdout); 
+    Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout); printf("occurrenceTime=%ld ", decision.reason->occurrenceTime); Truth_Print(&decision.reason->truth);
     decision.execute = true;
     return decision;
 }

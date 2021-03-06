@@ -2,12 +2,10 @@
 the pizza is in the oven
 the person takes out the pizza
 who took out the pizza?
-//expected: Answer: <person --> (take /1 pizza)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.900000
-100
+//expected: Answer: <(person * pizza) --> take>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.900000
 the person eats the pizza
-the person feels satisfied
-1000
-the burger is in the oven
+the person is satisfied
 100
-the person takes our what?
-//expected: Answer: <person --> (take /1 burger)>. :|: occurrenceTime=1105 Truth: frequency=0.987152, confidence=0.181304
+the burger is in the oven
+the person takes out what?
+//expected: Answer: <(person * burger) --> take>. :|: occurrenceTime=106 Truth: frequency=1.000000, confidence=0.228606

@@ -33,6 +33,7 @@
 //----------//
 #define nStates ATOMS_MAX
 #define nActions OPERATIONS_MAX
+extern int QLearner_lastAction;
 
 //References//
 //----------//

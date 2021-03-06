@@ -36,12 +36,18 @@
 /*---------------------*/
 /* Decision parameters */
 /*---------------------*/
-//Truth expectation needed for executions
+//Truth expectation to move on to next component goal in sequence
+#define CONDITION_THRESHOLD_INITIAL 0.501
+//Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.1
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
+//Curiosity threshold, how confident the lowest confident implication option is allowed to be to still allow "play"
+#define CURIOSITY_THRESHOLD 0.25
+//Chance to try a curious action if no operation has been invoked
+#define CURIOSITY_CHANCE 0.1
 
 /*----------------------*/
 /* Attention parameters */
@@ -68,7 +74,7 @@
 #define CONCEPT_THRESHOLD_ADAPTATION 0.000001
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
-//Unification depth (2^n-1, so 7 leads to 2 levels)
+//Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 7
 
 /*------------------*/
