@@ -1,26 +1,53 @@
 *motorbabbling=false
 *volume=0
-<(&/,<(*,$1,plastic) --> made_of>,<(*,{SELF},$1) --> ^left>) =/> <$1 --> [heated]>>.
-<<$1 --> [heated]> =/> <$1 --> [melted]>>.
-<<$1 --> [melted]> =/> <$1 --> [pliable]>>.
-<(&/,<$1 --> [pliable]>,<(*,{SELF},$1) --> ^right>) =/> <$1 --> [hardened]>>.
-<<$1 --> [hardened]> =/> <$1 --> [unscrewing]>>.
-<(&/,<$1 --> [hardened]>,<(*,{SELF},$1) --> ^down>) =/> <$1 --> [unscrewing]>>.
+*setopname 1 ^lighter
+*setopname 2 ^reshape
+*setopname 3 ^wait
+*setopname 4 ^unscrew
+
+//If something is made of plastic, applying the lighter on it will make it heated
+<(&/,<(*,{$1},plastic) --> made_of>,<(*,{SELF},{$1}) --> ^lighter>) =/> <{$1} --> [heated]>>.
+//If it's heated it will be melted
+<<{$1} --> [heated]> =/> <{$1} --> [melted]>>.
+//If it's melted it will be pliable
+<<{$1} --> [melted]> =/> <{$1} --> [pliable]>>.
+//If it's pliable and reshape is applied, it will be screwlike
+<(&/,<{$1} --> [pliable]>,<(*,{SELF},{$1}) --> ^reshape>) =/> <{$1} --> [screwlike]>>.
+//If it's screwlike and we wait, it will be hardened
+<(&/,<{$1} --> [screwlike]>,<(*,{SELF},{$1}) --> ^wait>) =/> <{$1} --> [hardened]>>.
+//If it's hardened, we can use it for unscrewing to remove the screw
+<(&/,<{#1} --> [hardened]>,<(*,{SELF},{#1}) --> ^unscrew>) =/> <{screw1} --> [removed]>>.
+<plastic --> [bendable]>.
+
 //let's try an example:
-<(*,toothbrush,plastic) --> made_of>. :|:
-<#1 --> [unscrewing]>! :|:
+//toothbrush1 is madeof bendable material
+<(*,{toothbrush1},[bendable]) --> made_of>. :|:
 10
-//expected: ^left executed with args ({SELF} * toothbrush)
-100
+//remove the screw1!
+<{screw1} --> [removed]>! :|:
+10
+//expected: ^lighter executed with args ({SELF} * {toothbrush1})
+30
 //some time later:
-<toothbrush --> [pliable]>. :|:
-<#1 --> [unscrewing]>! :|:
+//toothbrush1 is pliable
+<{toothbrush1} --> [pliable]>. :|:
+//remove the screw1!
+<{screw1} --> [removed]>! :|:
 10
-//expected: ^right executed with args ({SELF} * toothbrush)
-100
+//expected: ^reshape executed with args ({SELF} * {toothbrush1})
+30
 //some time later:
-<toothbrush --> [hardened]>. :|:
-<#1 --> [unscrewing]>! :|:
+//toothbrush1 is screwlike
+<{toothbrush1} --> [screwlike]>. :|:
+//remove the screw1!
+<{screw1} --> [removed]>! :|:
 10
-//expected: ^down executed with args ({SELF} * toothbrush)
-100
+//expected: ^wait executed with args ({SELF} * {toothbrush1})
+30
+//some time later:
+//toothbrus1 is hardened
+<{toothbrush1} --> [hardened]>. :|:
+//remove the screw1!
+<{screw1} --> [removed]>! :|:
+10
+//expected: ^unscrew executed with args ({SELF} * {toothbrush1})

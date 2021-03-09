@@ -1,7 +1,7 @@
 """
  * The MIT License
  *
- * Copyright 2020 The OpenNARS authors.
+ * Copyright 2021 The OpenNARS authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,13 @@
  * THE SOFTWARE.
  * """
 
-#NAR NLP Shell (needs nltk)
-#Can "parse" English with roughly the following structure to Narsese:  
-#...[[[adj] subject] ... [adv] predicate] ... [adj] object ... [prep adj object2] conj
-
+# >English input channel for OpenNARS for Applications<
+#  A shallow semantic parser with basic grammar learning ability
+#  by using NAL REPRESENT relations.
+#  Usage: python3 superlang.py [verbose] [OutputTruth]
+#  where verbose lets it show what language knowledge is utilized
+#  and OutputTruth passes on the calculated truth value to the output
+ 
 import re
 import sys
 import time
@@ -41,6 +44,37 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('universal_tagset')
 nltk.download('wordnet')
 
+SyntacticalTransformations = [
+    #types of tuples of words with optional members
+    (r" VERB_([0-9]*) VERB_([0-9]*) ", r" VERB_\1 ADJ_\2 "), #a hack for the lousy nltk postagger (verbs don't come in succession, and DET would have been detected, so ADJ guess is better)
+    (r" DET_([0-9]*) ", r" "),
+    (r" ADJ_([0-9]*) NOUN_([0-9]*) ", r" ADJ_NOUN_\2 "),
+    (r" NOUN_([0-9]*) ", r" ADJ_NOUN_\1 "),
+    (r" ADV_([0-9]*) VERB_([0-9]*) ", r" ADV_VERB_\2 "),
+    (r" VERB_([0-9]*) ", r" ADV_VERB_\1 ")
+]
+
+TermRepresentRelations = [
+    #subject, predicate, object encoding
+    (r"ADJ_NOUN_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99)),
+    (r"ADV_VERB_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99))
+]
+
+StatementRepresentRelations = [
+    #syntactic transformations: (these are all optional as they can easily be learned)
+    (r' ADJ_NOUN_1 BE_2 ADV_VERB_2 ADJ_NOUN_2 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ', (1.0, 0.9)),
+    (r' ADJ_NOUN_1 BE_2 ADV_VERB_2 ADJ_NOUN_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 , ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
+    (r' ADJ_NOUN_1 ADV_VERB_2 PRT_2 ADJ_NOUN_2 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ', (1.0, 0.9)),
+    (r' ADJ_NOUN_1 BE_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
+    (r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 , ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
+    #subject-predicate-object relations to Narsese:
+    (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.90)),
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99)),
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99)),
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99)),
+    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99)),
+]
+
 #convert universal tag set to the wordnet word types
 def wordnet_tag(tag):
     if tag == "ADJ":
@@ -55,156 +89,120 @@ def wordnet_tag(tag):
         return wordnet.NOUN #default
 
 #pos-tag the words in the input sentence, and lemmatize them thereafter using Wordnet
-def words_and_types(text):
+def sentence_and_types(text):
     tokens = [word.lower() for word in word_tokenize(text) if word.isalpha()]
     wordtypes_ordered = nltk.pos_tag(tokens, tagset='universal')
     wordtypes = dict(wordtypes_ordered)
     lemma = WordNetLemmatizer()
     tokens = [lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word])) for word in tokens]
     wordtypes = dict([(tokens[i], wordtypes_ordered[i][1]) for i in range(len(tokens))])
-    sys.stdout.flush()
-    return tokens, wordtypes
+    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" else value))) for (key,value) in wordtypes.items()}
+    indexed_wordtypes = []
+    i = 0
+    lasttoken = None
+    for token in tokens:
+        if lasttoken == None or wordtypes[lasttoken] == "NOUN" or wordtypes[token] == "ADP" or wordtypes[token] == "IF": #adjectives don't cross these
+            i += 1 #each noun or new article ends previous ADJ_NOUN index
+        indexed_wordtypes.append(wordtypes[token] + "_" + str(i))
+        lasttoken = token
+    print("//Word types: " + str(wordtypes))
+    return " " + " ".join(tokens) + " ", " " + " ".join(indexed_wordtypes) + " "
 
-def isCommand(sentence):
-    return sentence.startswith("*") or sentence.startswith("//") or sentence.isdigit() or sentence.startswith('(') or sentence.startswith('<')
+#NAL Deduction truth function
+def deduction(Ta, Tb):
+    return [Ta[0]*Tb[0], Ta[0]*Tb[0]*Ta[1]*Tb[1]]
 
-#output the Narsese, replacing question words with question variables
-questionwords = set(["what", "where", "which", "when", "who"])
-negationwords = set(["cannot", "not"])
-conditional_appeared = False
-outputs = []
-def output(negated, text, replaceQuestionWords=True, command=False):
-    if replaceQuestionWords:
-        for x in questionwords:
-            text = re.sub(r'([^a-zA-Z0-9])(' + x + r')([^a-zA-Z0-9])', r'\1?1\3', text)
-    if command or text.startswith("//"):
-        print(text) #direct print
-    else:
-        punctuation = text[-1]
-        if negated:
-            text = "(! " + text[:-1] + ")" + punctuation
-        outputs.append(text)
-    sys.stdout.flush()
-    
-def outputFinish():
-    global conditional_appeared
-    if len(outputs) == 2 and conditional_appeared:
-        punctuation = outputs[1][-1]
-        print(("<" + outputs[1][:-1] + " ==> " + outputs[0][:-1] + ">"+punctuation).replace("?1", "$1"))
-    else:
-        for text in outputs:
-            print(text + " :|:")
-
-def Conditional(word):
-    return word == "if" or word == "then"
-
-#return word type for a word, treating question words (who, what etc.) also as nouns
-def isWordType(word, wordtype):
-    global questionwords
-    if Conditional(word):
-        return False
-    if word in wordtypes:
-        if wordtypes[word] == "PRON" and wordtype == "NOUN":
-            questionwords.add(word)
-            return True
-        return wordtype == wordtypes[word]
-
-def RESET_STATE(word=""):
-    global negated, outputs, subject, subject_modifiers, predicate, predicate_modifiers, object, object_modifiers, prep, prep_object, prep_object_modifiers, lastsubject, lastpredicate
-    negated = False
-    subject = ""
-    subject_modifiers = "_subject_"
-    predicate = ""
-    predicate_modifiers = "_predicate_"
-    object = ""
-    object_modifiers = "_object_"
-    prep = "" #prepositions
-    prep_object = ""
-    prep_object_modifiers = "_prep_object_"
-    lastsubject = ""
-    lastpredicate = ""
-
-RESET_STATE()
-
-def semanticParse(sentence):
-    global negated, words, wordtypes, outputs, subject, subject_modifiers, predicate, predicate_modifiers, object, object_modifiers, prep, prep_object, prep_object_modifiers, lastsubject, lastpredicate
-    (words, wordtypes) = words_and_types(sentence + " and")
-    punctuation = "?" if "?" in sentence else "."
-    output(False, "//Word types: " + str(wordtypes))
-    RESET_STATE()
-    for i in range(len(words)):
-        word = words[i]
-        if word in negationwords:
-            negated = True
+#Return the concrete word (compound) term
+def getWordTerm(term, curTruth):
+    for (schema, compound, Truth) in TermRepresentRelations:
+        m = re.match(schema, term)
+        if not m:
             continue
-        if prep != "":
-            if isWordType(word, 'CONJ'): #we reached the end of the sentence, if there was a preposition, build relation between subject and the preposition verb (in/at etc.) and noun (garden, forest...)
-                if subject != "" and prep_object != "":
-                    output(negated, "<" + subject_modifiers.replace("_subject_", subject) + " --> (" + prep + " /1 " + prep_object_modifiers.replace("_prep_object_", prep_object)+")>" + punctuation)
-            elif isWordType(word, "NOUN"): #bind the object of the preposition
-                prep_object = word
-            elif isWordType(word, 'ADJ'): #allow modifying the object of the preposition with adjectives
-                prep_object_modifiers = "(& [" + word + "] _prep_object_ )".replace("_prep_object_", prep_object_modifiers)
-        if prep == "":
-            if isWordType(word, 'NOUN'): #nouns bind subject and object in this order
-                if subject == "":
-                    subject = word
-                elif object == "":
-                    object = word
-            elif isWordType(word, 'ADJ') or isWordType(word, 'ADV'): #adjectives/adverbs modify the next coming noun/verb
-                if predicate == "be" and i+1 < len(words) and isWordType(words[i+1], 'CONJ'): #for is-a sentences where the adjective serves as object
-                    output(negated, ("<" + subject_modifiers + " --> [" + word + "]>" + punctuation).replace("_subject_", subject))
-                if subject == "":
-                    subject_modifiers = "(& [" + word + "] _subject_ )".replace("_subject_", subject_modifiers)
-                elif predicate == "":
-                    predicate_modifiers = "(& [" + word + "] _predicate_ )".replace("_predicate_", predicate_modifiers)
-                elif object == "":
-                    object_modifiers = "(& [" + word + "] _object_ )".replace("_object_", object_modifiers)
-            elif isWordType(word, 'VERB'):
-                predicate = word
-            elif isWordType(word, 'CONJ') or isWordType(word, 'ADP'): #prepositions, conjs
-                if isWordType(word, 'CONJ') and object == "": #use the new subject as object, and last subject as the subject, if object was not identified
-                    object = subject
-                    object_modifiers = subject_modifiers.replace("_subject_","_object_")
-                    subject_modifiers = subject = lastsubject
-                    if predicate == "": #also use the last predicate if it was not in this sentence "segement"
-                        predicate = lastpredicate
-                lastsubject = subject_modifiers.replace("_subject_", subject)
-                lastpredicate = predicate_modifiers.replace("_predicate_", predicate)
-                if subject != "" and predicate !="" and object == "":
-                    object = subject
-                if subject != "" and predicate != "" and object != "" and not (subject in questionwords and object in questionwords): #output Narsese relation if all pieces are together, with a special case for be/Inheritance
-                    if lastpredicate == "be":
-                        if subject_modifiers.replace("_subject_", subject) != object_modifiers.replace("_object_", object):
-                            output(negated, ("<" + subject_modifiers + " --> " + object_modifiers + ">" + punctuation).replace("_subject_", subject).replace("_object_", object))
-                    else:
-                        if object == subject:
-                            output(negated, ("<" + subject_modifiers + " --> [" + predicate_modifiers + "]>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate))
-                        else:
-                            output(negated, ("<" + subject_modifiers + " --> (" + predicate_modifiers + " /1  " + object_modifiers + ")>" + punctuation).replace("_subject_", subject).replace("_predicate_", predicate).replace("_object_", object))
-                if isWordType(word, 'ADP'): #identify prepositions in which case we keep the assignments
-                    prep = word
-                else: #if not we are in a new sentence segement, reset variables
-                    subject = ""
-                    predicate = ""
-                    object = ""
-                    subject_modifiers = "_subject_"
-                    predicate_modifiers = "_predicate_"
-                    object_modifiers = "_object_"
+        curTruth[:] = deduction(curTruth, Truth)
+        modifier = term.split("_")[0] + "_" + m.group(1)
+        atomic =  term.split("_")[1] + "_" + m.group(1)
+        if modifier in wordType:
+            if "verbose" in sys.argv: print("// Using " + str((schema, compound, Truth))) 
+            term = compound % (wordType[modifier], wordType[atomic]) 
+        else:
+            term = atomic
+    return wordType.get(term, term)
+
+#Apply syntactical reductions and wanted represent relations
+def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTermRepresentRelations = False):
+    curTruth = [1.0, 0.9]
+    for (a, b) in SyntacticalTransformations:
+        typetext = re.sub(a, b, typetext)
+    if applyStatementRepresentRelations:
+        for (a, b, Truth) in StatementRepresentRelations:
+            typetext_new = re.sub(a, b, typetext)
+            if typetext_new != typetext:
+                if "verbose" in sys.argv: print("// Using " + str((a, b, Truth)))
+                typetext = typetext_new
+                curTruth = deduction(curTruth, Truth)
+        if applyTermRepresentRelations:
+            typetext = " ".join([getWordTerm(x, curTruth) for x in typetext.split(" ")])
+    return typetext, curTruth
+
+#Learn grammar pattern by building correspondence between the words&types in the example sentences with the ones in the sentence which wasn't understood 
+def GrammarLearning(y):
+    global StatementRepresentRelations
+    if not y.startswith("<") or not y.endswith(">") or (y.count("<") > 1 and not "=/>" in y): #Only if not fully encoded/valid Narsese
+        print("//What? Tell \"" + sentence.strip() + "\" in simple sentences:")
+        L = []
+        while True:
+            try:
+                s = " " + input().rstrip("\n") + " "
+            except:
+                exit(0)
+            if s.strip() == "":
+                break
+            L.append(sentence_and_types(s)[0])
+        mapped = ",".join([reduceTypetext(" " + " ".join([typeWord.get(x) for x in part.split(" ") if x.strip() != "" and x in typeWord]) + " ")[0] for part in L])
+        if mapped.strip() != "":
+            REPRESENT = ( reduceTypetext(typetextReduced)[0], mapped, (1.0, 0.45))
+            print("//Added REPRESENT relation: " + str(REPRESENT))
+            sys.stdout.flush()
+            StatementRepresentRelations = [REPRESENT] + StatementRepresentRelations
+        return True
+    return False
 
 while True:
-    conditional_appeared = False
-    outputs = []
+    #Get input line and forward potential command
     try:
-        sentence = input().strip()
+        line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
     except:
-        break
-    if isCommand(sentence):
-        output(False, sentence, command=True)
+        exit(0)
+    isQuestion = line.endswith("?")
+    isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
+    isNegated = " not " in (" " + line + " ")
+    if isCommand:
+        print(line)
+        sys.stdout.flush()
         continue
-    conditional_appeared = " if " in sentence
-    output(False, "//Input sentence: " + sentence)
-    for subsentence in sentence.split(" if "):
-        RESET_STATE()
-        semanticParse(subsentence)
-    outputFinish()
+    print("//Input sentence: " + line)
+    #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
+    sentence = " " + line.replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
+    s_and_T = sentence_and_types(sentence)
+    sentence = s_and_T[0] # canonical sentence (with lemmatized words)
+    typetext = s_and_T[1] #" DET_1 ADJ_1 NOUN_1 ADV_2 VERB_2 DET_2 ADJ_2 NOUN_2 ADP_3 DET_3 ADJ_3 NOUN_3 "
+    wordType = dict(zip(typetext.split(" "), sentence.split(" "))) #mappings like cat -> NOUN_1
+    typeWord = dict(zip(sentence.split(" "), typetext.split(" "))) #mappings like NOUN1 -> cat
+    #Transformed typetext taking syntatical relations and represent relations into account:
+    (typetextReduced,    _  ) = reduceTypetext(typetext)
+    (typetextNarsese,    _  ) = reduceTypetext(typetext, applyStatementRepresentRelations = True)
+    (typetextConcrete, Truth) = reduceTypetext(typetext, applyStatementRepresentRelations = True, applyTermRepresentRelations = True)
+    print("//Lemmatized sentence: " + sentence, "\n//Typetext: " + typetext, "\n//Typetext Narsese:" + typetextNarsese)
+    sys.stdout.flush()
+    #Check if one of the output representations wasn't fully transformed and demands grammar learning:
+    Input = True
+    for y in typetextConcrete.split(" , "):
+        if GrammarLearning(y.strip()):
+            Input = False
+    #If not we can output the Narsese events for NARS to consume:
+    if Input:
+        for y in typetextConcrete.split(" , "):
+            TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
+            statement = "(! " + y + ")" if isNegated else " " + y + " "
+            print((statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + ("? :|:" if isQuestion else ". :|:")) + TruthString)
+            sys.stdout.flush()

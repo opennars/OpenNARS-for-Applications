@@ -133,7 +133,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                     i+=3; j++;
                 }
                 else
-                if(narsese[i] == '<' && narsese[i+1] == '-' && narsese[i+2] == '>') // -<-> becomes :
+                if(narsese[i] == '<' && narsese[i+1] == '-' && narsese[i+2] == '>') // <-> becomes =
                 {
                     narsese_replaced[j] = '=';
                     i+=3; j++;
