@@ -46,7 +46,7 @@ nltk.download('wordnet')
 
 SyntacticalTransformations = [
     #types of tuples of words with optional members
-    (r" VERB_([0-9]*) VERB_([0-9]*) ", r" VERB_\1 ADJ_\2 "), #optional hack for the lousy nltk postagger (verbs don't come in succession, and DET would have been detected, so ADJ guess is better)
+    (r" VERB_([0-9]*) VERB_([0-9]*) ", r" VERB_\1 ADJ_\2 "), #hack for the lousy nltk postagger (verbs don't come in succession, DET would have been detected, ADJ is better guess)
     (r" BE_([0-9]*) ADP_([0-9]*) ", r" ADP_\2 "), #(optional learnable)
     (r" BE_([0-9]*) ADV_VERB_([0-9]*) ", r" ADV_VERB_\2 "), #(optional learnable)
     (r" DET_([0-9]*) ", r" "), #ignore determiner
@@ -54,7 +54,6 @@ SyntacticalTransformations = [
     (r" NOUN_([0-9]*) ", r" ADJ_NOUN_\1 "),
     (r" ADV_([0-9]*) VERB_([0-9]*) ", r" ADV_VERB_\2 "),
     (r" VERB_([0-9]*) ", r" ADV_VERB_\1 "),
-
 ]
 
 TermRepresentRelations = [
@@ -63,6 +62,7 @@ TermRepresentRelations = [
     (r"ADV_VERB_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99))
 ]
 
+AcquiredGrammar = []
 StatementRepresentRelations = [
     #clauses to Narsese:
     (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99)), #Conditional
@@ -108,9 +108,28 @@ def sentence_and_types(text):
     print("//Word types: " + str(wordtypes))
     return " " + " ".join(tokens) + " ", " " + " ".join(indexed_wordtypes) + " "
 
-#NAL Deduction truth function
-def deduction(Ta, Tb):
+#NAL truth functions
+def Truth_Deduction(Ta, Tb):
     return [Ta[0]*Tb[0], Ta[0]*Tb[0]*Ta[1]*Tb[1]]
+
+def Truth_w2c(w):
+    return w / (w + 1.0)
+
+def Truth_c2w(c):
+    return c / (1.0 - c)
+
+def Truth_Expectation(v):
+    return (v[1] * (v[0] - 0.5) + 0.5)
+
+def Truth_Revision(v1, v2):
+    (f1, c1) = v1
+    (f2, c2) = v2
+    w1 = Truth_c2w(c1)
+    w2 = Truth_c2w(c2)
+    w = w1 + w2
+    return (min(1.0, (w1 * f1 + w2 * f2) / w), 
+            min(0.99, max(max(Truth_w2c(w), c1), c2)))
+#NAL truth functions end
 
 #Return the concrete word (compound) term
 def getWordTerm(term, curTruth):
@@ -118,7 +137,7 @@ def getWordTerm(term, curTruth):
         m = re.match(schema, term)
         if not m:
             continue
-        curTruth[:] = deduction(curTruth, Truth)
+        curTruth[:] = Truth_Deduction(curTruth, Truth)
         modifier = term.split("_")[0] + "_" + m.group(1)
         atomic =  term.split("_")[1] + "_" + m.group(1)
         if modifier in wordType:
@@ -135,21 +154,21 @@ def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTerm
         for (a, b) in SyntacticalTransformations:
             typetext = re.sub(a, b, typetext)
     if applyStatementRepresentRelations:
-        for (a, b, Truth) in StatementRepresentRelations:
+        for (a, b, Truth) in AcquiredGrammar + StatementRepresentRelations:
             typetext_new = re.sub(a, b, typetext)
             if typetext_new != typetext:
                 if "verbose" in sys.argv: print("// Using " + str((a, b, Truth)))
                 typetext = typetext_new
-                curTruth = deduction(curTruth, Truth)
+                curTruth = Truth_Deduction(curTruth, Truth)
         if applyTermRepresentRelations:
             typetext = " ".join([getWordTerm(x, curTruth) for x in typetext.split(" ")])
     return typetext, curTruth
 
 #Learn grammar pattern by building correspondence between the words&types in the example sentences with the ones in the sentence which wasn't understood 
-def GrammarLearning(y):
-    global StatementRepresentRelations
-    if not y.startswith("<") or not y.endswith(">") or (y.count("<") > 1 and not "=/>" in y): #Only if not fully encoded/valid Narsese
-        print("//What? Tell \"" + sentence.strip() + "\" in simple sentences:")
+def GrammarLearning(y = "", forced = False):
+    global AcquiredGrammar
+    if forced or (not y.startswith("<") or not y.endswith(">") or (y.count("<") > 1 and not "=/>" in y)): #Only if not fully encoded/valid Narsese
+        print("//What? Tell \"" + sentence.strip() + "\" in simple sentences: (newline-separated)")
         L = []
         while True:
             try:
@@ -161,10 +180,15 @@ def GrammarLearning(y):
             L.append(sentence_and_types(s)[0])
         mapped = ",".join([reduceTypetext(" " + " ".join([typeWord.get(x) for x in part.split(" ") if x.strip() != "" and x in typeWord]) + " ")[0] for part in L])
         if mapped.strip() != "":
-            REPRESENT = ( reduceTypetext(typetextReduced)[0], mapped, (1.0, 0.45))
-            print("//Added REPRESENT relation: " + str(REPRESENT))
+            (R,mapped,T) = ( reduceTypetext(typetextReduced)[0], mapped, (1.0, 0.45))
+            for (R2,mapped2,T2) in AcquiredGrammar:
+                if R == R2 and mapped == mapped2:
+                    T = Truth_Revision(T, T2)
+                    break
+            print("//Added grammar relation: " + str((R,mapped,T)))
             sys.stdout.flush()
-            StatementRepresentRelations = [REPRESENT] + StatementRepresentRelations
+            AcquiredGrammar.append((R,mapped,T))
+            AcquiredGrammar.sort(key=lambda T: -Truth_Expectation(T[2]))
         return True
     return False
 
@@ -178,9 +202,13 @@ while True:
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
     isNegated = " not " in (" " + line + " ")
     if isCommand:
-        print(line)
-        sys.stdout.flush()
-        continue
+        if line.startswith("*teach"):
+            GrammarLearning(forced = True)
+            continue
+        else:
+            print(line)
+            sys.stdout.flush()
+            continue
     print("//Input sentence: " + line)
     #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
     sentence = " " + line.replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
