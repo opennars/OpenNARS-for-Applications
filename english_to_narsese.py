@@ -46,12 +46,15 @@ nltk.download('wordnet')
 
 SyntacticalTransformations = [
     #types of tuples of words with optional members
-    (r" VERB_([0-9]*) VERB_([0-9]*) ", r" VERB_\1 ADJ_\2 "), #a hack for the lousy nltk postagger (verbs don't come in succession, and DET would have been detected, so ADJ guess is better)
-    (r" DET_([0-9]*) ", r" "),
+    (r" VERB_([0-9]*) VERB_([0-9]*) ", r" VERB_\1 ADJ_\2 "), #optional hack for the lousy nltk postagger (verbs don't come in succession, and DET would have been detected, so ADJ guess is better)
+    (r" BE_([0-9]*) ADP_([0-9]*) ", r" ADP_\2 "), #(optional learnable)
+    (r" BE_([0-9]*) ADV_VERB_([0-9]*) ", r" ADV_VERB_\2 "), #(optional learnable)
+    (r" DET_([0-9]*) ", r" "), #ignore determiner
     (r" ADJ_([0-9]*) NOUN_([0-9]*) ", r" ADJ_NOUN_\2 "),
     (r" NOUN_([0-9]*) ", r" ADJ_NOUN_\1 "),
     (r" ADV_([0-9]*) VERB_([0-9]*) ", r" ADV_VERB_\2 "),
-    (r" VERB_([0-9]*) ", r" ADV_VERB_\1 ")
+    (r" VERB_([0-9]*) ", r" ADV_VERB_\1 "),
+
 ]
 
 TermRepresentRelations = [
@@ -61,18 +64,15 @@ TermRepresentRelations = [
 ]
 
 StatementRepresentRelations = [
-    #syntactic transformations: (these are all optional as they can easily be learned)
-    (r' ADJ_NOUN_1 BE_2 ADV_VERB_2 ADJ_NOUN_2 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ', (1.0, 0.9)),
-    (r' ADJ_NOUN_1 BE_2 ADV_VERB_2 ADJ_NOUN_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 , ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
-    (r' ADJ_NOUN_1 ADV_VERB_2 PRT_2 ADJ_NOUN_2 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ', (1.0, 0.9)),
-    (r' ADJ_NOUN_1 BE_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
-    (r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 ADP_3 ADJ_NOUN_3 ', r' ADJ_NOUN_1 ADV_VERB_2 ADJ_NOUN_2 , ADJ_NOUN_1 ADP_3 ADJ_NOUN_3 ', (1.0, 0.9)),
-    #subject-predicate-object relations to Narsese:
-    (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.90)),
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99)),
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99)),
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99)),
-    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99)),
+    #clauses to Narsese:
+    (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99)), #Conditional
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <(( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) * ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99)), #SVOO
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99)), #SVC
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99)), #SVO
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99)), #SVC
+    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99)), #S*A (part1)
+    (r" ADJ_NOUN_([0-9]*) (.*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" ADJ_NOUN_\1 \2 , < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADP_\3 > ", (1.0, 0.90)), #S*A (part2, optional learnable)
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADV_VERB_\2 ] > ", (1.0, 0.99)), #SV
 ]
 
 #convert universal tag set to the wordnet word types
@@ -131,8 +131,9 @@ def getWordTerm(term, curTruth):
 #Apply syntactical reductions and wanted represent relations
 def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTermRepresentRelations = False):
     curTruth = [1.0, 0.9]
-    for (a, b) in SyntacticalTransformations:
-        typetext = re.sub(a, b, typetext)
+    for i in range(len(SyntacticalTransformations)):
+        for (a, b) in SyntacticalTransformations:
+            typetext = re.sub(a, b, typetext)
     if applyStatementRepresentRelations:
         for (a, b, Truth) in StatementRepresentRelations:
             typetext_new = re.sub(a, b, typetext)
