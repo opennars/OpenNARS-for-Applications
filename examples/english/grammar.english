@@ -1,0 +1,25 @@
+*volume=0
+tim and sam are in the cinema
+tim is in the cinema
+sam is in the cinema
+
+the cat and the small dog are in the garden
+<(([small] & dog) * garden) --> in>? :|:
+//expected: Answer: <(([small] & dog) * garden) --> in>. :|: occurrenceTime=4 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+<(cat * garden) --> in>? :|:
+//expected: Answer: <(cat * garden) --> in>. :|: occurrenceTime=3 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+
+jack and michael are in the cinema eating popcorn
+jack and michael are in the cinema
+jack is eating popcorn
+michael is eating popcorn
+
+a lion and the famous garfield are in the zoo watching crazy monkeys
+<(lion * zoo) --> in>? :|:
+//expected: Answer: <(lion * zoo) --> in>. :|: occurrenceTime=9 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+<(([famous] & garfield) * zoo) --> in>? :|:
+//expected: Answer: <(([famous] & garfield) * zoo) --> in>. :|: occurrenceTime=10 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+<(lion * ([crazy] & monkey)) --> watch>? :|:
+//expected: Answer: <(lion * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=11 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+<(([famous] & garfield) * ([crazy] & monkey)) --> watch>? :|:
+//expected: Answer: <(([famous] & garfield) * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=12 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000

@@ -105,7 +105,7 @@ def sentence_and_types(text):
             i += 1 #each noun or new article ends previous ADJ_NOUN index
         indexed_wordtypes.append(wordtypes[token] + "_" + str(i))
         lasttoken = token
-    print("//Word types: " + str(wordtypes))
+    if "verbose" in sys.argv: print("//Word types: " + str(wordtypes))
     return " " + " ".join(tokens) + " ", " " + " ".join(indexed_wordtypes) + " "
 
 #NAL truth functions
@@ -174,6 +174,7 @@ def GrammarLearning(y = "", forced = False):
         while True:
             try:
                 s = " " + input().rstrip("\n") + " "
+                print("//Example input: " + s.strip() if s.strip() != "" else "//Example done.")
             except:
                 exit(0)
             if s.strip() == "":
@@ -189,7 +190,7 @@ def GrammarLearning(y = "", forced = False):
                 if R == R2 and mapped == mapped2:
                     T = Truth_Revision(T, T2)
                     break
-            print("//Added grammar relation: " + str((R,mapped,T)))
+            print("//Induced grammar relation: " + str((R,mapped,T)))
             sys.stdout.flush()
             AcquiredGrammar.append((R,mapped,T,currentTime))
             AcquiredGrammar.sort(key=lambda T: (-Truth_Expectation(T[2]), -T[3]))
@@ -214,7 +215,7 @@ while True:
             print(line)
             sys.stdout.flush()
             continue
-    print("//Input sentence: " + line)
+    if line.strip() != "": print("//Input sentence: " + line)
     #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
     sentence = " " + line.replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
     s_and_T = sentence_and_types(sentence)
@@ -226,16 +227,18 @@ while True:
     (typetextReduced,    _  ) = reduceTypetext(typetext)
     (typetextNarsese,    _  ) = reduceTypetext(typetext, applyStatementRepresentRelations = True)
     (typetextConcrete, Truth) = reduceTypetext(typetext, applyStatementRepresentRelations = True, applyTermRepresentRelations = True, suppressOutput = False)
-    print("//Lemmatized sentence: " + sentence, "\n//Typetext: " + typetext, "\n//Typetext reduced:" + typetextReduced, "\n//Typetext Narsese:" + typetextNarsese)
+    if "verbose" in sys.argv: print("//Lemmatized sentence: " + sentence, "\n//Typetext: " + typetext, "\n//Typetext reduced:" + typetextReduced, "\n//Typetext Narsese:" + typetextNarsese)
     sys.stdout.flush()
     #Check if one of the output representations wasn't fully transformed and demands grammar learning:
     Input = True
-    for y in typetextConcrete.split(" , "):
-        if GrammarLearning(y.strip()):
+    typetextSplit = [x.strip() for x in typetextConcrete.split(" , ") if x.strip() != ""]
+    for y in typetextSplit:
+        if GrammarLearning(y):
             Input = False
+            break
     #If not we can output the Narsese events for NARS to consume:
     if Input:
-        for y in typetextConcrete.split(" , "):
+        for y in typetextSplit:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             print((statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + ("? :|:" if isQuestion else ". :|:")) + TruthString)
