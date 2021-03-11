@@ -65,14 +65,14 @@ TermRepresentRelations = [
 AcquiredGrammar = []
 StatementRepresentRelations = [
     #clauses to Narsese:
-    (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99)), #Conditional
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <(( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) * ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99)), #SVOO
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99)), #SVC
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99)), #SVO
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99)), #SVC
-    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99)), #S*A (part1)
-    (r" ADJ_NOUN_([0-9]*) (.*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" ADJ_NOUN_\1 \2 , < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADP_\3 > ", (1.0, 0.90)), #S*A (part2, optional learnable)
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADV_VERB_\2 ] > ", (1.0, 0.99)), #SV
+    (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99), 0), #Conditional
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <(( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) * ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVOO
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99), 0), #SVC
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVO
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99), 0), #SVC
+    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99), 0), #S*A (part1)
+    (r" ADJ_NOUN_([0-9]*) (.*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" ADJ_NOUN_\1 \2 , < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADP_\3 > ", (1.0, 0.90), 0), #S*A (part2, optional learnable)
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADV_VERB_\2 ] > ", (1.0, 0.99), 0), #SV
 ]
 
 #convert universal tag set to the wordnet word types
@@ -132,7 +132,7 @@ def Truth_Revision(v1, v2):
 #NAL truth functions end
 
 #Return the concrete word (compound) term
-def getWordTerm(term, curTruth):
+def getWordTerm(term, curTruth, suppressOutput = True):
     for (schema, compound, Truth) in TermRepresentRelations:
         m = re.match(schema, term)
         if not m:
@@ -141,32 +141,33 @@ def getWordTerm(term, curTruth):
         modifier = term.split("_")[0] + "_" + m.group(1)
         atomic =  term.split("_")[1] + "_" + m.group(1)
         if modifier in wordType:
-            if "verbose" in sys.argv: print("// Using " + str((schema, compound, Truth))) 
+            if "verbose" in sys.argv and not suppressOutput: print("// Using " + str((schema, compound, Truth))) 
             term = compound % (wordType[modifier], wordType[atomic]) 
         else:
             term = atomic
     return wordType.get(term, term)
 
 #Apply syntactical reductions and wanted represent relations
-def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTermRepresentRelations = False):
+def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTermRepresentRelations = False, suppressOutput = True):
     curTruth = [1.0, 0.9]
     for i in range(len(SyntacticalTransformations)):
         for (a, b) in SyntacticalTransformations:
             typetext = re.sub(a, b, typetext)
     if applyStatementRepresentRelations:
-        for (a, b, Truth) in AcquiredGrammar + StatementRepresentRelations:
+        for (a, b, Truth, _) in AcquiredGrammar + StatementRepresentRelations:
             typetext_new = re.sub(a, b, typetext)
             if typetext_new != typetext:
-                if "verbose" in sys.argv: print("// Using " + str((a, b, Truth)))
+                if "verbose" in sys.argv and not suppressOutput: print("// Using " + str((a, b, Truth)))
                 typetext = typetext_new
                 curTruth = Truth_Deduction(curTruth, Truth)
         if applyTermRepresentRelations:
-            typetext = " ".join([getWordTerm(x, curTruth) for x in typetext.split(" ")])
+            typetext = " ".join([getWordTerm(x, curTruth, suppressOutput=suppressOutput) for x in typetext.split(" ")])
     return typetext, curTruth
 
-#Learn grammar pattern by building correspondence between the words&types in the example sentences with the ones in the sentence which wasn't understood 
+#Learn grammar pattern by building correspondence between the words&types in the example sentences with the ones in the sentence which wasn't understood
+currentTime = 0
 def GrammarLearning(y = "", forced = False):
-    global AcquiredGrammar
+    global AcquiredGrammar, currentTime
     if forced or (not y.startswith("<") or not y.endswith(">") or (y.count("<") > 1 and not "=/>" in y)): #Only if not fully encoded/valid Narsese
         print("//What? Tell \"" + sentence.strip() + "\" in simple sentences: (newline-separated)")
         L = []
@@ -181,18 +182,22 @@ def GrammarLearning(y = "", forced = False):
         mapped = ",".join([reduceTypetext(" " + " ".join([typeWord.get(x) for x in part.split(" ") if x.strip() != "" and x in typeWord]) + " ")[0] for part in L])
         if mapped.strip() != "":
             (R,mapped,T) = ( reduceTypetext(typetextReduced)[0], mapped, (1.0, 0.45))
-            for (R2,mapped2,T2) in AcquiredGrammar:
+            for i,typeword in enumerate(R.strip().split(" ")): #generalize grammar indices
+                R = R.replace(typeword, "_".join(typeword.split("_")[:-1]) + "_([0-9]*)")
+                mapped = mapped.replace(typeword, "_".join(typeword.split("_")[:-1])+"_\\" + str(i+1))
+            for (R2,mapped2,T2,_) in AcquiredGrammar:
                 if R == R2 and mapped == mapped2:
                     T = Truth_Revision(T, T2)
                     break
             print("//Added grammar relation: " + str((R,mapped,T)))
             sys.stdout.flush()
-            AcquiredGrammar.append((R,mapped,T))
-            AcquiredGrammar.sort(key=lambda T: -Truth_Expectation(T[2]))
+            AcquiredGrammar.append((R,mapped,T,currentTime))
+            AcquiredGrammar.sort(key=lambda T: (-Truth_Expectation(T[2]), -T[3]))
         return True
     return False
 
 while True:
+    currentTime += 1
     #Get input line and forward potential command
     try:
         line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
@@ -220,8 +225,8 @@ while True:
     #Transformed typetext taking syntatical relations and represent relations into account:
     (typetextReduced,    _  ) = reduceTypetext(typetext)
     (typetextNarsese,    _  ) = reduceTypetext(typetext, applyStatementRepresentRelations = True)
-    (typetextConcrete, Truth) = reduceTypetext(typetext, applyStatementRepresentRelations = True, applyTermRepresentRelations = True)
-    print("//Lemmatized sentence: " + sentence, "\n//Typetext: " + typetext, "\n//Typetext Narsese:" + typetextNarsese)
+    (typetextConcrete, Truth) = reduceTypetext(typetext, applyStatementRepresentRelations = True, applyTermRepresentRelations = True, suppressOutput = False)
+    print("//Lemmatized sentence: " + sentence, "\n//Typetext: " + typetext, "\n//Typetext reduced:" + typetextReduced, "\n//Typetext Narsese:" + typetextNarsese)
     sys.stdout.flush()
     #Check if one of the output representations wasn't fully transformed and demands grammar learning:
     Input = True
