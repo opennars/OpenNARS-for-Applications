@@ -205,6 +205,7 @@ while True:
     except:
         exit(0)
     isQuestion = line.endswith("?")
+    isGoal = line.endswith("!")
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
     isNegated = " not " in (" " + line + " ")
     if isCommand:
@@ -241,5 +242,6 @@ while True:
         for y in typetextSplit:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
-            print((statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + ("? :|:" if isQuestion else ". :|:")) + TruthString)
+            punctuation = "?" if isQuestion else ("!" if isGoal else ".")
+            print(statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + " :|:") + TruthString)
             sys.stdout.flush()
