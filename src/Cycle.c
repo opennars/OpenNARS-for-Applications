@@ -497,6 +497,7 @@ void Cycle_Inference(long currentTime)
                             //Check for overlap and apply inference rules
                             if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                             {
+                                c->usage = Usage_use(c->usage, currentTime, false);
                                 Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
                                 if(PRINT_CONTROL_INFO)
                                 {
