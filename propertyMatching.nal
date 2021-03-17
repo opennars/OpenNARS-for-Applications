@@ -1,0 +1,12 @@
+*volume=0
+<duck --> [yellow quacks]>.
+<swan --> [white quacks]>.
+<{inst1} --> [quacks]>. :|:
+50
+<{inst1} --> duck>? :|:
+<{inst1} --> swan>? :|:
+
+<{inst2} --> [white quacks]>. :|:
+50
+<{inst2} --> duck>? :|:
+<{inst2} --> swan>? :|:
