@@ -125,6 +125,34 @@ void NAL_GenerateRuleTable()
     printf("RULE_%d:;\nreturn term1;\n}\n\n", ruleID);
 }
 
+int subjectAtomsCounter = 1; //allows to avoid memset
+int subjectAtoms[ATOMS_MAX] = {0};
+static bool NAL_NoSharedAtomBetweenSubjectAndPredicate(Term *conclusionTerm)
+{
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], ':') || Narsese_copulaEquals(conclusionTerm->atoms[0], '=')) //similarity or inheritance
+    {
+        Term subject = Term_ExtractSubterm(conclusionTerm, 1);
+        Term predicate = Term_ExtractSubterm(conclusionTerm, 2);
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            Atom atom = subject.atoms[i];
+            if(Narsese_IsNonCopulaAtom(atom))
+            {
+                subjectAtoms[atom] = subjectAtomsCounter;
+            }
+        }
+        subjectAtomsCounter++;
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(subjectAtoms[predicate.atoms[i]] == subjectAtomsCounter) //atom in subject also appears in predicate
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
 {
     Event e = { .term = conclusionTerm,
@@ -137,7 +165,10 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
+            if(NAL_NoSharedAtomBetweenSubjectAndPredicate(&conclusionTerm))
+            {
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
+            }
         }
     }
 }
