@@ -14,10 +14,23 @@ def parseTask(s):
             M["occurrenceTime"] = s.split("occurrenceTime=")[1].split(" ")[0]
     sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0]
     M["punctuation"] = sentence[-4] if ":|:" in sentence else sentence[-1]
-    M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0][:-1]
+    M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
     return M
+
+def parseReason(sraw):
+    if "implication: " not in sraw:
+        return None
+    Implication = parseTask(sraw.split("implication: ")[-1].split("precondition: ")[0]) #last reason only (others couldn't be associated currently)
+    Precondition = parseTask(sraw.split("precondition: ")[-1].split("\n")[0])
+    Implication["occurrenceTime"] = "eternal"
+    Precondition["punctuation"] = Implication["punctuation"] = "."
+    Reason = {}
+    Reason["desire"] = sraw.split("decision expectation=")[-1].split(" ")[0]
+    Reason["hypothesis"] = Implication
+    Reason["precondition"] = Precondition
+    return Reason
     
 def parseExecution(e):
     if "args " not in e:
@@ -35,7 +48,8 @@ def GetOutput():
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "raw": "\n".join(lines)}
+    reason = parseReason(lines)
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason", reason, "raw": "\n".join(lines)}
 
 def GetStats():
 	Stats = {}
