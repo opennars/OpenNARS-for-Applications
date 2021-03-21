@@ -1,0 +1,33 @@
+*volume=0
+*motorbabbling=false
+
+//The system wants to sell food, this is how it usually does it:
+<(<(i * nars) --> greet> &/ <({SELF} * what_do_you_want_to_buy) --> ^say>) =/> <(i * food) --> want>>.
+<(<(i * drink) --> want> &/ <({SELF} * I_have_pizza_only) --> ^say>) =/> <(i * food) --> want>>.
+<(<(i * pizza) --> want> &/ <({SELF} * which_pizza_do_you_want) --> ^say>) =/> <{SELF} --> [useful]>>.
+<(<#1 --> choice> &/ <({SELF} * (ok_have * #1)) --> ^say>) =/> <{SELF} --> [useful]>>.
+
+//Setup interaction with user:
+*motivation=<{SELF} --> [useful]>! :|:
+*thinkcycles=10
+50
+
+//Interaction scenario:
+
+I am greeting nars
+//expected: ^say executed with args ({SELF} * what_do_you_want_to_buy)
+
+I want a drink
+//expected: ^say executed with args ({SELF} * I_have_pizza_only)
+
+I want a pizza
+//expected: ^say executed with args ({SELF} * which_pizza_do_you_want)
+
+the funghipizza is the choice
+//expected: ^say executed with args ({SELF} * (ok_have * funghipizza))
+
+I want another pizza
+//expected: ^say executed with args ({SELF} * which_pizza_do_you_want)
+
+the salamipizza is the choice
+//expected: ^say executed with args ({SELF} * (ok_have * salamipizza))

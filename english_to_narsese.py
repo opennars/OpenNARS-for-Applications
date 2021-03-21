@@ -197,6 +197,8 @@ def GrammarLearning(y = "", forced = False):
         return True
     return False
 
+motivation = None
+thinkcycles = None
 while True:
     currentTime += 1
     #Get input line and forward potential command
@@ -209,6 +211,12 @@ while True:
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
     isNegated = " not " in (" " + line + " ")
     if isCommand:
+        if line.startswith("*motivation="):
+            motivation = line.split("*motivation=")[1]
+            continue
+        if line.startswith("*thinkcycles="):
+            thinkcycles = line.split("*thinkcycles=")[1]
+            continue
         if line.startswith("*teach"):
             GrammarLearning(forced = True)
             continue
@@ -245,3 +253,9 @@ while True:
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
             print(statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + " :|:") + TruthString)
             sys.stdout.flush()
+        if len(typetextSplit) > 0 and thinkcycles != None:
+            print(thinkcycles, flush=True)
+    if motivation != None and line.strip() != "":
+        print(motivation, flush=True)
+        if thinkcycles != None:
+            print(thinkcycles, flush=True)

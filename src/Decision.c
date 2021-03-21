@@ -225,9 +225,10 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         bestImp = minConfImpAboveConditionThreshold; 
     }
     //set execute and return execution
-    printf("decision expectation %f impTruth=(%f, %f): future=%ld ", decision.desire, bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
-    Narsese_PrintTerm(&bestImp.term); fputs(" precondition: ", stdout); 
-    Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout); printf("occurrenceTime=%ld ", decision.reason->occurrenceTime); Truth_Print(&decision.reason->truth);
+    printf("decision expectation=%f implication: ", decision.desire);
+    Narsese_PrintTerm(&bestImp.term); printf(". Truth: frequency=%f confidence=%f dt=%ld", bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset); 
+    fputs(" precondition: ", stdout); Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout);  printf("Truth: frequency=%f confidence=%f", decision.reason->truth.frequency, decision.reason->truth.confidence); 
+    printf(" occurrenceTime=%ld\n", decision.reason->occurrenceTime);
     decision.execute = true;
     return decision;
 }
