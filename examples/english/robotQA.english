@@ -6,7 +6,7 @@
 //If something is to the right, looking to the right can lead to seeing a bowl in front at the same time (easily learnable from observation)
 <(<$1 --> [largerX]> &/ ^right) =/> <(bowl & $1) --> [equalX]>>.
 
-//The bottle is on the left
+//The bottle is seen on the left
 <bottle --> [smallerX]>. :|:
 //Active question as a query-var goal to realize
 bowl is near the bottle!

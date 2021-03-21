@@ -121,12 +121,16 @@ def Test(Example, outputString):
             print("Total questions = " + str(QuestionsTotal))
             print("Correctly answered ones = " + str(QuestionsAnswered))
             print("Answer ratio = " + str(QuestionsAnswered / QuestionsTotal))
+        else:
+            print("\nPassed " + Example)
     else:
         if TimeCnt > 0 and ConfidenceCnt > 0:
             print("\nQ&A metrics for test " + Example)
             print("Average answer time = " + str(TimeSum/TimeCnt))
             print("Average answer confidence = " + str(ConfidenceSum/ConfidenceCnt))
             print("Combined loss = " + str((1.0 - ConfidenceSum/ConfidenceCnt) * (TimeSum/TimeCnt)))
+        else:
+            print("\nPassed " + Example)
     TimeSumGlobal += TimeSum
     TimeCntGlobal += TimeCnt
     ConfidenceSumGlobal += ConfidenceSum
