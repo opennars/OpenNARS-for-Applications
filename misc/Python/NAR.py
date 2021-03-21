@@ -3,7 +3,7 @@ import os.path
 NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
 
 def parseTruth(T):
-    return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1]}
+    return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
 
 def parseTask(s):
     M = {"occurrenceTime" : "eternal"}
@@ -48,7 +48,7 @@ def GetOutput():
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
-    reason = parseReason(lines)
+    reason = parseReason("\n".join(lines))
     return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}
 
 def GetStats():
