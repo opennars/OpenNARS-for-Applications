@@ -49,7 +49,7 @@ def GetOutput():
     derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     reason = parseReason(lines)
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason", reason, "raw": "\n".join(lines)}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}
 
 def GetStats():
 	Stats = {}
