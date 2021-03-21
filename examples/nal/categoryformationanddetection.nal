@@ -1,24 +1,24 @@
 *volume=0
 
-<{instA} --> [yellow quacks]>. :|:
-<{instA} --> duck>. :|:
-<{instA} --> swan>. :|: {0.0 0.9}
-<{instA} --> bird>. :|:
+<{instA} --> [yellow quacks]>.
+<{instA} --> duck>.
+<{instA} --> swan>. {0.0 0.9}
+<{instA} --> bird>.
 1000
-<{instB} --> [white quacks]>. :|:
-<{instB} --> swan>. :|:
-<{instB} --> duck>. :|: {0.0 0.9}
-<{instB} --> bird>. :|:
+<{instB} --> [white quacks]>.
+<{instB} --> swan>.
+<{instB} --> duck>. {0.0 0.9}
+<{instB} --> bird>.
 1000
-<{instC} --> [yellow quacks]>. :|:
-<{instC} --> duck>. :|:
-<{instA} --> swan>. :|: {0.0 0.9}
-<{instC} --> bird>. :|:
+<{instC} --> [yellow quacks]>.
+<{instC} --> duck>.
+<{instC} --> swan>. {0.0 0.9}
+<{instC} --> bird>.
 1000
-<{instD} --> [white quacks]>. :|:
-<{instD} --> swan>. :|:
-<{instA} --> duck>. :|: {0.0 0.9}
-<{instD} --> bird>. :|:
+<{instD} --> [white quacks]>.
+<{instD} --> swan>.
+<{instD} --> duck>. {0.0 0.9}
+<{instD} --> bird>.
 
 1000
 
@@ -124,82 +124,6 @@
 <([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape5})>. :|:
 
-//NEW EXAMPLE
-//shape11 is a rectangle
-<{shape11} --> trapezoid>. :|:
-//shape11 is filled
-<{shape11} --> [filled]>. :|:
-//shape11 is left of shape12
-<({shape11} * {shape12}) --> leftOf>. :|:
-//shape11 is above of shape13
-<({shape11} * {shape13}) --> aboveOf>. :|:
-//shape12 is a circle
-<{shape12} --> circle>. :|:
-//shape12 is unfilled
-<{shape12} --> [unfilled]>. :|:
-//shape12 is above of shape13
-<({shape12} * {shape13}) --> aboveOf>. :|:
-//shape13 is a triangle
-<{shape13} --> triangle>. :|:
-//shape13 is unfilled
-<{shape13} --> [unfilled]>. :|:
-//shape13 is left of shape12
-<({shape13} * {shape12}) --> leftOf>. :|:
-50
-<([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
-//expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {shape12})>. :|:
-
-//NEW EXAMPLE
-//shape91 is a rectangle
-<{shape91} --> rectangle>. :|:
-//shape91 is filled
-<{shape91} --> [filled]>. :|:
-//shape91 is left of shape92
-<({shape91} * {shape92}) --> leftOf>. :|:
-//shape91 is above of shape93
-<({shape91} * {shape93}) --> aboveOf>. :|:
-//shape92 is a circle
-<{shape92} --> circle>. :|:
-//shape92 is unfilled
-<{shape92} --> [unfilled]>. :|:
-//shape92 is above of shape93
-<({shape92} * {shape93}) --> aboveOf>. :|:
-//shape93 is a triangle
-<{shape93} --> triangle>. :|:
-//shape93 is unfilled
-<{shape93} --> [unfilled]>. :|:
-//shape93 is left of shape92
-<({shape93} * {shape92}) --> leftOf>. :|:
-50
-//the filled rectangle is left of what?
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape92})>. :|:
-
-//NEW EXAMPLE
-//shape91 is a rectangle
-<{shape91} --> rectangle>. :|:
-//shape91 is filled
-<{shape91} --> [filled]>. :|:
-//shape91 is left of shape99
-<({shape91} * {shape99}) --> leftOf>. :|:
-//shape91 is above of shape93
-<({shape91} * {shape93}) --> aboveOf>. :|:
-//shape99 is a circle
-<{shape99} --> circle>. :|:
-//shape99 is unfilled
-<{shape99} --> [unfilled]>. :|:
-//shape99 is above of shape93
-<({shape99} * {shape93}) --> aboveOf>. :|:
-//shape93 is a triangle
-<{shape93} --> triangle>. :|:
-//shape93 is unfilled
-<{shape93} --> [unfilled]>. :|:
-//shape93 is left of shape99
-<({shape93} * {shape99}) --> leftOf>. :|:
-50
-<([filled] & rectangle) --> (leftOf /1 {?1})>? :|:
-//expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape99})>. :|:
-
 //"cooling down":
 1000
 
@@ -209,7 +133,6 @@
 //expected: Answer: <{inst30} --> duck>. :|:
 <{inst40} --> swan>? :|:
 <{inst30} --> bird>? :|:
-//expected: Answer: <{inst30} --> bird>. :|:
 
 1000
 
@@ -313,12 +236,12 @@
 <{inst140} --> bird>? :|:
 
 <duck --> bird>?
-//expected: Answer: <duck --> bird>. creationTime=2071 Truth: frequency=1.000000, confidence=0.405761
+////expected: Answer: <duck --> bird>. creationTime=2059 Truth: frequency=1.000000, confidence=0.618321
 <bird --> duck>?
-//expected: Answer: <bird --> duck>. creationTime=3094 Truth: frequency=0.634578, confidence=0.518311
+////expected: Answer: <bird --> duck>. creationTime=3017 Truth: frequency=0.500000, confidence=0.764151
 <swan --> bird>?
-//expected: Answer: <swan --> bird>. creationTime=3082 Truth: frequency=1.000000, confidence=0.347278
+////expected: Answer: <swan --> bird>. creationTime=3062 Truth: frequency=1.000000, confidence=0.690548
 <bird --> swan>?
-//expected: Answer: <bird --> swan>. creationTime=1082 Truth: frequency=0.464749, confidence=0.423503
+////expected: Answer: <bird --> swan>. creationTime=3017 Truth: frequency=0.500000, confidence=0.764151
 
 //*concepts
