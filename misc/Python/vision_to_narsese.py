@@ -30,6 +30,11 @@ import os.path
 ImgSizeX, ImgSizeY = (288, 352)
 DarknetFolder = "/home/tc/Dateien/Visionchannel/AlexeyAB_darknet/darknet/"
 
+InputPass = 1 #How many Stdin lines will be passed on to Stdout for each line produced by this sensory channel
+for arg in sys.argv:
+    if arg.startswith("InputPass="):
+        InputPass = int(arg.split("InputPass=")[1])
+
 def BoundingBoxFromBBStr(BBStr):
     M = {}
     BBlist = ' '.join(BBStr.strip().replace('(','').replace(')','').replace(':','').split()).split(' ')
@@ -83,6 +88,11 @@ while True:
     for line in output.decode("utf-8").split('\n'):
         if "%" in line: #
             LineToNarsese(line)
+            #also for each line pass on a line of stdin to allow for multiple input streams:
+            for i in range(InputPass):
+                s = sys.stdin.readline().strip()
+                if s != "":
+                    print(s)
     sys.stdout.flush()
     if len(sys.argv) > 1 and sys.argv[1] == "once":
         break

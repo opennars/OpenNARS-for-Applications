@@ -1,0 +1,21 @@
+*motorbabbling=false
+*volume=0
+*setopname 1 ^eat
+*setopname 2 ^leave
+
+//Training example1: System getting a bit of immediate repletion from eating the marshmallow
+marshmallow1. :|:
+^eat. :|:
+replete. :|: {0.6 0.9}
+//Training example2: The system getting another marshmallow after leaving it be,
+//then getting a lot of repletion from eating
+marshmallow1. :|:
+^leave. :|:
+marshmallow2. :|:
+^eat. :|:
+replete. :|: {0.9 0.9}
+
+//Test example: System should have learned to leave the first marshmallow alone:
+marshmallow1. :|:
+replete! :|:
+//expected: ^leave executed with args

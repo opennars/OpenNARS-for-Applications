@@ -1,5 +1,6 @@
 import pexpect
-NAR = pexpect.spawn('./../../NAR shell')
+import os.path
+NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1]}
