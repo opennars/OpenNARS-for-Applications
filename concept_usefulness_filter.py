@@ -2,6 +2,11 @@ import sys
 lines = []
 curline = None
 for line in sys.stdin:
+    if line.startswith("//*"):
+        continue
+    if line.startswith("*"):
+        print(line, end='')
+        continue
     if line.startswith("//"):
         if curline != "" and curline != None:
             lines.append(curline)

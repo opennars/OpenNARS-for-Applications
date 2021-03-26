@@ -112,18 +112,10 @@ void Process_Args(int argc, char *argv[])
     }
     if(inspectionOnExit)
     {
-        puts("*concepts");
         Shell_ProcessInput("*concepts");
-        puts("*done");
-        puts("*cycling_belief_events");
         Shell_ProcessInput("*cycling_belief_events");
-        puts("*done");
-        puts("*cycling_goal_events");
         Shell_ProcessInput("*cycling_goal_events");
-        puts("*done");
-        puts("*stats");
         Shell_ProcessInput("*stats");
-        puts("*done");
     }
 }
 

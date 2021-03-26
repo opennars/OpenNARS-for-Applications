@@ -121,7 +121,9 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*stats"))
         {
+            puts("//*stats");
             Stats_Print(currentTime);
+            puts("//*done");
         }
         else
         if(!strcmp(line,"*inverted_atom_index"))
@@ -131,7 +133,16 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*concepts"))
         {
-            puts("//Concepts output:");
+            puts("//*concepts");
+            for(int opi=0; opi<OPERATIONS_MAX; opi++)
+            {
+                if(operations[opi].term.atoms[0])
+                {
+                    printf("*setopname %d ", opi+1);
+                    Narsese_PrintTerm(&operations[opi].term);
+                    puts("");
+                }
+            }
             for(int i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
@@ -168,11 +179,12 @@ int Shell_ProcessInput(char *line)
                     }
                 }
             }
-            puts("//Concepts output end");
+            puts("//*done");
         }
         else
         if(!strcmp(line,"*cycling_belief_events"))
         {
+            puts("//*cycling_belief_events");
             for(int i=0; i<cycling_belief_events.itemsAmount; i++)
             {
                 Event *e = cycling_belief_events.items[i].address;
@@ -181,10 +193,12 @@ int Shell_ProcessInput(char *line)
                 printf(": { \"priority\": %f, \"time\": %ld } ", cycling_belief_events.items[i].priority, e->occurrenceTime);
                 Truth_Print(&e->truth);
             }
+            puts("//*done");
         }
         else
         if(!strcmp(line,"*cycling_goal_events"))
         {
+            puts("//*cycling_goal_events");
             for(int i=0; i<cycling_goal_events.itemsAmount; i++)
             {
                 Event *e = cycling_goal_events.items[i].address;
@@ -193,6 +207,7 @@ int Shell_ProcessInput(char *line)
                 printf(": {\"priority\": %f, \"time\": %ld } ", cycling_goal_events.items[i].priority, e->occurrenceTime);
                 Truth_Print(&e->truth);
             }
+            puts("//*done");
         }
         else
         if(!strcmp(line,"quit"))
