@@ -215,8 +215,14 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
             printf(":|: occurrenceTime=%ld ", occurrenceTime);
         }
         if(controlInfo)
+        {
             printf("Priority=%f ", priority);
-        Truth_Print(truth);
+            Truth_Print(truth);
+        }
+        else
+        {
+            Truth_Print2(truth);
+        }
         fflush(stdout);
     }
 }

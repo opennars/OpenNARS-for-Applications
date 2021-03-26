@@ -131,13 +131,44 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*concepts"))
         {
+            puts("//Concepts output:");
             for(int i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
                 assert(c != NULL, "Concept is null");
+                fputs("//", stdout);
                 Narsese_PrintTerm(&c->term);
-                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld }\n", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld \"termlinks\": [", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
+                bool hadAtom = false;
+                for(int k=0; k<UNIFICATION_DEPTH; k++)
+                {
+                    if(Narsese_IsSimpleAtom(c->term.atoms[k]))
+                    {
+                        fputs("\"", stdout);
+                        Narsese_PrintAtom(c->term.atoms[k]);
+                        fputs("\"", stdout);
+                        hadAtom = true;
+                    }
+                    if(hadAtom && k+1 < UNIFICATION_DEPTH && Narsese_IsSimpleAtom(c->term.atoms[k+1]))
+                    {
+                        fputs(", ", stdout);
+                    }
+                }
+                puts("]}");
+                if(c->belief.type != EVENT_TYPE_DELETED)
+                {
+                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false);
+                }
+                for(int opi=0; opi<OPERATIONS_MAX; opi++)
+                {
+                    for(int h=0; h<c->precondition_beliefs[opi].itemsAmount; h++)
+                    {
+                        Implication *imp = &c->precondition_beliefs[opi].array[h];
+                        Memory_printAddedImplication(&imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
+                    }
+                }
             }
+            puts("//Concepts output end");
         }
         else
         if(!strcmp(line,"*cycling_belief_events"))
@@ -147,7 +178,8 @@ int Shell_ProcessInput(char *line)
                 Event *e = cycling_belief_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
-                printf(": { \"priority\": %f, \"time\": %ld }\n", cycling_belief_events.items[i].priority, e->occurrenceTime);
+                printf(": { \"priority\": %f, \"time\": %ld } ", cycling_belief_events.items[i].priority, e->occurrenceTime);
+                Truth_Print(&e->truth);
             }
         }
         else
@@ -158,7 +190,8 @@ int Shell_ProcessInput(char *line)
                 Event *e = cycling_goal_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
-                printf(": {\"priority\": %f, \"time\": %ld }\n", cycling_goal_events.items[i].priority, e->occurrenceTime);
+                printf(": {\"priority\": %f, \"time\": %ld } ", cycling_goal_events.items[i].priority, e->occurrenceTime);
+                Truth_Print(&e->truth);
             }
         }
         else
