@@ -378,9 +378,30 @@ Term Narsese_Term(char *narsese)
     return ret;
 }
 
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, bool *isUserKnowledge, Truth *destTv)
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, bool *isEvent, bool *isUserKnowledge, Truth *destTv, double *occurrenceTimeOffset)
 {
     assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
+    //Handle optional dt=num at beginning of line
+    *occurrenceTimeOffset = 0.0;
+    char dt[10];
+    if(narsese[0] == 'd' && narsese[1] == 't'  && narsese[2] == '=') //dt=
+    {
+        for(unsigned int i=0; i<strlen(narsese); i++)
+        {
+            if(i>=3)
+            {
+                dt[i-3] = narsese[i];
+            }
+            if(narsese[i] == ' ')
+            {
+                dt[i] = 0;
+                narsese = &narsese[i];
+                break;
+            }
+        }
+        *occurrenceTimeOffset = atof(dt);
+    }
+    //Handle the rest of the Narsese:
     char narseseInplace[NARSESE_LEN_MAX] = {0};
     destTv->frequency = NAR_DEFAULT_FREQUENCY;
     destTv->confidence = NAR_DEFAULT_CONFIDENCE;

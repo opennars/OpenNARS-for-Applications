@@ -113,7 +113,7 @@ static void NAL_GenerateReduction(char *premise1, char* conclusion)
 void NAL_GenerateRuleTable()
 {
     puts("#include \"RuleTable.h\"");
-    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, long occurrenceTimeOffset, Stamp conclusionStamp, long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)\n{\ngoto RULE_0;");
+    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)\n{\ngoto RULE_0;");
 #define H_NAL_RULES
 #include "NAL.h"
 #undef H_NAL_RULES
@@ -131,8 +131,6 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
 {
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], ':') || Narsese_copulaEquals(conclusionTerm->atoms[0], '=')) //similarity or inheritance
     {
-        Term subject = Term_ExtractSubterm(conclusionTerm, 1);
-        Term predicate = Term_ExtractSubterm(conclusionTerm, 2);
         atomsCounter++;
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
@@ -150,7 +148,7 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, long occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
 {
     Event e = { .term = conclusionTerm,
                 .type = EVENT_TYPE_BELIEF, 
