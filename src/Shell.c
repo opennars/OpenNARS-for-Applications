@@ -149,22 +149,31 @@ int Shell_ProcessInput(char *line)
                 assert(c != NULL, "Concept is null");
                 fputs("//", stdout);
                 Narsese_PrintTerm(&c->term);
-                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld \"termlinks\": [", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed);
-                bool hadAtom = false;
-                for(int k=0; k<UNIFICATION_DEPTH; k++)
-                {
-                    if(Narsese_IsSimpleAtom(c->term.atoms[k]))
-                    {
-                        fputs("\"", stdout);
-                        Narsese_PrintAtom(c->term.atoms[k]);
-                        fputs("\"", stdout);
-                        hadAtom = true;
-                    }
-                    if(hadAtom && k+1 < UNIFICATION_DEPTH && Narsese_IsSimpleAtom(c->term.atoms[k+1]))
-                    {
-                        fputs(", ", stdout);
-                    }
-                }
+                printf(": { \"priority\": %f, \"usefulness\": %f, \"useCount\": %ld, \"lastUsed\": %ld, \"frequency\": %f, \"confidence\": %f, \"termlinks\": [", c->priority, concepts.items[i].priority, c->usage.useCount, c->usage.lastUsed, c->belief.truth.frequency, c->belief.truth.confidence);
+                Term left = Term_ExtractSubterm(&c->term, 1);
+                Term left_left = Term_ExtractSubterm(&left, 1);
+                Term left_right = Term_ExtractSubterm(&left, 2);
+                Term right = Term_ExtractSubterm(&c->term, 2);
+                Term right_left = Term_ExtractSubterm(&right, 1);
+                Term right_right = Term_ExtractSubterm(&right, 2);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&left);
+                fputs("\", ", stdout);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&right);
+                fputs("\", ", stdout);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&left_left);
+                fputs("\", ", stdout);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&left_right);
+                fputs("\", ", stdout);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&right_left);
+                fputs("\", ", stdout);
+                fputs("\"", stdout);
+                Narsese_PrintTerm(&right_right);
+                fputs("\"", stdout);
                 puts("]}");
                 if(c->belief.type != EVENT_TYPE_DELETED)
                 {
