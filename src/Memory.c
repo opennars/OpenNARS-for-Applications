@@ -104,7 +104,7 @@ Concept *Memory_FindConceptByTerm(Term *term)
 
 Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
-    if(Narsese_isOperation(term)) //don't conceptualize operations
+    if(Narsese_getOperationID(term)) //don't conceptualize operations
     {
         return NULL;
     }
