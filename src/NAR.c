@@ -87,10 +87,10 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     Term term;
     Truth tv;
     char punctuation;
-    bool isEvent;
+    int tense;
     bool isUserKnowledge;
     double occurrenceTimeOffset;
-    Narsese_Sentence(narsese_sentence, &term, &punctuation, &isEvent, &isUserKnowledge, &tv, &occurrenceTimeOffset);
+    Narsese_Sentence(narsese_sentence, &term, &punctuation, &tense, &isUserKnowledge, &tv, &occurrenceTimeOffset);
 #if STAGE==2
     //apply reduction rules to term:
     term = RuleTable_Reduce(term, false);
@@ -107,7 +107,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
-        puts(isEvent ? " :|:" : ""); 
+        puts(tense == 1 ? " :|:" : (tense == 2 ? " :\\:" : (tense == 3 ? " :/:" : ""))); 
         fflush(stdout);
         for(int i=0; i<concepts.itemsAmount; i++)
         {
@@ -139,9 +139,9 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 }
             }
             else
-            if(isEvent)
+            if(tense)
             {
-                if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                if(c->belief_spike.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 2))
                 {
                     Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
                     if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
@@ -153,7 +153,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                         answerCreationTime = c->belief_spike.creationTime;
                     }
                 }
-                if(c->predicted_belief.type != EVENT_TYPE_DELETED)
+                if(c->predicted_belief.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 3))
                 {
                     Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
                     if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
@@ -201,13 +201,14 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     else
     {
         // dont add the input if it is an eternal goal
-        if(punctuation == '!' && !isEvent)
+        if(punctuation == '!' && !tense)
         {
-            puts("Warning: Eternal goals are not supported, input is ignored!\n");
+            assert(false, "Eternal goals are not supported!\n");
         }
         else
         {
-            NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !isEvent, occurrenceTimeOffset, isUserKnowledge);
+            assert(punctuation != '.' || tense < 2, "Future and past belief events are not supported!\n");
+            NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !tense, occurrenceTimeOffset, isUserKnowledge);
         }
     }
 }
