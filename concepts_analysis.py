@@ -22,35 +22,37 @@
  * THE SOFTWARE.
  * """
 
-import subprocess
 import matplotlib.pyplot as plt
+import sys
 
 concepts = {}
-events = {}
-cmd = "./NAR shell InspectionOnExit < ./examples/nal/example1.nal"
-lines = subprocess.getoutput(cmd).split("\n")
-concepts = {}
-Active = False
-
-for l in lines:
+for l in sys.stdin:
+    if ": {" not in l or not l.startswith("//"):
+        continue
     L = l.split(":")
-    if Active and len(L) >= 2:
-        term = L[0].strip()
-        information = eval(":".join(L[1:]).strip())
-        concepts[term] = information
-    elif l.startswith("*concepts"):
-        Active = True
-    elif l.startswith("*done"):
-        break
-        
+    term = L[0].strip()
+    information = eval(":".join(L[1:]).strip())
+    concepts[term] = information
+
 ConceptPriorities=[]
 ConceptUseCount=[]
+ConceptLastUsedDistance=[]
+LastLastUsed = 0
 for c in concepts.values():
     ConceptPriorities += [c["priority"]]
     ConceptUseCount += [c["useCount"]]
+    ConceptLastUsedDistance += [c["lastUsed"]]
+    LastLastUsed = max(LastLastUsed, c["lastUsed"])
+for i in range(len(ConceptLastUsedDistance)):
+    ConceptLastUsedDistance[i] = LastLastUsed - ConceptLastUsedDistance[i]
+plt.figure()
 plt.hist(ConceptPriorities, log=True)
 plt.savefig("ConceptPrioritiesHistogram.png")
+plt.figure()
 plt.hist(ConceptUseCount, log=True)
 plt.savefig("ConceptUseCountHistogram.png")
+plt.figure()
+plt.hist(ConceptLastUsedDistance, log=True)
+plt.savefig("ConceptLastUsedDistance.png")
 print("Average priority: " + str((sum(ConceptPriorities))/float(len(ConceptPriorities))))
 print("Average use count: " + str((sum(ConceptUseCount))/float(len(ConceptUseCount))))
