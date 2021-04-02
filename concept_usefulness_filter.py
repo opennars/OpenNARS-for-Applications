@@ -28,7 +28,7 @@ lines = []
 curline = None
 for line in sys.stdin:
     if line.startswith("//*done"):
-        continue
+        break
     if line.startswith("*"):
         print(line, end='')
         continue
