@@ -30,7 +30,9 @@ import matplotlib.pyplot as plt
 
 #Get input and arguments
 NoTermlinks = "NoTermlinks" in sys.argv
-NoEdgeLabels = "NoEdgeLabels" in sys.argv
+NoProceduralLinks = "NoProceduralLinks" in sys.argv
+NoTemporalLinks = "NoTemporalLinks" in sys.argv
+NoLinkLabels = "NoLinkLabels" in sys.argv
 lines = []
 curline = None
 G = nx.MultiDiGraph()
@@ -60,24 +62,37 @@ def truth_to_color(truth):
     
 implicationEdges={}
 def addImplicationEdge(a, b, operator, truth=[0, 0]):
-    if (a,b) in implicationEdges:
-        (operator2, truth2) = implicationEdges[(a,b)]
-        if truth_expectation(truth) > truth_expectation(truth2) or (operator2 == "" and operator != ""):
-            implicationEdges[(a,b)] = (operator, truth)
+    override = False
+    UseOp = False if operator == "" else True
+    if (a,b,UseOp) in implicationEdges:
+        (operator2, truth2) = implicationEdges[(a,b,UseOp)]
+        if truth_expectation(truth) > truth_expectation(truth2):
+            override = True
     else:
-        implicationEdges[(a,b)] = (operator, truth)
+        override = True
+    if override:
+        implicationEdges[(a,b,UseOp)] = (operator, truth)
     
 def addImplicationEdges():
-    for (a,b) in implicationEdges:
-        (operator, truth) = implicationEdges[(a,b)]
-        color = truth_to_color(truth)
-        label = ("Op: " + operator + "\n" if operator != "" else "") + "{" + str(truth[0])+ " " + str(truth[1]) + "}"
-        if NoEdgeLabels:
+    for (a,b,UseOp) in implicationEdges:
+        if NoProceduralLinks and UseOp or NoTemporalLinks and not UseOp:
+            continue
+        if UseOp: #complication: since networkx can only draw 1 link label for (a,b), we merge and make sure the op/non op label is the same with truth info of both
+            (operator, optruth) = implicationEdges[(a,b,True)]
+            (_, noptruth) = ("", (0.5, 0)) if (a,b,False) not in implicationEdges else implicationEdges[(a,b,False)][:2]
+            color = truth_to_color(optruth)
+        if not UseOp:
+            (_, noptruth) = implicationEdges[(a,b,False)]
+            (operator, optruth) = ("", (0.5, 0)) if (a,b,True) not in implicationEdges else implicationEdges[(a,b,True)][:2]
+            color = truth_to_color(noptruth)
+        HaveBoth = optruth[1] > 0 and noptruth[1] > 0 and not NoProceduralLinks and not NoTemporalLinks
+        Top = "" if NoProceduralLinks or optruth[1] == 0 else "with op " + ("(inner)" if HaveBoth else "") + ": {" + str(optruth[0])+ " " + str(optruth[1]) + "}\n"
+        Tnop = "" if NoTemporalLinks or noptruth[1] == 0 else "w/o op " + ("(outer)" if HaveBoth else "") + ": {" + str(noptruth[0])+ " " + str(noptruth[1]) + "}"
+        label = ("best op: " + operator + "\n" if operator != "" else "") + Top + Tnop
+        if NoLinkLabels:
             label = ""
         max_rad = 0.0
-        if (a, b) in G.edges:
-            max_rad = max(x[2].get('rad', 0.0) for x in G.edges(data=True) if sorted(x[:2]) == sorted([a,b]))
-        G.add_edge(a, b, rad=max_rad + 0.1, color=color, weight=4, label=label, arrowsize=20)
+        G.add_edge(a, b, rad=(0.1 if UseOp else 0.2), color=color, weight=4, label=label, arrowsize=20)
 
 #Add statement concept nodes:
 for line in inlines:
