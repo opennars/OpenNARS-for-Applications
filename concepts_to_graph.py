@@ -29,6 +29,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 #Get input and arguments
+Simplified = "Simplified" in sys.argv
 NoTermlinks = "NoTermlinks" in sys.argv
 NoProceduralLinks = "NoProceduralLinks" in sys.argv
 NoTemporalLinks = "NoTemporalLinks" in sys.argv
@@ -81,6 +82,8 @@ def addImplicationEdges():
     for (a,b,UseOp) in implicationEdges:
         if NoProceduralLinks and UseOp or NoTemporalLinks and not UseOp:
             continue
+        if Simplified and not UseOp and (a,b,True) in implicationEdges:
+            continue
         if UseOp: #complication: since networkx can only draw 1 link label for (a,b), we merge and make sure the op/non op label is the same with truth info of both
             (operator, optruth) = implicationEdges[(a,b,True)]
             (_, noptruth) = ("", (0.5, 0)) if (a,b,False) not in implicationEdges else implicationEdges[(a,b,False)][:2]
@@ -90,13 +93,13 @@ def addImplicationEdges():
             (operator, optruth) = ("", (0.5, 0)) if (a,b,True) not in implicationEdges else implicationEdges[(a,b,True)][:2]
             color = truth_to_color(noptruth)
         HaveBoth = optruth[1] > 0 and noptruth[1] > 0 and not NoProceduralLinks and not NoTemporalLinks
-        Top = "" if NoProceduralLinks or optruth[1] == 0 else "with op " + ("(inner)" if HaveBoth else "") + ": " + truthstring(optruth) + "\n"
-        Tnop = "" if NoTemporalLinks or noptruth[1] == 0 else "w/o op " + ("(outer)" if HaveBoth else "") + ": " + truthstring(noptruth)
-        label = ("best op: " + operator + "\n" if operator != "" else "") + Top + Tnop
+        Top = "" if NoProceduralLinks or optruth[1] == 0 else "with op" + (" (inner)" if HaveBoth and not Simplified else "") + ": " + truthstring(optruth) + "\n"
+        Tnop = "" if NoTemporalLinks or noptruth[1] == 0 else "w/o op" + (" (outer)" if HaveBoth and not Simplified else "") + ": " + truthstring(noptruth)
+        label = ("best op: " + operator + "\n" if operator != "" else "") + Top + (Tnop if (a,b,True) not in implicationEdges else "")
         if NoLinkLabels:
             label = ""
         max_rad = 0.0
-        G.add_edge(a, b, rad=(0.1 if UseOp else 0.2), color=color, weight=4, label=label, arrowsize=20)
+        G.add_edge(a, b, rad=(0.1 if UseOp or Simplified else 0.2), color=color, weight=4, label=label, arrowsize=20)
 
 #Add statement concept nodes:
 for line in inlines:
