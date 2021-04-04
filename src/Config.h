@@ -31,7 +31,7 @@
 //Truth expectation needed for anticipation
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
-#define ANTICIPATION_CONFIDENCE_INITIAL 0.005
+#define ANTICIPATION_CONFIDENCE_INITIAL 0.1
 
 /*---------------------*/
 /* Decision parameters */

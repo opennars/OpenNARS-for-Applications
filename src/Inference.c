@@ -45,7 +45,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
     Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
     return *success ? (Event) { .term = conclusionTerm,
                                 .type = EVENT_TYPE_BELIEF,
-                                .truth = Truth_Intersection(truthA, truthB),
+                                .truth = Truth_Intersection2(a->truth, b->truth),
                                 .stamp = conclusionStamp, 
                                 .occurrenceTime = conclusionTime,
                                 .creationTime = creationTime }

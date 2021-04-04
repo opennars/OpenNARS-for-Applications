@@ -77,6 +77,12 @@ Truth Truth_Intersection(Truth v1, Truth v2)
     return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 };
 }
 
+Truth Truth_Intersection2(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    return (Truth) { .frequency = MIN(f1,f2), .confidence = MIN(c1,c2) };
+}
+
 Truth Truth_Eternalize(Truth v)
 {
     return (Truth) { .frequency = v.frequency, .confidence = Truth_w2c(v.confidence) };
