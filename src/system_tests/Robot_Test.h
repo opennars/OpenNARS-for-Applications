@@ -503,7 +503,6 @@ void Agent_Invoke()
 
 void NAR_Robot(long iterations)
 {
-    NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0.3;
     puts(">>NAR Robot start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Robot_Left); 

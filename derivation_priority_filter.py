@@ -1,4 +1,4 @@
-/* 
+"""
  * The MIT License
  *
  * Copyright 2020 The OpenNARS authors.
@@ -20,23 +20,18 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * """
 
-void NAR_Alphabet_Test()
-{
-    NAR_INIT();
-    puts(">>NAR Alphabet test start");
-    NAR_AddInput(Narsese_AtomicTerm("a"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0, false);
-    for(int i=0; i<50; i++)
-    {
-        int k=i%10;
-        if(i % 3 == 0)
-        {
-            char c[2] = {'a'+k,0};
-            NAR_AddInput(Narsese_AtomicTerm(c), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0, false);
-        }
-        NAR_Cycles(1);
-        puts("TICK");
-    }
-    puts("<<NAR Alphabet test successful");
-}
+import sys
+
+if len(sys.argv) <= 1:
+    print("DerivationPriorityFilter.py, error: has to be called with priority threshold: python3 PriorityFilter.py threshold")
+    exit(1)
+threshold = float(sys.argv[1])
+for line in sys.stdin:
+    if "Priority=" in line:
+        prio = float(line.split("Priority=")[1].split(" ")[0])
+        if prio < threshold:
+            continue
+    print(line, end='')
+    sys.stdout.flush()

@@ -30,7 +30,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_AddInputEvent(&e, 0);
+    Memory_AddInputEvent(&e, 0, 0);
     assert(belief_events.array[0][0].truth.confidence == (double) 0.9, "event has to be there"); //identify
     Memory_Conceptualize(&e.term, 1);
     Concept *c1 = Memory_FindConceptByTerm(&e.term);
@@ -39,7 +39,7 @@ void Memory_Test()
                                EVENT_TYPE_BELIEF, 
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                1337);
-    Memory_AddInputEvent(&e2, 0);
+    Memory_AddInputEvent(&e2, 0, 0);
     Memory_Conceptualize(&e2.term, 1);
     Concept *c2 = Memory_FindConceptByTerm(&e2.term);
     assert(c2 != NULL, "Concept should have been created!");

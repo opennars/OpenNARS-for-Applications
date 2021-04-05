@@ -18,7 +18,6 @@ static double failures = 0;
 void NAR_Cartpole(long iterations)
 {
     int t=0;
-    NAR_INIT();
     puts(">>NAR CP start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_CP_Left); 
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_CP_Right); 

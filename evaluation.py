@@ -40,7 +40,7 @@ def ctests(Example, Args, DoneAfterMetric):
             else:
                 print(line)
     print("\n" + Example + " successful!")
-"""ctests("System tests", "./NAR", False)
+#ctests("System tests", "./NAR", False)
 
 #Q&A metrics for the Narsese and English files:
 TimeCntGlobal = 0
@@ -121,12 +121,16 @@ def Test(Example, outputString):
             print("Total questions = " + str(QuestionsTotal))
             print("Correctly answered ones = " + str(QuestionsAnswered))
             print("Answer ratio = " + str(QuestionsAnswered / QuestionsTotal))
+        else:
+            print("\nPassed " + Example)
     else:
         if TimeCnt > 0 and ConfidenceCnt > 0:
             print("\nQ&A metrics for test " + Example)
             print("Average answer time = " + str(TimeSum/TimeCnt))
             print("Average answer confidence = " + str(ConfidenceSum/ConfidenceCnt))
             print("Combined loss = " + str((1.0 - ConfidenceSum/ConfidenceCnt) * (TimeSum/TimeCnt)))
+        else:
+            print("\nPassed " + Example)
     TimeSumGlobal += TimeSum
     TimeCntGlobal += TimeCnt
     ConfidenceSumGlobal += ConfidenceSum
@@ -159,7 +163,6 @@ print("\nQ&A answer rate global")
 print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
-"""
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")

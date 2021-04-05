@@ -1,4 +1,4 @@
-/* 
+"""
  * The MIT License
  *
  * Copyright 2020 The OpenNARS authors.
@@ -20,23 +20,28 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * """
 
-void NAR_Alphabet_Test()
-{
-    NAR_INIT();
-    puts(">>NAR Alphabet test start");
-    NAR_AddInput(Narsese_AtomicTerm("a"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0, false);
-    for(int i=0; i<50; i++)
-    {
-        int k=i%10;
-        if(i % 3 == 0)
-        {
-            char c[2] = {'a'+k,0};
-            NAR_AddInput(Narsese_AtomicTerm(c), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0, false);
-        }
-        NAR_Cycles(1);
-        puts("TICK");
-    }
-    puts("<<NAR Alphabet test successful");
-}
+import sys
+
+lines = []
+curline = None
+for line in sys.stdin:
+    print(line)
+    if line.startswith("*"):
+        print(line, end='')
+        continue
+    if line.startswith("//"):
+        if curline != "" and curline != None:
+            lines.append(curline)
+        curline = ""
+        if line.startswith("//*done"):
+            break
+    if curline != None:
+        curline += line.replace("//", "")
+#exit(0)
+lines = [line for line in lines if line.strip() != "" and ": { \"priority\":" in line]
+lines.sort(key=lambda line: -float(line.split("\"usefulness\": ")[1].split(",")[0]))
+displayN = len(lines) if len(sys.argv) <= 1 else int(sys.argv[1])
+for (i,x) in enumerate(lines[0:displayN]):
+    print("//{i="+str(i)+"}", x, end='', flush=True)

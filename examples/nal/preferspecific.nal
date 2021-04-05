@@ -1,7 +1,0 @@
-*motorbabbling=false
-*volume=0
-<(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>.
-<(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>. {1.0 0.6}
-<{room1} --> room>. :|:
-<{room1} --> [lit]>! :|:
-//expected: ^activate executed with args ({SELF} * torch)
