@@ -50,40 +50,46 @@ void Process_Args(int argc, char *argv[])
         {
             inspectionOnExit = true;
         }
-        else
-        {
-            iterations = atol(argv[2]);
-        }
     }
     if(argc >= 2)
     {
-        if(!strcmp(argv[1],"pong"))
-        {
-            NAR_Pong(iterations);
-        }
-        if(!strcmp(argv[1],"pong2"))
-        {
-            NAR_Pong2(iterations);
-        }
-        if(!strcmp(argv[1],"testchamber"))
-        {
-            NAR_TestChamber();
-        }
-        if(!strcmp(argv[1],"alien"))
-        {
-            NAR_Alien(iterations);
-        }
-        if(!strcmp(argv[1],"cartpole"))
-        {
-            NAR_Cartpole(iterations);
-        }
-        if(!strcmp(argv[1],"robot"))
-        {
-            NAR_Robot(iterations);
-        }
+        NAR_INIT();
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
+        }
+        for(int i=1; i<argc; i++)
+        {
+            iterations = i+1 < argc ? atol(argv[i+1]) : -1;
+            if(!strcmp(argv[i],"pong"))
+            {
+                NAR_Pong(iterations);
+            }
+            else
+            if(!strcmp(argv[i],"pong2"))
+            {
+                NAR_Pong2(iterations);
+            }
+            else
+            if(!strcmp(argv[i],"testchamber"))
+            {
+                NAR_TestChamber();
+            }
+            else
+            if(!strcmp(argv[i],"alien"))
+            {
+                NAR_Alien(iterations);
+            }
+            else
+            if(!strcmp(argv[i],"cartpole"))
+            {
+                NAR_Cartpole(iterations);
+            }
+            else
+            if(!strcmp(argv[i],"robot"))
+            {
+                NAR_Robot(iterations);
+            }
         }
         if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
         {
@@ -101,18 +107,10 @@ void Process_Args(int argc, char *argv[])
     }
     if(inspectionOnExit)
     {
-        puts("*concepts");
         Shell_ProcessInput("*concepts");
-        puts("*done");
-        puts("*cycling_belief_events");
         Shell_ProcessInput("*cycling_belief_events");
-        puts("*done");
-        puts("*cycling_goal_events");
         Shell_ProcessInput("*cycling_goal_events");
-        puts("*done");
-        puts("*stats");
         Shell_ProcessInput("*stats");
-        puts("*done");
     }
 }
 
