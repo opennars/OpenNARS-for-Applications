@@ -39,7 +39,6 @@ void NAR_Pong_Stop()
 }
 void NAR_Pong2(long iterations)
 {
-    NAR_INIT();
     puts(">>NAR Pong start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 

@@ -42,7 +42,6 @@ void NAR_Alien_Shoot()
 }
 void NAR_Alien(long iterations)
 {
-    NAR_INIT();
     puts(">>NAR Alien1 start");
     NAR_AddOperation(Narsese_Term("^left"), NAR_Alien_Left); 
     NAR_AddOperation(Narsese_Term("^right"), NAR_Alien_Right); 
