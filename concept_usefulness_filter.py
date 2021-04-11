@@ -26,7 +26,12 @@ import sys
 
 lines = []
 curline = None
+started = False
 for line in sys.stdin:
+    if "//*concepts" in line:
+        started = True
+    if not started:
+        continue
     print(line)
     if line.startswith("*"):
         print(line, end='')
