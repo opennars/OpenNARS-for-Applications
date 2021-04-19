@@ -97,7 +97,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
-Event Inference_GoalDeduction(Event *component, Implication *compound)
+Event Inference_GoalDeduction(Event *component, Implication *compound, bool CWA)
 {
     assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
@@ -105,7 +105,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
     //extract precondition: (plus unification once vars are there)
     return (Event) { .term = Narsese_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .truth = CWA ? Truth_GoalDeduction(component->truth, compound->truth) : Truth_Deduction(component->truth, compound->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
                      .creationTime = creationTime };
@@ -152,7 +152,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {

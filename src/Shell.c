@@ -234,6 +234,11 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*babblingops=")], "%d", &BABBLING_OPS);
         }
         else
+        if(!strncmp("*decisionthreshold=", line, strlen("*decisionthreshold=")))
+        {
+            sscanf(&line[strlen("*decisionthreshold=")], "%lf", &DECISION_THRESHOLD);
+        }
+        else
         if(!strcmp(line,"*motorbabbling=false"))
         {
             MOTOR_BABBLING_CHANCE = 0.0;

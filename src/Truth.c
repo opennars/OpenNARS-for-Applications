@@ -43,6 +43,14 @@ double Truth_Expectation(Truth v)
     return (v.confidence * (v.frequency - 0.5) + 0.5);
 }
 
+double Truth_Extremeness(Truth v)
+{
+    //double value = MAX(Truth_Expectation(v), Truth_Expectation(Truth_Negation(v, v)));
+    //return value;
+    return MAX(Truth_Expectation(v), Truth_Expectation(Truth_Negation(v, v)));
+    //return MAX(Truth_Expectation(v), Truth_Expectation(Truth_Negation(v, v)));
+}
+
 Truth Truth_Revision(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
@@ -58,6 +66,13 @@ Truth Truth_Deduction(Truth v1, Truth v2)
     TruthValues(v1,v2, f1,c1, f2,c2);
     double f = f1 * f2;
     return (Truth) { .frequency = f, .confidence = c1 * c2 * f };
+}
+
+Truth Truth_GoalDeduction(Truth v1, Truth v2) //deduction with CWA for "desired state"
+{
+    Truth res1 = Truth_Deduction(v1, v2);
+    Truth res2 = Truth_Negation(Truth_Deduction(Truth_Negation(v1, v2), v2), v2);
+    return res1.confidence >= res2.confidence ? res1 : res2;
 }
 
 Truth Truth_Abduction(Truth v1, Truth v2)

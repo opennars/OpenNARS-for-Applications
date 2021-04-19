@@ -283,8 +283,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
         {
             if(Variable_Unify(&c->term, &goal->term).success)
             {
-                bool revised;
-                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
+                c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, NULL);
                 for(int opi=0; opi<=OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
@@ -303,10 +302,15 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
                         if(success)
                         {
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp);
+                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, !opi);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            Concept *goalc = Memory_Conceptualize(&newGoalUpdated.term, currentTime);
+                            if(goalc != NULL)
+                            {
+                                goalc->goal_spike = Inference_RevisionAndChoice(&goalc->goal_spike, &newGoalUpdated, currentTime, NULL);
+                                IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                Memory_AddEvent(&goalc->goal_spike, currentTime, selectedGoalsPriority[i] * Truth_Extremeness(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            }
                         }
                     }
                 }

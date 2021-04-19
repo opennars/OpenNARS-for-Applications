@@ -86,7 +86,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
-        Event ContextualOperation = Inference_GoalDeduction(goal, imp); //(&/,a,op())! :\:
+        Event ContextualOperation = Inference_GoalDeduction(goal, imp, false); //(&/,a,op())! :\:
         double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
         IN_DEBUG
         (
