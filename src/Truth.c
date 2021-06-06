@@ -71,10 +71,10 @@ Truth Truth_Induction(Truth v1, Truth v2)
     return Truth_Abduction(v2, v1);
 }
 
-Truth Truth_Intersection(Truth v1, Truth v2)
+Truth Truth_IntersectionForSequence(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
-    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 };
+    return (Truth) { .frequency = MIN(f1, f2), .confidence = MIN(c1, c2) };
 }
 
 Truth Truth_Eternalize(Truth v)
@@ -129,6 +129,12 @@ Truth Truth_Resemblance(Truth v1, Truth v2)
 {
     TruthValues(v1,v2, f1,c1, f2,c2);
     return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 * or(f1, f2) };
+}
+
+Truth Truth_Intersection(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    return (Truth) { .frequency = f1 * f2, .confidence = c1 * c2 };
 }
 
 Truth Truth_Union(Truth v1, Truth v2)
