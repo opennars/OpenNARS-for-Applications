@@ -88,7 +88,7 @@ static bool NAR_BetterAnswer(Term *termA, Truth truthA, Term *termB, Truth truth
     double expB = Truth_Expectation(truthB);
     if(expA >= expB)
     {
-        if(expA != expB || Term_Complexity(termA) < Term_Complexity(termB))
+        if(expA != expB || Term_Complexity(termA) <= Term_Complexity(termB))
         {
             return true;
         }
