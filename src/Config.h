@@ -44,6 +44,8 @@
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
+//Whether temporal non-procedural implications are allowed to derive subgoals
+#define NOP_SUBGOALING true
 
 /*----------------------*/
 /* Attention parameters */

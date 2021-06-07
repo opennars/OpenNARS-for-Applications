@@ -41,13 +41,13 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
-    DERIVATION_STAMP_AND_TIME(a,b)
+    DERIVATION_STAMP(a,b)
     Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
     return *success ? (Event) { .term = conclusionTerm,
                                 .type = EVENT_TYPE_BELIEF,
-                                .truth = Truth_Intersection(truthA, truthB),
+                                .truth = Truth_IntersectionForSequence(a->truth, b->truth),
                                 .stamp = conclusionStamp, 
-                                .occurrenceTime = conclusionTime,
+                                .occurrenceTime = b->occurrenceTime,
                                 .creationTime = creationTime }
                     : (Event) {0};
 }

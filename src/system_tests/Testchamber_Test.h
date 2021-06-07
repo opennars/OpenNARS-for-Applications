@@ -147,7 +147,7 @@ void NAR_TestChamber()
             activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         }
         //manipulation
-        if(pos == pos_s1 && deactivate)
+        if(pos == pos_s1 && (deactivate || (!s1 && !activate)))
         {
             s1 = false;
             puts("s1_is_0.");
@@ -158,7 +158,7 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_closed"));
         }
         else
-        if(pos == pos_s2 && deactivate)
+        if(pos == pos_s2 && (deactivate || (!s2 && !activate)))
         {
             s2 = false;
             puts("s2_is_0.");
@@ -169,7 +169,7 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_0"));
         }
         else
-        if(pos == pos_s3 && deactivate)
+        if(pos == pos_s3 && (deactivate || (!s3 && !activate)))
         {
             s3 = false;
             puts("s3_is_0.");
@@ -180,7 +180,7 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_0"));
         }
         else
-        if(pos == pos_s1 && activate)
+        if(pos == pos_s1 && (activate || s1))
         {
             s1 = true;
             puts("s1_is_1.");
@@ -191,7 +191,7 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_open"));
         }
         else
-        if(pos == pos_s2 && activate)
+        if(pos == pos_s2 && (activate || s2))
         {
             s2 = true;
             puts("s2_is_1.");
@@ -202,7 +202,7 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_1"));
         }
         else
-        if(pos == pos_s3 && activate)
+        if(pos == pos_s3 && (activate || s3))
         {
             s3 = true;
             puts("s3_is_1.");

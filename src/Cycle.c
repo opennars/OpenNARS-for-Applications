@@ -285,7 +285,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
             {
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                for(int opi=NOP_SUBGOALING ? 0 : 1; opi<=OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {

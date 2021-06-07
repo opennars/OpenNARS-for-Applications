@@ -82,6 +82,20 @@ void NAR_AddOperation(Term term, Action procedure)
     operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
 }
 
+static bool NAR_BetterAnswer(Term *termA, Truth truthA, Term *termB, Truth truthB)
+{
+    double expA = Truth_Expectation(truthA);
+    double expB = Truth_Expectation(truthB);
+    if(expA >= expB)
+    {
+        if(expA != expB || Term_Complexity(termA) <= Term_Complexity(termB))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void NAR_AddInputNarsese(char *narsese_sentence)
 {
     Term term;
@@ -129,7 +143,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                         {
                             continue;
                         }
-                        if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                        if(NAR_BetterAnswer(&imp->term, imp->truth, &best_term, best_truth))
                         {
                             best_truth = imp->truth;
                             best_term = imp->term;
@@ -144,7 +158,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->belief_spike.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 2))
                 {
                     Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
-                    if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
+                    if(NAR_BetterAnswer(&c->belief_spike.term, potential_best_truth, &best_term, best_truth_projected))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->belief_spike.truth;
@@ -156,7 +170,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->predicted_belief.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 3))
                 {
                     Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
-                    if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
+                    if(NAR_BetterAnswer(&c->predicted_belief.term, potential_best_truth, &best_term, best_truth_projected))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->predicted_belief.truth;
@@ -168,7 +182,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             }
             else
             {
-                if(c->belief.type != EVENT_TYPE_DELETED && Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
+                if(c->belief.type != EVENT_TYPE_DELETED && NAR_BetterAnswer(&c->belief.term, c->belief.truth, &best_term, best_truth))
                 {
                     best_truth = c->belief.truth;
                     best_term = c->belief.term;
