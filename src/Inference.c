@@ -41,6 +41,10 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
+    if((b->occurrenceTime - a->occurrenceTime) > EVENT_BELIEF_DISTANCE)
+    {
+        return (Event) {0};
+    }
     DERIVATION_STAMP(a,b)
     Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
     return *success ? (Event) { .term = conclusionTerm,
@@ -56,12 +60,16 @@ Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
-    DERIVATION_STAMP_AND_TIME(a,b)
+    if((b->occurrenceTime - a->occurrenceTime) > EVENT_BELIEF_DISTANCE)
+    {
+        return (Implication) {0};
+    }
+    DERIVATION_STAMP(a,b)
     Term term = {0};
     term.atoms[0] = Narsese_AtomicTermIndex("$");
     *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
     return *success ? (Implication) { .term = term, 
-                                      .truth = Truth_Eternalize(Truth_Induction(truthB, truthA)),
+                                      .truth = Truth_Eternalize(Truth_Induction(b->truth, a->truth)),
                                       .stamp = conclusionStamp,
                                       .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
                                       .creationTime = creationTime }
@@ -97,7 +105,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
-Event Inference_GoalDeduction(Event *component, Implication *compound)
+Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
 {
     assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
@@ -107,7 +115,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound)
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .occurrenceTime = currentTime,
                      .creationTime = creationTime };
 }
 
