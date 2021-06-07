@@ -106,9 +106,8 @@ void NAR_TestChamber()
     bool l0 = false;
     bool l1 = false;
     bool door = false; //door closed
-    puts("at_s0");
-    NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
-    char lastchar = 'a';
+    char lastcommand = 'a';
+    char c = ' ';
     while(1)
     {
         //movement
@@ -150,98 +149,80 @@ void NAR_TestChamber()
         if(pos == pos_s1 && (deactivate || (!s1 && !activate)))
         {
             s1 = false;
-            puts("s1_is_0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_0"));
             //s1 also closes the door:
             door = false;
-            puts("door_is_closed.");
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_closed"));
         }
         else
         if(pos == pos_s2 && (deactivate || (!s2 && !activate)))
         {
             s2 = false;
-            puts("s2_is_0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_0"));
             //s2 also deactivates l0:
             l0 = false;
-            puts("l0_is_0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_0"));
         }
         else
         if(pos == pos_s3 && (deactivate || (!s3 && !activate)))
         {
             s3 = false;
-            puts("s3_is_0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_0"));
             //s3 also deactivates l1
             l1 = false;
-            puts("l1_is_0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_0"));
         }
         else
         if(pos == pos_s1 && (activate || s1))
         {
             s1 = true;
-            puts("s1_is_1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_1"));
             //s1 also opens the door:
             door = true;
-            puts("door_is_open.");
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_open"));
         }
         else
         if(pos == pos_s2 && (activate || s2))
         {
             s2 = true;
-            puts("s2_is_1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_1"));
             //s2 also activates l0:
             l0 = true;
-            puts("l0_is_1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_1"));
         }
         else
         if(pos == pos_s3 && (activate || s3))
         {
             s3 = true;
-            puts("s3_is_1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_1"));
             //s3 also activates l1
             l1 = true;
-            puts("l1_is_1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_1"));
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         //inform NAR about current location
         if(pos == pos_s0)
         {
-            puts("at_s0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
         }
         if(pos == pos_s1)
         {
-            puts("at_s1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_s1"));
         }
         if(pos == pos_s2)
         {
-            puts("at_s2.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_s2"));
         }
         if(pos == pos_s3)
         {
-            puts("at_s3.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_s3"));
         }
         if(pos == pos_l0)
         {
-            puts("at_l0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_l0"));
         }
         if(pos == pos_l1)
         {
-            puts("at_l1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("at_l1"));
         }
         //change char array to draw:
@@ -356,165 +337,152 @@ void NAR_TestChamber()
             puts("");
         }
         puts("\nCommand:");
-        char c = getchar();
-        if(!(c >= 'a' && c<='z'))
+        char probe = '\n';
+        if(c >= 'a' && c <= 'z')
         {
-            c = lastchar;
+            probe = getchar(); //skip next newline or space
         }
-        lastchar = c;
-        if(c == 'a')
+        if (probe >= 'a' && probe <= 'z')
+        {
+            c = probe; //but if it's not a space use it as next input
+        }
+        else
+        {
+            c = getchar(); //else it's time to get a new character command
+        }
+        char command = c;
+        if(!(c >= 'a' && c <= 'z'))
+        {
+            command = lastcommand;
+        }
+        lastcommand = command;
+        if(command == 'a')
         {
             goto_s0 = true;
-            puts("^goto_s0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s0"));
         }
-        if(c == 'b')
+        if(command == 'b')
         {
             goto_s1 = true;
-            puts("^goto_s1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s1"));
         }
-        if(c == 'c')
+        if(command == 'c')
         {
             goto_s2 = true;
-            puts("^goto_s2.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s2"));
         }
-        if(c == 'd')
+        if(command == 'd')
         {
             goto_s3 = true;
-            puts("^goto_s3.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_s3"));
         }
-        if(c == 'e')
+        if(command == 'e')
         {
             goto_l0 = true;
-            puts("^goto_l0.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_l0"));
         }
-        if(c == 'f')
+        if(command == 'f')
         {
             goto_l1 = true;
-            puts("^goto_l1.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^goto_l1"));
         }
-        if(c == 'g')
+        if(command == 'g')
         {
             activate = true;
-            puts("^activate.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^activate"));
         }
-        if(c == 'h')
+        if(command == 'h')
         {
             deactivate = true;
-            puts("^deactivate.");
             NAR_AddInputBelief(Narsese_AtomicTerm("^deactivate"));
         }
-        if(c == 'i')
+        if(command == 'i')
         {
-            puts("door_is_open!");
             NAR_AddInputGoal(Narsese_AtomicTerm("door_is_open"));
             //door should be open
         }
-        if(c == 'j')
+        if(command == 'j')
         {
-            puts("door_is_closed!");
             NAR_AddInputGoal(Narsese_AtomicTerm("door_is_closed"));
             //door should be closed
         }
-        if(c == 'k')
+        if(command == 'k')
         {
-            puts("s1_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_1"));
             //s1 should be 1
         }
-        if(c == 'l')
+        if(command == 'l')
         {
-            puts("s1_is_0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_0"));
             //s1 should be 0
         }
-        if(c == 'm')
+        if(command == 'm')
         {
-            puts("s2_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_1"));
             //s2 should be 1
         }
-        if(c == 'n')
+        if(command == 'n')
         {
-            puts("s2_is_0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_0"));
             //s2 should be 0
         }
-        if(c == 'o')
+        if(command == 'o')
         {
-            puts("s3_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_1"));
             //s3 should be 1
         }
-        if(c == 'p')
+        if(command == 'p')
         {
-            puts("s3_is_0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_0"));
             //s3 should be 0
         }
-        if(c == 'q')
+        if(command == 'q')
         {
-            puts("l0_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_1"));
             //l0 should be 1
         }
-        if(c == 'r')
+        if(command == 'r')
         {
-            puts("l0_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_0"));
             //l0 should be 0
         }
-        if(c == 's')
+        if(command == 's')
         {
-            puts("l1_is_1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_1"));
             //l1 should be 1
         }
-        if(c == 't')
+        if(command == 't')
         {
-            puts("l1_is_0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_0"));
             //l1 should be 0
         }
-        if(c == 'u')
+        if(command == 'u')
         {
-            puts("at_s0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s0"));
             //you should be at s0!
         }
-        if(c == 'v')
+        if(command == 'v')
         {
-            puts("at_s1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s1"));
             //you should be at s1!
         }
-        if(c == 'w')
+        if(command == 'w')
         {
-            puts("at_s2!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s2"));
             //you should be at s2!
         }
-        if(c == 'x')
+        if(command == 'x')
         {
-            puts("at_s3!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s3"));
             //you should be at s3!
         }
-        if(c == 'y')
+        if(command == 'y')
         {
-            puts("at_l0!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_l0"));
             //you should be at l0!
         }
-        if(c == 'z')
+        if(command == 'z')
         {
-            puts("at_l1!");
             NAR_AddInputGoal(Narsese_AtomicTerm("at_l1"));
             //you should be at l1!
         }
