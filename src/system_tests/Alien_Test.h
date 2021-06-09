@@ -110,7 +110,7 @@ void NAR_Alien(long iterations)
         {
             getchar();
         }
-        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        CLEAR_SCREEN;
         for(int i=0; i<batX-batWidth+1; i++)
         {
             fputs(" ", stdout);
@@ -147,11 +147,9 @@ void NAR_Alien(long iterations)
             puts("|");
         }
         printf("shots=%d hits=%d ratio=%f time=%d\n", shots, hits, (float) (((float) hits) / ((float) shots)), t);
-        //nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
-        //NAR_Cycles(10);
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+            SLEEP;
         }
     }
 }

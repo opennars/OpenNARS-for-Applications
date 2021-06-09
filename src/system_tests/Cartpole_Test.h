@@ -1,39 +1,53 @@
 static double velocity = 0.0;
-static double angle = 0.0;
+static double angle = -3.1415/2.0;
 static double angle_velocity = 0.0;
 static double position = 0.0;
-static double max_angle_velocity = 0.1;
+static double max_angle_velocity = 0.3;
 static void NAR_CP_Left()
 {
-    angle_velocity = 0.05;
+    double reverse = angle > 0 ? 1 : -1;
+    //if(position > 0.0 && position < 1.0)
+    {
+        angle_velocity -= reverse * 0.3;
+    }
     position -= 0.1;
+    position = MAX(0.0, MIN(1.0, position));
 }
 static void NAR_CP_Right()
 {
-    angle_velocity -= 0.05; //TODO make it an increment
+    double reverse = angle > 0 ? 1 : -1;
+    //if(position > 0.0 && position < 1.0)
+    {
+        angle_velocity += reverse * 0.3;
+    }
     position += 0.1;
+    position = MAX(0.0, MIN(1.0, position));
 }
 static double successes = 0;
 static double failures = 0;
 void NAR_Cartpole(long iterations)
 {
+    char initial[] = "                     |\n"
+                     "                     |\n"
+                     "     -----------     |\n"
+                     "                     |\n"
+                     "                     |\n";
     int t=0;
     puts(">>NAR CP start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_CP_Left); 
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_CP_Right); 
     while(1)
     {
+        CLEAR_SCREEN;
+        char world[sizeof(initial)];
+        memcpy(world, initial, sizeof(initial));
+        //DRAW_LINE(5, 5, 0, 5, (char*) &world, '#');
+        DRAW_LINE(10+position*5,2,angle,5,(char*) &world,'o');
+        puts(world);
         angle += angle_velocity;
         position += velocity;
-        //simplified gravity
-        if(angle < 0)
-        {
-            angle_velocity -= 0.01;
-        }
-        if(angle > 0)
-        {
-            angle_velocity += 0.01;
-        }
+        //gravity
+        angle_velocity += 0.2*cos(angle);
         //max. velocities given by air density
         if(angle_velocity > max_angle_velocity)
         {
@@ -44,76 +58,38 @@ void NAR_Cartpole(long iterations)
             angle_velocity = -max_angle_velocity;
         }
         //wrap around angle (where angle 1 corresponds to half a circle)
-        if(angle > 1.0)
+        double PI = 3.1415; //hm why M_PI doesn't work?
+        if(angle > PI)
         {
-            angle = -1.0;
-            failures += 1.0;
-            NAR_AddInputNarsese("good. :|: {0.0 0.9}");
-            puts("WRAPAROUND");
+            angle = -PI;
         }
-        if(angle < -1.0)
+        if(angle < -PI)
         {
-            angle = 1.0;
-            failures += 1.0;
-            NAR_AddInputNarsese("good. :|: {0.0 0.9}");
-            puts("WRAPAROUND");
+            angle = PI;
         }
         if(t++ > iterations && iterations != -1)
         {
             break;
         }
-        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
         printf("position=%f, velocity=%f, angle=%f, angleV=%f\nsuccesses=%f, failures=%f, ratio=%f, time=%d\n", position, velocity, angle, angle_velocity, successes, failures, successes/(successes+failures), t);
-        if(fabs(angle) < 0.1) //in balance
+        if(fabs(angle-(-PI/2.0)) <= 0.5) //in balance
         {
             NAR_AddInputNarsese("good. :|:");
             successes += 1.0;
         }
-        else //not in balance
+        else
         {
             failures += 1.0;
         }
-        char PositionAndVelocity[10] = "11PV. :|:";
-        if(position < 0)
-        {
-            PositionAndVelocity[0] = '0';
-        }
-        if(position > 0)
-        {
-            PositionAndVelocity[0] = '2';
-        }
-        if(velocity > 0)
-        {
-            PositionAndVelocity[1] = '2';
-        }
-        if(velocity < 0)
-        {
-            PositionAndVelocity[1] = '0';
-        }
-        NAR_AddInputNarsese(PositionAndVelocity);
-        char AngleAndAngleVelocity[10] = "11AV. :|:";
-        if(angle < 0)
-        {
-            AngleAndAngleVelocity[0] = '0';
-        }
-        if(angle > 0)
-        {
-            AngleAndAngleVelocity[0] = '2';
-        }
-        if(angle_velocity > 0)
-        {
-            AngleAndAngleVelocity[1] = '2';
-        }
-        if(angle_velocity < 0)
-        {
-            AngleAndAngleVelocity[1] = '0';
-        }
-        NAR_AddInputNarsese(AngleAndAngleVelocity);
+        char str[20] = {0};
+        int encodingInt = (int)((angle+PI)/(2*PI)*8);
+        sprintf(str, "%d. :|:", encodingInt);
+        NAR_AddInputNarsese(str);
         NAR_AddInputNarsese("good! :|:");
         fflush(stdout);
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+            SLEEP;SLEEP;SLEEP;
         }
     }
 }

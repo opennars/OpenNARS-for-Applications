@@ -526,7 +526,7 @@ void NAR_Robot(long iterations)
         Agent_Invoke();
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
+            SLEEP; //POSIX sleep
         }
     }
 }

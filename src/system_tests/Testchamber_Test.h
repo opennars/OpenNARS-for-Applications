@@ -299,7 +299,7 @@ void NAR_TestChamber()
         {
             world[2][8] = '|';
         }
-        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        CLEAR_SCREEN;
         puts("\n---------------\nNew iteration\nCommands:");
         puts("a ... goto s0");
         puts("b ... goto s1");
