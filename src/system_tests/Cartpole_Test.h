@@ -10,8 +10,7 @@ static void NAR_CP_Left()
     {
         angle_velocity -= reverse * 0.3;
     }
-    position -= 0.1;
-    position = MAX(0.0, MIN(1.0, position));
+    velocity -= 0.1;
 }
 static void NAR_CP_Right()
 {
@@ -20,8 +19,7 @@ static void NAR_CP_Right()
     {
         angle_velocity += reverse * 0.3;
     }
-    position += 0.1;
-    position = MAX(0.0, MIN(1.0, position));
+    velocity += 0.1;
 }
 static double successes = 0;
 static double failures = 0;
@@ -38,14 +36,14 @@ void NAR_Cartpole(long iterations)
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_CP_Right); 
     while(1)
     {
+        position += velocity;
+        position = MAX(0.0, MIN(1.0, position));
+        angle += angle_velocity;
         CLEAR_SCREEN;
         char world[sizeof(initial)];
         memcpy(world, initial, sizeof(initial));
-        //DRAW_LINE(5, 5, 0, 5, (char*) &world, '#');
         DRAW_LINE(10+position*5,2,angle,5,(char*) &world,'o');
         puts(world);
-        angle += angle_velocity;
-        position += velocity;
         //gravity
         angle_velocity += 0.2*cos(angle);
         //max. velocities given by air density
@@ -72,12 +70,14 @@ void NAR_Cartpole(long iterations)
             break;
         }
         printf("position=%f, velocity=%f, angle=%f, angleV=%f\nsuccesses=%f, failures=%f, ratio=%f, time=%d\n", position, velocity, angle, angle_velocity, successes, failures, successes/(successes+failures), t);
+        velocity = 0.0; //strong friction
         if(fabs(angle-(-PI/2.0)) <= 0.5) //in balance
         {
             NAR_AddInputNarsese("good. :|:");
             successes += 1.0;
         }
         else
+        if(angle >= 0 && angle <= PI)
         {
             failures += 1.0;
         }
