@@ -145,6 +145,34 @@ void NAR_TestChamber()
         {
             activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
         }
+        //inform NAR about current location
+        if(!(activate || deactivate)) //if we took manipulation action we didn't change position
+        {
+            if(pos == pos_s0)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
+            }
+            if(pos == pos_s1)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_s1"));
+            }
+            if(pos == pos_s2)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_s2"));
+            }
+            if(pos == pos_s3)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_s3"));
+            }
+            if(pos == pos_l0)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_l0"));
+            }
+            if(pos == pos_l1)
+            {
+                NAR_AddInputBelief(Narsese_AtomicTerm("at_l1"));
+            }
+        }
         //manipulation
         if(pos == pos_s1 && (deactivate || (!s1 && !activate)))
         {
@@ -200,31 +228,6 @@ void NAR_TestChamber()
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_1"));
         }
         activate = deactivate = goto_l0 = goto_l1 = goto_s0 = goto_s1 = goto_s2 = goto_s3 = false;
-        //inform NAR about current location
-        if(pos == pos_s0)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
-        }
-        if(pos == pos_s1)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_s1"));
-        }
-        if(pos == pos_s2)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_s2"));
-        }
-        if(pos == pos_s3)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_s3"));
-        }
-        if(pos == pos_l0)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_l0"));
-        }
-        if(pos == pos_l1)
-        {
-            NAR_AddInputBelief(Narsese_AtomicTerm("at_l1"));
-        }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
         if(pos == pos_s3)
@@ -353,7 +356,10 @@ void NAR_TestChamber()
         char command = c;
         if(!(c >= 'a' && c <= 'z'))
         {
-            command = lastcommand;
+            if(lastcommand >= 'i' && lastcommand <= 'z') //only repeat goals not actions
+            {
+                command = lastcommand;
+            }
         }
         lastcommand = command;
         if(command == 'a')
