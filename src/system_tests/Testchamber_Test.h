@@ -72,8 +72,6 @@ void NAR_TestChamber_deactivate()
 }
 void NAR_TestChamber()
 {
-    TRUTH_PROJECTION_DECAY = 0.9; //precise timing isn't so important in this domain, so projection decay can be higher
-    ANTICIPATION_CONFIDENCE = 0.3; //neg. evidence accumulation can be stronger
     MOTOR_BABBLING_CHANCE = 0;
     NAR_AddOperation(Narsese_AtomicTerm("^goto_s0"), NAR_TestChamber_goto_s0); 
     NAR_AddOperation(Narsese_AtomicTerm("^goto_s1"), NAR_TestChamber_goto_s1); 
