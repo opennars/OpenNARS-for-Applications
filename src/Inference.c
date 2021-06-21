@@ -97,7 +97,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 }
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
-Event Inference_GoalDeduction(Event *component, Implication *compound)
+Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
 {
     assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)

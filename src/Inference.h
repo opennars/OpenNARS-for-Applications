@@ -54,7 +54,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success);
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>. Truth_Revision
 Implication Inference_ImplicationRevision(Implication *a, Implication *b);
 //{Event b!, Implication <a =/> b>.} |- Event a! Truth_Deduction
-Event Inference_GoalDeduction(Event *component, Implication *compound);
+Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime);
 //{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long currentTime);
 //{Event a!, Event a!} |- Event a! Truth_Revision or Choice (dependent on evidental overlap)
