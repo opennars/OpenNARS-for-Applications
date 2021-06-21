@@ -107,7 +107,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
                      .type = EVENT_TYPE_GOAL, 
                      .truth = Truth_Deduction(compound->truth, component->truth),
                      .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime - compound->occurrenceTimeOffset,
+                     .occurrenceTime = currentTime,
                      .creationTime = creationTime };
 }
 
