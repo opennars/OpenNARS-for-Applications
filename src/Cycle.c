@@ -285,7 +285,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
             {
                 bool revised;
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
-                for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+                for(int opi=NOP_SUBGOALING ? 0 : 1; opi<=OPERATIONS_MAX; opi++)
                 {
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
@@ -303,7 +303,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                         updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
                         if(success)
                         {
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp);
+                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
                             Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);

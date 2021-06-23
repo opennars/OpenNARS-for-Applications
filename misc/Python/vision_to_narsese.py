@@ -79,11 +79,11 @@ def LineToNarsese(line):
 
 BaseFolder = os.getcwd()
 while True:
-    os.chdir("/home/tc/Dateien/Visionchannel/AlexeyAB_darknet/darknet/")
+    os.chdir(DarknetFolder)
     if os.path.isfile("./frame.jpg"):
         os.remove("./frame.jpg")
     os.system("ffmpeg -i http://192.168.0.185:8080/video -ss 0:0:1 -frames 1 ./frame.jpg")
-    output = subprocess.check_output("./darknet detector test ./cfg/coco.data yolov4-tiny-oldlaptop.cfg yolov4-tiny.weights -thresh 0.25 -ext_output ./frame.jpg", shell=True, stderr=subprocess.STDOUT)
+    output = subprocess.check_output("./darknet detector test ./cfg/coco.data ./cfg/yolov4-tiny.cfg yolov4-tiny.weights -thresh 0.25 -ext_output ./frame.jpg", shell=True, stderr=subprocess.STDOUT)
     os.chdir(BaseFolder)
     for line in output.decode("utf-8").split('\n'):
         if "%" in line: #
