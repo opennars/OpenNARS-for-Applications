@@ -457,12 +457,12 @@ void Agent_Invoke()
 {
     Perception percept = Agent_View();
     //Use events for the objects seen left, middle, right instead:
-    char narseseL[16] = "<l_ --> L>. :|:";
-    char narseseM[16] = "<m_ --> M>. :|:";
-    char narseseR[16] = "<r_ --> R>. :|:";
-    narseseL[2] = percept.viewfield[0];
-    narseseM[2] = percept.viewfield[1];
-    narseseR[2] = percept.viewfield[2];
+    char narseseL[16] = "l_. :|:";
+    char narseseM[16] = "m_. :|:";
+    char narseseR[16] = "r_. :|:";
+    narseseL[1] = percept.viewfield[0];
+    narseseM[1] = percept.viewfield[1];
+    narseseR[1] = percept.viewfield[2];
     if(percept.viewfield[1] != 'o')
     {
         NAR_AddInputNarsese(narseseM);
@@ -526,7 +526,7 @@ void NAR_Robot(long iterations)
         Agent_Invoke();
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
+            SLEEP; SLEEP; //POSIX sleep
         }
     }
 }
