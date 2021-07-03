@@ -33,6 +33,12 @@ export OMP_NUM_THREADS=4  // 4 threads seems to be the sweet spot. More threads 
 ./NAR shell | python3 colorize.py
 ```
 
+***with English NLP shell and syntax highlighting:***
+
+```
+python3 english_to_narsese.py | ./NAR shell | python3 colorize.py
+```
+
 ***How to run the C tests and then receive instructions how to run the current example programs:***
 
 ```

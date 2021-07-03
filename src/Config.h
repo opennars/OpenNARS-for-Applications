@@ -31,7 +31,7 @@
 //Truth expectation needed for anticipation
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
-#define ANTICIPATION_CONFIDENCE_INITIAL 0.005
+#define ANTICIPATION_CONFIDENCE_INITIAL 0.01
 
 /*---------------------*/
 /* Decision parameters */
@@ -44,10 +44,8 @@
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.3
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
-//Curiosity threshold, how confident the lowest confident implication option is allowed to be to still allow "play"
-#define CURIOSITY_THRESHOLD 0.25
-//Chance to try a curious action if no operation has been invoked
-#define CURIOSITY_CHANCE 0.1
+//Whether temporal non-procedural implications are allowed to derive subgoals
+#define NOP_SUBGOALING true
 
 /*----------------------*/
 /* Attention parameters */

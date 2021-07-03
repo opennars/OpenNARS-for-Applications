@@ -503,7 +503,6 @@ void Agent_Invoke()
 
 void NAR_Robot(long iterations)
 {
-    NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0.3;
     puts(">>NAR Robot start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Robot_Left); 
@@ -526,7 +525,7 @@ void NAR_Robot(long iterations)
         Agent_Invoke();
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
+            SLEEP; SLEEP; //POSIX sleep
         }
     }
 }

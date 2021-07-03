@@ -1,0 +1,19 @@
+*volume=0
+people sit on a bank
+a bank is a furniture
+people sit on a wooden bench
+1
+a wooden bench is a furniture?
+a wooden bench is a financial institute?
+//expected: Answer: <([wooden] & bench) --> furniture>. :|: occurrenceTime=6 Truth: frequency=0.982144, confidence=0.252710
+
+1000
+
+people withdraw money in banks
+a bank is a financial institute
+people withdraw money in volksbank
+1
+volksbank is a furniture?
+volksbank is a financial institute?
+//Answer: <volksbank --> ([financial] & institute)>. :|: occurrenceTime=1012 Truth: frequency=0.982144, confidence=0.252710
+
