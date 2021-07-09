@@ -80,7 +80,11 @@ void NAR_TestChamber()
     NAR_AddOperation(Narsese_AtomicTerm("^goto_l0"), NAR_TestChamber_goto_l0); 
     NAR_AddOperation(Narsese_AtomicTerm("^goto_l1"), NAR_TestChamber_goto_l1); 
     NAR_AddOperation(Narsese_AtomicTerm("^activate"), NAR_TestChamber_activate); 
-    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), NAR_TestChamber_deactivate); 
+    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), NAR_TestChamber_deactivate);
+    //metrics:
+    int goals = 0;
+    int reached = 0;
+    //world:
     int size = 7;
     char world[7][13] = { "_________    ",
                           "| l0  s2| s1 ",
@@ -106,6 +110,8 @@ void NAR_TestChamber()
     bool door = false; //door closed
     char lastcommand = 'a';
     char c = ' ';
+    char* nongoal = "none";
+    char *goal = nongoal;
     while(1)
     {
         //movement
@@ -156,26 +162,38 @@ void NAR_TestChamber()
             if(pos == pos_s0)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_s0"));
+                if(lastcommand == 'u')
+                    reached++;
             }
             if(pos == pos_s1)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_s1"));
+                if(lastcommand == 'v')
+                    reached++;
             }
             if(pos == pos_s2)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_s2"));
+                if(lastcommand == 'w')
+                    reached++;
             }
             if(pos == pos_s3)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_s3"));
+                if(lastcommand == 'x')
+                    reached++;
             }
             if(pos == pos_l0)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_l0"));
+                if(lastcommand == 'y')
+                    reached++;
             }
             if(pos == pos_l1)
             {
                 NAR_AddInputBelief(Narsese_AtomicTerm("at_l1"));
+                if(lastcommand == 'z')
+                    reached++;
             }
         }
         //manipulation
@@ -186,54 +204,78 @@ void NAR_TestChamber()
         {
             s1 = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_0"));
+            if(lastcommand == 'l')
+                reached++;
             //s1 also closes the door:
             door = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_closed"));
+            if(lastcommand == 'j')
+                reached++;
         }
         else
         if(pos == pos_s2 && (deactivated || (!s2 && !activated)))
         {
             s2 = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_0"));
+            if(lastcommand == 'n')
+                reached++;
             //s2 also deactivates l0:
             l0 = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_0"));
+            if(lastcommand == 'r')
+                reached++;
         }
         else
         if(pos == pos_s3 && (deactivated || (!s3 && !activated)))
         {
             s3 = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_0"));
+            if(lastcommand == 'p')
+                reached++;
             //s3 also deactivates l1
             l1 = false;
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_0"));
+            if(lastcommand == 't')
+                reached++;
         }
         else
         if(pos == pos_s1 && (activated || s1))
         {
             s1 = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("s1_is_1"));
+            if(lastcommand == 'k')
+                reached++;
             //s1 also opens the door:
             door = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("door_is_open"));
+            if(lastcommand == 'i')
+                reached++;
         }
         else
         if(pos == pos_s2 && (activated || s2))
         {
             s2 = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("s2_is_1"));
+            if(lastcommand == 'm')
+                reached++;
             //s2 also activates l0:
             l0 = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("l0_is_1"));
+            if(lastcommand == 'q')
+                reached++;
         }
         else
         if(pos == pos_s3 && (activated || s3))
         {
             s3 = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("s3_is_1"));
+            if(lastcommand == 'o')
+                reached++;
             //s3 also activates l1
             l1 = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("l1_is_1"));
+            if(lastcommand == 's')
+                reached++;
         }
         //change char array to draw:
         world[6][6] = world[6][0] = world[5][11] = world[2][11] = world[2][7] = world[2][1] = ' ';
@@ -346,11 +388,15 @@ void NAR_TestChamber()
             }
             puts("");
         }
+        printf("\nCurrent goal: %s", goal);
+        printf("\ngoals=%d, reached=%d, ratio=%f \n", (int) goals, (int) reached, ((float) reached)/((float) goals));
         puts("\nCommand:");
         char probe = '\n';
         if(c >= 'a' && c <= 'z')
         {
             probe = getchar(); //skip next newline or space
+            if(c == 'Q')
+                exit(0);
         }
         if (probe >= 'a' && probe <= 'z')
         {
@@ -359,6 +405,8 @@ void NAR_TestChamber()
         else
         {
             c = getchar(); //else it's time to get a new character command
+            if(c == 'Q')
+                exit(0);
         }
         char command = c;
         if(!(c >= 'a' && c <= 'z'))
@@ -368,7 +416,6 @@ void NAR_TestChamber()
                 command = lastcommand;
             }
         }
-        lastcommand = command;
         if(command == 'a')
         {
             goto_s0 = true;
@@ -409,95 +456,133 @@ void NAR_TestChamber()
             deactivate = true;
             NAR_AddInputBelief(Narsese_AtomicTerm("^deactivate"));
         }
+        goal = nongoal;
         if(command == 'i')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("door_is_open"));
-            //door should be open
+            goal = "door should be open!";
+            if(lastcommand != 'i')
+                goals++;
         }
         if(command == 'j')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("door_is_closed"));
-            //door should be closed
+            goal = "door should be closed!";
+            if(lastcommand != 'j')
+                goals++;
         }
         if(command == 'k')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_1"));
-            //s1 should be 1
+            goal = "s1 should be 1!";
+            if(lastcommand != 'k')
+                goals++;
         }
         if(command == 'l')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s1_is_0"));
-            //s1 should be 0
+            goal = "s1 should be 0!";
+            if(lastcommand != 'l')
+                goals++;
         }
         if(command == 'm')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_1"));
-            //s2 should be 1
+            goal = "s2 should be 1!";
+            if(lastcommand != 'm')
+                goals++;
         }
         if(command == 'n')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s2_is_0"));
-            //s2 should be 0
+            goal = "s2 should be 0!";
+            if(lastcommand != 'n')
+                goals++;
         }
         if(command == 'o')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_1"));
-            //s3 should be 1
+            goal = "s3 should be 1!";
+            if(lastcommand != 'o')
+                goals++;
         }
         if(command == 'p')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("s3_is_0"));
-            //s3 should be 0
+            goal = "s3 should be 0!";
+            if(lastcommand != 'p')
+                goals++;
         }
         if(command == 'q')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_1"));
-            //l0 should be 1
+            goal = "l0 should be 1!";
+            if(lastcommand != 'q')
+                goals++;
         }
         if(command == 'r')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("l0_is_0"));
-            //l0 should be 0
+            goal = "l0 should be 0!";
+            if(lastcommand != 'r')
+                goals++;
         }
         if(command == 's')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_1"));
-            //l1 should be 1
+            goal = "l1 should be 1!";
+            if(lastcommand != 's')
+                goals++;
         }
         if(command == 't')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("l1_is_0"));
-            //l1 should be 0
+            goal = "l1 should be 0!";
+            if(lastcommand != 't')
+                goals++;
         }
         if(command == 'u')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s0"));
-            //you should be at s0!
+            goal = "you should be at s0!";
+            if(lastcommand != 'u')
+                goals++;
         }
         if(command == 'v')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s1"));
-            //you should be at s1!
+            goal = "you should be at s1!";
+            if(lastcommand != 'v')
+                goals++;
         }
         if(command == 'w')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s2"));
-            //you should be at s2!
+            goal = "you should be at s2!";
+            if(lastcommand != 'w')
+                goals++;
         }
         if(command == 'x')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_s3"));
-            //you should be at s3!
+            goal = "you should be at s3!";
+            if(lastcommand != 'x')
+                goals++;
         }
         if(command == 'y')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_l0"));
-            //you should be at l0!
+            goal = "you should be at l0!";
+            if(lastcommand != 'y')
+                goals++;
         }
         if(command == 'z')
         {
             NAR_AddInputGoal(Narsese_AtomicTerm("at_l1"));
-            //you should be at l1!
+            goal = "you should be at l1!";
+            if(lastcommand != 'z')
+                goals++;
         }
+        lastcommand = command;
     }
 }
