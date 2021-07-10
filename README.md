@@ -7,7 +7,6 @@ This is a completely new platform and not branched from the existing OpenNARS co
 The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [6, 7] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [8] which was developed for research purposes. 
 
 Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
-
 Or click on the picture to watch the newest summary video:
 
 [![OpenNARS for Applications v0.8.8: Demos](https://img.youtube.com/vi/oyQ250H5owE/0.jpg)](https://www.youtube.com/watch?v=oyQ250H5owE "OpenNARS for Applications v0.8.8: Demos")
