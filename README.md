@@ -8,6 +8,7 @@ The ONA implementation has been developed with a pragmatic mindset. The focus on
 
 Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 Or click the following picture to watch the newest summary video:
+
 [![OpenNARS for Applications v0.8.8: Demos](https://img.youtube.com/vi/oyQ250H5owE/0.jpg)](https://www.youtube.com/watch?v=oyQ250H5owE "OpenNARS for Applications v0.8.8: Demos")
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
