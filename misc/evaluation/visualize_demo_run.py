@@ -44,7 +44,7 @@ for i, frame in enumerate(frametexts):
         if fname == "testchamber":
             frame = frame.split("(same command)\n\n")[1]
         frames.append(frame.split("Input:")[0].split("position")[0].split("shots")[0].split("\n\nCommand:")[0].split(", ratio=")[0].split("\ntime=")[0])
-    performances.append(float(frame.split("ratio=" if fname != "testchamber" else "eaten=")[1].split(" ")[0].split(",")[0]))
+    performances.append(float(frame.split("ratio=" if fname != "robot" else "eaten=")[1].split(" ")[0].split(",")[0]))
 
 filenames = []
 for i,frame in enumerate(frames):
@@ -69,9 +69,9 @@ for i,frame in enumerate(frames):
         axs[0].text(h_padding, v_padding, frame, fontfamily = "monospace", fontsize=fontsize, bbox=dict(facecolor='gray', alpha=0.15))
         axs[0].set_yticklabels([])
         axs[0].set_xticklabels([])
-        axs[1].axis([0, framesexisting, 0, 1])
+        axs[1].axis([0, framesexisting, 0, 1 if fname != "robot" else 60])
         axs[1].set_xlabel('time')
-        axs[1].set_ylabel('Success ratio' if fname != "testchamber" else "eaten")
+        axs[1].set_ylabel('Success ratio' if fname != "robot" else "collected food")
         axs[1].set_title("Performance")
         axs[1].plot(performances[:i])
         filename = fname + "_" + str(i) + ".png"
@@ -86,7 +86,7 @@ for i,frame in enumerate(frames):
         time.sleep(sleepTime)
     print("\033[1;1H\033[2J")
     print(frame)
-    print("\nRatio: " + str(performances[i]))
+    print("\nPerformance: " + str(performances[i]))
     print("Progress: " + str(100.0*float(i)/float(framecount if not framecount is None else framesexisting)) + "%")
 
 # build gif
