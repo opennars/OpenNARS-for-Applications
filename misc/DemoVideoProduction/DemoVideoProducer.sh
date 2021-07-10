@@ -21,6 +21,10 @@ ffmpeg -i pong2.mp4 -filter:v fps=20 pong2_20FPS.mp4
 ffmpeg -i alien.mp4 -filter:v fps=20 alien_20FPS.mp4
 ffmpeg -i cartpole.mp4 -filter:v fps=20 cartpole_20FPS.mp4
 ffmpeg -i testchamber.mp4 -filter:v fps=20 testchamber_20FPS.mp4
-rm testchamber.mp4
+
+wget http://user-images.githubusercontent.com/8284677/74609985-02087e80-50e7-11ea-9562-218dec34714d.png -O ONAlogo.png
+ffmpeg -y -loop 1 -framerate 20 -t 5 -i ONAlogo.png -f lavfi -t 5 -i aevalsrc=0 -c:v libx264 ONAlogo.mp4
+ffmpeg -i ONAlogo.mp4 -filter:v fps=20 aa_ONAlogo_20FPS.mp4
+cp aa_ONAlogo_20FPS.mp4 zz_ONAlogo_20FPS.mp4
 
 sh CombineVideos.sh
