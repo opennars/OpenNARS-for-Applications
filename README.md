@@ -97,7 +97,7 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 [3] Hammer, P., & Lofthouse, T. (2018, August). Goal-directed procedure learning. In International Conference on Artificial General Intelligence (pp. 77-86). Springer, Cham.
 
-[4] Lofthouse, T. (2019). ALANN: An event driven control mechanism for a non-axiomatic reasoning system (NARS).
+[4] Lofthouse, T. (2019). [ALANN: An event driven control mechanism for a non-axiomatic reasoning system (NARS)](https://cis.temple.edu/tagit/events/papers/Lofthouse.pdf). NARS workshop at AGI-2019
 
 [5] Eberding, L. M., Thórisson, K. R., Sheikhlar, A., & Andrason, S. P. (2020). SAGE: Task-Environment Platform for Evaluating a Broad Range of AI Learners. In Artificial General Intelligence: 13th International Conference, AGI 2020, St. Petersburg, Russia, September 16–19, 2020, Proceedings (Vol. 12177, p. 72). Springer Nature.
 
