@@ -2,9 +2,9 @@
 
 Implementation of a Non-Axiomatic Reasoning System [6], a general-purpose reasoner that adapts under the Assumption of Insufficient Knowledge and Resources [7].
 
-This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations, and has also been experimentally compared with Reinforcement Learning [5]. 
+This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations in terms of reasoning performance, and has also been experimentally compared with Reinforcement Learning [5, 6] and BDI models [6]. Additionally, it has become the core reasoning component of a system assisting first responders (Trusted and explainable Artificial Intelligence for Saving Lives, [6]) while driving and performing their mission. This was done in cooperation with NASA Jet Propulsion Laboratory. Also it has been tried for real-time traffic surveillance in cooperation with Cisco Systems [7]. Last, initial experiments for using the system for autonomous robots have been carried out [6], and more is yet to come.
 
-The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [6, 7] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [8] which was developed for research purposes. 
+The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [8, 9] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [10] which was developed for research purposes. 
 
 Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 Or click on the picture to watch the newest summary video:
@@ -101,9 +101,14 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 [5] Eberding, L. M., Thórisson, K. R., Sheikhlar, A., & Andrason, S. P. (2020). SAGE: Task-Environment Platform for Evaluating a Broad Range of AI Learners. In Artificial General Intelligence: 13th International Conference, AGI 2020, St. Petersburg, Russia, September 16–19, 2020, Proceedings (Vol. 12177, p. 72). Springer Nature.
 
-[6] Wang, P. (2013). Non-axiomatic logic: A model of intelligent reasoning. World Scientific.
+[6] Hammer, P. (2021, July). [Autonomy through real-time learning and OpenNARS for Applications](https://github.com/opennars/OpenNARS-for-Applications/files/6832325/Dissertation_PH_Submitted.pdf). PhD thesis at Department of Computer and Information Sciences, Temple Universitiy
 
-[7] Wang, P. (2009, October). Insufficient Knowledge and Resources-A Biological Constraint and Its Functional Implications. In AAAI Fall Symposium: Biologically Inspired Cognitive Architectures.
+[7] Hammer, P., Lofthouse, T., Fenoglio, E., Latapie, H., & Wang, P. (2020, September). A reasoning based model for anomaly detection in the Smart City domain. In Proceedings of SAI Intelligent Systems Conference (pp. 144-159). Springer, Cham.
 
-[8] Hammer, P., Lofthouse, T., & Wang, P. (2016, July). The OpenNARS implementation of the non-axiomatic reasoning system. In International conference on artificial general intelligence (pp. 160-170). Springer, Cham.
+[8] Wang, P. (2013). Non-axiomatic logic: A model of intelligent reasoning. World Scientific.
+
+[9] Wang, P. (2009, October). Insufficient Knowledge and Resources-A Biological Constraint and Its Functional Implications. In AAAI Fall Symposium: Biologically Inspired Cognitive Architectures.
+
+[10] Hammer, P., Lofthouse, T., & Wang, P. (2016, July). The OpenNARS implementation of the non-axiomatic reasoning system. In International conference on artificial general intelligence (pp. 160-170). Springer, Cham.
+
 
