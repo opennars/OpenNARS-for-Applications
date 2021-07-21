@@ -199,6 +199,7 @@ def GrammarLearning(y = "", forced = False):
 
 motivation = None
 thinkcycles = None
+eternal = False
 while True:
     currentTime += 1
     #Get input line and forward potential command
@@ -211,6 +212,12 @@ while True:
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
     isNegated = " not " in (" " + line + " ")
     if isCommand:
+        if line.startswith("*eternal=false"):
+            eternal = False
+            continue
+        if line.startswith("*eternal=true"):
+            eternal = True
+            continue
         if line.startswith("*motivation="):
             motivation = line.split("*motivation=")[1]
             continue
@@ -251,7 +258,7 @@ while True:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
-            print(statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + " :|:") + TruthString)
+            print(statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " :|:")) + TruthString)
             sys.stdout.flush()
         if len(typetextSplit) > 0 and thinkcycles != None:
             print(thinkcycles, flush=True)
