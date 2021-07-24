@@ -1,0 +1,5 @@
+the cat sits on the oven
+an oven is a device
+10
+what sits on a device?
+//expected: Answer: <(cat * device) --> sit_on>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.331531
