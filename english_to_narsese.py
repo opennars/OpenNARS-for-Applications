@@ -96,7 +96,6 @@ def wordnet_tag(tag):
 def sentence_and_types(text):
     tokens = [word for word in word_tokenize(text) if word.isalpha()]
     wordtypes_ordered = nltk.pos_tag(tokens, tagset='universal')
-    ne_tree = nltk.ne_chunk(wordtypes_ordered)
     wordtypes = dict(wordtypes_ordered)
     lemma = WordNetLemmatizer()
     #NamedEntities = {key:value for (key,value) in [(x.lower(),x) for x in tokens]}
