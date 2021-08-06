@@ -31,7 +31,13 @@
 import requests
 import codecs
 import sys
+import nltk
+from nltk.corpus import brown
+from collections import Counter
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
+
+nltk.download('brown')
+wordcounts = Counter(brown.words())
 
 def toNarsese(subject_relation_predicate):
     (subject, relation, predicate) = subject_relation_predicate
@@ -60,18 +66,25 @@ def unwrap(rel):
     return (parts[1], parts[0], parts[2])
 
 def queryConceptNet(maxAmount, term, side, relation):
+    ret = []
     req = requests.get("http://api.conceptnet.io/query?" + side + "=/c/en/" + term + "&rel=/r/" + relation + "&limit=" + str(maxAmount))
     edges = req.json()["edges"]
     for edge in edges:
         (s,v,p) = unwrap(edge["@id"])
         if (s == term or p == term) and "_" not in s and "_" not in p:
-            print(toNarsese((s,v,p)))
-    sys.stdout.flush()
+            count = wordcounts[p] if s == term else wordcounts[s]
+            ret.append((toNarsese((s,v,p)),count))
+    return ret
 
-def queryMeaning(term, maxAmount):
+def queryMeaning(term, maxAmount, selectAmount):
+    ret = []
     for rel in ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes"]:
         for side in ["end", "start"]: #extension and intenstion query
-            queryConceptNet(maxAmount, term, side, rel)
+            ret.extend(queryConceptNet(maxAmount, term, side, rel))
+    ret.sort(key = lambda T: -T[1])
+    for T in ret[:selectAmount]:
+        print(T[0])
+    sys.stdout.flush()
 
 def extractAtomicTerms(inp):
     L = []
@@ -85,8 +98,9 @@ def extractAtomicTerms(inp):
                 atomicTerm = ""
     return L
 
-maxAmount = 1 if len(sys.argv) <= 1 else int(sys.argv[1])
-queryOnBeliefs = "queryOnBeliefs" in sys.argv
+maxAmount = 5 if len(sys.argv) <= 1 else int(sys.argv[1]) #per relation
+selectAmount = 5 if len(sys.argv) <= 2 else int(sys.argv[2]) #in total
+queryOnBeliefs = "queryOnBeliefs=false" not in sys.argv
 queryOnQuestions = True
 while True:
     line = input()
@@ -112,7 +126,7 @@ while True:
         atoms = extractAtomicTerms(line)
         for atom in atoms:
             print("//Querying knowledge for " + atom)
-            queryMeaning(atom, 5)
+            queryMeaning(atom, maxAmount, selectAmount)
         print("//Querying complete")
     if isNarsese:
         print(line)
