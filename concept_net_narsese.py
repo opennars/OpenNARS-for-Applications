@@ -36,9 +36,15 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 def toNarsese(subject_relation_predicate):
     (subject, relation, predicate) = subject_relation_predicate
     if relation == "IsA":
-        return "<" + subject + " --> " + predicate + ">."
+        if subject[0].isupper():
+            return "<{" + subject + "} --> " + predicate + ">."
+        else:
+            return "<" + subject + " --> " + predicate + ">."
     if relation == "InstanceOf":
-        return "<{" + subject + "} --> " + predicate + ">."
+        if subject[0].islower():
+            return "<" + subject + " --> " + predicate + ">."
+        else:
+            return "<{" + subject + "} --> " + predicate + ">."
     if relation == "HasProperty":
         return "<" + subject + " --> [" + predicate + "]>."
     if relation == "DistinctFrom":
@@ -58,7 +64,7 @@ def queryConceptNet(maxAmount, term, side, relation):
     edges = req.json()["edges"]
     for edge in edges:
         (s,v,p) = unwrap(edge["@id"])
-        if s == term or p == term:
+        if (s == term or p == term) and "_" not in s and "_" not in p:
             print(toNarsese((s,v,p)))
     sys.stdout.flush()
 
