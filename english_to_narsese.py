@@ -94,7 +94,7 @@ def wordnet_tag(tag):
 
 #pos-tag the words in the input sentence, and lemmatize them thereafter using Wordnet
 def sentence_and_types(text):
-    tokens = [word for word in word_tokenize(text) if word.isalpha()]
+    tokens = [word for word in word_tokenize(text)]
     wordtypes_ordered = nltk.pos_tag(tokens, tagset='universal')
     wordtypes = dict(wordtypes_ordered)
     lemma = WordNetLemmatizer()
@@ -102,7 +102,7 @@ def sentence_and_types(text):
     handleInstance = lambda word: "{"+word+"}" if word[0].isupper() else word
     tokens = [handleInstance(lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word]))) for word in tokens]
     wordtypes = dict([(tokens[i], wordtypes_ordered[i][1]) for i in range(len(tokens))])
-    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" else value))) for (key,value) in wordtypes.items()}
+    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else value))) for (key,value) in wordtypes.items()}
     indexed_wordtypes = []
     i = 0
     lasttoken = None
