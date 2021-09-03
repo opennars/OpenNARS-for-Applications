@@ -1,4 +1,5 @@
 import pexpect
+import sys
 import os.path
 NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
 
@@ -61,7 +62,7 @@ def GetStats():
 		    Stats[leftside] = rightside
 	return Stats
 
-def AddInput(narsese, Print=True):
+def AddInput(narsese, Print=True, Flush=True):
     NAR.sendline(narsese)
     ReturnStats = narsese == "*stats"
     if ReturnStats:
@@ -69,6 +70,7 @@ def AddInput(narsese, Print=True):
     ret = GetOutput()
     if Print:
         print(ret["raw"])
+        sys.stdout.flush()
     return ret
 
 def Exit():
