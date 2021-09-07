@@ -2,9 +2,9 @@
 *motorbabbling=false
 
 //The system wants to sell food, this is how it usually does it:
-<(<(i * nars) --> greet> &/ <({SELF} * what_do_you_want_to_buy) --> ^say>) =/> <(i * pizza) --> want>>.
-<(<(i * drink) --> want> &/ <({SELF} * I_have_pizza_only) --> ^say>) =/> <(i * pizza) --> want>>.
-<(<(i * pizza) --> want> &/ <({SELF} * which_pizza_do_you_want) --> ^say>) =/> <{SELF} --> [useful]>>.
+<(<({I} * nars) --> greet> &/ <({SELF} * what_do_you_want_to_buy) --> ^say>) =/> <(i * pizza) --> want>>.
+<(<({I} * drink) --> want> &/ <({SELF} * I_have_pizza_only) --> ^say>) =/> <(i * pizza) --> want>>.
+<(<({I} * pizza) --> want> &/ <({SELF} * which_pizza_do_you_want) --> ^say>) =/> <{SELF} --> [useful]>>.
 <(<#1 --> choice> &/ <({SELF} * (ok_have * #1)) --> ^say>) =/> <{SELF} --> [useful]>>.
 
 //Setup interaction with user:

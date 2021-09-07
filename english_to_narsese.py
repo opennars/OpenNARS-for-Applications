@@ -25,9 +25,10 @@
 # >English input channel for OpenNARS for Applications<
 #  A shallow semantic parser with basic grammar learning ability
 #  by using NAL REPRESENT relations.
-#  Usage: python3 superlang.py [verbose] [OutputTruth]
+#  Usage: python3 english_to_narsese.py [verbose] [OutputTruth] [EternalOutput]
 #  where verbose lets it show what language knowledge is utilized
 #  and OutputTruth passes on the calculated truth value to the output
+#  and EternalOutput specifies whether the output Narsese tasks should be eternal
  
 import re
 import sys
@@ -66,6 +67,9 @@ AcquiredGrammar = []
 StatementRepresentRelations = [
     #clauses to Narsese:
     (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99), 0), #Conditional
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADV_VERB_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> BE_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\5 ) --> ADJ_NOUN_\3+ADP_\4 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
     (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <(( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) * ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVOO
     (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99), 0), #SVC
     (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVO
@@ -90,13 +94,15 @@ def wordnet_tag(tag):
 
 #pos-tag the words in the input sentence, and lemmatize them thereafter using Wordnet
 def sentence_and_types(text):
-    tokens = [word.lower() for word in word_tokenize(text) if word.isalpha()]
+    tokens = [word for word in word_tokenize(text)]
     wordtypes_ordered = nltk.pos_tag(tokens, tagset='universal')
     wordtypes = dict(wordtypes_ordered)
     lemma = WordNetLemmatizer()
-    tokens = [lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word])) for word in tokens]
+    #NamedEntities = {key:value for (key,value) in [(x.lower(),x) for x in tokens]}
+    handleInstance = lambda word: "{"+word+"}" if word[0].isupper() else word
+    tokens = [handleInstance(lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word]))) for word in tokens]
     wordtypes = dict([(tokens[i], wordtypes_ordered[i][1]) for i in range(len(tokens))])
-    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" else value))) for (key,value) in wordtypes.items()}
+    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else value))) for (key,value) in wordtypes.items()}
     indexed_wordtypes = []
     i = 0
     lasttoken = None
@@ -161,7 +167,7 @@ def reduceTypetext(typetext, applyStatementRepresentRelations = False, applyTerm
                 typetext = typetext_new
                 curTruth = Truth_Deduction(curTruth, Truth)
         if applyTermRepresentRelations:
-            typetext = " ".join([getWordTerm(x, curTruth, suppressOutput=suppressOutput) for x in typetext.split(" ")])
+            typetext = " ".join([getWordTerm(x, curTruth, suppressOutput=suppressOutput) if "+" not in x else getWordTerm(x.split("+")[0], curTruth, suppressOutput=suppressOutput)+"_"+getWordTerm(x.split("+")[1], curTruth, suppressOutput=suppressOutput) for x in typetext.split(" ")])
     return typetext, curTruth
 
 #Learn grammar pattern by building correspondence between the words&types in the example sentences with the ones in the sentence which wasn't understood
@@ -199,6 +205,7 @@ def GrammarLearning(y = "", forced = False):
 
 motivation = None
 thinkcycles = None
+eternal = True if "EternalOutput" in sys.argv else False
 while True:
     currentTime += 1
     #Get input line and forward potential command
@@ -211,6 +218,12 @@ while True:
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
     isNegated = " not " in (" " + line + " ")
     if isCommand:
+        if line.startswith("*eternal=false"):
+            eternal = False
+            continue
+        if line.startswith("*eternal=true"):
+            eternal = True
+            continue
         if line.startswith("*motivation="):
             motivation = line.split("*motivation=")[1]
             continue
@@ -251,7 +264,7 @@ while True:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
-            print(statement.replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + " :|:") + TruthString)
+            print(statement.replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " :|:")) + TruthString)
             sys.stdout.flush()
         if len(typetextSplit) > 0 and thinkcycles != None:
             print(thinkcycles, flush=True)
