@@ -100,15 +100,23 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                     {
                         Atom left_arg = general->atoms[(right_child_i+1)*2-1];
                         Atom right_arg = general->atoms[(right_child_i+1)*2+1-1];
+                        char valueStr[350];
                         if(Narsese_IsNumericAtom(left_arg) && Variable_isVariable(right_arg))
                         {
                             double left_arg_value = Narsese_NumericAtomValue(left_arg);
                             double value = general->atoms[left_child_i] == f_plus ? left_arg_value + specific_value : left_arg_value - specific_value;
-                            char valueStr[350];
                             sprintf(valueStr, "%f", value);
                             substitution.map[(int) right_arg] = Narsese_AtomicTerm(valueStr);
-                            Term_RemoveCompoundSubtermAt(&generalcpy, i); //avoid failing unification due to different subterm structure
                         }
+                        else
+                        if(Narsese_IsNumericAtom(right_arg) && Variable_isVariable(left_arg))
+                        {
+                            double right_arg_value = Narsese_NumericAtomValue(right_arg);
+                            double value = general->atoms[left_child_i] == f_minus ? right_arg_value + specific_value : right_arg_value - specific_value;
+                            sprintf(valueStr, "%f", value);
+                            substitution.map[(int) left_arg] = Narsese_AtomicTerm(valueStr);
+                        }
+                        Term_RemoveCompoundSubtermAt(&generalcpy, i); //avoid failing unification due to different subterm structure
                     }
                 }
                 else
