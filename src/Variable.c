@@ -149,12 +149,24 @@ static Atom countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
     return referenceValueAtom;
 }
 
-bool relateNumbers(Term *implication, Atom referenceValueAtom)
+void relateNumbers(Term *implication, Atom referenceValueAtom)
 {
     if(referenceValueAtom == 0)
-        return true;
+        return;
     Term imp = *implication;
     double referenceValue = Narsese_NumericAtomValue(referenceValueAtom);
+    Term operator = {0};
+    if(Narsese_copulaEquals(implication->atoms[0], '+'))
+    {
+        //(a &/ ^op) =/> b
+        //=/>  &/     a  ^op
+        //0    1   2  3  4
+        Term op = Term_ExtractSubterm(implication, 4);
+        if(Narsese_isOperation(&op))
+        {
+            operator = op;
+        }
+    }
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = imp.atoms[i];
@@ -187,14 +199,19 @@ bool relateNumbers(Term *implication, Atom referenceValueAtom)
                 relata.atoms[1] = f_minus;
             }
             //Now replace the original numeric atom with the arithmetic expression
-            double success = Term_OverrideSubterm(implication, i, &relata);
-            if(!success)
+            Term implicationCopy = *implication;
+            double success = Term_OverrideSubterm(&implicationCopy, i, &relata);
+            if(success)
             {
-                return false;
+                *implication = implicationCopy;
             }
         }
     }
-    return true;
+    if(operator.atoms[0])
+    {
+        Term_RemoveCompoundSubtermAt(implication, 4);
+        Term_OverrideSubterm(implication, 4, &operator);
+    }
 }
 
 Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
@@ -206,11 +223,7 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
     Atom referenceValueAtom = countAtoms(&right_side, NULL, extensionally);
     if(referenceValueAtom != 0)
     {
-        if(!relateNumbers(&implication, referenceValueAtom))
-        {
-            *success = false;
-            return implication;
-        }
+        relateNumbers(&implication, referenceValueAtom);
         left_side = Term_ExtractSubterm(&implication, 1); //re-extract sides as subst was in implication,
         right_side = Term_ExtractSubterm(&implication, 2); //could be further optimized
     }
