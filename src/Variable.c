@@ -59,10 +59,11 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
 
 Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
 {
+    Term generalcpy = *general;
     Substitution substitution = {0};
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        Atom general_atom = general->atoms[i];
+        Atom general_atom = generalcpy.atoms[i];
         if(general_atom)
         {
             bool is_allowed_var = unifyQueryVarOnly ? Variable_isQueryVariable(general_atom) : Variable_isVariable(general_atom);
@@ -86,6 +87,31 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
             }
             else
             {
+                int left_child_i = (i+1)*2-1;
+                assert(left_child_i < COMPOUND_TERM_SIZE_MAX, "A product cannot be a leaf node!");
+                bool is_function = Narsese_copulaEquals(general_atom, '*') && (general->atoms[left_child_i] == f_plus || general->atoms[left_child_i] == f_minus);
+                bool specific_has_value = !Variable_isVariable(specific->atoms[i]) && Narsese_IsNumericAtom(specific->atoms[i]);
+                if(is_function && specific_has_value)
+                {
+                    int right_child_i = (i+1)*2+1-1;
+                    double specific_value = Narsese_NumericAtomValue(specific->atoms[i]);
+                    Atom general_args = general->atoms[right_child_i];
+                    if(Narsese_copulaEquals(general_args, '*'))
+                    {
+                        Atom left_arg = general->atoms[(right_child_i+1)*2-1];
+                        Atom right_arg = general->atoms[(right_child_i+1)*2+1-1];
+                        if(Narsese_IsNumericAtom(left_arg) && Variable_isVariable(right_arg))
+                        {
+                            double left_arg_value = Narsese_NumericAtomValue(left_arg);
+                            double value = general->atoms[left_child_i] == f_plus ? left_arg_value + specific_value : left_arg_value - specific_value;
+                            char valueStr[350];
+                            sprintf(valueStr, "%f", value);
+                            substitution.map[(int) right_arg] = Narsese_AtomicTerm(valueStr);
+                            Term_RemoveCompoundSubtermAt(&generalcpy, i); //avoid failing unification due to different subterm structure
+                        }
+                    }
+                }
+                else
                 if(general_atom != specific->atoms[i]) //inequality since specific atom differs
                 {
                     return substitution;

@@ -180,12 +180,16 @@ void NAL_ArithmeticReductions(Term *term)
                 Atom f_atom = term->atoms[((i+1)*2)-1];
                 if(f_atom == f_plus || f_atom == f_minus)
                 {
-                    double value = NAL_evaluateFunctionValue(term, i);
-                    Term_RemoveCompoundSubtermAt(term, i);
-                    char valueStr[350];
-                    sprintf(valueStr, "%f", value);
-                    Atom valueAtom = Narsese_AtomicTermIndex(valueStr);
-                    term->atoms[i] = valueAtom;
+                    Term checkTerm = Term_ExtractSubterm(term, i);
+                    if(!Variable_hasVariable(&checkTerm, true, true, true))
+                    {
+                        double value = NAL_evaluateFunctionValue(term, i);
+                        Term_RemoveCompoundSubtermAt(term, i);
+                        char valueStr[350];
+                        sprintf(valueStr, "%f", value);
+                        Atom valueAtom = Narsese_AtomicTermIndex(valueStr);
+                        term->atoms[i] = valueAtom;
+                    }
                 }
             }
         }
