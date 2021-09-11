@@ -112,7 +112,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                         if(Narsese_IsNumericAtom(right_arg) && Variable_isVariable(left_arg))
                         {
                             double right_arg_value = Narsese_NumericAtomValue(right_arg);
-                            double value = general->atoms[left_child_i] == f_minus ? right_arg_value + specific_value : right_arg_value - specific_value;
+                            double value = general->atoms[left_child_i] == f_minus ? right_arg_value + specific_value : specific_value - right_arg_value;
                             sprintf(valueStr, "%f", value);
                             substitution.map[(int) left_arg] = Narsese_AtomicTerm(valueStr);
                         }
