@@ -148,6 +148,50 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
+static double NAL_evaluateFunctionValue(Term *term, int index)
+{
+    //assert(index < COMPOUND_TERM_SIZE_MAX, "Evaluation was beyond term boundaries, this hypothesis shouldn't have been introduced!");
+    if(Narsese_IsNumericAtom(term->atoms[index]))
+    {
+        return Narsese_NumericAtomValue(term->atoms[index]);
+    }
+    Atom f_atom = term->atoms[(index+1)*2-1];
+    int args_i = (index+1)*2+1-1;
+    if(f_atom == f_plus)
+    {
+        return NAL_evaluateFunctionValue(term, ((args_i+1)*2-1)) + NAL_evaluateFunctionValue(term, ((args_i+1)*2+1-1));
+    }
+    if(f_atom == f_minus)
+    {
+        return NAL_evaluateFunctionValue(term, ((args_i+1)*2-1)) - NAL_evaluateFunctionValue(term, ((args_i+1)*2+1-1));
+    }
+    return 0.0;
+}
+
+void NAL_ArithmeticReductions(Term *term)
+{
+    if(Narsese_copulaEquals(term->atoms[0], ':'))
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            Atom atom = term->atoms[i];
+            if(Narsese_copulaEquals(atom, '*'))
+            {
+                Atom f_atom = term->atoms[((i+1)*2)-1];
+                if(f_atom == f_plus || f_atom == f_minus)
+                {
+                    double value = NAL_evaluateFunctionValue(term, i);
+                    Term_RemoveCompoundSubtermAt(term, i);
+                    char valueStr[350];
+                    sprintf(valueStr, "%f", value);
+                    Atom valueAtom = Narsese_AtomicTermIndex(valueStr);
+                    term->atoms[i] = valueAtom;
+                }
+            }
+        }
+    }
+}
+
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
 {
     Event e = { .term = conclusionTerm,

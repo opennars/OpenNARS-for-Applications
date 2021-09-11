@@ -80,7 +80,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                 }
                 if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
                 {
-                    return substitution;	
+                    return substitution;
                 }
                 substitution.map[(int) general_atom] = subtree;
             }
@@ -122,10 +122,11 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
     return general;
 }
 
-//Search for variables which appear twice extensionally, if also appearing in the right side of the implication
+//Search for variables which appear twice extensionally/intensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally)
+static Atom countAtoms(Term *cur_inheritance, int *appearing, bool extensionally)
 {
+    Atom referenceValueAtom = 0; //the value extracted to relate all other values to in induction
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':') || Narsese_copulaEquals(cur_inheritance->atoms[0], '=')) //inheritance and similarity
     {
         Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
@@ -134,10 +135,66 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
             Atom atom = side.atoms[i];
             if(Narsese_IsNonCopulaAtom(atom))
             {
-                appearing[(int) side.atoms[i]] += 1;
+                if(Narsese_IsNumericAtom(atom))
+                {
+                    referenceValueAtom = atom;
+                }
+                if(appearing != NULL)
+                {
+                    appearing[(int) side.atoms[i]] += 1;
+                }
             }
         }
     }
+    return referenceValueAtom;
+}
+
+bool relateNumbers(Term *implication, Atom referenceValueAtom)
+{
+    if(referenceValueAtom == 0)
+        return true;
+    Term imp = *implication;
+    double referenceValue = Narsese_NumericAtomValue(referenceValueAtom);
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = imp.atoms[i];
+        if(Narsese_IsNumericAtom(atom))
+        {
+            double value = Narsese_NumericAtomValue(atom);
+            double offset = fabs(value - referenceValue);
+            char offsetStr[350];
+            sprintf(offsetStr, "%f", offset);
+            Atom offsetAtom = Narsese_AtomicTermIndex(offsetStr);
+            //(f * (referenceValue * offset))
+            //* f *            referenceValue    offset
+            //0 1 2   3    4   5                 6
+            Term relata = {0};
+            relata.atoms[0] = Narsese_AtomicTermIndex("*");
+            relata.atoms[2] = Narsese_AtomicTermIndex("*");
+            relata.atoms[5] = referenceValueAtom;
+            relata.atoms[6] = offsetAtom;
+            if(value == referenceValue)
+            {
+                continue;
+            }
+            if(value > referenceValue)
+            {
+                relata.atoms[1] = f_plus;
+            }
+            else
+            if(value < referenceValue)
+            {
+                relata.atoms[1] = f_minus;
+            }
+            //Now replace the original numeric atom with the arithmetic expression
+            double success = Term_OverrideSubterm(implication, i, &relata);
+            if(!success)
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
@@ -145,6 +202,19 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
+    //build numerical relationships if numeric terms are included:
+    Atom referenceValueAtom = countAtoms(&right_side, NULL, extensionally);
+    if(referenceValueAtom != 0)
+    {
+        if(!relateNumbers(&implication, referenceValueAtom))
+        {
+            *success = false;
+            return implication;
+        }
+        left_side = Term_ExtractSubterm(&implication, 1); //re-extract sides as subst was in implication,
+        right_side = Term_ExtractSubterm(&implication, 2); //could be further optimized
+    }
+    //continue with var intro:
     int appearing_left[ATOMS_MAX] = {0};
     int appearing_right[ATOMS_MAX] = {0};
     while(Narsese_copulaEquals(left_side.atoms[0], '+')) //sequence
@@ -193,7 +263,6 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
                 }
             }
         }
-        
     }
     *success = true;
     return implication;

@@ -35,7 +35,7 @@ char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 //whether the package is initialized
 static bool initialized = false;
 //SELF atom, avoids strcmp for checking operator format
-Atom SELF;
+Atom SELF, f_plus, f_minus;
 
 //Replace copulas with canonical single-char copulas, including sets and set elements!
 char* replaceWithCanonicalCopulas(char *narsese, int n)
@@ -307,6 +307,13 @@ int term_index = 0;
 //Returns the memoized index of an already seen atomic term
 int Narsese_AtomicTermIndex(char *name)
 {
+    char valueStr[350];
+    if(Narsese_IsNumericString(name))
+    {
+        double value = Narsese_NumericStringValue(name);
+        sprintf(valueStr, "%f", value);
+        name = valueStr;
+    }
     char blockname[ATOMIC_TERM_LEN_MAX] = {0};
     strncpy(blockname, name, ATOMIC_TERM_LEN_MAX-1);
     long ret_index = -1;
@@ -651,6 +658,8 @@ void Narsese_INIT()
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
+    f_plus = Narsese_AtomicTermIndex("f+");
+    f_minus = Narsese_AtomicTermIndex("f-");
     initialized = true;
 }
 
@@ -716,4 +725,34 @@ bool Narsese_IsNonCopulaAtom(Atom atom)
 bool Narsese_IsSimpleAtom(Atom atom)
 {
     return Narsese_IsNonCopulaAtom(atom) && !Variable_isVariable(atom);
+}
+
+bool Narsese_IsNumericString(char* str)
+{
+    int k = strlen(str);
+    for(int i=0; i<k; i++)
+    {
+        if((str[i] < '0' || str[i] > '9') && str[i] != '.')
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Narsese_IsNumericAtom(Atom atom)
+{
+    if(!atom)
+        return false;
+    return Narsese_IsNumericString(Narsese_atomNames[(int) atom - 1]);
+}
+
+double Narsese_NumericStringValue(char *chr)
+{
+    return atof(chr);
+}
+
+double Narsese_NumericAtomValue(Atom atom)
+{
+    return atof(Narsese_atomNames[(int) atom - 1]);
 }

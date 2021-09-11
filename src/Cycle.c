@@ -304,6 +304,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                         if(success)
                         {
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
+                            NAL_ArithmeticReductions(&newGoal.term);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
                             Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);

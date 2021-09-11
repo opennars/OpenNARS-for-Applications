@@ -33,6 +33,7 @@
 //References//
 //----------//
 #include "Narsese.h"
+#include <stdio.h>
 
 //Data structure//
 //--------------//

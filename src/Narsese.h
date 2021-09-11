@@ -44,7 +44,7 @@
 //Atomic term names:
 extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
-extern Atom SELF;
+extern Atom SELF, f_plus, f_minus;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
 #define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!"
 
@@ -90,5 +90,13 @@ bool Narsese_StringEqual(char *name1, char *name2);
 HASH_TYPE Narsese_StringHash(char *name);
 //Whether something is a simple atom such as "cat"
 bool Narsese_IsSimpleAtom(Atom atom);
+//Whether something is a numeric string
+bool Narsese_IsNumericString(char* str);
+//and to get numeric string's value:
+double Narsese_NumericStringValue(char *chr);
+//Whether something is a numeric atom
+bool Narsese_IsNumericAtom(Atom atom);
+//and to get numeric atom's value:
+double Narsese_NumericAtomValue(Atom atom);
 
 #endif

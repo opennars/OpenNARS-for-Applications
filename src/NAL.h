@@ -39,6 +39,8 @@
 
 //Methods//
 //-------//
+//Arithmetic reductions, TODO move
+void NAL_ArithmeticReductions(Term *term);
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table

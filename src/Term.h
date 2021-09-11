@@ -67,5 +67,6 @@ Term Term_ExtractSubterm(Term *term, int j);
 int Term_Complexity(Term *term);
 //Hash of a term (needed by the term->concept HashTable)
 HASH_TYPE Term_Hash(Term *term);
-
+//Remove a compound subterm
+void Term_RemoveCompoundSubtermAt(Term *term, int index);
 #endif

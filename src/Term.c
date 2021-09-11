@@ -104,3 +104,12 @@ HASH_TYPE Term_Hash(Term *term)
     term->hash = hash;
     return hash;
 }
+
+void Term_RemoveCompoundSubtermAt(Term *term, int index)
+{
+    if(index >= COMPOUND_TERM_SIZE_MAX)
+        return;
+    term->atoms[index] = 0;
+    Term_RemoveCompoundSubtermAt(term, ((index+1)*2-1));
+    Term_RemoveCompoundSubtermAt(term, ((index+1)*2+1-1));
+}
