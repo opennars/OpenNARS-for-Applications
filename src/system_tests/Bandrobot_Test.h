@@ -56,9 +56,9 @@ void NAR_Bandrobot(long iterations)
                      "                     |\n";
     puts(">>NAR Bandrobot start");
     NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Bandrobot_Left);
-    Shell_ProcessInput("*setoprange 1 0 20 double");
+    Shell_ProcessInput("*setoprange 1 0 20 int");
     NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Bandrobot_Right);
-    Shell_ProcessInput("*setoprange 2 0 20 double");
+    Shell_ProcessInput("*setoprange 2 0 20 int");
     NAR_AddOperation(Narsese_AtomicTerm("^pick"), NAR_Bandrobot_Pick); 
     NAR_AddOperation(Narsese_AtomicTerm("^drop"), NAR_Bandrobot_Drop);
     Shell_ProcessInput("*motorbabbling=0.03");
@@ -95,7 +95,7 @@ void NAR_Bandrobot(long iterations)
             NAR_Bandrobot_Drop_executed = false;
 			
         }
-        getchar();
+        //SLEEP;
         CLEAR_SCREEN;
         char world[sizeof(initial)];
         memcpy(world, initial, sizeof(initial));
