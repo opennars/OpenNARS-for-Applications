@@ -61,7 +61,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
 //Applying the substitution to a term, returning success
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
 //Introduce variables in an implication
-Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally);
+Term IntroduceImplicationVariables(Term implication, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.
 void Variable_Normalize(Term *term);
 

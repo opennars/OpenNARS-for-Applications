@@ -77,6 +77,7 @@ static Decision Decision_MotorBabbling()
             decision.arguments.atoms[0] = Narsese_AtomicTermIndex("*");  //product
             decision.arguments.atoms[1] = Narsese_AtomicTermIndex("\""); //ext set {SELF} on the left
             decision.arguments.atoms[3] = SELF;
+            decision.arguments.atoms[4] = Narsese_AtomicTermIndex("@");
             double rangesize = operations[i].max_range - operations[i].min_range;
             double value = operations[i].min_range + (((double)myrand()/(double)(MY_RAND_MAX)) * rangesize);
             if(operations[i].intbabbling)

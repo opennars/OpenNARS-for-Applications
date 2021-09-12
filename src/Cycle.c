@@ -340,16 +340,14 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
                     //extensional var intro:
-                    bool success;
-                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
-                    if(success)
+                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, true);
+                    if(Variable_hasVariable(&general_implication_term_ext, true, true, false))
                     {
                         NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     //intensional var intro:
-                    bool success2;
-                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
-                    if(success2)
+                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, false);
+                    if(Variable_hasVariable(&general_implication_term_int, true, true, false))
                     {
                         NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }

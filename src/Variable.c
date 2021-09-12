@@ -73,18 +73,15 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                 Term subtree = Term_ExtractSubterm(specific, i);
                 if(Variable_isQueryVariable(general_atom) && Variable_isVariable(subtree.atoms[0])) //not valid to substitute a variable for a question var
                 {
-					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
-                    return substitution;
+					return substitution;
                 }
                 if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
                 {
-					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
-                    return substitution;
+					return substitution;
                 }
                 if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
                 {
-					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
-                    return substitution;
+					return substitution;
                 }
                 substitution.map[(int) general_atom] = subtree;
             }
@@ -133,7 +130,6 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
 				}
                 if(!constraintResolved)
                 {
-					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
 					return substitution;
 				}
             }
@@ -260,7 +256,7 @@ void relateNumbers(Term *implication, Atom referenceValueAtom)
     }
 }
 
-Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
+Term IntroduceImplicationVariables(Term implication, bool extensionally)
 {
 	assert(implication.hash == 0, "Implication already got a hash!");
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
@@ -302,7 +298,6 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
                     char varname[3] = { '$', ('0' + var_id), 0 }; //$i
                     Atom varatom = Narsese_AtomicTermIndex(varname);
                     implication.atoms[i] = varatom;
-                    *success = true;
                 }
             }
             else
@@ -313,7 +308,6 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
                     char varname[3] = { '#', ('0' + var_id), 0 }; //#i
                     Atom varatom = Narsese_AtomicTermIndex(varname);
                     implication.atoms[i] = varatom;
-                    *success = true;
                 }
             }
         }
