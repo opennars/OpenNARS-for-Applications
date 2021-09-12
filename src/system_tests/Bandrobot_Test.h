@@ -68,6 +68,10 @@ void NAR_Bandrobot(long iterations)
     double maxpos = 20.0;
     double position = 0.0;
     double targetposition = maxpos/2;
+    bool picked = false;
+    //this for instance is the learned relevant knowledge to reach the target:
+    //NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
+    //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
     while(1)
     {
         if(t++ > iterations && iterations != -1)
@@ -85,30 +89,48 @@ void NAR_Bandrobot(long iterations)
             position += NAR_Bandrobot_amount;
         }
         position = MIN(maxpos, MAX(minpos, position));
+        if(picked)
+        {
+            targetposition = position;
+        }
         if(NAR_Bandrobot_Pick_executed)
         {
             NAR_Bandrobot_Pick_executed = false;
-            
+            if(position == targetposition)
+            {
+                picked = true;
+            }
         }
         if(NAR_Bandrobot_Drop_executed)
         {
             NAR_Bandrobot_Drop_executed = false;
+            picked = false;
 			
         }
         //SLEEP;
         CLEAR_SCREEN;
         char world[sizeof(initial)];
         memcpy(world, initial, sizeof(initial));
-        DRAW_LINE(position, 3, 0, 1, (char*) world, '^');
-        DRAW_LINE(targetposition, 4, 0, 1, (char*) world, 'o');
+        DRAW_LINE(position, 2, 0, 1, (char*) world, '^');
+        DRAW_LINE(targetposition, 4, picked ? 1 : 0, 1, (char*) world, 'o');
         printf("%f\n", position);
         puts(world);
-        char buf[200];
-        sprintf(buf, "<%f --> position>. :|:", position);
-        //NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
-        //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
-        NAR_AddInputNarsese((char*) buf);
-        NAR_AddInputNarsese("<10 --> position>! :|:");
+        char positionStr[200];
+        sprintf(positionStr, "<%f --> position>. :|:", position);
+        NAR_AddInputNarsese((char*) positionStr);
+        if(picked)
+        {
+            NAR_AddInputNarsese("<object --> [picked]>. :|:");
+        }
+        else
+        {
+            NAR_AddInputNarsese("<object --> [dropped]>. :|:");
+        }
+        char targetpositionStr[200];
+        sprintf(targetpositionStr, "<%f --> targetposition>. :|:", targetposition);
+        NAR_AddInputNarsese(targetpositionStr);
+        //NAR_AddInputNarsese("<10 --> position>! :|:");
+        NAR_AddInputNarsese("<18 --> targetposition>! :|:");
         NAR_Cycles(1);
     }
 }
