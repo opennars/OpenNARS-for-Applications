@@ -658,8 +658,8 @@ void Narsese_INIT()
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
-    f_plus = Narsese_AtomicTermIndex("f+");
-    f_minus = Narsese_AtomicTermIndex("f-");
+    f_plus = Narsese_AtomicTermIndex("f_plus");
+    f_minus = Narsese_AtomicTermIndex("f_minus");
     initialized = true;
 }
 

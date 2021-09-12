@@ -125,10 +125,14 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                     for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                     {
                         Implication *imp = &c->precondition_beliefs[op_k].array[j];
+                        Narsese_PrintTerm(&imp->term); puts("");
+                        Narsese_PrintTerm(&term); puts("");
                         if(!Variable_Unify2(&term, &imp->term, true).success)
                         {
+							puts("^^^^^^FAAAAAILLLL");
                             continue;
                         }
+                        puts("^^^^^^SUCCESS");
                         if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
                         {
                             best_truth = imp->truth;

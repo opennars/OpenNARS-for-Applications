@@ -342,14 +342,14 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                     //extensional var intro:
                     bool success;
                     Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
-                    if(success && Variable_hasVariable(&general_implication_term_ext, true, true, false))
+                    if(success)
                     {
                         NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     //intensional var intro:
                     bool success2;
                     Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
-                    if(success2 && Variable_hasVariable(&general_implication_term_int, true, true, false))
+                    if(success2)
                     {
                         NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }

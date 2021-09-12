@@ -73,21 +73,28 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                 Term subtree = Term_ExtractSubterm(specific, i);
                 if(Variable_isQueryVariable(general_atom) && Variable_isVariable(subtree.atoms[0])) //not valid to substitute a variable for a question var
                 {
+					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
                     return substitution;
                 }
                 if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
                 {
+					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
                     return substitution;
                 }
                 if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
                 {
+					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
                     return substitution;
                 }
                 substitution.map[(int) general_atom] = subtree;
             }
             else
+            if(general_atom != specific->atoms[i]) //inequality since specific atom differs
             {
-                int left_child_i = (i+1)*2-1;
+				
+				bool constraintResolved = false;
+				if(false){
+				int left_child_i = (i+1)*2-1;
                 bool is_function = left_child_i < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(general_atom, '*') && (general->atoms[left_child_i] == f_plus || general->atoms[left_child_i] == f_minus);
                 bool specific_has_value = !Variable_isVariable(specific->atoms[i]) && Narsese_IsNumericAtom(specific->atoms[i]);
                 if(is_function && specific_has_value)
@@ -106,6 +113,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                             double value = general->atoms[left_child_i] == f_plus ?  specific_value - left_arg_value : left_arg_value - specific_value;
                             sprintf(valueStr, "%f", value);
                             substitution.map[(int) right_arg] = Narsese_AtomicTerm(valueStr);
+							constraintResolved = true;
                         }
                         else
                         if(Narsese_IsNumericAtom(right_arg) && Variable_isVariable(left_arg))
@@ -114,15 +122,20 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                             double value = general->atoms[left_child_i] == f_minus ? specific_value + right_arg_value : specific_value - right_arg_value;
                             sprintf(valueStr, "%f", value);
                             substitution.map[(int) left_arg] = Narsese_AtomicTerm(valueStr);
+                            constraintResolved = true;
                         }
-                        Term_RemoveCompoundSubtermAt(&generalcpy, i); //avoid failing unification due to different subterm structure
+                        if(constraintResolved)
+                        {
+							Term_RemoveCompoundSubtermAt(&generalcpy, i); //avoid failing unification due to different subterm structure
+						}
                     }
                 }
-                else
-                if(general_atom != specific->atoms[i]) //inequality since specific atom differs
+				}
+                if(!constraintResolved)
                 {
-                    return substitution;
-                }
+					assert(!Term_Equal(&general, &specific), "Unification failed even though the terms were the same!");
+					return substitution;
+				}
             }
         }
     }
@@ -249,6 +262,7 @@ void relateNumbers(Term *implication, Atom referenceValueAtom)
 
 Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
+	assert(implication.hash == 0, "Implication already got a hash!");
     assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
@@ -286,12 +300,9 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '$', ('0' + var_id), 0 }; //$i
-                    Term varterm = Narsese_AtomicTerm(varname);
-                    if(!Term_OverrideSubterm(&implication, i, &varterm))
-                    {
-                        *success = false;
-                        return implication;
-                    }
+                    Atom varatom = Narsese_AtomicTermIndex(varname);
+                    implication.atoms[i] = varatom;
+                    *success = true;
                 }
             }
             else
@@ -300,17 +311,13 @@ Term IntroduceImplicationVariables(Term implication, bool *success, bool extensi
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '#', ('0' + var_id), 0 }; //#i
-                    Term varterm = Narsese_AtomicTerm(varname);
-                    if(!Term_OverrideSubterm(&implication, i, &varterm))
-                    {
-                        *success = false;
-                        return implication;
-                    }
+                    Atom varatom = Narsese_AtomicTermIndex(varname);
+                    implication.atoms[i] = varatom;
+                    *success = true;
                 }
             }
         }
     }
-    *success = true;
     return implication;
 }
 

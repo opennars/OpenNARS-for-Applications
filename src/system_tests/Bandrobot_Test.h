@@ -67,8 +67,9 @@ void NAR_Bandrobot(long iterations)
     double minpos = 0.0;
     double maxpos = 20.0;
     double position = 0.0;
-    double targetposition = maxpos/2;
-    bool picked = false;
+    double targetposition = maxpos; //maxpos/2;
+    bool picked = false, lastpicked = false;
+    double debug = 0;
     //this for instance is the learned relevant knowledge to reach the target:
     //NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
     //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
@@ -112,25 +113,54 @@ void NAR_Bandrobot(long iterations)
         char world[sizeof(initial)];
         memcpy(world, initial, sizeof(initial));
         DRAW_LINE(position, 2, 0, 1, (char*) world, 'A');
-        DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
-        printf("%f\n", position);
+        DRAW_LINE(debug, picked ? 3 : 4, 0, 1, (char*) world, 'o');
+        printf("pos=%f, picked: %d\n", position, picked);
         puts(world);
         char positionStr[200];
         sprintf(positionStr, "<%f --> position>. :|:", position);
         NAR_AddInputNarsese((char*) positionStr);
-        if(picked)
+        //if(picked != lastpicked)
         {
-            NAR_AddInputNarsese("<object --> [picked]>. :|:");
-        }
-        else
-        {
-            NAR_AddInputNarsese("<object --> [dropped]>. :|:");
+            if(picked && !lastpicked)
+            {
+                NAR_AddInputNarsese("<object --> [picked]>. :|:");
+                //char pickedpositionStr[200];
+                //sprintf(pickedpositionStr, "<%f --> [picked]>. :|:", targetposition);
+                //NAR_AddInputNarsese(droppedpositionStr);
+            }
+            else
+            if(!picked && lastpicked)
+            {
+                //char droppedpositionStr[200];
+                //sprintf(droppedpositionStr, "<%f --> [dropped]>. :|:", targetposition);
+                //NAR_AddInputNarsese(droppedpositionStr);
+                NAR_AddInputNarsese("<object --> [dropped]>. :|:");
+                //sprintf(targetpositionStr, "<%f --> targetposition>. :|:", targetposition);
+                //NAR_AddInputNarsese(targetpositionStr);
+            }
+            lastpicked = picked;
         }
         char targetpositionStr[200];
         sprintf(targetpositionStr, "<%f --> targetposition>. :|:", targetposition);
-        NAR_AddInputNarsese(targetpositionStr);
+        //NAR_AddInputNarsese(targetpositionStr);
         //NAR_AddInputNarsese("<10 --> position>! :|:");
-        NAR_AddInputNarsese("<18 --> targetposition>! :|:");
+        if(t % 100 == 0)
+        {
+            debug = (((double)myrand()/(double)(MY_RAND_MAX)) * maxpos);
+        }
+        
+        //NAR_AddInputNarsese("<18 --> position>! :|:");
+        //NAR_AddInputNarsese("(<18 --> targetposition> &/ <object --> [dropped]>)! :|:");
+        NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>?");
+        NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>?");
+        NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>?");
+        NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>?");
+        
+        
+        char debugStr[200];
+        sprintf(debugStr, "<%f --> position>! :|:", debug);
+        NAR_AddInputNarsese(debugStr);
+        getchar();
         NAR_Cycles(1);
     }
 }
