@@ -61,6 +61,7 @@ void NAR_Bandrobot(long iterations)
     Shell_ProcessInput("*setoprange 2 0 20 double");
     NAR_AddOperation(Narsese_AtomicTerm("^pick"), NAR_Bandrobot_Pick); 
     NAR_AddOperation(Narsese_AtomicTerm("^drop"), NAR_Bandrobot_Drop);
+    Shell_ProcessInput("*motorbabbling=false");
     long t = 0;
     double minpos = 0.0;
     double maxpos = 20.0;
@@ -103,7 +104,7 @@ void NAR_Bandrobot(long iterations)
         char buf[200];
         sprintf(buf, "<%f --> position>. :|:", position);
         NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
-        //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
+        NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
         NAR_AddInputNarsese((char*) buf);
         NAR_AddInputNarsese("<10 --> position>! :|:");
         getchar();
