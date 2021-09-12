@@ -61,7 +61,8 @@ void NAR_Bandrobot(long iterations)
     Shell_ProcessInput("*setoprange 2 0 20 double");
     NAR_AddOperation(Narsese_AtomicTerm("^pick"), NAR_Bandrobot_Pick); 
     NAR_AddOperation(Narsese_AtomicTerm("^drop"), NAR_Bandrobot_Drop);
-    Shell_ProcessInput("*motorbabbling=false");
+    Shell_ProcessInput("*motorbabbling=0.03");
+    Shell_ProcessInput("*decisionthreshold=0.6");
     long t = 0;
     double minpos = 0.0;
     double maxpos = 20.0;
@@ -73,13 +74,6 @@ void NAR_Bandrobot(long iterations)
         {
             break;
         }
-        CLEAR_SCREEN;
-        char world[sizeof(initial)];
-        memcpy(world, initial, sizeof(initial));
-        DRAW_LINE(position, 3, 0, 1, (char*) world, '^');
-        DRAW_LINE(targetposition, 4, 0, 1, (char*) world, 'o');
-        printf("%f\n", position);
-        puts(world);
         if(NAR_Bandrobot_Left_executed)
         {
             NAR_Bandrobot_Left_executed = false;
@@ -101,12 +95,20 @@ void NAR_Bandrobot(long iterations)
             NAR_Bandrobot_Drop_executed = false;
 			
         }
+        getchar();
+        CLEAR_SCREEN;
+        char world[sizeof(initial)];
+        memcpy(world, initial, sizeof(initial));
+        DRAW_LINE(position, 3, 0, 1, (char*) world, '^');
+        DRAW_LINE(targetposition, 4, 0, 1, (char*) world, 'o');
+        printf("%f\n", position);
+        puts(world);
         char buf[200];
         sprintf(buf, "<%f --> position>. :|:", position);
-        NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
-        NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
+        //NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
+        //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
         NAR_AddInputNarsese((char*) buf);
         NAR_AddInputNarsese("<10 --> position>! :|:");
-        getchar();
+        NAR_Cycles(1);
     }
 }
