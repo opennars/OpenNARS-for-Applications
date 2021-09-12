@@ -160,7 +160,7 @@ void NAR_Bandrobot(long iterations)
         char debugStr[200];
         sprintf(debugStr, "<%f --> position>! :|:", debug);
         NAR_AddInputNarsese(debugStr);
-        getchar();
+        //getchar();
         NAR_Cycles(1);
     }
 }

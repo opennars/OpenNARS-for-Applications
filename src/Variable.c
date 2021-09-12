@@ -88,9 +88,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
             else
             if(general_atom != specific->atoms[i]) //inequality since specific atom differs
             {
-				
 				bool constraintResolved = false;
-				if(false){
 				int left_child_i = (i+1)*2-1;
                 bool is_function = left_child_i < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(general_atom, '*') && (general->atoms[left_child_i] == f_plus || general->atoms[left_child_i] == f_minus);
                 bool specific_has_value = !Variable_isVariable(specific->atoms[i]) && Narsese_IsNumericAtom(specific->atoms[i]);
@@ -127,7 +125,6 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
 						}
                     }
                 }
-				}
                 if(!constraintResolved)
                 {
 					return substitution;
