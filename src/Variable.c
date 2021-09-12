@@ -88,8 +88,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
             else
             {
                 int left_child_i = (i+1)*2-1;
-                assert(left_child_i < COMPOUND_TERM_SIZE_MAX, "A product cannot be a leaf node!");
-                bool is_function = Narsese_copulaEquals(general_atom, '*') && (general->atoms[left_child_i] == f_plus || general->atoms[left_child_i] == f_minus);
+                bool is_function = left_child_i < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(general_atom, '*') && (general->atoms[left_child_i] == f_plus || general->atoms[left_child_i] == f_minus);
                 bool specific_has_value = !Variable_isVariable(specific->atoms[i]) && Narsese_IsNumericAtom(specific->atoms[i]);
                 if(is_function && specific_has_value)
                 {

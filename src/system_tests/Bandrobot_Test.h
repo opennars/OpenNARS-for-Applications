@@ -24,39 +24,48 @@
 
 
 bool NAR_Bandrobot_Left_executed = false;
-Term op_args = {0};
-void NAR_Bandrobot_Left(Term args)
+double NAR_Bandrobot_amount;
+void NAR_Bandrobot_Left(Term args) //* {SELF} val
 {
     NAR_Bandrobot_Left_executed = true;
-    op_args = args;
+    NAR_Bandrobot_amount = Narsese_NumericAtomValue(args.atoms[2]);
 }
 bool NAR_Bandrobot_Right_executed = false;
 void NAR_Bandrobot_Right(Term args)
 {
     NAR_Bandrobot_Right_executed = true;
-    op_args = args;
+    NAR_Bandrobot_amount = Narsese_NumericAtomValue(args.atoms[2]);
 }
 bool NAR_Bandrobot_Pick_executed = false;
-void NAR_Bandrobot_Pick(Term args)
+void NAR_Bandrobot_Pick()
 {
     NAR_Bandrobot_Pick_executed = true;
-    op_args = args;
 }
 bool NAR_Bandrobot_Drop_executed = false;
-void NAR_Bandrobot_Drop(Term args)
+void NAR_Bandrobot_Drop()
 {
     NAR_Bandrobot_Drop_executed = true;
-    op_args = args;
 }
 
 void NAR_Bandrobot(long iterations)
 {
+    char initial[] = "                     |\n"
+                     "     -----------     |\n"
+                     "                     |\n"
+                     "                     |\n"
+                     "                     |\n";
     puts(">>NAR Bandrobot start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Bandrobot_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Bandrobot_Right); 
+    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Bandrobot_Left);
+    Shell_ProcessInput("*setoprange 1 0 20 double");
+    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Bandrobot_Right);
+    Shell_ProcessInput("*setoprange 2 0 20 double");
     NAR_AddOperation(Narsese_AtomicTerm("^pick"), NAR_Bandrobot_Pick); 
     NAR_AddOperation(Narsese_AtomicTerm("^drop"), NAR_Bandrobot_Drop);
     long t = 0;
+    double minpos = 0.0;
+    double maxpos = 20.0;
+    double position = 0.0;
+    double targetposition = maxpos/2;
     while(1)
     {
         if(t++ > iterations && iterations != -1)
@@ -64,26 +73,39 @@ void NAR_Bandrobot(long iterations)
             break;
         }
         CLEAR_SCREEN;
+        char world[sizeof(initial)];
+        memcpy(world, initial, sizeof(initial));
+        DRAW_LINE(position, 3, 0, 1, (char*) world, '^');
+        DRAW_LINE(targetposition, 4, 0, 1, (char*) world, 'o');
+        printf("%f\n", position);
+        puts(world);
         if(NAR_Bandrobot_Left_executed)
         {
-			NAR_Bandrobot_Left_executed = false;
-			
-		}
-		if(NAR_Bandrobot_Right_executed)
+            NAR_Bandrobot_Left_executed = false;
+            position -= NAR_Bandrobot_amount;
+        }
+        if(NAR_Bandrobot_Right_executed)
         {
-			NAR_Bandrobot_Left_executed = false;
-			
-		}
-		if(NAR_Bandrobot_Drop_executed)
+            NAR_Bandrobot_Right_executed = false;
+            position += NAR_Bandrobot_amount;
+        }
+        position = MIN(maxpos, MAX(minpos, position));
+        if(NAR_Bandrobot_Pick_executed)
         {
-			NAR_Bandrobot_Left_executed = false;
-			
-		}
-		if(NAR_Bandrobot_Left_executed)
+            NAR_Bandrobot_Pick_executed = false;
+            
+        }
+        if(NAR_Bandrobot_Drop_executed)
         {
-			NAR_Bandrobot_Left_executed = false;
+            NAR_Bandrobot_Drop_executed = false;
 			
-		}
-		//NAR_AddInputNarsese(
+        }
+        char buf[200];
+        sprintf(buf, "<%f --> position>. :|:", position);
+        NAR_AddInputNarsese("<(<(f- * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
+        //NAR_AddInputNarsese("<(<(f+ * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
+        NAR_AddInputNarsese((char*) buf);
+        NAR_AddInputNarsese("<10 --> position>! :|:");
+        getchar();
     }
 }
