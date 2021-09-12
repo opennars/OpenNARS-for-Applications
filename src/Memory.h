@@ -55,6 +55,9 @@ typedef struct
 {
     Term term;
     Action action;
+    bool intbabbling;
+    double min_range; //if not nan this will lead to the babble format:
+    double max_range; //<({SELF} * number) --> ^op>. :|: whereby number is within range
 }Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global

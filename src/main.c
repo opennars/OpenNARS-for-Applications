@@ -95,6 +95,11 @@ void Process_Args(int argc, char *argv[])
             {
                 NAR_Robot(iterations);
             }
+            else
+            if(!strcmp(argv[i],"bandrobot"))
+            {
+                NAR_Bandrobot(iterations);
+            }
         }
         if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
         {

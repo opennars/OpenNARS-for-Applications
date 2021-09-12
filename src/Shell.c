@@ -249,6 +249,27 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*motorbabbling=")], "%lf", &MOTOR_BABBLING_CHANCE);
         }
         else
+        if(!strncmp("*setoprange ", line, strlen("*setoprange "))) //min max
+        {
+            int opID;
+            double min_range;
+            double max_range;
+            char intstr[50];
+            sscanf(&line[strlen("*setoprange ")], "%d %lf %lf %s", &opID, &min_range, &max_range, (char*) &intstr);
+            printf("RANGE: %f %f \n", min_range, max_range);
+            assert(min_range <= max_range, "Min range of op arg needs to be less or equal than max");
+            operations[opID-1].min_range = min_range;
+            operations[opID-1].max_range = max_range;
+            if(!strcmp(intstr, "int"))
+            {
+                operations[opID-1].intbabbling = true;
+            }
+            else
+            {
+                operations[opID-1].intbabbling = false;
+            }
+        }
+        else
         if(!strncmp("*setopname ", line, strlen("*setopname ")))
         {
             int opID;

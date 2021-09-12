@@ -173,7 +173,7 @@ static Atom countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
                 {
                     referenceValueAtom = atom;
                 }
-                if(appearing != NULL)
+                if(appearing != NULL && atom != f_plus && atom != f_minus) //don't intro vars for functions
                 {
                     appearing[(int) side.atoms[i]] += 1;
                 }

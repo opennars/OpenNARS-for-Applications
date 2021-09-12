@@ -62,12 +62,31 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
+        int i = (myrand() % (MIN(BABBLING_OPS, n_ops)));
+        decision.operationID = 1+i;
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
         decision.execute = true;
         decision.desire = 1.0;
+        if(!isnan(operations[i].min_range) && !isnan(operations[i].max_range))
+        {
+            //({SELF} * num)
+            //*   "    num  SELF
+            //0   1    2    3
+            decision.arguments.atoms[0] = Narsese_AtomicTermIndex("*");  //product
+            decision.arguments.atoms[1] = Narsese_AtomicTermIndex("\""); //ext set {SELF} on the left
+            decision.arguments.atoms[3] = SELF;
+            double rangesize = operations[i].max_range - operations[i].min_range;
+            double value = operations[i].min_range + (((double)myrand()/(double)(MY_RAND_MAX)) * rangesize);
+            if(operations[i].intbabbling)
+            {
+                value = round(value);
+            }
+            char valueStr[350];
+            sprintf(valueStr, "%f", value);
+            decision.arguments.atoms[2] = Narsese_AtomicTermIndex(valueStr);
+        }
     }
     return decision;
 }

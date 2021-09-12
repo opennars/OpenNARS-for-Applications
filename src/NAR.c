@@ -79,7 +79,7 @@ void NAR_AddOperation(Term term, Action procedure)
     char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
     assert(Narsese_OperatorIndex(term_name) <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
-    operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
+    operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure, .intbabbling = false, .min_range = NAN, .max_range = NAN };
 }
 
 void NAR_AddInputNarsese(char *narsese_sentence)
