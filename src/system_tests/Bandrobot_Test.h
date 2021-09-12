@@ -111,8 +111,8 @@ void NAR_Bandrobot(long iterations)
         CLEAR_SCREEN;
         char world[sizeof(initial)];
         memcpy(world, initial, sizeof(initial));
-        DRAW_LINE(position, 2, 0, 1, (char*) world, '^');
-        DRAW_LINE(targetposition, 4, picked ? 1 : 0, 1, (char*) world, 'o');
+        DRAW_LINE(position, 2, 0, 1, (char*) world, 'A');
+        DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
         printf("%f\n", position);
         puts(world);
         char positionStr[200];
