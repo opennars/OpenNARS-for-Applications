@@ -64,5 +64,7 @@ Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *succes
 Term IntroduceImplicationVariables(Term implication, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.
 void Variable_Normalize(Term *term);
+//Whether the term includes a numeric term (TODO move)
+bool Variable_hasNumericTerm(Term *term);
 
 #endif

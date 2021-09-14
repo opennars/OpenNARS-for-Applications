@@ -730,14 +730,20 @@ bool Narsese_IsSimpleAtom(Atom atom)
 bool Narsese_IsNumericString(char* str)
 {
     int k = strlen(str);
+    bool hadComma = false;
     for(int i=0; i<k; i++)
     {
-        if((str[i] < '0' || str[i] > '9') && str[i] != '.')
+        if(str[i] == '.')
+        {
+            hadComma = true;
+        }
+        else
+        if(str[i] < '0' || str[i] > '9')
         {
             return false;
         }
     }
-    return true;
+    return hadComma;
 }
 
 bool Narsese_IsNumericAtom(Atom atom)

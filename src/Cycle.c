@@ -346,13 +346,16 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                         NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     //intensional var intro:
-                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, false);
-                    if(Variable_hasVariable(&general_implication_term_int, true, true, false))
+                    if(!Variable_hasNumericTerm(&precondition_implication.term))
                     {
-                        NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, false);
+                        if(Variable_hasVariable(&general_implication_term_int, true, true, false))
+                        {
+                            NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        }
+                        //specific implication
+                        NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
-                    //specific implication
-                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                 }
             }
         }
@@ -450,6 +453,10 @@ void Cycle_Inference(long currentTime)
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
             Event *e = &selectedBeliefs[i];
+            if(Variable_hasNumericTerm(&e->term)) //TODO
+            {
+                break;
+            }
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
@@ -458,6 +465,10 @@ void Cycle_Inference(long currentTime)
             {
                 long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
                 if(c->priority < conceptPriorityThresholdCurrent)
+                {
+                    continue;
+                }
+                if(Variable_hasNumericTerm(&c->term)) //TODO
                 {
                     continue;
                 }

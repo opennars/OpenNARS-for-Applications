@@ -57,6 +57,19 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
     return false;
 }
 
+bool Variable_hasNumericTerm(Term *term)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = term->atoms[i];
+        if(Narsese_IsNumericAtom(atom))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
 {
     Term generalcpy = *general;

@@ -71,14 +71,29 @@ void NAR_Bandrobot(long iterations)
     bool picked = false, lastpicked = false;
     double debug = 0;
     //for testing, this is the learned relevant knowledge to reach the target:
-    Shell_ProcessInput("*motorbabbling=false");
+    //Shell_ProcessInput("*motorbabbling=false");
     //Shell_ProcessInput("*volume=100");
+    //given since demo concentrates on learning the numeric relationships: (TODO consider curriculum learning)
+    NAR_AddInputNarsese("<((<$1 --> position> &/ <$1 --> targetposition>) &/ ^pick) =/> <$1 --> [picked]>>. {1.0 0.99}");
+    NAR_AddInputNarsese("<(<$1 --> [picked]> &/ ^drop) =/> <$1 --> [dropped]>>. {1.0 0.99}");
     while(1)
     {
-        NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
-        NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
-        NAR_AddInputNarsese("<((<$1 --> position> &/ <$1 --> targetposition>) &/ ^pick) =/> <$1 --> [picked]>>.");
-        NAR_AddInputNarsese("<(<$1 --> [picked]> &/ ^drop) =/> <$1 --> [dropped]>>.");
+        char leftLim[200];
+        sprintf(leftLim, "*setoprange 1 0 %f double", maxpos);
+        Shell_ProcessInput(leftLim);
+        char rightLim[200];
+        sprintf(rightLim, "*setoprange 2 0 %f double", maxpos-position);
+        Shell_ProcessInput(rightLim);
+        //NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>.");
+        //NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>.");
+        if(myrand()%10000 > 9000)
+        {
+            //position = (((double)myrand()/(double)(MY_RAND_MAX)) * maxpos); 
+        }
+        if(t > 200)
+        {
+            Shell_ProcessInput("*motorbabbling=false");
+        }
         if(t++ > iterations && iterations != -1)
         {
             break;
@@ -101,7 +116,7 @@ void NAR_Bandrobot(long iterations)
         if(NAR_Bandrobot_Pick_executed)
         {
             NAR_Bandrobot_Pick_executed = false;
-            if(position - targetposition < 0.000001)
+            if(fabs(position - targetposition) < 0.000001)
             {
                 picked = true;
             }
@@ -155,16 +170,30 @@ void NAR_Bandrobot(long iterations)
         
         //NAR_AddInputNarsese("<18 --> position>! :|:");
         //NAR_AddInputNarsese("(<18 --> targetposition> &/ <object --> [dropped]>)! :|:");
-        NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>?");
-        NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>?");
-
-        //NAR_AddInputNarsese("<object --> [picked]>! :|:");
+        //NAR_AddInputNarsese("<(<(f_plus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^left>) =/> <$1 --> position>>?");
+        //NAR_AddInputNarsese("<(<(f_minus * ($1 * #1)) --> position> &/ <({SELF} * #1) --> ^right>) =/> <$1 --> position>>?");
+        //NAR_AddInputNarsese("<?1 =/> <$1 --> position>>?");
+        //NAR_AddInputNarsese("<?1 =/> <$1 --> position>>?");
+        /*Term term = Narsese_Term("<$1 --> position>?");
+        Concept *c = Memory_FindConceptByTerm(&term);
+        if(c != NULL)
+        {
+            for(int i=1; i<OPERATIONS_MAX; i++)
+            {
+                printf("AMOUNT OF CONCEPTS %d \n", c->precondition_beliefs[i].itemsAmount);
+                for(int j=0; j<c->precondition_beliefs[i].itemsAmount; j++)
+                {
+                    Narsese_PrintTerm(&c->precondition_beliefs[i].array[j].term); puts("");
+                }
+                break;
+            }
+        }*/
 
         char debugStr[200];
         sprintf(debugStr, "<%f --> [dropped]>! :|:", targetposition);
         NAR_AddInputNarsese(debugStr);
         NAR_Cycles(6);
-        getchar();
+        //getchar();
         
     }
 }
