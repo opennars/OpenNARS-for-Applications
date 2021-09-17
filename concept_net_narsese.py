@@ -77,12 +77,12 @@ def queryConceptNet(maxAmount, term, side, relation):
             ret.append((toNarsese((s,v,p)),count))
     return ret
 
-def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, question, sides):
+def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, question):
     ret = []
     Relations = ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes"]
     if querySpecificQuestion:
         if "} --> [" in question:
-            Relations = ["InstanceOf"]
+            Relations = ["HasProperty"]
         elif " --> [" in question:
             Relations = ["HasProperty"]
         elif "} --> " in question:
@@ -102,22 +102,23 @@ def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, 
         elif " --> " in question:
             Relations = ["IsA"]
     for rel in Relations:
-        for side in sides: #extension and intenstion query
+        for side in ["end", "start"]: #extension and intenstion query
             ret.extend(queryConceptNet(maxAmount, term, side, rel))
     ret.sort(key = lambda T: -T[1])
     if not querySpecificQuestion:
         ret = ret[:selectAmount]
     selected = 0
+    returnlist = []
     for T in ret:
         queryPart = re.escape(question.replace(" ","")).replace("\?1","([a-zA-Z0-9]|_)*")
         pattern = T[0].replace(" ", "")
-        #print("MATCH ATTEMPT " + queryPart + " " + pattern + str(bool(re.search(queryPart, pattern))))
+        #print("//MATCH ATTEMPT " + queryPart + " " + pattern + str(bool(re.search(queryPart, pattern))))
         if not querySpecificQuestion or re.search(queryPart, pattern):
-            print(T[0] + (" :|:" if isEvent else ""))
+            returnlist += [T[0] + (" :|:" if isEvent else "")]
             selected +=1
             if selected >= selectAmount:
                 break
-    sys.stdout.flush()
+    return returnlist
 
 def extractAtomicTerms(inp):
     L = []
@@ -172,13 +173,20 @@ while True:
         continue
     if isNarsese and ((queryOnQuestions and isQuestion) or (queryOnBeliefs and not isQuestion)):
         atoms = extractAtomicTerms(line)
-        sides = ["end"] if "< ?1 " in line or "< ( ?1 " in line else ["start"]
+        cnt = 0
+        queryResults = set([])
         for atom in atoms:
             question = line.split(">.")[0].split(").")[0].split(")?")[0].split(">?")[0]
-            print(("//Querying knowledge for " + atom) if not querySpecificQuestion else ("//Querying for relationship " + question + ">"))
-            queryMeaning(atom, maxAmount, selectAmount, isEvent, querySpecificQuestion, question, sides if querySpecificQuestion else ["end", "start"])
-            if querySpecificQuestion:
+            print(("//Querying concept " + atom + " for relationships") if not querySpecificQuestion else ("//Querying concept " + atom + " for relationship " + question + ">"))
+            returnlist = queryMeaning(atom, maxAmount, selectAmount, isEvent, querySpecificQuestion, question)
+            for x in returnlist:
+                queryResults.add(x)
+            cnt += 1
+            if cnt >= 2:
                 break
+        for x in queryResults:
+            print(x)
+        sys.stdout.flush()
         print("//Querying complete")
     if isNarsese:
         print(line)
