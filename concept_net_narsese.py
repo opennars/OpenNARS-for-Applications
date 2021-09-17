@@ -60,7 +60,7 @@ def toNarsese(subject_relation_predicate):
         return "<" + subject + " <-> " + predicate + ">."
     if relation == "Causes":
         return "<" + subject + " =/> " + predicate + ">."
-    return "<(" + subject + " * " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").lower() + ">."
+    return "<(" + subject + " * " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").replace("Desires", "want").lower() + ">."
 
 def unwrap(rel):
     parts = rel.split("[")[1].split("]")[0].replace("/c/en/", "").replace("/n/", "").replace("/r/", "").replace("/", "").split(",");
@@ -79,7 +79,7 @@ def queryConceptNet(maxAmount, term, side, relation):
 
 def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, question):
     ret = []
-    Relations = ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes"]
+    Relations = ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes", "Desires"]
     if querySpecificQuestion:
         if "} --> [" in question:
             Relations = ["HasProperty"]
@@ -97,6 +97,8 @@ def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, 
             Relations = ["HasA"]
         elif " --> make_of" in question:
             Relations = ["MadeOf"]
+        elif " --> want" in question:
+            Relations = ["Desires"]
         elif " =/> "  in question:
             Relations = ["causes"]
         elif " --> " in question:
