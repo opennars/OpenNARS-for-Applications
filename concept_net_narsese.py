@@ -163,9 +163,9 @@ while True:
     elif line.startswith("*queryOnQuestions=false"):
         queryOnQuestions = False
     elif line.startswith("*querySpecificQuestion=true"):
-        queryOnlyQuestion = True
+        querySpecificQuestion = True
     elif line.startswith("*querySpecificQuestion=false"):
-        queryOnlyQuestion = False
+        querySpecificQuestion = False
     elif line.startswith("*maxConceptNetQueries="):
         maxAmount = int(line.strip().split("*maxConceptNetQueries=")[1])
         continue
