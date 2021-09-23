@@ -26,6 +26,7 @@
 #include "NAR.h"
 
 //Atomic term names:
+int atomRefcnt[ATOMS_MAX];
 char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 //upper bound of multplier 3 given by [ becoming "(' " replacement

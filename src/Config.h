@@ -98,12 +98,12 @@
 #define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
-//Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
-#define ATOMS_MAX 65536
+//Max. amount of atomic terms, each term has at most COMPOUND_TERM_SIZE_MAX/2 non-copula atomics + space for copulas
+#define ATOMS_MAX 524400
 //Amount of buckets for atoms hashmap
 #define ATOMS_HASHTABLE_BUCKETS ATOMS_MAX
 //The type of an atom
-#define Atom unsigned short
+#define Atom unsigned int
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters

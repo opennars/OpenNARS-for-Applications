@@ -312,8 +312,7 @@ Term IntroduceImplicationVariables(Term implication, bool extensionally)
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '$', ('0' + var_id), 0 }; //$i
-                    Atom varatom = Narsese_AtomicTermIndex(varname);
-                    implication.atoms[i] = varatom;
+                    implication.atoms[i] = Narsese_AtomicTermIndex(varname);
                 }
             }
             else
@@ -322,8 +321,7 @@ Term IntroduceImplicationVariables(Term implication, bool extensionally)
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '#', ('0' + var_id), 0 }; //#i
-                    Atom varatom = Narsese_AtomicTermIndex(varname);
-                    implication.atoms[i] = varatom;
+                    implication.atoms[i] = Narsese_AtomicTermIndex(varname);
                 }
             }
         }

@@ -22,12 +22,16 @@
  * THE SOFTWARE.
  */
 
+//avoids stack overflow in test for large memory sizes as it's crazy to have these as local vars:
+static VMItem* HTest_storageptrs[CONCEPTS_MAX];
+static VMItem HTest_storage[CONCEPTS_MAX];
+static VMItem* HTest_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept term is the index
+static VMItem* HTtest2_storageptrs[ATOMS_MAX];
+static VMItem HTtest2_storage[ATOMS_MAX];
+static VMItem* HTtest2_HT[ATOMS_HASHTABLE_BUCKETS];
 void HashTable_Test()
 {
     HashTable HTtest;
-    VMItem* HTest_storageptrs[CONCEPTS_MAX];
-    VMItem HTest_storage[CONCEPTS_MAX];
-    VMItem* HTest_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept term is the index
     puts(">>HashTable test start");
     HashTable_INIT(&HTtest, HTest_storage, HTest_storageptrs, HTest_HT, CONCEPTS_HASHTABLE_BUCKETS, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     assert(HTtest.VMStack.stackpointer == CONCEPTS_MAX, "The stack should be full!");
@@ -72,9 +76,6 @@ void HashTable_Test()
     assert(HTtest.VMStack.stackpointer == CONCEPTS_MAX, "All elements should be free now");
     //test for chars:
     HashTable HTtest2;
-    VMItem* HTtest2_storageptrs[ATOMS_MAX];
-    VMItem HTtest2_storage[ATOMS_MAX];
-    VMItem* HTtest2_HT[ATOMS_HASHTABLE_BUCKETS];
     HashTable_INIT(&HTtest2, HTtest2_storage, HTtest2_storageptrs, HTtest2_HT, ATOMS_HASHTABLE_BUCKETS, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
     char *testname = "test";
     char blockname[ATOMIC_TERM_LEN_MAX] = {0};
