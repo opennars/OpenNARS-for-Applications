@@ -28,6 +28,7 @@
 #  relationship are utilized for each atomic term in the input Narsese
 #  and QueryOnbeliefs allows to make queries for belief input too
 
+import re
 import requests
 import codecs
 import sys
@@ -59,7 +60,7 @@ def toNarsese(subject_relation_predicate):
         return "<" + subject + " <-> " + predicate + ">."
     if relation == "Causes":
         return "<" + subject + " =/> " + predicate + ">."
-    return "<(" + subject + " * " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").lower() + ">."
+    return "<(" + subject + " * " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").replace("Desires", "want").lower() + ">."
 
 def unwrap(rel):
     parts = rel.split("[")[1].split("]")[0].replace("/c/en/", "").replace("/n/", "").replace("/r/", "").replace("/", "").split(",");
@@ -76,15 +77,50 @@ def queryConceptNet(maxAmount, term, side, relation):
             ret.append((toNarsese((s,v,p)),count))
     return ret
 
-def queryMeaning(term, maxAmount, selectAmount):
+def queryMeaning(term, maxAmount, selectAmount, isEvent, querySpecificQuestion, question):
     ret = []
-    for rel in ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes"]:
+    Relations = ["IsA", "InstanceOf", "HasProperty", "SimilarTo"] + ["DistinctFrom", "PartOf", "HasA", "MadeOf", "Causes", "Desires"]
+    if querySpecificQuestion:
+        if "} --> [" in question:
+            Relations = ["HasProperty"]
+        elif " --> [" in question:
+            Relations = ["HasProperty"]
+        elif "} --> " in question:
+            Relations = ["InstanceOf"]
+        elif " <-> " in question:
+            Relations = ["SimilarTo"]
+        elif "!" in question and " --> " in question:
+            Relations = ["DistinctFrom"]
+        elif " --> part_of" in question:
+            Relations = ["PartOf"]
+        elif " --> have" in question:
+            Relations = ["HasA"]
+        elif " --> make_of" in question:
+            Relations = ["MadeOf"]
+        elif " --> want" in question:
+            Relations = ["Desires"]
+        elif " =/> "  in question:
+            Relations = ["causes"]
+        elif " --> " in question:
+            Relations = ["IsA"]
+    for rel in Relations:
         for side in ["end", "start"]: #extension and intenstion query
             ret.extend(queryConceptNet(maxAmount, term, side, rel))
     ret.sort(key = lambda T: -T[1])
-    for T in ret[:selectAmount]:
-        print(T[0])
-    sys.stdout.flush()
+    if not querySpecificQuestion:
+        ret = ret[:selectAmount]
+    selected = 0
+    returnlist = []
+    for T in ret:
+        queryPart = re.escape(question.replace(" ","")).replace("\?1","([a-zA-Z0-9]|_)*")
+        pattern = T[0].replace(" ", "")
+        #print("//MATCH ATTEMPT " + queryPart + " " + pattern + str(bool(re.search(queryPart, pattern))))
+        if not querySpecificQuestion or re.search(queryPart, pattern):
+            returnlist += [T[0] + (" :|:" if isEvent else "")]
+            selected +=1
+            if selected >= selectAmount:
+                break
+    return returnlist
 
 def extractAtomicTerms(inp):
     L = []
@@ -98,15 +134,26 @@ def extractAtomicTerms(inp):
                 atomicTerm = ""
     return L
 
+maxAmount = 5
+selectAmount = 5
+for arg in sys.argv:
+    if arg.startswith("maxAmount="):
+        maxAmount = int(arg.split("maxAmount=")[1])
+    elif arg.startswith("selectAmount="):
+        maxAmount = int(arg.split("selectAmount=")[1])
 maxAmount = 5 if len(sys.argv) <= 1 else int(sys.argv[1]) #per relation
-selectAmount = 5 if len(sys.argv) <= 2 else int(sys.argv[2]) #in total
-queryOnBeliefs = "queryOnBeliefs=false" not in sys.argv
-queryOnQuestions = True
+selectAmount = 1 if len(sys.argv) <= 2 else int(sys.argv[2]) #in total
+queryOnBeliefs = "queryOnBeliefs=true" in sys.argv
+queryOnQuestions = "queryOnQuestions=false" not in sys.argv
+querySpecificQuestion = "querySpecificQuestion=false" not in sys.argv
+if querySpecificQuestion:
+    maxAmount = max(maxAmount, 30) #at least 30 results are fine to make sure the specifically asked relation will be included
 while True:
     line = input()
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit()
     isNarsese = line.startswith('(') or line.startswith('<')
-    isQuestion = line.strip().endswith("? :|:") or line.strip().endswith("?") 
+    isQuestion = line.strip().endswith("? :|:") or line.strip().endswith("?")
+    isEvent = " :|:" in line
     if line.startswith("*queryOnBeliefs=true"):
         queryOnBeliefs = True
     elif line.startswith("*queryOnBeliefs=false"):
@@ -115,6 +162,10 @@ while True:
         queryOnQuestions = True
     elif line.startswith("*queryOnQuestions=false"):
         queryOnQuestions = False
+    elif line.startswith("*querySpecificQuestion=true"):
+        querySpecificQuestion = True
+    elif line.startswith("*querySpecificQuestion=false"):
+        querySpecificQuestion = False
     elif line.startswith("*maxConceptNetQueries="):
         maxAmount = int(line.strip().split("*maxConceptNetQueries=")[1])
         continue
@@ -124,9 +175,20 @@ while True:
         continue
     if isNarsese and ((queryOnQuestions and isQuestion) or (queryOnBeliefs and not isQuestion)):
         atoms = extractAtomicTerms(line)
+        cnt = 0
+        queryResults = set([])
         for atom in atoms:
-            print("//Querying knowledge for " + atom)
-            queryMeaning(atom, maxAmount, selectAmount)
+            question = line.split(">.")[0].split(").")[0].split(")?")[0].split(">?")[0]
+            print(("//Querying concept " + atom + " for relationships") if not querySpecificQuestion else ("//Querying concept " + atom + " for relationship " + question + ">"))
+            returnlist = queryMeaning(atom, maxAmount, selectAmount, isEvent, querySpecificQuestion, question)
+            for x in returnlist:
+                queryResults.add(x)
+            cnt += 1
+            if cnt >= 2:
+                break
+        for x in queryResults:
+            print(x)
+        sys.stdout.flush()
         print("//Querying complete")
     if isNarsese:
         print(line)
