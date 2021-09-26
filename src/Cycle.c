@@ -523,55 +523,6 @@ void Cycle_Inference(long currentTime)
 #endif
 }
 
-void Cycle_Prediction(long currentTime)
-{
-    for(int h=0; h<beliefsSelectedCnt; h++)
-    {
-        Event *e = &selectedBeliefs[h];
-        double parentpriority = selectedBeliefsPriority[h];
-        #pragma omp parallel for
-        for(int j=0; j<concepts.itemsAmount; j++)
-        {
-            Concept *c = concepts.items[j].address;
-            if(c->priority < conceptPriorityThreshold)
-            {
-                continue;
-            }
-            for(int k=0; k<c->precondition_beliefs[0].itemsAmount; k++)
-            {
-                if(!Memory_ImplicationValid(&c->precondition_beliefs[0].array[k]))
-                {
-                    Table_Remove(&c->precondition_beliefs[0], k--);
-                    continue;
-                }
-                Implication *imp = &c->precondition_beliefs[0].array[k];
-                Term precondition = Term_ExtractSubterm(&imp->term, 1);
-                Substitution subs = Variable_Unify(&precondition, &e->term);
-                if(subs.success)
-                {
-                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                    Concept *c_pre = Memory_FindConceptByTerm(&precondition);
-                    if(c_pre != NULL)
-                    {
-                        Substitution subs = Variable_Unify(&precondition, &e->term);
-                        Implication updated_imp = *imp;
-                        bool success;
-                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                        if(success)
-                        {
-                            Event predicted = Inference_BeliefDeduction(e, &updated_imp);
-                            #pragma omp critical(Memory)
-                            {
-                                Memory_AddEvent(&predicted, currentTime, parentpriority*Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 void Cycle_RelativeForgetting(long currentTime)
 {
     //Apply event forgetting:
@@ -622,7 +573,6 @@ void Cycle_Perform(long currentTime)
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
-    Cycle_Prediction(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
     //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on BELIEF_EVENT_DURABILITY_ON_USAGE
