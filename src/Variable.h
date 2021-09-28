@@ -57,6 +57,7 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
 //Unify two terms, returning the substitution/unifier
 Substitution Variable_Unify(Term *general, Term *specific);
 Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly);
+Substitution Variable_UnifyIncremental(Term *general, Term *specific, Substitution substitution, bool unifyQueryVarOnly);
 //Applying the substitution to a term, returning success
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
 //Introduce variables in an implication
