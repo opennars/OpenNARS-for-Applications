@@ -240,7 +240,10 @@ while True:
             continue
     if line.strip() != "": print("//Input sentence: " + line)
     #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
-    sentence = " " + line.replace("!", "").replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
+    sentence = line.replace("!", "").replace("?", "").replace(",", "").replace(" not ", " ").strip()
+    if sentence.endswith("."):
+        sentence = sentence[:-1]
+    sentence = " " + sentence + " "
     s_and_T = sentence_and_types(sentence)
     sentence = s_and_T[0] # canonical sentence (with lemmatized words)
     typetext = s_and_T[1] #" DET_1 ADJ_1 NOUN_1 ADV_2 VERB_2 DET_2 ADJ_2 NOUN_2 ADP_3 DET_3 ADJ_3 NOUN_3 "
