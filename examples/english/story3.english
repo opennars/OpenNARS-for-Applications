@@ -3,6 +3,6 @@ burgers are delicious food
 the stranger eats a burger in the pub
 100
 who eats delicious food?
-//expected: Answer: <(stranger * ([delicious] & food)) --> eat>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.331531
+//expected: Answer: <(stranger * ([delicious] & food)) --> eat>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.393204
 who is in the pub?
 //expected: Answer: <(stranger * pub) --> in>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.900000

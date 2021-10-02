@@ -112,15 +112,38 @@ R2( (M --> P), (M --> (S | P)), |-, (M --> S), Truth_DecomposeNPP )
 R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
 R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 //NAL4 rules
-RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
-RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
-RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
-RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
+R2( ((A * B) --> R), (C --> A), |-, ((C * B) --> R), Truth_Deduction )
+R2( ((A * B) --> R), (A --> C), |-, ((C * B) --> R), Truth_Induction )
+R2( ((A * B) --> R), (C <-> A), |-, ((C * B) --> R), Truth_Analogy )
+R2( ((A * B) --> R), (C --> B), |-, ((A * C) --> R), Truth_Deduction )
+R2( ((A * B) --> R), (B --> C), |-, ((A * C) --> R), Truth_Induction )
+R2( ((A * B) --> R), (C <-> B), |-, ((A * C) --> R), Truth_Analogy )
+R2( (R --> (A * B)), (A --> C), |-, (R --> (C * B)), Truth_Deduction )
+R2( (R --> (A * B)), (C --> A), |-, (R --> (C * B)), Truth_Abduction )
+R2( (R --> (A * B)), (C <-> A), |-, (R --> (C * B)), Truth_Analogy )
+R2( (R --> (A * B)), (B --> C), |-, (R --> (A * C)), Truth_Deduction )
+R2( (R --> (A * B)), (C --> B), |-, (R --> (A * C)), Truth_Abduction )
+R2( (R --> (A * B)), (C <-> B), |-, (R --> (A * C)), Truth_Analogy )
+R2( ((A * B) --> R), ((C * B) --> R), |-, (A <-> C), Truth_Comparison )
+R2( ((A * B) --> R), ((A * C) --> R), |-, (B <-> C), Truth_Comparison )
+R2( (R --> (A * B)), (R --> (C * B)), |-, (A <-> C), Truth_Comparison )
+R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
 //NAL5 rules
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
-//Other NAL5/6/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
+R1( (A && B), |-, (B && A), Truth_StructuralDeduction )
+R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
+R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
+R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
+R2( A, (A ==> B), |-, B, Truth_Deduction )
+R2( B, (A ==> B), |-, A, Truth_Abduction )
+R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
+R2( ((A && B) ==> C), A, |-, (B ==> C), Truth_Deduction )
+//NAL6 rules
+R2( (M --> A), (M --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
+R2( (A --> M), (B --> M), |-, ((B --> $1) ==> (A --> $1)), Truth_Induction )
+//Other NAL6/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
 
 #endif
 

@@ -46,7 +46,7 @@ extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF, f_plus, f_minus;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
-#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!"
+#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?"
 
 //Methods//
 //-------//

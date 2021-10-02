@@ -70,10 +70,9 @@ bool Variable_hasNumericTerm(Term *term)
     return false;
 }
 
-Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
+Substitution Variable_UnifyIncremental(Term *general, Term *specific, Substitution substitution, bool unifyQueryVarOnly)
 {
     Term generalcpy = *general;
-    Substitution substitution = {0};
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = generalcpy.atoms[i];
@@ -157,7 +156,14 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
 
 Substitution Variable_Unify(Term *general, Term *specific)
 {
-    return Variable_Unify2(general, specific, false);
+    Substitution substitution = {0};
+    return Variable_UnifyIncremental(general, specific, substitution, false);
+}
+
+Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
+{
+    Substitution substitution = {0};
+    return Variable_UnifyIncremental(general, specific, substitution, unifyQueryVarOnly);
 }
 
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
