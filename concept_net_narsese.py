@@ -149,7 +149,10 @@ querySpecificQuestion = "querySpecificQuestion=false" not in sys.argv
 if querySpecificQuestion:
     maxAmount = max(maxAmount, 30) #at least 30 results are fine to make sure the specifically asked relation will be included
 while True:
-    line = input()
+    try:
+        line = input()
+    except:
+        exit(0)
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit()
     isNarsese = line.startswith('(') or line.startswith('<')
     isQuestion = line.strip().endswith("? :|:") or line.strip().endswith("?")
