@@ -59,24 +59,24 @@ SyntacticalTransformations = [
 
 TermRepresentRelations = [
     #subject, predicate, object encoding
-    (r"ADJ_NOUN_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99)),
-    (r"ADV_VERB_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99))
+    (r"ADJ_NOUN_([0-9]*)", "(&, [ %s ], %s )", (1.0, 0.99)),
+    (r"ADV_VERB_([0-9]*)", "(&, [ %s ], %s )", (1.0, 0.99))
 ]
 
 AcquiredGrammar = []
 StatementRepresentRelations = [
     #clauses to Narsese:
     (r"\A(.*) IF_([0-9]*) (.*)\Z", r" < \3 =/> \1 > ", (1.0, 0.99), 0), #Conditional
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADV_VERB_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> BE_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\5 ) --> ADJ_NOUN_\3+ADP_\4 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
-    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( ADJ_NOUN_\1 * ADJ_NOUN_\5 ) --> ADJ_\3+ADP_\4 > ", (1.0, 0.99), 0), #new addition for larger_than etc.
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <(( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) * ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVOO
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\4 ) --> ADV_VERB_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\4 ) --> BE_\2+ADP_\3 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\5 ) --> ADJ_NOUN_\3+ADP_\4 > ", (1.0, 0.99), 0), #new addition for lie_in above_of etc.
+    (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\5 ) --> ADJ_\3+ADP_\4 > ", (1.0, 0.99), 0), #new addition for larger_than etc.
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( *, ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\3 ) , ADJ_NOUN_\4 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVOO
     (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_NOUN_([0-9]*) ", r" < ADJ_NOUN_\1 --> ADJ_NOUN_\3 > ", (1.0, 0.99), 0), #SVC
-    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVO
+    (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( *, ADJ_NOUN_\1 @ ADJ_NOUN_\3 ) --> ADV_VERB_\2 > ", (1.0, 0.99), 0), #SVO
     (r" ADJ_NOUN_([0-9]*) BE_([0-9]*) ADJ_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADJ_\3 ]> ", (1.0, 0.99), 0), #SVC
-    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( ADJ_NOUN_\1 * ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99), 0), #S*A (part1)
-    (r" ADJ_NOUN_([0-9]*) (.*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" ADJ_NOUN_\1 \2 , < ( ADJ_NOUN_\1 * ADJ_NOUN_\4 ) --> ADP_\3 > ", (1.0, 0.90), 0), #S*A (part2, optional learnable)
+    (r" ADJ_NOUN_([0-9]*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" <( *, ADJ_NOUN_\1 @ ADJ_NOUN_\3 ) --> ADP_\2 > ", (1.0, 0.99), 0), #S*A (part1)
+    (r" ADJ_NOUN_([0-9]*) (.*) ADP_([0-9]*) ADJ_NOUN_([0-9]*) ", r" ADJ_NOUN_\1 \2 , < ( *, ADJ_NOUN_\1 @ ADJ_NOUN_\4 ) --> ADP_\3 > ", (1.0, 0.90), 0), #S*A (part2, optional learnable)
     (r" ADJ_NOUN_([0-9]*) ADV_VERB_([0-9]*) ", r" < ADJ_NOUN_\1 --> [ ADV_VERB_\2 ] > ", (1.0, 0.99), 0), #SV
 ]
 
@@ -212,6 +212,8 @@ while True:
     #Get input line and forward potential command
     try:
         line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
+        if line == "":
+            line = "1"
     except:
         exit(0)
     isQuestion = line.endswith("?")
@@ -265,7 +267,7 @@ while True:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
-            print(statement.replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " :|:")) + TruthString)
+            print(statement.replace(" @ ", " , ").replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " :|:")) + TruthString)
             sys.stdout.flush()
         if len(typetextSplit) > 0 and thinkcycles != None:
             print(thinkcycles, flush=True)

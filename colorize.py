@@ -44,9 +44,9 @@ for line in sys.stdin:
         COLOR = BOLD + MAGENTA
     elif line.startswith("Comment:") or line.startswith("//"):
         COLOR = MAGENTA
-    elif line.startswith("Input:"):
+    elif line.startswith("  IN:"):
         COLOR = GREEN
-    elif line.startswith("Derived:"):
+    elif line.startswith(" OUT:"):
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
         COLOR = BOLD + RED

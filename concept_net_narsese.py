@@ -60,7 +60,7 @@ def toNarsese(subject_relation_predicate):
         return "<" + subject + " <-> " + predicate + ">."
     if relation == "Causes":
         return "<" + subject + " =/> " + predicate + ">."
-    return "<(" + subject + " * " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").replace("Desires", "want").lower() + ">."
+    return "<( *, " + subject + " , " + predicate + ") --> " + relation.replace("PartOf", "part_of").replace("HasA", "have").replace("MadeOf", "make_of").replace("Desires", "want").lower() + ">."
 
 def unwrap(rel):
     parts = rel.split("[")[1].split("]")[0].replace("/c/en/", "").replace("/n/", "").replace("/r/", "").replace("/", "").split(",");
