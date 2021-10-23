@@ -1,5 +1,6 @@
 *motorbabbling=false
 *volume=0
+//!!!!!! MAKE SURE TO RUN THIS EXAMPLE WITH COMPOUND_TERM_SIZE_MAX >= 256 in Config.h!
 5.0 is the size of the fridge
 2.4 is the size of the shoe
 3.2 is the size of the box

@@ -96,8 +96,8 @@
 #define TABLE_SIZE 20
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
-//Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 256
+//Maximum compound term size (power of two)
+#define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, each term has at most COMPOUND_TERM_SIZE_MAX/2 non-copula atomics + space for copulas
 #define ATOMS_MAX 524400
 //Amount of buckets for atoms hashmap
