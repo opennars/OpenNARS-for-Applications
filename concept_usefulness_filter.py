@@ -32,7 +32,6 @@ for line in sys.stdin:
         started = True
     if not started:
         continue
-    print(line)
     if line.startswith("*"):
         print(line, end='')
         continue
