@@ -14,7 +14,7 @@
 <(<(#sz * $2) --> size_of> &/ <($1 * ($2 * #sz)) --> fittedIn>) =/> <($1 * $2) --> in>>.
 
 //NARS will only fit the shoe into the box if the shoe is smaller than the box:
-//TODO improve NLP: fit the shoe into the box!
+//TODO improve NLP by capturing command and question grammar: "the shoe should be in the box!"
 the shoe is in the box!
 20
 //expected: ^pick executed with args ({SELF} * (shoe * box))
