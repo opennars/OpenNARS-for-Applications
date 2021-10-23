@@ -2,30 +2,30 @@
 //Stressed people tend to smoke
 <<$1 --> [stressed]> ==> <$1 --> [smokes]>>. {1.0 0.99}
 //A smoker befriended with someone else often makes the other person smoke as well
-<<#1 --> ((friend /2 $2) & [smokes])> ==> <$2 --> [smokes]>>. {1.0 0.9}
+<(<#1 --> [smokes]> &/ <(#1 * $2) --> friend>) ==> <$2 --> [smokes]>>. {1.0 0.9}
 //If someone smokes, he gets asthma
 <<$1 --> [smokes]> ==> <$1 --> [asthma]>>. {1.0 0.9}
-100
+10
 //Angelika smokes
-<{angelika} --> [smokes]>.
+<{angelika} --> [smokes]>. :|:
 //Angelika is a friend of Jonas
-<{angelika} --> (friend /1 {jonas})>.
+<({angelika} * {jonas}) --> friend>. :|:
 //Jonas is a friend of Angelika
-<{jonas} --> (friend /1 {angelika})>.
-100
+<({jonas} * {angelika}) --> friend>. :|:
+10
 //Jonas has asthma?
-<{jonas} --> [asthma]>?
-//--expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
+<{jonas} --> [asthma]>? :|:
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
 //Angelika has asthma?
-<{angelika} --> [asthma]>?
-//--expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
-100
+<{angelika} --> [asthma]>? :|:
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
+10
 //Jonas is stressed
-<{jonas} --> [stressed]>.
-100
+<{jonas} --> [stressed]>. :|:
+10
 //Jonas has asthma?
-<{jonas} --> [asthma]>?
-//--//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
+<{jonas} --> [asthma]>? :|:
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
 //Angelika has asthma?
-<{angelika} --> [asthma]>?
-//--//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
+<{angelika} --> [asthma]>? :|:
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000

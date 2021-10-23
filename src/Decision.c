@@ -270,10 +270,6 @@ void Decision_Anticipate(int operationID, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
-                                    Event eternal = result;
-                                    eternal.truth = Truth_Eternalize(eternal.truth);
-                                    eternal.occurrenceTime = OCCURRENCE_ETERNAL;
-                                    c->belief = Inference_RevisionAndChoice(&c->belief, &eternal, currentTime, NULL);
                                 }
                             }
                         }
