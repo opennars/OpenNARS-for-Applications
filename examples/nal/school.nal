@@ -49,7 +49,7 @@
 //the goal is to educate children
 <child --> [educated]>! :|:
 10
-//expected: ^go executed with args ({SELF} * classroom)
+//expected: ^go executed with args ({SELF} * classrom)
 //you are somewhere with a clean blackboard (you are in the classroom!)
 <blackboard --> [clean]>. :|:
 //and a blue floor as well

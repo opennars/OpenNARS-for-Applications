@@ -15,17 +15,17 @@
 10
 //Jonas has asthma?
 <{jonas} --> [asthma]>? :|:
-//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
+//--(no transitivity currently) expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
 //Angelika has asthma?
 <{angelika} --> [asthma]>? :|:
-//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <{angelika} --> [asthma]>. :|: occurrenceTime=16 Truth: frequency=0.998022, confidence=0.465729
 10
 //Jonas is stressed
 <{jonas} --> [stressed]>. :|:
 10
 //Jonas has asthma?
 <{jonas} --> [asthma]>? :|:
-//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
+//--(no transitivity currently) expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.801900
 //Angelika has asthma?
 <{angelika} --> [asthma]>? :|:
-//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
+//--(last event evidence) expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
