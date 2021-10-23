@@ -51,7 +51,7 @@ void NAR_INIT();
 //Run the system for a certain amount of cycles
 void NAR_Cycles(int cycles);
 //Add input
-Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset, bool isUserKnowledge);
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset);
 Event NAR_AddInputBelief(Term term);
 Event NAR_AddInputGoal(Term term);
 //Add an operation

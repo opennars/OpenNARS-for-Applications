@@ -26,8 +26,8 @@ void RuleTable_Test()
 {
     puts(">>RuleTable test start");
     NAR_INIT();
-    NAR_AddInput(Narsese_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true, 0, false);
-    NAR_AddInput(Narsese_Term("<animal --> being>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true, 0, false);
+    NAR_AddInput(Narsese_Term("<cat --> animal>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true, 0);
+    NAR_AddInput(Narsese_Term("<animal --> being>"), EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, true, 0);
     NAR_Cycles(1);
     puts(">>RuleTable test successul");
 }

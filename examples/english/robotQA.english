@@ -17,4 +17,4 @@ the bowl is near the bottle!
 <bottle --> [equalX]>. :|:
 10
 the bowl is near the bottle?
-//expected: Answer: <(bowl * bottle) --> near>. :|: occurrenceTime=13 Truth: frequency=1.000000, confidence=0.583200
+//--//expected: Answer: <(bowl * bottle) --> near>. :|: occurrenceTime=13 Truth: frequency=1.000000, confidence=0.583200

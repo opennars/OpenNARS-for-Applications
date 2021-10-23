@@ -378,7 +378,7 @@ Term Narsese_Term(char *narsese)
     return ret;
 }
 
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, bool *isUserKnowledge, Truth *destTv, double *occurrenceTimeOffset)
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, Truth *destTv, double *occurrenceTimeOffset)
 {
     assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
     //Handle optional dt=num at beginning of line
@@ -431,9 +431,8 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *ten
     if(str_len >= 3 && narseseInplace[str_len-1] == ':' && narseseInplace[str_len-2] == '\\' && narseseInplace[str_len-3] == ':')
         *tense = 2;
     if(str_len >= 3 && narseseInplace[str_len-1] == ':' && narseseInplace[str_len-2] == '/' && narseseInplace[str_len-3] == ':')
-        *tense = 3;
-    *isUserKnowledge = str_len >= 3 && narseseInplace[str_len-1] == ':' && narseseInplace[str_len-2] == '@' && narseseInplace[str_len-3] == ':'; 
-    int punctuation_offset = (*tense || *isUserKnowledge) ? 5 : 1;
+        *tense = 3; 
+    int punctuation_offset = *tense ? 5 : 1;
     *punctuation = narseseInplace[str_len-punctuation_offset];
     assert(*punctuation == '!' || *punctuation == '?' || *punctuation == '.', "Parsing error: Punctuation has to be belief . goal ! or question ?");
     narseseInplace[str_len-punctuation_offset] = 0; //we will only parse the term before it
