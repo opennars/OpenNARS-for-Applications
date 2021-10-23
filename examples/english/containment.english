@@ -9,7 +9,7 @@
 <<((f_minus * ($1 * ?1)) * shoe) --> size_of> =/> <($1 * box) --> size_of>>?
 //expected: Answer: <<((f_minus * ($1 * 0.800000)) * shoe) --> size_of> =/> <($1 * box) --> size_of>>. Truth: frequency=1.000000, confidence=0.282230
 
-//It can be fit with something if the thing to fit into is smaller
+//It can be fit into something if the thing to fit into is smaller
 <(<((f_minus * ($containersize * $1)) * $object) --> size_of> &/ <({SELF} * ($object * $container)) --> ^pick>) =/> <($object * ($container * $containersize)) --> fittedInSize>>.
 <(<(#sz * $2) --> size_of> &/ <($1 * ($2 * #sz)) --> fittedInSize>) =/> <($1 * $2) --> in>>.
 
