@@ -10,14 +10,14 @@
 //expected: Answer: <<((f_minus * ($1 * 0.800000)) * shoe) --> size_of> =/> <($1 * box) --> size_of>>. Truth: frequency=1.000000, confidence=0.282230
 
 //It can be fit with something if the thing to fit into is smaller
-<(<((f_minus * ($containersize * $1)) * $object) --> size_of> &/ <({SELF} * ($object * $container)) --> ^pick>) =/> <($object * ($container * $containersize)) --> fitsInSize>>.
-<(<(#sz * $2) --> size_of> &/ <($1 * ($2 * #sz)) --> fitsInSize>) =/> <($1 * $2) --> fit>>.
+<(<((f_minus * ($containersize * $1)) * $object) --> size_of> &/ <({SELF} * ($object * $container)) --> ^pick>) =/> <($object * ($container * $containersize)) --> fittedInSize>>.
+<(<(#sz * $2) --> size_of> &/ <($1 * ($2 * #sz)) --> fittedInSize>) =/> <($1 * $2) --> in>>.
 
 //NARS will only fit the shoe into the box if the shoe is smaller than the box:
 //TODO improve NLP: fit the shoe into the box!
-the shoe fits the box!
+the shoe is in the box!
 20
 //expected: ^pick executed with args ({SELF} * (shoe * box))
-the fridge fits the box!
+the fridge is in the box!
 20
 //no execution!
