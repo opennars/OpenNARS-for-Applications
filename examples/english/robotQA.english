@@ -1,6 +1,6 @@
 *volume=0
 //If you see two things in front of you, we say they are near to each other (learnable with language input too if necessary)
-<<($1 & $2) --> [equalX]> =/> <($1 * $2) --> near>>.
+<(<$1 --> [equalX]> &/ <$2 --> [equalX]>) =/> <($1 * $2) --> near>>.
 //If something is to the left, looking to the left can lead to seeing a bowl in front at the same time (easily learnable from observation)
 <(<$1 --> [smallerX]> &/ ^left) =/> <(bowl & $1) --> [equalX]>>.
 //If something is to the right, looking to the right can lead to seeing a bowl in front at the same time (easily learnable from observation)
@@ -17,4 +17,4 @@ the bowl is near the bottle!
 <bottle --> [equalX]>. :|:
 10
 the bowl is near the bottle?
-//--//expected: Answer: <(bowl * bottle) --> near>. :|: occurrenceTime=13 Truth: frequency=1.000000, confidence=0.583200
+//expected: Answer: <(bowl * bottle) --> near>. :|: occurrenceTime=12 Truth: frequency=1.000000, confidence=0.524880
