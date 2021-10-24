@@ -64,7 +64,7 @@ static void Shell_op_deactivate(Term args)
 {
     fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
-static void Shell_op_consider(Term args)    // = ^consider  //0 1 2 3
+static void Shell_op_consider(Term args)    //0 1 2 3
 {                                           //1 2 3 4
     Event *e = &Decision_reason;            //* " S SELF
     Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
