@@ -47,9 +47,14 @@ Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
+//NAL-9 prototype for now (not compatible with multithreading!)
+Event Memory_task;
+Event Memory_belief;
 
 static void Memory_ResetEvents()
 {
+    Memory_task = (Event) {0};
+    Memory_belief = (Event) {0};
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
@@ -338,6 +343,36 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
     {
         return;
     }
+    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+    if(derived && !isImplication) //learning the preconditions and consequences of consider operation by nodeling its own inference process
+    {
+        //<(Memory_task + <({SELF} * Memory_belief) : ^consider>) $ event>
+        //$  +  event    Memory_task   :                  *   ^consider                                   "  Memory_belief                                                       SELF
+        //1  2  3        4             5   6   7   8  9  10    11        12  13  14  15  16  17  18  19  20  21            22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40
+        //0  1  2        3             4   5   6   7  8   9    10        11  12  13  14  15  16  17  18  19  20            21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
+        Term implication = {0};
+        bool success = true;
+        implication.atoms[0] = Narsese_AtomicTermIndex("$");
+        implication.atoms[1] = Narsese_AtomicTermIndex("+");
+        success &= Term_OverrideSubterm(&implication, 2, &event->term);
+        success &= Term_OverrideSubterm(&implication, 3, &Memory_task.term);
+        implication.atoms[4] = Narsese_AtomicTermIndex(":");
+        implication.atoms[9] = Narsese_AtomicTermIndex("*");
+        implication.atoms[10] = Narsese_AtomicTermIndex("^consider");
+        implication.atoms[19] = Narsese_AtomicTermIndex("\"");
+        success &= Term_OverrideSubterm(&implication, 20, &Memory_belief.term);
+        implication.atoms[39] = Narsese_AtomicTermIndex("SELF");
+        if(success)
+        {
+            Event ev = { .term = implication,
+                         .type = EVENT_TYPE_BELIEF, 
+                         .truth = Truth_Induction(Memory_task.truth, Memory_belief.truth),
+                         .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
+                         .occurrenceTime = currentTime,
+                         .creationTime = currentTime };
+            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false, false);
+        }
+    }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
     {
         if(input)
@@ -349,7 +384,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
             }
         }
     }
-    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
     if(!readded && !isImplication) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);

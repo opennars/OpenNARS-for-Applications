@@ -30,6 +30,8 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
+Event Decision_reason = {0};
+
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
@@ -47,6 +49,7 @@ void Decision_Execute(Decision *decision)
         }
         feedback = operation;
     }
+    Decision_reason = *decision->reason;
     (*decision->op.action)(decision->arguments);
     NAR_AddInputBelief(feedback);
 }

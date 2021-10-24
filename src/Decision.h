@@ -46,6 +46,7 @@ extern double ANTICIPATION_THRESHOLD;
 extern double ANTICIPATION_CONFIDENCE;
 extern double MOTOR_BABBLING_CHANCE;
 extern int BABBLING_OPS;
+extern Event Decision_reason;
 
 //Data structure//
 //--------------//
@@ -58,7 +59,7 @@ typedef struct
     Term arguments;
     bool specialized;
     Event *reason;
-}Decision;
+} Decision;
 
 //Methods//
 //-------//

@@ -64,6 +64,25 @@ static void Shell_op_deactivate(Term args)
 {
     fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
+static void Shell_op_consider(Term args)    // = ^consider  //0 1 2 3
+{                                           //1 2 3 4
+    Event *e = &Decision_reason;            //* " S SELF
+    Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
+    Concept *c = Memory_FindConceptByTerm(&S);
+    fputs(Narsese_operatorNames[10], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    if(c != NULL)
+    {
+        Event *belief = &c->belief;
+        if(belief->type != EVENT_TYPE_DELETED)
+        {
+            long a = currentTime;
+            Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+#if STAGE==2
+            RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, 0, stamp, currentTime, 1.0, 1.0, true, c, c->id);
+#endif
+        }
+    }
+}
 void Shell_NARInit()
 {
     fflush(stdout);
@@ -80,6 +99,7 @@ void Shell_NARInit()
     NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation(Narsese_AtomicTerm("^consider"), Shell_op_consider); if(++k >= OPERATIONS_MAX) { return; };
     assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 

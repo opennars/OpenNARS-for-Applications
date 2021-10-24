@@ -87,7 +87,7 @@
 //Maximum amount of goal events attention buffer holds
 #define CYCLING_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered
-#define OPERATIONS_MAX 10
+#define OPERATIONS_MAX 11
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
 //Maximum event FIFO size

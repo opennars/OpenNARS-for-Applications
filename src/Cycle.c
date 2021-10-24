@@ -451,6 +451,7 @@ void Cycle_Inference(long currentTime)
             conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
             //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
             Event *e = &selectedBeliefs[i];
+            Memory_task = *e;
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
@@ -487,6 +488,7 @@ void Cycle_Inference(long currentTime)
                         project_belief.occurrenceTime = e->occurrenceTime;
                         belief = &project_belief;
                     }
+                    Memory_belief = *belief;
                     //Check for overlap and apply inference rules
                     if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                     {
