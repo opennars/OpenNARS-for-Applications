@@ -35,12 +35,18 @@ void Stats_Print(long currentTime)
         Stats_averageBeliefEventPriority += cycling_belief_events.items[i].priority;
     }
     Stats_averageBeliefEventPriority /= (double) CYCLING_BELIEF_EVENTS_MAX;
-    double Stats_averageGoalEventPriority = 0.0;
-    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    double Stats_averageExternalGoalEventPriority = 0.0;
+    for(int i=0; i<cycling_external_goal_events.itemsAmount; i++)
     {
-        Stats_averageGoalEventPriority += cycling_goal_events.items[i].priority;
+        Stats_averageExternalGoalEventPriority += cycling_external_goal_events.items[i].priority;
     }
-    Stats_averageGoalEventPriority /= (double) CYCLING_GOAL_EVENTS_MAX;
+    Stats_averageExternalGoalEventPriority /= (double) CYCLING_EXTERNAL_GOAL_EVENTS_MAX;
+    double Stats_averageMentalGoalEventPriority = 0.0;
+    for(int i=0; i<cycling_mental_goal_events.itemsAmount; i++)
+    {
+        Stats_averageMentalGoalEventPriority += cycling_mental_goal_events.items[i].priority;
+    }
+    Stats_averageMentalGoalEventPriority /= (double) CYCLING_MENTAL_GOAL_EVENTS_MAX;
     double Stats_averageConceptPriority = 0.0;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -64,9 +70,11 @@ void Stats_Print(long currentTime)
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
     printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
-    printf("curring goal events cnt:\t\t%d\n", cycling_goal_events.itemsAmount);
+    printf("curring external goal events cnt:\t\t%d\n", cycling_external_goal_events.itemsAmount);
+    printf("curring mental goal events cnt:\t\t%d\n", cycling_mental_goal_events.itemsAmount);
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
-    printf("current average goal event priority:\t%f\n", Stats_averageGoalEventPriority);
+    printf("current average external goal event priority:\t%f\n", Stats_averageExternalGoalEventPriority);
+    printf("current average mental goal event priority:\t%f\n", Stats_averageMentalGoalEventPriority);
     printf("Maximum chain length in concept hashtable: %d\n", HashTable_MaximumChainLength(&HTconcepts));
     printf("Maximum chain length in atoms hashtable: %d\n", HashTable_MaximumChainLength(&HTatoms));
     fflush(stdout);

@@ -85,7 +85,8 @@
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
-#define CYCLING_GOAL_EVENTS_MAX 40
+#define CYCLING_EXTERNAL_GOAL_EVENTS_MAX 40
+#define CYCLING_MENTAL_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 11
 //Maximum size of the stamp in terms of evidental base id's

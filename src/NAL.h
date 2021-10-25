@@ -41,6 +41,8 @@
 //-------//
 //Generates inference rule code
 void NAL_GenerateRuleTable();
+//checks whether a conclusion is simple enough
+bool NAL_WithinAllowedComplexity(Term *conclusionTerm);
 //Method for the derivation of new events as called by the generated rule table
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid);
 //macro for syntactic representation, increases readability, double premise inference

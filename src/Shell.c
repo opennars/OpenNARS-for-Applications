@@ -206,15 +206,29 @@ int Shell_ProcessInput(char *line)
             puts("//*done");
         }
         else
-        if(!strcmp(line,"*cycling_goal_events"))
+        if(!strcmp(line,"*cycling_external_goal_events"))
         {
-            puts("//*cycling_goal_events");
-            for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+            puts("//*cycling_external_goal_events");
+            for(int i=0; i<cycling_external_goal_events.itemsAmount; i++)
             {
-                Event *e = cycling_goal_events.items[i].address;
+                Event *e = cycling_external_goal_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
-                printf(": {\"priority\": %f, \"time\": %ld } ", cycling_goal_events.items[i].priority, e->occurrenceTime);
+                printf(": {\"priority\": %f, \"time\": %ld } ", cycling_external_goal_events.items[i].priority, e->occurrenceTime);
+                Truth_Print(&e->truth);
+            }
+            puts("//*done");
+        }
+        else
+        if(!strcmp(line,"*cycling_mental_goal_events"))
+        {
+            puts("//*cycling_mental_goal_events");
+            for(int i=0; i<cycling_mental_goal_events.itemsAmount; i++)
+            {
+                Event *e = cycling_mental_goal_events.items[i].address;
+                assert(e != NULL, "Event is null");
+                Narsese_PrintTerm(&e->term);
+                printf(": {\"priority\": %f, \"time\": %ld } ", cycling_mental_goal_events.items[i].priority, e->occurrenceTime);
                 Truth_Print(&e->truth);
             }
             puts("//*done");

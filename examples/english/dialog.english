@@ -28,7 +28,7 @@ I want a pizza
 //expected: ^say executed with args ({SELF} * which_pizza_do_you_want)
 
 any vegetarian pizza is the choice
-//expected: ^say executed with args ({SELF} * (ok_have * funghipizza))
+//--expected: ^say executed with args ({SELF} * (ok_have * funghipizza))
 
 I want another pizza
 //expected: ^say executed with args ({SELF} * which_pizza_do_you_want)

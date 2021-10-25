@@ -28,7 +28,8 @@
 PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_belief_events;
-PriorityQueue cycling_goal_events;
+PriorityQueue cycling_external_goal_events;
+PriorityQueue cycling_mental_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event fifo:
@@ -43,8 +44,10 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
-Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
-Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+Event cycling_external_goal_event_storage[CYCLING_EXTERNAL_GOAL_EVENTS_MAX];
+Item cycling_external_goal_event_items_storage[CYCLING_EXTERNAL_GOAL_EVENTS_MAX];
+Event cycling_mental_goal_event_storage[CYCLING_MENTAL_GOAL_EVENTS_MAX];
+Item cycling_mental_goal_event_items_storage[CYCLING_MENTAL_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
 //NAL-9 prototype for now (not compatible with multithreading!)
@@ -57,16 +60,22 @@ static void Memory_ResetEvents()
     Memory_belief = (Event) {0};
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
+    PriorityQueue_INIT(&cycling_external_goal_events, cycling_external_goal_event_items_storage, CYCLING_EXTERNAL_GOAL_EVENTS_MAX);
+    PriorityQueue_INIT(&cycling_mental_goal_events, cycling_mental_goal_event_items_storage, CYCLING_MENTAL_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
-    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    for(int i=0; i<CYCLING_EXTERNAL_GOAL_EVENTS_MAX; i++)
     {
-        cycling_goal_event_storage[i] = (Event) {0};
-        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
+        cycling_external_goal_event_storage[i] = (Event) {0};
+        cycling_external_goal_events.items[i] = (Item) { .address = &(cycling_external_goal_event_storage[i]) };
+    }
+    for(int i=0; i<CYCLING_MENTAL_GOAL_EVENTS_MAX; i++)
+    {
+        cycling_mental_goal_event_storage[i] = (Event) {0};
+        cycling_mental_goal_events.items[i] = (Item) { .address = &(cycling_external_goal_event_storage[i]) };
     }
 }
 
@@ -171,11 +180,11 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, bool mental)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e))) //avoid duplicate derivations
+       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(mental ? &cycling_mental_goal_events : &cycling_external_goal_events, e))) //avoid duplicate derivations
     {
         return false;
     }
@@ -191,7 +200,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : (mental ? &cycling_mental_goal_events : &cycling_external_goal_events);
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
@@ -321,13 +330,13 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
+                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted, false);
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
+void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted, bool mental)
 {
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
@@ -370,7 +379,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
-            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false, false);
+            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false, false, false);
         }
     }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -384,7 +393,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
             }
         }
     }
-    if(!readded && !isImplication) //print new tasks
+    if(!readded && !isImplication && !(input && mental)) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
@@ -398,19 +407,23 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
                 return;
             }
         }
-        Memory_addCyclingEvent(event, priority, currentTime);
+        Memory_addCyclingEvent(event, priority, currentTime, mental);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        Memory_addCyclingEvent(event, priority, currentTime);
+        Memory_addCyclingEvent(event, priority, currentTime, mental);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
 void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false, false);
+    if(event->type == EVENT_TYPE_GOAL) //also add to mental goals
+    {
+        Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false, true);
+    }
 }
 
 bool Memory_ImplicationValid(Implication *imp)

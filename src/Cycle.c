@@ -43,9 +43,9 @@ static long conceptProcessID = 0; //avoids duplicate concept processing
     }
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static DecisionPair Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
+static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime, bool mental)
 {
-    DecisionPair decision = {0};
+    Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(c->usage, currentTime, false);
@@ -57,16 +57,16 @@ static DecisionPair Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long
         else
         {
             //pass spike if the concept doesn't have a satisfying motor command
-            decision = Decision_Suggest(c, e, currentTime);
+            decision = Decision_Suggest(c, e, currentTime, mental);
         }
     }
     return decision;
 }
 
 //Process an event, by creating a concept, or activating an existing
-static DecisionPair Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
+static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool mental)
 {
-    DecisionPair best_decision = {0};
+    Decision best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
@@ -82,8 +82,8 @@ static DecisionPair Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             if(subs.success)
             {
                 ecp.term = e->term;
-                DecisionPair decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                best_decision = Decision_BetterDecisionPair(best_decision, decision);
+                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, mental);
+                best_decision = Decision_BetterDecision(best_decision, decision);
             }
         }
         else
@@ -95,8 +95,8 @@ static DecisionPair Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                 if(success)
                 {
-                    DecisionPair decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    best_decision = Decision_BetterDecisionPair(best_decision, decision);
+                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, mental);
+                    best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
         }
@@ -127,7 +127,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 //{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 //if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
 //{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
-bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, bool mental)
 {
     //1. Extract potential subgoals
     if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
@@ -235,43 +235,43 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false, mental);
     return true;
 }
 
 //Propagate subgoals, leading to decisions
-static void Cycle_ProcessInputGoalEvents(long currentTime)
+static void Cycle_ProcessInputGoalEvents(long currentTime, bool mental)
 {
-    DecisionPair best_decision = {0};
+    Decision best_decision = {0};
     //process selected goals
     for(int i=0; i<goalsSelectedCnt; i++)
     {
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         //if goal is a sequence, overwrite with first deduced non-fulfilled element
-        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i])) //the goal was a sequence which leaded to a subgoal derivation
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], mental)) //the goal was a sequence which leaded to a subgoal derivation
         {
             continue;
         }
-        DecisionPair decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        best_decision = Decision_BetterDecisionPair(best_decision, decision);
+        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime, mental);
+        best_decision = Decision_BetterDecision(best_decision, decision);
     }
-    if(best_decision.mental_decision.execute && best_decision.mental_decision.operationID > 0)
-    {
-        //execute decision
-        Decision_Execute(&best_decision.mental_decision);
-    }
-    if(best_decision.external_decision.execute && best_decision.external_decision.operationID > 0)
+    if(best_decision.execute && best_decision.operationID > 0)
     {
         //reset cycling goal events after execution to avoid "residue actions"
-        PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
-        //also don't re-add the selected goal:
-        goalsSelectedCnt = 0;
+        if(mental)
+        {
+            PriorityQueue_INIT(&cycling_mental_goal_events, cycling_mental_goal_events.items, cycling_mental_goal_events.maxElements);
+        }
+        else
+        {
+            PriorityQueue_INIT(&cycling_external_goal_events, cycling_external_goal_events.items, cycling_external_goal_events.maxElements);
+        }
         //execute decision
-        Decision_Execute(&best_decision.external_decision);
+        Decision_Execute(&best_decision);
     }
     //pass goal spikes on to the next
-    for(int i=0; i<goalsSelectedCnt && !best_decision.external_decision.execute; i++)
+    for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
     {
         Event *goal = &selectedGoals[i];
         conceptProcessID++; //process subgoaling for the related concepts for each selected goal
@@ -283,6 +283,14 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                 c->goal_spike = Inference_RevisionAndChoice(&c->goal_spike, goal, currentTime, &revised);
                 for(int opi=NOP_SUBGOALING ? 0 : 1; opi<=OPERATIONS_MAX; opi++)
                 {
+                    if(mental && opi != 1)
+                    {
+                        continue; //only ^consider table entries are to be considered for decision making
+                    }
+                    if(!mental && opi == 1)
+                    {
+                        continue; //^consider table entries don't compete in the decision making
+                    }
                     for(int j=0; j<c->precondition_beliefs[opi].itemsAmount; j++)
                     {
                         Implication *imp = &c->precondition_beliefs[opi].array[j];
@@ -302,7 +310,10 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            if(NAL_WithinAllowedComplexity(&newGoalUpdated.term))
+                            {
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false, mental);
+                            }
                         }
                     }
                 }
@@ -356,18 +367,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
     }
 }
 
-void Cycle_PushEvents(long currentTime)
-{
-    for(int i=0; i<beliefsSelectedCnt; i++)
-    {
-        Memory_AddEvent(&selectedBeliefs[i], currentTime, selectedBeliefsPriority[i], 0, false, false, true, false, false);
-    }
-    for(int i=0; i<goalsSelectedCnt; i++)
-    {
-        Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
-    }
-}
-
 void Cycle_ProcessInputBeliefEvents(long currentTime)
 {
     //1. process newest event
@@ -380,7 +379,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
+                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(state == 1) //postcondition always len1
@@ -528,9 +527,13 @@ void Cycle_RelativeForgetting(long currentTime)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
-    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    for(int i=0; i<cycling_external_goal_events.itemsAmount; i++)
     {
-        cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
+        cycling_external_goal_events.items[i].priority *= EVENT_DURABILITY;
+    }
+    for(int i=0; i<cycling_mental_goal_events.itemsAmount; i++)
+    {
+        cycling_mental_goal_events.items[i].priority *= EVENT_DURABILITY;
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
@@ -542,23 +545,24 @@ void Cycle_RelativeForgetting(long currentTime)
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_belief_events);
-    PriorityQueue_Rebuild(&cycling_goal_events);
+    PriorityQueue_Rebuild(&cycling_external_goal_events);
+    PriorityQueue_Rebuild(&cycling_mental_goal_events);
 }
 
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
-    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
+    //1. Retrieve BELIEF events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_ProcessInputGoalEvents(currentTime);
+    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_mental_goal_events, GOAL_EVENT_SELECTIONS);
+    Cycle_ProcessInputGoalEvents(currentTime, true);
+    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_external_goal_events, GOAL_EVENT_SELECTIONS);
+    Cycle_ProcessInputGoalEvents(currentTime, false);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
-    //6. Push in 1. selected events back to the queue as well, applying relative forgetting based on BELIEF_EVENT_DURABILITY_ON_USAGE
-    Cycle_PushEvents(currentTime);
 }

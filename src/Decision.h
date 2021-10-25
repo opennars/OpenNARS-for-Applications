@@ -73,8 +73,8 @@ void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_Anticipate(int operationID, long currentTime);
 //NAR decision making rule applying when goal is an operation
-DecisionPair Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime, bool mental);
 //Better decision pair:
-DecisionPair Decision_BetterDecisionPair(DecisionPair best_decision, DecisionPair decision);
+Decision Decision_BetterDecision(Decision best_decision, Decision decision);
 
 #endif

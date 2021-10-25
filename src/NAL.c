@@ -148,7 +148,7 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
-static bool NAL_WithinAllowedComplexity(Term *conclusionTerm)
+bool NAL_WithinAllowedComplexity(Term *conclusionTerm)
 {
     for(int i=DERIVED_COMPOUND_TERM_SIZE_MAX-1; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
@@ -174,7 +174,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(!NAL_AtomAppearsTwice(&conclusionTerm) && NAL_WithinAllowedComplexity(&conclusionTerm))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false, false);
             }
         }
     }
