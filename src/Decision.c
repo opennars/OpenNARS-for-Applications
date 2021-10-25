@@ -49,7 +49,7 @@ void Decision_Execute(Decision *decision)
         }
         feedback = operation;
     }
-    Decision_reason = *decision->reason;
+    Decision_reason = decision->reason ? *decision->reason : (Event) {0};
     (*decision->op.action)(decision->arguments);
     NAR_AddInputBelief(feedback);
 }
