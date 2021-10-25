@@ -255,6 +255,8 @@ int Shell_ProcessInput(char *line)
             int opID;
             char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
+            opID++; //since we can't rename ^consider operator
+            assert(opID <= OPERATIONS_MAX, "OPERATIONS_MAX too small to set operator name at this index");
             Term previousOpAtom = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
             strncpy(Narsese_operatorNames[opID-1], opname, ATOMIC_TERM_LEN_MAX);
             strncpy(Narsese_atomNames[previousOpAtom.atoms[0]-1], opname, ATOMIC_TERM_LEN_MAX);
