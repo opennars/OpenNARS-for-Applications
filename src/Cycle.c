@@ -43,9 +43,9 @@ static long conceptProcessID = 0; //avoids duplicate concept processing
     }
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
+static DecisionPair Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
-    Decision decision = {0};
+    DecisionPair decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
         c->usage = Usage_use(c->usage, currentTime, false);
@@ -64,9 +64,9 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 }
 
 //Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
+static DecisionPair Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
 {
-    Decision best_decision = {0};
+    DecisionPair best_decision = {0};
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime);
     e->processed = true;
@@ -82,11 +82,8 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             if(subs.success)
             {
                 ecp.term = e->term;
-                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
-                {
-                    best_decision = decision;
-                }
+                DecisionPair decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                best_decision = Decision_BetterDecisionPair(best_decision, decision);
             }
         }
         else
@@ -98,11 +95,8 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                 if(success)
                 {
-                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
-                    {
-                        best_decision = decision;
-                    }
+                    DecisionPair decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                    best_decision = Decision_BetterDecisionPair(best_decision, decision);
                 }
             }
         }
@@ -248,7 +242,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
 //Propagate subgoals, leading to decisions
 static void Cycle_ProcessInputGoalEvents(long currentTime)
 {
-    Decision best_decision = {0};
+    DecisionPair best_decision = {0};
     //process selected goals
     for(int i=0; i<goalsSelectedCnt; i++)
     {
@@ -259,23 +253,25 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
         {
             continue;
         }
-        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
-        {
-            best_decision = decision;
-        }
+        DecisionPair decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
+        best_decision = Decision_BetterDecisionPair(best_decision, decision);
     }
-    if(best_decision.execute && best_decision.operationID > 0)
+    if(best_decision.mental_decision.execute && best_decision.mental_decision.operationID > 0)
+    {
+        //execute decision
+        Decision_Execute(&best_decision.mental_decision);
+    }
+    if(best_decision.external_decision.execute && best_decision.external_decision.operationID > 0)
     {
         //reset cycling goal events after execution to avoid "residue actions"
         PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
         //also don't re-add the selected goal:
         goalsSelectedCnt = 0;
         //execute decision
-        Decision_Execute(&best_decision);
+        Decision_Execute(&best_decision.external_decision);
     }
     //pass goal spikes on to the next
-    for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
+    for(int i=0; i<goalsSelectedCnt && !best_decision.external_decision.execute; i++)
     {
         Event *goal = &selectedGoals[i];
         conceptProcessID++; //process subgoaling for the related concepts for each selected goal

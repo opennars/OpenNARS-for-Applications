@@ -26,69 +26,51 @@
 
 static void Shell_op_left(Term args)
 {
-    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[1], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_right(Term args)
 {
-    fputs(Narsese_operatorNames[1], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[2], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_up(Term args)
 {
-    fputs(Narsese_operatorNames[2], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[3], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_down(Term args)
 {
-    fputs(Narsese_operatorNames[3], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[4], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_say(Term args)
 {
-    fputs(Narsese_operatorNames[4], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[5], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_pick(Term args)
 {
-    fputs(Narsese_operatorNames[5], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[6], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_drop(Term args)
 {
-    fputs(Narsese_operatorNames[6], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[7], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_go(Term args)
 {
-    fputs(Narsese_operatorNames[7], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[8], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_activate(Term args)
 {
-    fputs(Narsese_operatorNames[8], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 static void Shell_op_deactivate(Term args)
 {
-    fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_consider(Term args)    //0 1 2 3
-{                                           //1 2 3 4
-    Event *e = &Decision_reason;            //* " S SELF
-    Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
-    Concept *c = Memory_FindConceptByTerm(&S);
     fputs(Narsese_operatorNames[10], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-    if(c != NULL && e->type != EVENT_TYPE_DELETED)
-    {
-        Event *belief = &c->belief;
-        if(belief->type != EVENT_TYPE_DELETED)
-        {
-            long a = currentTime;
-            Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
-#if STAGE==2
-            RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, 0, stamp, currentTime, 1.0, 1.0, true, c, c->id);
-#endif
-        }
-    }
 }
+
 void Shell_NARInit()
 {
     fflush(stdout);
     NAR_INIT();
     PRINT_DERIVATIONS = true;
-    int k=0; if(k >= OPERATIONS_MAX) { return; };
+    int k=1; if(k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); if(++k >= OPERATIONS_MAX) { return; };
@@ -99,7 +81,6 @@ void Shell_NARInit()
     NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); if(++k >= OPERATIONS_MAX) { return; };
     NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^consider"), Shell_op_consider); if(++k >= OPERATIONS_MAX) { return; };
     assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 

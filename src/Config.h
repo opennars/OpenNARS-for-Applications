@@ -97,7 +97,8 @@
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 64
+#define COMPOUND_TERM_SIZE_MAX 256
+#define DERIVED_COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap

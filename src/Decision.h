@@ -60,6 +60,11 @@ typedef struct
     bool specialized;
     Event *reason;
 } Decision;
+typedef struct
+{
+    Decision external_decision;
+    Decision mental_decision;
+} DecisionPair;
 
 //Methods//
 //-------//
@@ -68,6 +73,8 @@ void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_Anticipate(int operationID, long currentTime);
 //NAR decision making rule applying when goal is an operation
-Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+DecisionPair Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+//Better decision pair:
+DecisionPair Decision_BetterDecisionPair(DecisionPair best_decision, DecisionPair decision);
 
 #endif

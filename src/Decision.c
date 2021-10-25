@@ -65,7 +65,7 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
+        decision.operationID = 2+(myrand() % (MIN(BABBLING_OPS, n_ops)-1));
         IN_DEBUG (
             printf(" NAR BABBLE %d\n", decision.operationID);
         )
@@ -125,7 +125,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
 }
 
 int stampID = -1;
-Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
+Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime, bool mentalDecision)
 {
     Decision decision = {0};
     Implication bestImp = {0};
@@ -136,8 +136,12 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int opi=mentalDecision ? 1 : 2; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
         {
+            if(opi > 1 && mentalDecision)
+            {
+                break;
+            }
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {
                 if(!Memory_ImplicationValid(&goalconcept->precondition_beliefs[opi].array[j]))
@@ -283,7 +287,7 @@ void Decision_Anticipate(int operationID, long currentTime)
     }
 }
 
-Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
+DecisionPair Decision_Suggest(Concept *postc, Event *goal, long currentTime)
 {
     Decision babble_decision = {0};
     //try motor babbling with a certain chance
@@ -292,10 +296,30 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
         babble_decision = Decision_MotorBabbling();
     }
     //try matching op if didn't motor babble
-    Decision decision_suggested = Decision_BestCandidate(postc, goal, currentTime);
-    if(!babble_decision.execute || decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
+    Decision external_decision_suggested = Decision_BestCandidate(postc, goal, currentTime, false);
+    Decision mental_decision_suggested = Decision_BestCandidate(postc, goal, currentTime, true);
+    if(!babble_decision.execute || external_decision_suggested.desire > MOTOR_BABBLING_SUPPRESSION_THRESHOLD)
     {
-       return decision_suggested;
+        DecisionPair decision_suggested = { .external_decision = external_decision_suggested, .mental_decision = mental_decision_suggested };
+        return decision_suggested;
     }
-    return babble_decision;
+    DecisionPair babble_plus_mental_decision = { .external_decision = babble_decision, .mental_decision = mental_decision_suggested };
+    return babble_plus_mental_decision;
+}
+
+static Decision Decision_BetterDecision(Decision best_decision, Decision decision)
+{
+    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+    {
+        return decision;
+    }
+    return best_decision;
+}
+
+DecisionPair Decision_BetterDecisionPair(DecisionPair best_decision, DecisionPair decision)
+{
+    DecisionPair ret = {0};
+    ret.external_decision = Decision_BetterDecision(best_decision.external_decision, decision.external_decision);
+    ret.mental_decision = Decision_BetterDecision(best_decision.mental_decision, decision.mental_decision);
+    return ret;
 }

@@ -148,6 +148,18 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
+static bool NAL_WithinAllowedComplexity(Term *conclusionTerm)
+{
+    for(int i=DERIVED_COMPOUND_TERM_SIZE_MAX-1; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(conclusionTerm->atoms[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
 {
     Event e = { .term = conclusionTerm,
@@ -160,7 +172,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && NAL_WithinAllowedComplexity(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
             }

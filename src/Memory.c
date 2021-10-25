@@ -344,7 +344,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         return;
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-    if(derived && !isImplication) //learning the preconditions and consequences of consider operation by nodeling its own inference process
+    if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
     {
         //<(Memory_task + <({SELF} * Memory_belief) : ^consider>) $ event>
         //$  +  event    Memory_task   :                  *   ^consider                                   "  Memory_belief                                                       SELF
@@ -366,7 +366,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         {
             Event ev = { .term = implication,
                          .type = EVENT_TYPE_BELIEF, 
-                         .truth = Truth_Induction(Memory_task.truth, Memory_belief.truth),
+                         .truth = Truth_Eternalize(Truth_Induction(Truth_Intersection(Memory_task.truth, (Truth) { .frequency = 1.0, .confidence = 0.9 }), Memory_belief.truth)),
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
