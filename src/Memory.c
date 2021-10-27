@@ -338,22 +338,27 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted, bool mental)
 {
+    double eventPriority = priority;
     if(readded) //readded events get durability applied, they already got complexity-penalized
     {
-        priority *= EVENT_DURABILITY_ON_USAGE;
+        eventPriority *= EVENT_DURABILITY_ON_USAGE;
     }
     else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
-        priority *= 1.0 / log2(1.0 + complexity);
+        eventPriority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
+    if(event->truth.confidence < MIN_CONFIDENCE || eventPriority <= MIN_PRIORITY || eventPriority == 0.0)
     {
         return;
     }
+    if(!mental && event->type == EVENT_TYPE_GOAL)
+    {
+        Memory_AddEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, readded, revised, predicted, true);
+    }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-    if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
+    if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL && Memory_task.occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
     {
         //<(Memory_task + <({SELF} * Memory_belief) : ^consider>) $ event>
         //$  +  event    Memory_task   :                  *   ^consider                                   "  Memory_belief                                                       SELF
@@ -375,7 +380,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         {
             Event ev = { .term = implication,
                          .type = EVENT_TYPE_BELIEF, 
-                         .truth = Truth_Eternalize(Truth_Induction(Truth_Intersection(Memory_task.truth, (Truth) { .frequency = 1.0, .confidence = 0.9 }), Memory_belief.truth)),
+                         .truth = Truth_Eternalize(Truth_Induction(Truth_Intersection(Memory_task.truth, (Truth) { .frequency = 1.0, .confidence = 0.9 }), event->truth)),
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
@@ -395,24 +400,24 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
     }
     if(!readded && !isImplication && !(input && mental)) //print new tasks
     {
-        Memory_printAddedEvent(event, priority, input, derived, revised, true);
+        Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
         if(!readded)
         {
-            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, predicted, isImplication);
+            Memory_ProcessNewBeliefEvent(event, currentTime, eventPriority, occurrenceTimeOffset, input, predicted, isImplication);
             if(isImplication)
             {
                 return;
             }
         }
-        Memory_addCyclingEvent(event, priority, currentTime, mental);
+        Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        Memory_addCyclingEvent(event, priority, currentTime, mental);
+        Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
@@ -420,10 +425,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
 void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime)
 {
     Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false, false);
-    if(event->type == EVENT_TYPE_GOAL) //also add to mental goals
-    {
-        Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false, true);
-    }
 }
 
 bool Memory_ImplicationValid(Implication *imp)
