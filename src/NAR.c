@@ -35,6 +35,7 @@ static void NAR_op_consider(Term args)      //0 1 2 3
     fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
     if(c != NULL && e->type != EVENT_TYPE_DELETED)
     {
+        c->usage = Usage_use(c->usage, currentTime, false);
         Event *belief = &c->belief;
         if(belief->type != EVENT_TYPE_DELETED)
         {
