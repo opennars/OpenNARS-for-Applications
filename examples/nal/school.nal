@@ -2,9 +2,9 @@
 *volume=0
 
 //to open the entry door you need to use a knob
-<(<{#1} --> knob> &/ <({SELF} * {#1}) --> ^pick>) =/> <door --> [open]>>.
+<(<{#1} --> knob> &/ <({SELF} * {#1}) --> ^pick>) =/> <maindoor --> [open]>>.
 //once door is open, you can go to the corridor
-<(<door --> [open]> &/ <({SELF} * corridor) --> ^go>) =/> <clock --> [large]>>.
+<(<maindoor --> [open]> &/ <({SELF} * corridor) --> ^go>) =/> <clock --> [large]>>.
 //from the corridor you can go into a classroom with either clean or dirty blackboard
 <(<clock --> [large]> &/ <({SELF} * classrom) --> ^go>) =/> <blackboard --> [clean]>>.
 <(<clock --> [large]> &/ <({SELF} * classrom) --> ^go>) =/> <blackboard --> [dirty]>>.
@@ -32,6 +32,8 @@
 //knobs are on door
 <(knob * door) --> on>.
 
+//example starts args -------------------------------------
+
 10
 //obj1 is on the door
 <({obj1} * door) --> on>. :|:
@@ -42,7 +44,7 @@
 10
 //expected: ^pick executed with args ({SELF} * {obj1})
 //you are in a place with a large clock now (the corridor!)
-<door --> [open]>. :|:
+<maindoor --> [open]>. :|:
 <clock --> [large]>. :|:
 //with a red floor
 <floor --> [red]>. :|:
@@ -73,7 +75,6 @@
 //you are really tired now, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
 10
-
 //expected: ^go executed with args ({SELF} * corridor)
 //now you are in the place with a large clock (the corridor!)
 <clock --> [large]>. :|:
@@ -81,9 +82,7 @@
 <floor --> [red]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-
 10
-
 //expected: ^go executed with args ({SELF} * kitchen)
 //now you are at a place with a microwave which is on
 <microwave --> [on]>. :|:
@@ -95,7 +94,10 @@
 <{drink2} --> [white]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
+10
+<{SELF} --> [refreshed]>! :|:
 //expected: ^pick executed with args ({SELF} * {drink1})
+10
 
 //Q&A time
 //What color does the floor have where the large clock is?
@@ -103,4 +105,4 @@
 //expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.932209, confidence=0.457582
 //If you are where the floor is red, where do you need to go to see a cyan floor?
 <(<floor --> [red]> &/ <({SELF} * ?where) --> ^go>) =/> <floor --> [cyan]>>?
-//expected: Answer: <(<floor --> [red]> &/ <({SELF} * kitchen) --> ^go>) =/> <floor --> [cyan]>>. Truth: frequency=1.000000, confidence=0.019711
+//expected: Answer: <(<floor --> [red]> &/ <({SELF} * kitchen) --> ^go>) =/> <floor --> [cyan]>>. Truth: frequency=1.000000, confidence=0.030130

@@ -60,11 +60,6 @@ typedef struct
     bool specialized;
     Event *reason;
 } Decision;
-typedef struct
-{
-    Decision external_decision;
-    Decision mental_decision;
-} DecisionPair;
 
 //Methods//
 //-------//
