@@ -56,8 +56,6 @@
 #define GOAL_EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
 #define EVENT_DURABILITY 0.9999
-//Additional event priority decay of an event which was used
-#define EVENT_DURABILITY_ON_USAGE 0.0
 //Concept priority decay of events per cycle
 #define CONCEPT_DURABILITY 0.9
 //Minimum confidence to accept events

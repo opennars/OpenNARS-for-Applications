@@ -234,7 +234,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -316,19 +316,14 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
+                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, true);
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
+void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool revised)
 {
-    if(readded) //readded events get durability applied, they already got complexity-penalized
-    {
-        priority *= EVENT_DURABILITY_ON_USAGE;
-    }
-    else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
@@ -350,19 +345,16 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         }
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-    if(!readded && !isImplication) //print new tasks
+    if(!isImplication) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!readded)
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, isImplication);
+        if(isImplication)
         {
-            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, predicted, isImplication);
-            if(isImplication)
-            {
-                return;
-            }
+            return;
         }
         Memory_addCyclingEvent(event, priority, currentTime);
     }
@@ -376,7 +368,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
 
 void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
