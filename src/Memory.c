@@ -248,7 +248,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -330,20 +330,15 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, true, false);
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted, bool mental)
+void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool revised, bool mental)
 {
     double eventPriority = priority;
-    if(readded) //readded events get durability applied, they already got complexity-penalized
-    {
-        eventPriority *= EVENT_DURABILITY_ON_USAGE;
-    }
-    else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
@@ -355,7 +350,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
     }
     if(!mental && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_AddEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, readded, revised, predicted, true);
+        Memory_AddEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, true);
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
     if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL && Memory_task.occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
@@ -384,7 +379,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
-            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false, false, false);
+            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false);
         }
     }
     if(event->occurrenceTime != OCCURRENCE_ETERNAL)
@@ -398,19 +393,16 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
             }
         }
     }
-    if(!readded && !isImplication && !(input && mental)) //print new tasks
+    if(!isImplication && !(input && mental)) //print new tasks
     {
         Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!readded)
+        Memory_ProcessNewBeliefEvent(event, currentTime, eventPriority, occurrenceTimeOffset, input, isImplication);
+        if(isImplication)
         {
-            Memory_ProcessNewBeliefEvent(event, currentTime, eventPriority, occurrenceTimeOffset, input, predicted, isImplication);
-            if(isImplication)
-            {
-                return;
-            }
+            return;
         }
         Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
     }
@@ -424,7 +416,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
 
 void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
