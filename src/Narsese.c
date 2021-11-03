@@ -650,6 +650,7 @@ void Narsese_INIT()
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
+    Narsese_AtomicTermIndex("symmetry");
     initialized = true;
 }
 

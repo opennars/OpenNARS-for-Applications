@@ -130,6 +130,8 @@ R2( ((A * B) --> R), ((C * B) --> R), |-, (A <-> C), Truth_Comparison )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (B <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (C * B)), |-, (A <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
+R2( ((A * B) --> R), ((B * A) --> R), |-, (R --> symmetry), Truth_Induction )
+R2( ((A * B) --> R), (R --> symmetry), |-, ((B * A) --> R), Truth_Deduction )
 //NAL5 rules
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
