@@ -1,10 +1,10 @@
 *volume=0
 //Stressed people tend to smoke
-<<$1 --> [stressed]> ==> <$1 --> [smokes]>>. {1.0 0.99}
+<<$1 --> [stressed]> =/> <$1 --> [smokes]>>. {1.0 0.99}
 //A smoker befriended with someone else often makes the other person smoke as well
-<(<#1 --> [smokes]> &/ <(#1 * $2) --> friend>) ==> <$2 --> [smokes]>>. {1.0 0.9}
+<(<#1 --> [smokes]> &/ <(#1 * $2) --> friend>) =/> <$2 --> [smokes]>>. {1.0 0.9}
 //If someone smokes, he gets asthma
-<<$1 --> [smokes]> ==> <$1 --> [asthma]>>. {1.0 0.9}
+<<$1 --> [smokes]> =/> <$1 --> [asthma]>>. {1.0 0.9}
 10
 //Angelika smokes
 <{angelika} --> [smokes]>. :|:
