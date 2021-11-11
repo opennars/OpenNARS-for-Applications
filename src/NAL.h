@@ -143,7 +143,16 @@ R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
 R2( A, (A ==> B), |-, B, Truth_Deduction )
 R2( B, (A ==> B), |-, A, Truth_Abduction )
 R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
-//Other NAL5/6/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
+//NAL6 rules
+R2( (A --> B), (($1 --> B) ==> ($1 --> P)), |-, (A --> P), Truth_Deduction )
+R2( (A --> B), (($1 --> P) ==> ($1 --> B)), |-, (A --> P), Truth_Abduction )
+R2( (A --> B), (({$1} --> B) ==> ({$1} --> P)), |-, (A --> P), Truth_Deduction )
+R2( (A --> B), (({$1} --> P) ==> ({$1} --> B)), |-, (A --> P), Truth_Abduction )
+R2( (A --> B), ((A --> $1) ==> (P --> $1)), |-, (P --> B), Truth_Deduction )
+R2( (A --> B), ((P --> $1) ==> (A --> $1)), |-, (P --> B), Truth_Abduction )
+R2( (A --> B), ((A --> [$1]) ==> (P --> [$1])), |-, (P --> B), Truth_Deduction )
+R2( (A --> B), ((P --> [$1]) ==> (A --> [$1])), |-, (P --> B), Truth_Abduction )
+//NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
 
 #endif
 
