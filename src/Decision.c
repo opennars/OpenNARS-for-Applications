@@ -72,7 +72,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp, Event *precondition)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
 {
     Decision decision = {0};
     IN_DEBUG
@@ -82,6 +82,8 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         puts("");
     )
     //now look at how much the precondition is fulfilled
+    Concept *prec = imp->sourceConcept;
+    Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
@@ -89,7 +91,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
-            Narsese_PrintTerm(&precondition->term);
+            Narsese_PrintTerm(&prec->term);
             fputs("\nCONSIDERED PRECON truth ", stdout);
             Truth_Print(&precondition->truth);
             fputs("CONSIDERED goal truth ", stdout);
@@ -155,35 +157,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                         if(!Variable_hasVariable(&cmatch->term, true, true, true))
                         {
                             Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
-                            Event *sourceEvent = NULL;
-                            Event sourceEventReplacement = {0};
-                            bool success = subs2.success;
-                            if(false && !subs2.success && Narsese_copulaEquals(left_side.atoms[0], '+')) //we did not match to the entire sequence, check if we can match the left part of the sequence
-                            {                                                                   //and reconstruct the sequence if the missing right-hand piece was derived
-                                Term left_of_left_side = Term_ExtractSubterm(&left_side, 1); //extract left side of sequence
-                                Substitution subs3 = Variable_Unify(&left_of_left_side, &cmatch->term);
-                                if(subs3.success && cmatch && cmatch->belief_spike.type != EVENT_TYPE_DELETED)
-                                {
-                                    Term right_of_left_side = Term_ExtractSubterm(&left_side, 2); //extract right side of sequence
-                                    bool success2;
-                                    right_of_left_side = Variable_ApplySubstitute(right_of_left_side, subs3, &success2);
-                                    if(success2)
-                                    {
-                                        Concept *c_missing = Memory_FindConceptByTerm(&right_of_left_side);
-                                        if(c_missing && c_missing->belief_spike.type != EVENT_TYPE_DELETED)
-                                        {
-                                            if(c_missing->belief_spike.occurrenceTime > cmatch->belief_spike.occurrenceTime)
-                                            {
-                                                subs2 = subs3;
-                                                sourceEvent = &sourceEventReplacement;
-                                                //build replacement for the sourc event:
-                                                sourceEventReplacement = Inference_BeliefIntersection(&cmatch->belief_spike, &c_missing->belief_spike, &success);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if(success)
+                            if(subs2.success)
                             {
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
@@ -192,11 +166,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
-                                    if(!sourceEvent)
-                                    {
-                                        sourceEvent = &((Concept*) specific_imp.sourceConcept)->belief_spike;
-                                    }
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp, sourceEvent);
+                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
