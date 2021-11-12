@@ -148,6 +148,7 @@ R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
 R2( A, (A ==> B), |-, B, Truth_Deduction )
 R2( B, (A ==> B), |-, A, Truth_Abduction )
 R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
+R2( B, ((A && B) ==> C), |-, (A ==> C), Truth_Deduction )
 //NAL6 rules
 R2( (A --> B), (($1 --> B) ==> ($1 --> P)), |-, (A --> P), Truth_Deduction )
 R2( (A --> B), (($1 --> P) ==> ($1 --> B)), |-, (A --> P), Truth_Abduction )

@@ -345,10 +345,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         }
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-    if(!isImplication) //print new tasks
-    {
-        Memory_printAddedEvent(event, priority, input, derived, revised, true);
-    }
+    bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, isImplication);
@@ -356,12 +353,16 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         {
             return;
         }
-        Memory_addCyclingEvent(event, priority, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        Memory_addCyclingEvent(event, priority, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
+    }
+    if(addedToCyclingEventsQueue) //print new tasks
+    {
+        Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
