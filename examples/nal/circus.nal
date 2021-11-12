@@ -1,3 +1,5 @@
+*volume=0
+*motorbabbling=false
 //circus have tents and lions
 <<circus --> [close]> ==> <tent --> [seen]>>.
 <<circus --> [close]> ==> <lion --> [seen]>>.
