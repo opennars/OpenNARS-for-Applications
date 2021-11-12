@@ -89,15 +89,9 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
-            if(narsese[i] == '&' && narsese[i+1] == '|') // &| becomes ;
-            {
-                narsese_replaced[j] = ';';
-                i+=2; j++;
-            }
-            else
             if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes .
             {
-                narsese_replaced[j] = '.';
+                narsese_replaced[j] = ';';
                 i+=2; j++;
             }
             else
@@ -481,11 +475,6 @@ void Narsese_PrintAtom(Atom atom)
         else
         if(Narsese_copulaEquals(atom, ';'))
         {
-            fputs("&|", stdout);
-        }
-        else
-        if(Narsese_copulaEquals(atom, '.'))
-        {
             fputs("&&", stdout);
         }
         else
@@ -661,6 +650,9 @@ void Narsese_INIT()
     }
     SELF = Narsese_AtomicTermIndex("SELF");
     Narsese_AtomicTermIndex("symmetry");
+    Narsese_AtomicTermIndex("antisymmetry");
+    Narsese_AtomicTermIndex("relationchain");
+    Narsese_AtomicTermIndex("transitivity");
     initialized = true;
 }
 
