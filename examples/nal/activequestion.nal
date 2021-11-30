@@ -1,23 +1,23 @@
 *volume=0
 *motorbabbling=false
-<corridor --> in>. :|:
+<corridor --> location>. :|:
 <({SELF} * kitchen) --> ^go>. :|:
 <({cat} * kitchen) --> in>. :|:
 120
-<corridor --> in>. :|:
+<corridor --> location>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
 120
-<corridor --> in>. :|:
+<corridor --> location>. :|:
 <({SELF} * livingroom) --> ^go>. :|:
 //no cat this time, it doesn't like the livingroom :)
 120
-<corridor --> in>. :|:
+<corridor --> location>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
 120
 //Ok you are in corridor now
-<corridor --> in>. :|:
+<corridor --> location>. :|:
 //NARS, where is the cat?
 //Passive question <({cat} * ?where) --> in>? :|: wouldn't trigger a decision
 //Active question however does:
