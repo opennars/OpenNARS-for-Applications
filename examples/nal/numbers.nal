@@ -4,7 +4,7 @@
 <(<(sourcepos * targetpos) --> smaller> &/ ^left) =/> G>.
 <(<(targetpos * sourcepos) --> smaller> &/ ^right) =/> G>.
 //introducing numbers as a transitive chain of smaller relations:
-<smaller --> transitivity>.
+<(<($1 * #1) --> smaller> && <(#1 * $2) --> smaller>) ==> <($1 * $2) --> smaller>>.
 <(1 * 2) --> smaller>.
 <(2 * 3) --> smaller>.
 <(3 * 4) --> smaller>.

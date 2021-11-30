@@ -649,10 +649,6 @@ void Narsese_INIT()
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
-    Narsese_AtomicTermIndex("symmetry");
-    Narsese_AtomicTermIndex("antisymmetry");
-    Narsese_AtomicTermIndex("relationchain");
-    Narsese_AtomicTermIndex("transitivity");
     initialized = true;
 }
 
