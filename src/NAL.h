@@ -136,7 +136,31 @@ R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
-//Other NAL5/6/7/8 temporal induction and conditional inference is handled by sensorimotor inference, see Inference.h!
+R1( (A && B), |-, (B && A), Truth_StructuralDeduction )
+R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
+R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
+R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
+R2( A, (A ==> B), |-, B, Truth_Deduction )
+R2( B, (A ==> B), |-, A, Truth_Abduction )
+R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
+R2( B, ((A && B) ==> C), |-, (A ==> C), Truth_Deduction )
+//NAL6 rules
+R2( (A --> B), (($1 --> B) ==> ($1 --> P)), |-, (A --> P), Truth_Deduction )
+R2( (A --> B), (($1 --> P) ==> ($1 --> B)), |-, (A --> P), Truth_Abduction )
+R2( (A --> B), (({$1} --> B) ==> ({$1} --> P)), |-, (A --> P), Truth_Deduction )
+R2( (A --> B), (({$1} --> P) ==> ({$1} --> B)), |-, (A --> P), Truth_Abduction )
+R2( (A --> B), ((A --> $1) ==> (P --> $1)), |-, (P --> B), Truth_Deduction )
+R2( (A --> B), ((P --> $1) ==> (A --> $1)), |-, (P --> B), Truth_Abduction )
+R2( (A --> B), ((A --> [$1]) ==> (P --> [$1])), |-, (P --> B), Truth_Deduction )
+R2( (A --> B), ((P --> [$1]) ==> (A --> [$1])), |-, (P --> B), Truth_Abduction )
+R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction )
+R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (($2 * $1) --> R)), |-, ((B * A) --> R), Truth_Deduction )
+R2( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction )
+R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), |-, (! ((B * A) --> R)), Truth_Deduction )
+R2( ((A * B) --> R), ((B * C) --> R), |-, (((A * B) --> R) && ((B * C) --> R)), Truth_Intersection )
+R2( ((A * C) --> R), (((A * B) --> R) && ((B * C) --> R)), |-, (((($1 * #2) --> R) && ((#2 * $3) --> R)) ==> (($1 * $3) --> R)), Truth_Induction )
+R2( (((A * B) --> R) && ((B * C) --> R)), (((($1 * #2) --> R) && ((#2 * $3) --> R)) ==> (($1 * $3) --> R)), |-, ((A * C) --> R), Truth_Deduction )
+//NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
 
 #endif
 

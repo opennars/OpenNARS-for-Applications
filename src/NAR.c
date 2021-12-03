@@ -112,7 +112,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     Narsese_Sentence(narsese_sentence, &term, &punctuation, &tense, &tv, &occurrenceTimeOffset);
 #if STAGE==2
     //apply reduction rules to term:
-    term = RuleTable_Reduce(term, false);
+    term = RuleTable_Reduce(term);
 #endif    
     if(punctuation == '?')
     {

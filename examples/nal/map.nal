@@ -1,0 +1,31 @@
+*motorbabbling=false
+*volume=0
+*setopname 1 ^mapGet
+*setopname 3 ^mapGo
+
+//you need to ask the map in order to localize an object
+<(tick &/ <({SELF} * $obj) --> ^mapGet>) =/> <$obj --> [mapLocalized]>>.
+
+//once it's localized, and the location at the map is known, go to the location in order to see the object
+<((<$obj --> [mapLocalized]> &/ <($obj * #location) --> [mapAt]>) &/ <({SELF} * #location) --> ^mapGo>) =/> <({SELF} * $obj) --> [see]>>.
+
+tick. :|:
+<({SELF} * fridge) --> [see]>! :|:
+10
+//expected: ^mapGet executed with args ({SELF} * fridge)
+
+tick. :|:
+<fridge --> [mapLocalized]>. :|:
+<(fridge * 10_20) --> [mapAt]>. :|:
+<({SELF} * fridge) --> [see]>! :|:
+10
+//expected: ^mapGo executed with args ({SELF} * 10_20)
+
+tick. :|:
+<({SELF} * fridge) --> [see]>. :|:
+
+//show that both the mental and external behaviors have been rewarded:
+<(tick &/ <({SELF} * $obj) --> ^mapGet>) =/> <$obj --> [mapLocalized]>>?
+//expected: <(tick &/ <({SELF} * $1) --> ^mapGet>) =/> <$1 --> [mapLocalized]>>. Truth: frequency=0.999013, confidence=0.900338
+<((<$obj --> [mapLocalized]> &/ <($obj * #location) --> [mapAt]>) &/ <({SELF} * #location) --> ^mapGo>) =/> <({SELF} * $obj) --> [see]>>?
+//expected: Answer: <((<$1 --> [mapLocalized]> &/ <($1 * #1) --> [mapAt]>) &/ <({SELF} * #1) --> ^mapGo>) =/> <({SELF} * $1) --> [see]>>. Truth: frequency=0.999285, confidence=0.900064

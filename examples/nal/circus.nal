@@ -1,0 +1,15 @@
+*volume=0
+*motorbabbling=false
+//circus have tents and lions
+<<circus --> [close]> ==> <tent --> [seen]>>.
+<<circus --> [close]> ==> <lion --> [seen]>>.
+//when you are close to the circus, go to the left in order to get to the cinema
+<(<circus --> [close]> &/ ^left) =/> <cinema --> [close]>>.
+100
+<tent --> [seen]>. :|:
+//is the circus close?
+<circus --> [close]>? :|:
+//expected: Answer: <circus --> [close]>. :|: occurrenceTime=104 Truth: frequency=1.000000, confidence=0.447514
+<cinema --> [close]>! :|:
+//expected: ^left executed with args
+

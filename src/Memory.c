@@ -393,10 +393,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
             }
         }
     }
-    if(!isImplication && !(input && mental)) //print new tasks
-    {
-        Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
-    }
+    bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
         Memory_ProcessNewBeliefEvent(event, currentTime, eventPriority, occurrenceTimeOffset, input, isImplication);
@@ -404,12 +401,16 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         {
             return;
         }
-        Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, eventPriority, currentTime, mental);
+    }
+    if(addedToCyclingEventsQueue && !(input && mental)) //print new tasks
+    {
+        Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
