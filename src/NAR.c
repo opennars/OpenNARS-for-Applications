@@ -46,6 +46,19 @@ static void NAR_op_consider(Term args)      //0 1 2 3
     }
 }
 
+static void NAR_op_remember(Term args)      //0 1 2 3
+{                                           //1 2 3 4
+    Event *e = &Decision_reason;            //* " S SELF
+    Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
+    Concept *c = Memory_FindConceptByTerm(&S);
+    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+    if(c != NULL && e->type != EVENT_TYPE_DELETED)
+    {
+        c->usage = Usage_use(c->usage, currentTime, false);
+        c->belief_spike.occurrenceTime = currentTime;
+    }
+}
+
 void NAR_INIT()
 {
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
@@ -54,8 +67,8 @@ void NAR_INIT()
     Narsese_INIT();
     currentTime = 1; //reset time
     initialized = true;
-    assert(OPERATIONS_MAX >= 1, "OPERATIONS_MAX = 0, can't register ^consider operator");
-    NAR_AddOperation(Narsese_AtomicTerm("^consider"), NAR_op_consider);
+    assert(OPERATIONS_MAX >= 1, "OPERATIONS_MAX = 0, can't register ^remember operator");
+    NAR_AddOperation(Narsese_AtomicTerm("^remember"), NAR_op_remember);
 }
 
 void NAR_Cycles(int cycles)

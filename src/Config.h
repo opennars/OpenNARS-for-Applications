@@ -40,6 +40,7 @@
 #define CONDITION_THRESHOLD_INITIAL 0.501
 //Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
+#define DECISION_THRESHOLD_MENTAL_INITIAL 0.5
 //Motor babbling chance
 #define MOTOR_BABBLING_CHANCE_INITIAL 0.2
 //Decisions above the following threshold will suppress babbling actions

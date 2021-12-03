@@ -26,6 +26,7 @@
 
 double CONDITION_THRESHOLD = CONDITION_THRESHOLD_INITIAL;
 double DECISION_THRESHOLD = DECISION_THRESHOLD_INITIAL;
+double DECISION_THRESHOLD_MENTAL = DECISION_THRESHOLD_MENTAL_INITIAL;
 double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
@@ -206,12 +207,12 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
         }
     }
     //use general solution only if the specific solution doesn't exceed the threshold
-    if(decisionGeneral.desire > decision.desire && decision.desire < DECISION_THRESHOLD)
+    if(decisionGeneral.desire > decision.desire && decision.desire < (mental ? DECISION_THRESHOLD_MENTAL : DECISION_THRESHOLD))
     {
         decision = decisionGeneral;
         bestImp = bestImpGeneral;
     }
-    if(decision.desire < DECISION_THRESHOLD)
+    if(decision.desire < (mental ? DECISION_THRESHOLD_MENTAL : DECISION_THRESHOLD))
     {
         return (Decision) {0}; 
     }

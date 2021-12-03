@@ -1,0 +1,14 @@
+*volume=0
+*motorbabbling=false
+<(<flipflop --> [on]> &/ ^activate) =/> <flipflop --> [on]>>.
+<(<flipflop --> [on]> &/ ^deactivate) =/> <flipflop --> [off]>>.
+<(<flipflop --> [off]> &/ ^activate) =/> <flipflop --> [on]>>.
+<(<flipflop --> [off]> &/ ^deactivate) =/> <flipflop --> [off]>>.
+<(<flipflop --> [on]> &/ <({SELF} * <flipflop --> [on]>) --> ^remember>) =/> <flipflop --> [off]>>.
+<(<flipflop --> [off]> &/ <({SELF} * <flipflop --> [off]>) --> ^remember>) =/> <flipflop --> [on]>>.
+1000
+<flipflop --> [off]>. :|:
+1000
+<flipflop --> [on]>! :|:
+//expected: ^activate executed with args
+//investigation material: add <flipflop --> [on]>. :|:
