@@ -9,7 +9,7 @@
 <(2 * 3) --> smaller>.
 <(3 * 4) --> smaller>.
 <(4 * 5) --> smaller>.
-10
+12
 <(1 * 3) --> smaller>?
 //expected: Answer: <(1 * 3) --> smaller>. Truth: frequency=1.000000, confidence=0.729000
 <(2 * 4) --> smaller>?
@@ -21,6 +21,6 @@
 <3 --> targetpos>. :|:
 10
 <(sourcepos * targetpos) --> smaller>? :|:
-//expected: Answer: <(sourcepos * targetpos) --> smaller>. :|: occurrenceTime=29 Truth: frequency=1.000000, confidence=0.221937
+//expected: Answer: <(sourcepos * targetpos) --> smaller>. :|: occurrenceTime=31 Truth: frequency=1.000000, confidence=0.221937
 G! :|:
 //expected: ^left executed with args
