@@ -155,14 +155,25 @@ R2( (A --> B), ((A --> $1) ==> (P --> $1)), |-, (P --> B), Truth_Deduction )
 R2( (A --> B), ((P --> $1) ==> (A --> $1)), |-, (P --> B), Truth_Abduction )
 R2( (A --> B), ((A --> [$1]) ==> (P --> [$1])), |-, (P --> B), Truth_Deduction )
 R2( (A --> B), ((P --> [$1]) ==> (A --> [$1])), |-, (P --> B), Truth_Abduction )
-R2( ((A * B) --> R), ((B * A) --> R), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> R)), Truth_Induction )
-R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (($2 * $1) --> R)), |-, ((B * A) --> R), Truth_Deduction )
-R2( (! ((B * A) --> R)), ((A * B) --> R), |-, ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), Truth_Induction )
-R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (! (($2 * $1) --> R))), |-, (! ((B * A) --> R)), Truth_Deduction )
-R2( ((A * B) --> R), ((B * C) --> R), |-, (((A * B) --> R) && ((B * C) --> R)), Truth_Intersection )
-R2( ((A * C) --> R), (((A * B) --> R) && ((B * C) --> R)), |-, (((($1 * #2) --> R) && ((#2 * $3) --> R)) ==> (($1 * $3) --> R)), Truth_Induction )
-R2( (((A * B) --> R) && ((B * C) --> R)), (((($1 * #2) --> R) && ((#2 * $3) --> R)) ==> (($1 * $3) --> R)), |-, ((A * C) --> R), Truth_Deduction )
+R2( ((A * B) --> R), ((B * A) --> S), |-, ((($1 * $2) --> R) ==> (($2 * $1) --> S)), Truth_Induction )
+R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (($2 * $1) --> S)), |-, ((B * A) --> S), Truth_Deduction )
+R2( (! ((B * A) --> R)), ((A * B) --> S), |-, ((($1 * $2) --> S) ==> (! (($2 * $1) --> R))), Truth_Induction )
+R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (! (($2 * $1) --> S))), |-, (! ((B * A) --> S)), Truth_Deduction )
+R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
+R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, (((($1 * #2) --> R) && ((#2 * $3) --> S)) ==> (($1 * $3) --> M)), Truth_Induction )
+R2( (((A * B) --> R) && ((B * C) --> S)), (((($1 * #2) --> R) && ((#2 * $3) --> S)) ==> (($1 * $3) --> M)), |-, ((A * C) --> M), Truth_Deduction )
 //NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
+
+//new substitution rules to allow to form additional contingencies:
+R2( (A =/> B),         (B ==> S), |-, (A =/> S), Truth_Deduction )
+R2( ((A &/ B) =/> C),  (A ==> S), |-, ((S &/ B) =/> C), Truth_Deduction )
+R2( ((A &/ B) =/> C),  (B ==> S), |-, ((A &/ S) =/> C), Truth_Deduction )
+R2( (A =/> (P --> B)), (P <-> S), |-, (A =/> (S --> B)), Truth_Analogy )
+R2( (((P --> A) &/ B) =/> C),  (A <-> S), |-, (((P --> S) &/ B) =/> C), Truth_Analogy )
+R2( ((A &/ (P --> B)) =/> C),  (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
+R2( (A =/> (B --> P)), (P <-> S), |-, (A =/> (B --> S)), Truth_Analogy )
+R2( (((A --> P) &/ B) =/> C),  (A <-> S), |-, (((S --> P) &/ B) =/> C), Truth_Analogy )
+R2( ((A &/ (B --> P)) =/> C),  (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
 
 #endif
 

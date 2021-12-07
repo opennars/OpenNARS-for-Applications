@@ -349,10 +349,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
     if(event->type == EVENT_TYPE_BELIEF)
     {
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, isImplication);
-        if(isImplication)
-        {
-            return;
-        }
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
     }
     if(event->type == EVENT_TYPE_GOAL)
