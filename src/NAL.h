@@ -162,18 +162,20 @@ R2( ((A * B) --> R), ((($1 * $2) --> R) ==> (! (($2 * $1) --> S))), |-, (! ((B *
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, (((($1 * #2) --> R) && ((#2 * $3) --> S)) ==> (($1 * $3) --> M)), Truth_Induction )
 R2( (((A * B) --> R) && ((B * C) --> S)), (((($1 * #2) --> R) && ((#2 * $3) --> S)) ==> (($1 * $3) --> M)), |-, ((A * C) --> M), Truth_Deduction )
-//NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
-
-//new substitution rules to allow to form additional contingencies:
-R2( (A =/> B),         (B ==> S), |-, (A =/> S), Truth_Deduction )
-R2( ((A &/ B) =/> C),  (A ==> S), |-, ((S &/ B) =/> C), Truth_Deduction )
-R2( ((A &/ B) =/> C),  (B ==> S), |-, ((A &/ S) =/> C), Truth_Deduction )
+//new NAL7 substitution rules to allow semantic inference to create additional contingencies:
+//consequent
+R2( (A =/> B), (B ==> S), |-, (A =/> S), Truth_Deduction )
 R2( (A =/> (P --> B)), (P <-> S), |-, (A =/> (S --> B)), Truth_Analogy )
-R2( (((P --> A) &/ B) =/> C),  (A <-> S), |-, (((P --> S) &/ B) =/> C), Truth_Analogy )
-R2( ((A &/ (P --> B)) =/> C),  (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( (A =/> (B --> P)), (P <-> S), |-, (A =/> (B --> S)), Truth_Analogy )
-R2( (((A --> P) &/ B) =/> C),  (A <-> S), |-, (((S --> P) &/ B) =/> C), Truth_Analogy )
-R2( ((A &/ (B --> P)) =/> C),  (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
+//first sequence element (deeper isn't currently linked)
+R2( ((A &/ B) =/> C), (A ==> S), |-, ((S &/ B) =/> C), Truth_Deduction )
+R2( (((P --> A) &/ B) =/> C), (A <-> S), |-, (((P --> S) &/ B) =/> C), Truth_Analogy )
+R2( (((A --> P) &/ B) =/> C), (A <-> S), |-, (((S --> P) &/ B) =/> C), Truth_Analogy )
+//second sequence element (deeper isn't currently linked)
+R2( ((A &/ B) =/> C), (B ==> S), |-, ((A &/ S) =/> C), Truth_Deduction )
+R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
+R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
+//Other NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
 
 #endif
 

@@ -1,0 +1,12 @@
+*volume=0
+<{switch0} --> [off]>. :|:
+50
+<{switch0} --> [on]>. :|:
+50
+<{switch0} --> [off]>. :|:
+1000
+<{switch0} --> [?1]>? :\:
+//expected: Answer: <{switch0} --> [off]>. :|: occurrenceTime=103 Truth: frequency=1.000000, confidence=0.900000
+
+
+
