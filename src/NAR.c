@@ -142,8 +142,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->belief_spike.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 2))
                 {
                     Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
-                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //also look at original truths in case it's too far away to make a numerical distinction:
-                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && Truth_Expectation(c->belief_spike.truth) >= Truth_Expectation(best_truth)))
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->belief_spike.occurrenceTime > answerOccurrenceTime))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->belief_spike.truth;
@@ -155,8 +155,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->predicted_belief.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 3))
                 {
                     Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
-                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //also look at original truths in case it's too far away to make a numerical distinction:
-                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && Truth_Expectation(c->predicted_belief.truth) >= Truth_Expectation(best_truth)))
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->predicted_belief.occurrenceTime > answerOccurrenceTime))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->predicted_belief.truth;
