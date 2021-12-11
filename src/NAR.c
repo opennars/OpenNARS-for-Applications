@@ -51,12 +51,12 @@ void NAR_Cycles(int cycles)
 Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset)
 {
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    Event ev = Event_InputEvent(term, type, truth, currentTime);
+    Event ev = Event_InputEvent(term, type, truth, occurrenceTimeOffset, currentTime);
     if(eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
     }
-    Memory_AddInputEvent(&ev, occurrenceTimeOffset, currentTime);
+    Memory_AddInputEvent(&ev, currentTime);
     NAR_Cycles(1);
     return ev;
 }

@@ -46,6 +46,7 @@ typedef struct {
     Truth truth;
     Stamp stamp;
     long occurrenceTime;
+    double occurrenceTimeOffset; //necessary if the event is an =/>
     bool processed;
     long creationTime;
 } Event;
@@ -55,7 +56,7 @@ typedef struct {
 //Init/Reset module
 void Event_INIT();
 //construct an input event
-Event Event_InputEvent(Term term, char type, Truth truth, long currentTime);
+Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime);
 //Whether two events are the same
 bool Event_Equal(Event *event, Event *existing);
 

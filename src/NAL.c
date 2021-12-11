@@ -154,7 +154,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
-                .occurrenceTime = conclusionOccurrence ,
+                .occurrenceTime = conclusionOccurrence,
+                .occurrenceTimeOffset = occurrenceTimeOffset,
                 .creationTime = currentTime };
     #pragma omp critical(Memory)
     {
@@ -162,7 +163,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(!NAL_AtomAppearsTwice(&conclusionTerm))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }
         }
     }
