@@ -36,7 +36,7 @@ def Target_Detection(image):
             # get the bounding box width and height
             box_width = detection[5] * image_width
             box_height = detection[6] * image_height
-            ret += [(class_name, box_x, box_y, box_width, box_height)]
+            detections += [(class_name, box_x, box_y, box_width, box_height)]
             # draw a rectangle around each detected object
             cv.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), color, thickness=2)
             # put the class name text on the detected object
@@ -50,7 +50,7 @@ else: capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter.fourcc('M', 'J', 'P', 'G'))
 capture.set(cv.CAP_PROP_FRAME_WIDTH, 640)
 capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
 
-def get_frame():
+def detect_objects():
     if capture.isOpened():
         start = time.time()
         ret, frame = capture.read()
@@ -59,6 +59,13 @@ def get_frame():
         fps = 1 / (end - start)
         text = "FPS : " + str(int(fps))
         cv.putText(frame, text, (20, 30), cv.FONT_HERSHEY_SIMPLEX, 0.9, (100, 200, 200), 1)
-        cv.imshow('frame', frame)
-        return detections
+        #cv.imshow('frame', frame)
+        return detections, frame
     return []
+
+if __name__ == '__main__':
+    while True:
+        action = cv.waitKey(10) & 0xFF
+        detections, frame = detect_objects()
+        print(detections)
+        cv.imshow('frame', frame)

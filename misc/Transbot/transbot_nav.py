@@ -50,3 +50,4 @@ def updateLocation():
           lock.release()
       
 Thread(target=updateLocation).start()
+
