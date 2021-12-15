@@ -1,71 +1,100 @@
 import time
+import rospy
 import cv2 as cv
 import numpy as np
+from sensor_msgs.msg import CompressedImage, Image
+from threading import Lock
+from time import sleep
+import sys
+import os
+import pycuda.autoinit
 
-#detection path
-detectpath = "/home/jetson/transbot_ws/src/transbot_visual/detection/"
-# load the COCO class names
-with open(detectpath + 'object_detection_coco.txt', 'r') as f: class_names = f.read().split('\n')
-# get a different color array for each of the classes
-COLORS = np.random.uniform(0, 255, size=(len(class_names), 3))
-# load the DNN modelimage
-model = cv.dnn.readNet(model = detectpath + 'frozen_inference_graph.pb', config = detectpath + 'ssd_mobilenet_v2_coco.txt', framework = 'TensorFlow')
+path = os.getcwd()
+sys.path.append("/home/jetson/tensorrt_demos/")
+os.chdir("/home/jetson/tensorrt_demos/")
+from utils.yolo_with_plugins import TrtYOLO
+from utils.yolo_classes import COCO_CLASSES_LIST
+yolo = TrtYOLO("yolov4-416")
+os.chdir(path)
+COLORS = np.random.uniform(0, 255, size=(len(COCO_CLASSES_LIST), 3))
 
-def Target_Detection(image):
+framelock = Lock()
+frame = ""
+def rgbtopic(msg):
+    global frame, framelock
+    if not isinstance(msg, CompressedImage):
+        return
+    framelock.acquire()
+    np_arr = np.fromstring(msg.data, np.uint8)
+    frame = cv.imdecode(np_arr, cv.IMREAD_ANYCOLOR)
+    frame = cv.resize(frame, (640, 480))
+    framelock.release()
+    
+#depthframelock = Lock()
+#depthframe = ""
+#def depthtopic(msg):
+#    global depthframe, depthframelock
+#    if not isinstance(msg, CompressedImage):
+#        return
+#    depthframelock.acquire()
+#    np_arr = np.fromstring(msg.data, np.uint8)
+#    depthframe = cv.imdecode(np_arr, cv.IMREAD_ANYCOLOR) #IMREAD_GRAYSCALE
+#    depthframe = cv.resize(depthframe, (640, 480))
+#    depthframelock.release()
+
+sub = rospy.Subscriber("/camera/rgb/image_raw/compressed", CompressedImage, rgbtopic)
+#sub2 = rospy.Subscriber("/camera/depth/image_raw/compressed", CompressedImage, depthtopic)
+
+def applyYOLO(img):
+    detection_confidence_threshold = 0.3
+    boxes, confs, clss = yolo.detect(img, detection_confidence_threshold)
     detections = []
-    image_height, image_width, _ = image.shape
-    # create blob from image
-    blob = cv.dnn.blobFromImage(image=image, size=(300, 300), mean=(104, 117, 123), swapRB=True)
-    model.setInput(blob)
-    output = model.forward()
-    # loop over each of the detections
-    for detection in output[0, 0, :, :]:
-        # extract the confidence of the detection
-        confidence = detection[2]
-        # draw bounding boxes only if the detection confidence is above...
-        # ... a certain threshold, else skip
-        if confidence > .4:
-            # get the class id
-            class_id = detection[1]
-            # map the class id to the class
-            class_name = class_names[int(class_id) - 1]
-            color = COLORS[int(class_id)]
-            # get the bounding box coordinates
-            box_x = detection[3] * image_width
-            box_y = detection[4] * image_height
-            # get the bounding box width and height
-            box_width = detection[5] * image_width
-            box_height = detection[6] * image_height
-            detections += [(class_name, box_x, box_y, box_width, box_height)]
-            # draw a rectangle around each detected object
-            cv.rectangle(image, (int(box_x), int(box_y)), (int(box_width), int(box_height)), color, thickness=2)
-            # put the class name text on the detected object
-            cv.putText(image, class_name, (int(box_x), int(box_y - 5)), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-    return (image, detections)
-
-capture = cv.VideoCapture(0)
-cv_edition = cv.__version__
-if cv_edition[0] == '3': capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*'XVID'))
-else: capture.set(cv.CAP_PROP_FOURCC, cv.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-capture.set(cv.CAP_PROP_FRAME_WIDTH, 640)
-capture.set(cv.CAP_PROP_FRAME_HEIGHT, 480)
+    for i in range(len(clss)):
+        class_id = int(clss[i])
+        box = boxes[i]
+        class_name = COCO_CLASSES_LIST[class_id]
+        detections.append([class_name, box[0], box[1], box[2]-box[0], box[3]-box[1], confs[i]])
+        color = COLORS[class_id]
+        cv.rectangle(img, (box[0], box[1]), (box[2], box[3]), color, thickness=2)
+        cv.putText(img, class_name, (box[0], box[1] - 5), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+    return img, []
 
 def detect_objects():
-    if capture.isOpened():
+    global frame, framelock
+    framecopy = None
+    framelock.acquire()
+    framecopy = frame.copy()
+    framelock.release()
+    #depthframecopy = None
+    #depthframelock.acquire()
+    #depthframecopy = depthframe.copy()
+    #depthframelock.release()
+    if frame != "":
         start = time.time()
-        ret, frame = capture.read()
-        (frame, detections) = Target_Detection(frame)
+        (framecopy, detections) = applyYOLO(framecopy)
         end = time.time()
         fps = 1 / (end - start)
         text = "FPS : " + str(int(fps))
-        cv.putText(frame, text, (20, 30), cv.FONT_HERSHEY_SIMPLEX, 0.9, (100, 200, 200), 1)
-        #cv.imshow('frame', frame)
-        return detections, frame
-    return []
+        cv.putText(framecopy, text, (20, 30), cv.FONT_HERSHEY_SIMPLEX, 0.9, (100, 200, 200), 1)
+        cv.imshow('frame', framecopy)
+        #cv.imshow('depthframe', depthframecopy)
+        return detections, framecopy
+    return None, None
 
 if __name__ == '__main__':
+    rospy.init_node('NARTest')
+    #1. Wait for frame:
+    while True:
+        framelock.acquire()
+        if frame != "":
+            framelock.release()
+            break
+        framelock.release()
+        sleep(0.1)
+    #2. Debug GUI:
     while True:
         action = cv.waitKey(10) & 0xFF
         detections, frame = detect_objects()
-        print(detections)
-        cv.imshow('frame', frame)
+        if detections != None:
+            print(detections)
+        sleep(0.1)

@@ -106,7 +106,7 @@ def process(line):
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
             for detection in detections:
-                (obj, x, y, w, h) = detection
+                (obj, x, y, w, h, c) = detection
                 x_real = x+w/2
                 y_real = y+h/2
                 TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)

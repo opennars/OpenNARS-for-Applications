@@ -18,7 +18,6 @@ joints[9].id = 9
 joints[9].angle = 30
 joints[9].run_time = runtime
 
-
 def jointangle(id, angle):
     global joints
     arm = Arm()
@@ -32,30 +31,16 @@ def jointangle(id, angle):
 # 控制机械臂关节运动
 # Control the joint movement of the manipulator
 def arm_servo7(s_angle):
-    if s_angle > 210 or s_angle < 160:
-        return
     jointangle(7, s_angle)
-    
-# 控制机械臂关节运动
-# Control the joint movement of the manipulator
 def arm_servo8(s_angle):
-    if s_angle > 180 or s_angle < 30:
-        return
     jointangle(8, s_angle)
-    
-# 控制机械臂关节运动
-# Control the joint movement of the manipulator
 def arm_servo9(s_angle):
-    if s_angle > 180 or s_angle < 30:
-        return
     jointangle(9, s_angle)
-
     
 def init_pose():
     arm_servo7(210)
     arm_servo8(30)
     arm_servo9(30)
-#init_pose()
 
 init_pose()
 
@@ -69,12 +54,9 @@ def angles():
         if isinstance(response, RobotArmResponse):
             print(response.RobotArm.joint)
             for joint in response.RobotArm.joint:
-                #print(str(joint))
-                #joints.append(joint.angle)
                 joints[joint.id] = joint.angle
     except Exception:
         print("//couldn't get joint angle")
-    #print("Arm_joints: ", joints)
     return joints
 
 def read_gripper_angle():
@@ -83,11 +65,7 @@ def read_gripper_angle():
         ang = angles()
     return ang[9]
 
-print(angles())
-
-
 def close_gripper():
-    #ret_changes = []
     target_angle = 30
     step_size = 5.0
     tolerance = 14.0
@@ -110,28 +88,54 @@ def close_gripper():
             sleep(0.7)
         else:
             break
-    #return ret_changes
-    return []
     
 def open_gripper():
     arm_servo9(30)
     sleep(1)
 
 def pick():
-    open_gripper()
+    #pick:
+    arm_servo7(180)
     sleep(1)
-    arm_servo7(160)
+
+    arm_servo8(220)
     sleep(1)
+
+    arm_servo7(55)
+    sleep(1)
+    arm_servo8(220)
+    sleep(1)
+
     close_gripper()
+
+    arm_servo7(180)
     sleep(1)
+    arm_servo8(30)
+    sleep(1)
+
     arm_servo7(210)
     sleep(1)
     
 def drop():
-    arm_servo7(160)
+    #drop:
+    arm_servo7(180)
     sleep(1)
+
+    arm_servo8(220)
+    sleep(1)
+
+    arm_servo7(55)
+    sleep(1)
+    arm_servo8(220)
+    sleep(1)
+
     open_gripper()
+
+    arm_servo7(180)
     sleep(1)
+    arm_servo8(30)
+    sleep(1)
+
     arm_servo7(210)
     sleep(1)
 
