@@ -56,7 +56,7 @@ def applyYOLO(img):
         detections.append([class_name, box[0], box[1], box[2]-box[0], box[3]-box[1], confs[i]])
         color = COLORS[class_id]
         cv.rectangle(img, (box[0], box[1]), (box[2], box[3]), color, thickness=2)
-        cv.putText(img, class_name, (box[0], box[1] - 5), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
+        cv.putText(img, class_name +":"+str(box[0]) + "," + str(box[1]), (box[0], box[1] - 5), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
     return img, []
 
 def detect_objects():
