@@ -3,6 +3,8 @@
 #jupyter notebook
 #roslaunch transbot_nav laser_bringup.launch
 #roslaunch transbot_nav rrt_exploration.launch open_rviz:=true
+#roslaunch astra_camera astrapro.launch
+
 import sys
 import os
 os.system("pkill NAR")
@@ -13,7 +15,6 @@ from time import sleep
 from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
-#from geometry_msgs.msg import Twist
 
 locationToTermOffset = 100.0
 def TransbotExecute(executions):
