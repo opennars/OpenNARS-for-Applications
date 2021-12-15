@@ -29,13 +29,13 @@ def TransbotExecute(executions):
                 sleep(2.0)
             elif op == "^left":
                 OpStop()
-                left()
-                #OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
+                #left()
+                OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
                 sleep(1.0)
             elif op == "^right":
                 OpStop()
-                right()
-                #OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
+                #right()
+                OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
                 sleep(1.0)
             elif op == "^pick":
                 OpStop()
@@ -124,6 +124,37 @@ def process(line):
             TransbotExecute(executions)
         if line.endswith(".") or line.endswith(". :|:"):
             NAR.AddInput(line)
+        if line == "*focus":
+            arm_down()
+            while True:
+                action = cv.waitKey(10) & 0xFF
+                detections, frame = detect_objects()
+                y_real_temp = -1
+                x_real_temp = -1
+                for detection in detections:
+                    (obj, x, y, w, h, c) = detection
+                    x_real = x+w/2
+                    y_real = y+h/2
+                    if y_real > y_real_temp:
+                        y_real_temp = y_real
+                        x_real_temp = x_real
+                if y_real_temp != -1:
+                    equal_size = 20
+                    if x_real_temp >= 640/2-equal_size and x_real_temp <= 640/2+equal_size:
+                        #arm_up()
+                        forward()
+                        close_gripper()
+                        arm_up()
+                        sleep(1.0)
+                        drop()
+                        break #focused
+                    elif x_real_temp > 640/2+equal_size:
+                        left()
+                    elif x_real_temp < 640/2-equal_size:
+                        right()
+                print(detections)
+                cv.imshow('frame', frame)
+                sleep(1.0)
         if line == "*pick":
             OpStop()
             pick()
@@ -169,4 +200,5 @@ if __name__ == '__main__':
 #executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]
 #executions += NAR.AddInput("10")["executions"]
 #TransbotExecute(executions)
+
 

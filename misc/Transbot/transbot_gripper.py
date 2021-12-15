@@ -134,7 +134,7 @@ def left():
 def right():
     twist = Twist()
     twist.linear.x = 0
-    twist.angular.z = angular
+    twist.angular.z = -angular
     pub_vel.publish(twist)
     sleep(0.2)
     twist.linear.x = 0
@@ -187,4 +187,5 @@ def drop():
     arm_up()
     backward()
     picked = False
+
 
