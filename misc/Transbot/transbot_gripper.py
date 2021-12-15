@@ -38,9 +38,14 @@ def arm_servo9(s_angle):
     jointangle(9, s_angle)
     
 def init_pose():
-    arm_servo7(210)
+    arm_servo7(180)
+    sleep(1)
     arm_servo8(30)
+    sleep(1)
+    arm_servo7(210)
+    sleep(1)
     arm_servo9(30)
+    sleep(1)
 
 init_pose()
 
@@ -81,64 +86,104 @@ def close_gripper():
             arm_servo9(last_target_angles[-2])
             print("FEEDBACK STOP 1")
             sleep(0.7)
-            break
+            return True
         if comparable(target_angle, current_angle):
             target_angle += step_size
             arm_servo9(target_angle)
             sleep(0.7)
         else:
-            break
+            return False
     
 def open_gripper():
     arm_servo9(30)
     sleep(1)
 
+def arm_down():
+    arm_servo7(180)
+    sleep(1)
+    arm_servo8(220)
+    sleep(1)
+    arm_servo7(55)
+    sleep(1)
+
+def arm_up():
+    arm_servo7(180)
+    sleep(1)
+    arm_servo8(30)
+    sleep(1)
+    arm_servo7(210)
+    sleep(1)
+
+#buy two additional degrees of freedom by moving base
+
+pub_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+angular = 1
+linear = 0.3
+
+def left():
+    twist = Twist()
+    twist.linear.x = 0
+    twist.angular.z = angular
+    pub_vel.publish(twist)
+    sleep(0.2)
+    twist.linear.x = 0
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+
+def right():
+    twist = Twist()
+    twist.linear.x = 0
+    twist.angular.z = angular
+    pub_vel.publish(twist)
+    sleep(0.2)
+    twist.linear.x = 0
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+
+def forward():
+    twist = Twist()
+    twist.linear.x = linear
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+    sleep(0.2)
+    twist.linear.x = 0
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+
+def backward():
+    twist = Twist()
+    twist.linear.x = -linear
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+    sleep(0.2)
+    twist.linear.x = 0
+    twist.angular.z = 0
+    pub_vel.publish(twist)
+
+picked = False
+def getPicked():
+    return picked
+
 def pick():
-    #pick:
-    arm_servo7(180)
-    sleep(1)
+    global picked
+    if picked:
+        return
+    arm_down()
+    forward()
+    feedback = close_gripper()
+    if not feedback:
+        open_gripper()
+    picked = feedback
+    arm_up()
+    backward()
+    return feedback
 
-    arm_servo8(220)
-    sleep(1)
-
-    arm_servo7(55)
-    sleep(1)
-    arm_servo8(220)
-    sleep(1)
-
-    close_gripper()
-
-    arm_servo7(180)
-    sleep(1)
-    arm_servo8(30)
-    sleep(1)
-
-    arm_servo7(210)
-    sleep(1)
-    
 def drop():
-    #drop:
-    arm_servo7(180)
-    sleep(1)
-
-    arm_servo8(220)
-    sleep(1)
-
-    arm_servo7(55)
-    sleep(1)
-    arm_servo8(220)
-    sleep(1)
-
+    global picked
+    forward()
+    arm_down()
     open_gripper()
-
-    arm_servo7(180)
-    sleep(1)
-    arm_servo8(30)
-    sleep(1)
-
-    arm_servo7(210)
-    sleep(1)
-
-#pick()
-#drop()
+    arm_up()
+    backward()
+    picked = False
 

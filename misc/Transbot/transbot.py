@@ -24,15 +24,17 @@ def TransbotExecute(executions):
         try:
             if op == "^forward":
                 OpStop()
-                OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link")
+                OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
                 sleep(2.0)
             elif op == "^left":
                 OpStop()
-                OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
+                left()
+                #OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
                 sleep(1.0)
             elif op == "^right":
                 OpStop()
-                OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
+                right()
+                #OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
                 sleep(1.0)
             elif op == "^pick":
                 OpStop()
@@ -135,23 +137,25 @@ def process(line):
             for i in range(50):
                 TransbotExecute(NAR.AddInput("G! :|:")["executions"])
 
-lastLine = ""
+def shell_step(lastLine = ""):
+    #Get input line and forward potential command
+    try:
+        line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
+    except:
+        exit(0)
+    if len(line.strip()) == 0:
+        line = lastLine;
+    print("PROCESSED LINE: " + line)
+    process(line)
+    return line
+
 def transbot_shell():
     lastLine = ""
     while True:
-        #Get input line and forward potential command
-        try:
-            line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
-        except:
-            exit(0)
-        if len(line.strip()) == 0:
-            line = lastLine;
-        else:
-            lastLine = line
-        print("PROCESSED LINE: " + line)
-        process(line)
+        lastLine = shell_step(lastLine)
 
-transbot_shell()
+if __name__ == '__main__':
+    transbot_shell()
         
 #CELL2:
 #NAR.AddInput("tick. :|:")
