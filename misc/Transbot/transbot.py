@@ -136,36 +136,39 @@ def process(line):
                 for detection in detections:
                     (obj, x, y, w, h, c) = detection
                     x_real = x+w/2
-                    y_real = y+h/2
+                    y_real = y+h #down side of bb
                     if y_real > y_real_temp:
                         y_real_temp = y_real
                         x_real_temp = x_real
                 if y_real_temp != -1:
-                    equal_size = 20
+                    equal_size = 15
                     mid = 360 #it's a bit to the right
                     if y_real_temp < 340:
                         arm_up()
                         break
                     if x_real_temp >= mid-equal_size and x_real_temp <= mid+equal_size:
-                        print("CENTER------------")
-                        #arm_up()
-                        #break
-                        forward()
-                        forward()
-                        if y_real_temp < 350:
+                        print("//CENTER------------")
+                        closer_to_gripper = 475
+                        if y_real_temp < closer_to_gripper: #visual feedback
                             forward()
-                        if y_real_temp < 360:
+                        elif y_real_temp > closer_to_gripper:
                             forward()
-                        close_gripper()
-                        arm_up()
-                        sleep(1.0)
-                        drop()
-                        break #focused
+                            forward()
+                            forward()
+                            success = close_gripper() #gripper feedback
+                            if success:
+                                print("//pick succeeded")
+                                arm_up()
+                                drop() #TODO remove
+                                break #focused
+                            else:
+                                print("//pick failed")
+                                break
                     elif x_real_temp > mid+equal_size:
-                        print("RIGHT<<<<<<<<<<<<<<<<")
+                        print("//RIGHT<<<<<<<<<<<<<<<<")
                         right()
                     elif x_real_temp < mid-equal_size:
-                        print("LEFT>>>>>>>>>>>>>>>")
+                        print("//LEFT>>>>>>>>>>>>>>>")
                         left()
                 else:
                     arm_up()
@@ -175,19 +178,23 @@ def process(line):
                 sleep(1.0)
         if line == "*left":
             left()
-        if line == "*right":
+        elif line == "*right":
             right()
-        if line == "*pick":
+        elif line == "*arm_down":
+            arm_down()
+        elif line == "*arm_up":
+            arm_up()
+        elif line == "*pick":
             OpStop()
             pick()
-        if line == "*drop":
+        elif line == "*drop":
             OpStop()
             drop()
-        if line == "*reset":
+        elif line == "*reset":
             OpStop()
             init_pose()
             reset_ona()
-        if line == "*explore":
+        elif line == "*explore":
             NAR.AddInput("<(a &/ ^forward) =/> G>.")
             NAR.AddInput("a. :|:")
             for i in range(50):
@@ -226,5 +233,6 @@ if __name__ == '__main__':
 #executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]
 #executions += NAR.AddInput("10")["executions"]
 #TransbotExecute(executions)
+
 
 
