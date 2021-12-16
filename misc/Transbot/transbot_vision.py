@@ -81,16 +81,18 @@ def detect_objects():
         return detections, framecopy
     return None, None
 
+#1. Wait for frame:
+while True:
+    framelock.acquire()
+    if frame != "":
+        framelock.release()
+        break
+    framelock.release()
+    sleep(0.1)
+print("//transbot_vision.py go!")
+
 if __name__ == '__main__':
     rospy.init_node('NARTest')
-    #1. Wait for frame:
-    while True:
-        framelock.acquire()
-        if frame != "":
-            framelock.release()
-            break
-        framelock.release()
-        sleep(0.1)
     #2. Debug GUI:
     while True:
         action = cv.waitKey(10) & 0xFF

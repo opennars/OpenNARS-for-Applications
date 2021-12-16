@@ -101,6 +101,7 @@ def reset_ona():
     #    TransbotExecute(NAR.AddInput("G! :|:")["executions"])
     #CELL2: tell NARS about locations of objects:
     #TransbotPerceiveAt("fridge", -0.25, 1.4)
+    print("//transbot.py (ONA) go!")
 
 def process(line):
     if line != "":
@@ -126,6 +127,7 @@ def process(line):
             NAR.AddInput(line)
         if line == "*focus":
             arm_down()
+            sleep(1)
             while True:
                 action = cv.waitKey(10) & 0xFF
                 detections, frame = detect_objects()
@@ -140,21 +142,41 @@ def process(line):
                         x_real_temp = x_real
                 if y_real_temp != -1:
                     equal_size = 20
-                    if x_real_temp >= 640/2-equal_size and x_real_temp <= 640/2+equal_size:
+                    mid = 360 #it's a bit to the right
+                    if y_real_temp < 340:
+                        arm_up()
+                        break
+                    if x_real_temp >= mid-equal_size and x_real_temp <= mid+equal_size:
+                        print("CENTER------------")
                         #arm_up()
+                        #break
                         forward()
+                        forward()
+                        if y_real_temp < 350:
+                            forward()
+                        if y_real_temp < 360:
+                            forward()
                         close_gripper()
                         arm_up()
                         sleep(1.0)
                         drop()
                         break #focused
-                    elif x_real_temp > 640/2+equal_size:
-                        left()
-                    elif x_real_temp < 640/2-equal_size:
+                    elif x_real_temp > mid+equal_size:
+                        print("RIGHT<<<<<<<<<<<<<<<<")
                         right()
-                print(detections)
+                    elif x_real_temp < mid-equal_size:
+                        print("LEFT>>>>>>>>>>>>>>>")
+                        left()
+                else:
+                    arm_up()
+                    break
+                #print(detections)
                 cv.imshow('frame', frame)
                 sleep(1.0)
+        if line == "*left":
+            left()
+        if line == "*right":
+            right()
         if line == "*pick":
             OpStop()
             pick()
@@ -162,6 +184,8 @@ def process(line):
             OpStop()
             drop()
         if line == "*reset":
+            OpStop()
+            init_pose()
             reset_ona()
         if line == "*explore":
             NAR.AddInput("<(a &/ ^forward) =/> G>.")
@@ -187,6 +211,8 @@ def transbot_shell():
         lastLine = shell_step(lastLine)
 
 if __name__ == '__main__':
+    reset_ona()
+    print("//Welcome to ONA-Transbot shell!")
     transbot_shell()
         
 #CELL2:

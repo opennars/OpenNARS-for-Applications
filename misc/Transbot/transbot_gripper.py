@@ -37,16 +37,41 @@ def arm_servo8(s_angle):
     jointangle(8, s_angle)
 def arm_servo9(s_angle):
     jointangle(9, s_angle)
-    
-def init_pose():
+
+def arm_down():
     arm_servo7(180)
-    sleep(1)
+    sleep(0.5)
+    arm_servo7(180)
+    sleep(0.5)
+    arm_servo8(220)
+    sleep(0.5)
+    arm_servo8(220)
+    sleep(0.5)
+    arm_servo7(55)
+    sleep(0.5)
+    arm_servo7(55)
+    sleep(0.5)
+
+def arm_up():
+    arm_servo7(180)
+    sleep(0.5)
+    arm_servo7(180)
+    sleep(0.5)
     arm_servo8(30)
-    sleep(1)
+    sleep(0.5)
+    arm_servo8(30)
+    sleep(0.5)
     arm_servo7(210)
-    sleep(1)
+    sleep(0.5)
+    arm_servo7(210)
+    sleep(0.5)
+
+def init_pose():
+    arm_up()
     arm_servo9(30)
-    sleep(1)
+    sleep(0.5)
+    arm_servo9(30)
+    sleep(0.5)
 
 init_pose()
 
@@ -99,26 +124,10 @@ def open_gripper():
     arm_servo9(30)
     sleep(1)
 
-def arm_down():
-    arm_servo7(180)
-    sleep(1)
-    arm_servo8(220)
-    sleep(1)
-    arm_servo7(55)
-    sleep(1)
-
-def arm_up():
-    arm_servo7(180)
-    sleep(1)
-    arm_servo8(30)
-    sleep(1)
-    arm_servo7(210)
-    sleep(1)
-
 #buy two additional degrees of freedom by moving base
 
 pub_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-angular = 1
+angular = 0.5
 linear = 0.3
 
 def left():
@@ -188,4 +197,4 @@ def drop():
     backward()
     picked = False
 
-
+print("//transbot_gripper.py go!")
