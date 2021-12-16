@@ -68,7 +68,7 @@ def pick_with_feedback(pickobj=None):
         cv.imshow('frame', frame)
         sleep(1.0)
 
-locationToTermOffset = 100.0
+valueToTermOffset = 500.0
 def TransbotExecute(executions):
     global Right_warning, Left_warning, Front_warning
     for execution in executions:
@@ -106,20 +106,24 @@ def TransbotExecute(executions):
                         NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
                         NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
             elif op == "^goto":
-                (x,y) = arguments.split("_")
+                (x,y,z,w) = arguments.split("_")
                 print("GOTO: " + str((x, y)))
-                (xf, yf) = (float(x)-locationToTermOffset, float(y)-locationToTermOffset)
-                OpGo(xf, yf)
+                (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
+                OpGo(xf, yf, zf, wf)
             elif op == "^say":
                 print("SAY: " + arguments)
         except:
             print("execution of wrong format " + str(execution))
 
-def TransbotPerceiveAt(obj, x, y):
-    NAR.AddInput("<(%s * %f_%f) --> at>. :|:" % (obj, x+locationToTermOffset, y+locationToTermOffset))
+def valueToTerm(x):
+    return str(x+valueToTermOffset)[:5]
+
+def TransbotPerceiveAt(obj, trans, rot):
+    transXYrotZW = "_".join([valueToTerm(x) for x in trans[:2]]) + "_".join([valueToTerm(x) for x in rot[2:]])
+    NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
-    TransbotPerceiveAt(obj, trans[0], trans[1])
+    TransbotPerceiveAt(obj, trans, rot)
     direction = "center" #640  -> 320 center
     if screenX < 320-centerSize: 
         direction = "left"
@@ -185,6 +189,10 @@ def process(line):
             left()
         elif line == "*right":
             right()
+        elif line == "*forward":
+            forward()
+        elif line == "*backward":
+            backward()
         elif line == "*arm_down":
             arm_down()
         elif line == "*arm_up":
@@ -214,6 +222,15 @@ def shell_step(lastLine = ""):
     if len(line.strip()) == 0:
         line = lastLine;
     print("PROCESSED LINE: " + line)
+    if line == "*loop": #endless sense-act cycle if desired
+        line = "G! :|:"
+        while True:
+            process(line)
+    if line.startswith("*steps "): #k steps
+        steps = int(line.split("*steps ")[1])
+        line = "G! :|:"
+        for i in range(steps):
+            process(line)
     process(line)
     return line
 
