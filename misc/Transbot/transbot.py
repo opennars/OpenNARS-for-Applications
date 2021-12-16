@@ -16,6 +16,58 @@ from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
 
+centerSize = 15
+def pick_with_feedback(pickobj=None):
+    arm_down()
+    sleep(1)
+    while True:
+        action = cv.waitKey(10) & 0xFF
+        detections, frame = detect_objects()
+        y_real_temp = -1
+        x_real_temp = -1
+        for detection in detections:
+            (obj, x, y, w, h, c) = detection
+            x_real = x+w/2
+            y_real = y+h #down side of bb
+            if y_real > y_real_temp and (pickobj == None or pickobj == obj):
+                y_real_temp = y_real
+                x_real_temp = x_real
+        if y_real_temp != -1:
+            mid = 360 #it's a bit to the right
+            if y_real_temp < 340:
+                arm_up()
+                break
+            if x_real_temp >= mid-centerSize and x_real_temp <= mid+centerSize:
+                print("//CENTER------------")
+                closer_to_gripper = 475
+                if y_real_temp < closer_to_gripper: #visual feedback
+                    forward()
+                elif y_real_temp > closer_to_gripper:
+                    forward()
+                    forward()
+                    forward()
+                    success = close_gripper() #gripper feedback
+                    if success:
+                        print("//pick succeeded")
+                        arm_up()
+                        drop() #TODO remove
+                        break #focused
+                    else:
+                        print("//pick failed")
+                        break
+            elif x_real_temp > mid+centerSize:
+                print("//RIGHT<<<<<<<<<<<<<<<<")
+                right()
+            elif x_real_temp < mid-centerSize:
+                print("//LEFT>>>>>>>>>>>>>>>")
+                left()
+        else:
+            arm_up()
+            break
+        #print(detections)
+        cv.imshow('frame', frame)
+        sleep(1.0)
+
 locationToTermOffset = 100.0
 def TransbotExecute(executions):
     global Right_warning, Left_warning, Front_warning
@@ -39,7 +91,7 @@ def TransbotExecute(executions):
                 sleep(1.0)
             elif op == "^pick":
                 OpStop()
-                pick()
+                pick_with_feedback(None if len(arguments) == 0 else arguments)
             elif op == "^drop":
                 OpStop()
                 drop()
@@ -69,7 +121,6 @@ def TransbotPerceiveAt(obj, x, y):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     TransbotPerceiveAt(obj, trans[0], trans[1])
     direction = "center" #640  -> 320 center
-    centerSize = 30
     if screenX < 320-centerSize: 
         direction = "left"
     elif screenX > 320+centerSize:
@@ -105,14 +156,17 @@ def reset_ona():
 
 def process(line):
     if line != "":
-        if line.endswith("! :|:") or line == "v":
+        if line == "*testmission":
+            NAR.AddInput("<(<bottle --> [left]> &/ ^pick) =/> G>.")
+            line = "G! :|:"
+        if line.endswith("! :|:") or line == "*see":
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
             for detection in detections:
                 (obj, x, y, w, h, c) = detection
                 x_real = x+w/2
-                y_real = y+h/2
+                y_real = y+h
                 TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
             print(detections)
             cv.imshow('frame', frame)
@@ -125,58 +179,9 @@ def process(line):
             TransbotExecute(executions)
         if line.endswith(".") or line.endswith(". :|:"):
             NAR.AddInput(line)
-        if line == "*focus":
-            arm_down()
-            sleep(1)
-            while True:
-                action = cv.waitKey(10) & 0xFF
-                detections, frame = detect_objects()
-                y_real_temp = -1
-                x_real_temp = -1
-                for detection in detections:
-                    (obj, x, y, w, h, c) = detection
-                    x_real = x+w/2
-                    y_real = y+h #down side of bb
-                    if y_real > y_real_temp:
-                        y_real_temp = y_real
-                        x_real_temp = x_real
-                if y_real_temp != -1:
-                    equal_size = 15
-                    mid = 360 #it's a bit to the right
-                    if y_real_temp < 340:
-                        arm_up()
-                        break
-                    if x_real_temp >= mid-equal_size and x_real_temp <= mid+equal_size:
-                        print("//CENTER------------")
-                        closer_to_gripper = 475
-                        if y_real_temp < closer_to_gripper: #visual feedback
-                            forward()
-                        elif y_real_temp > closer_to_gripper:
-                            forward()
-                            forward()
-                            forward()
-                            success = close_gripper() #gripper feedback
-                            if success:
-                                print("//pick succeeded")
-                                arm_up()
-                                drop() #TODO remove
-                                break #focused
-                            else:
-                                print("//pick failed")
-                                break
-                    elif x_real_temp > mid+equal_size:
-                        print("//RIGHT<<<<<<<<<<<<<<<<")
-                        right()
-                    elif x_real_temp < mid-equal_size:
-                        print("//LEFT>>>>>>>>>>>>>>>")
-                        left()
-                else:
-                    arm_up()
-                    break
-                #print(detections)
-                cv.imshow('frame', frame)
-                sleep(1.0)
-        if line == "*left":
+        elif line == "*pick_with_feedback":
+            pick_with_feedback()
+        elif line == "*left":
             left()
         elif line == "*right":
             right()
