@@ -96,6 +96,12 @@ def TransbotExecute(executions):
             elif op == "^drop":
                 OpStop()
                 drop()
+                #to remember where it dropped the object, it needs to see it although arm is folded
+                right()
+                right()
+                right()
+                right()
+                right()
             elif op == "^activate": #for later
                 None
             elif op == "^deactivate": #for later
@@ -124,9 +130,9 @@ def TransbotPerceiveAt(obj, trans, rot):
     NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
-    TransbotPerceiveAt(obj, trans, rot)
     direction = "center" #640  -> 320 center
-    if screenX < 320-centerSize: 
+    if screenX < 320-centerSize:
+        TransbotPerceiveAt(obj, trans, rot) #TODO improve
         direction = "left"
     elif screenX > 320+centerSize:
         direction = "right"
@@ -150,7 +156,7 @@ def reset_ona():
     #you need to ask the map in order to localize an object
     NAR.AddInput("<(tick &/ <({SELF} * $obj) --> ^remember>) =/> <$obj --> [localized]>>.")
     #once it's localized, and the location at the map is known, go to the location in order to see the object
-    NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [see]>>.")
+    NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [left]>>.")
     #NAR.AddInput("<(a &/ ^forward) =/> G>.")
     #NAR.AddInput("a. :|:")
     #for i in range(50):
