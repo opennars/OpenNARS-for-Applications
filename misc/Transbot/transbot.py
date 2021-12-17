@@ -50,8 +50,7 @@ def pick_with_feedback(pickobj=None):
                     if success:
                         print("//pick succeeded")
                         arm_up()
-                        drop() #TODO remove
-                        break #focused
+                        break
                     else:
                         print("//pick failed")
                         break
