@@ -1,10 +1,3 @@
-#run in terminal: 
-#jupyter notebook stop
-#jupyter notebook
-#roslaunch transbot_nav laser_bringup.launch
-#roslaunch transbot_nav rrt_exploration.launch open_rviz:=false
-#roslaunch astra_camera astrapro.launch
-
 import sys
 import os
 os.system("pkill NAR")
