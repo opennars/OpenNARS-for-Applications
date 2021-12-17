@@ -184,8 +184,8 @@ def process(line):
                 (obj, x, y, w, h, c) = detection
                 x_real = x+w/2
                 y_real = y+h #down side of bb
-                if y_real > y_real_temp and (pickobj == None or pickobj == obj):
-                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real_temp, y_real_temp, w, h, c)
+                if y_real > y_real_temp:
+                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
             if y_real_temp != -1:
                 TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
                 print("//seen: ", obj, x_real, y_real)
@@ -198,7 +198,7 @@ def process(line):
                 if HadExternalAction:
                     break #external action triggered, done
                 executions = []
-        if line.endswith(".") or line.endswith(". :|:"):
+        if line.endswith(".") or line.endswith(". :|:") or line.endswith("?") or line.endswith("? :|:"):
             NAR.AddInput(line)
         elif line == "*pick_with_feedback":
             pick_with_feedback()
@@ -229,6 +229,8 @@ def process(line):
             NAR.AddInput("a. :|:")
             for i in range(50):
                 TransbotExecute(NAR.AddInput("G! :|:")["executions"])
+        elif line.isdigit() or line.startswith("*") or line.endswith("}"):
+            NAR.AddInput(line)
 
 def shell_step(lastLine = ""):
     #Get input line and forward potential command
