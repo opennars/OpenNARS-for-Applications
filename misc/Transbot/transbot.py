@@ -70,12 +70,12 @@ def pick_with_feedback(pickobj=None):
 valueToTermOffset = 500.0
 def TransbotExecute(executions):
     global Right_warning, Left_warning, Front_warning
-    HadExternalAction = False
+    ActionInvoked = False
     for execution in executions:
         op = execution["operator"]
         arguments = execution["arguments"]
         try:
-            ExternalActionInvoked = True
+            ActionInvoked = True
             if op == "^forward":
                 OpStop()
                 OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
@@ -101,12 +101,10 @@ def TransbotExecute(executions):
             elif op == "^deactivate": #for later
                 None
             elif op == "^remember":
-                ExternalActionInvoked = False
-                if arguments == "fridge":
-                    locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
-                    if locationQueryAnswer["term"] != "None":
-                        NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
-                        NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
+                locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
+                if locationQueryAnswer["term"] != "None":
+                    NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
+                    NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
             elif op == "^goto":
                 (x,y,z,w) = arguments.split("_")
                 print("GOTO: " + str((x, y)))
@@ -114,10 +112,9 @@ def TransbotExecute(executions):
                 OpGo(xf, yf, zf, wf)
             elif op == "^say":
                 print("SAY: " + arguments)
-            HadExternalAction = HadExternalAction or ExternalActionInvoked
         except:
             print("execution of wrong format " + str(execution))
-    return HadExternalAction
+    return ActionInvoked
 
 def valueToTerm(x):
     return str(x+valueToTermOffset)[:5]
@@ -193,9 +190,9 @@ def process(line):
             executions = NAR.AddInput(line)["executions"] #account for mental op
             for i in range(10): #time limit to act
                 executions += NAR.AddInput("1")["executions"]
-                HadExternalAction = TransbotExecute(executions)
-                if HadExternalAction:
-                    break #external action triggered, done
+                ActionInvoked = TransbotExecute(executions)
+                if ActionInvoked:
+                    break #acted, done
                 executions = []
         if line.endswith(".") or line.endswith(". :|:") or line.endswith("?") or line.endswith("? :|:"):
             NAR.AddInput(line)
@@ -261,18 +258,5 @@ if __name__ == '__main__':
     reset_ona()
     print("//Welcome to ONA-Transbot shell!")
     transbot_shell()
-        
-#CELL2:
-#NAR.AddInput("tick. :|:")
-#executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]
-#executions += NAR.AddInput("10")["executions"]
-#TransbotExecute(executions)
-
-#CELL3:
-#NAR.AddInput("tick. :|:")
-#executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]
-#executions += NAR.AddInput("10")["executions"]
-#TransbotExecute(executions)
-
 
 
