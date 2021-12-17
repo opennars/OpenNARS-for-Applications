@@ -229,7 +229,7 @@ def process(line):
             NAR.AddInput("a. :|:")
             for i in range(50):
                 TransbotExecute(NAR.AddInput("G! :|:")["executions"])
-        elif line.isdigit() or line.startswith("*") or line.endswith("}"):
+        elif line.isdigit() or line.startswith("*volume") or line.startswith("*motorbabbling") or line.endswith("}"):
             NAR.AddInput(line)
 
 def shell_step(lastLine = ""):
