@@ -71,10 +71,12 @@ def pick_with_feedback(pickobj=None):
 valueToTermOffset = 500.0
 def TransbotExecute(executions):
     global Right_warning, Left_warning, Front_warning
+    HadExternalAction = False
     for execution in executions:
         op = execution["operator"]
         arguments = execution["arguments"]
         try:
+            ExternalActionInvoked = True
             if op == "^forward":
                 OpStop()
                 OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
@@ -100,6 +102,7 @@ def TransbotExecute(executions):
             elif op == "^deactivate": #for later
                 None
             elif op == "^remember":
+                ExternalActionInvoked = False
                 if arguments == "fridge":
                     locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
                     if locationQueryAnswer["term"] != "None":
@@ -112,8 +115,10 @@ def TransbotExecute(executions):
                 OpGo(xf, yf, zf, wf)
             elif op == "^say":
                 print("SAY: " + arguments)
+            HadExternalAction = HadExternalAction or ExternalActionInvoked
         except:
             print("execution of wrong format " + str(execution))
+    return HadExternalAction
 
 def valueToTerm(x):
     return str(x+valueToTermOffset)[:5]
@@ -161,26 +166,38 @@ def reset_ona():
 def process(line):
     if line != "":
         if line == "*testmission":
-            NAR.AddInput("<(<bottle --> [left]> &/ ^pick) =/> G>.")
+            NAR.AddInput("<((<gripper --> [open]> &/ <bottle --> [left]>) &/ ^pick) =/> <gripper --> [closed]>>.")
+            NAR.AddInput("<(<gripper --> [closed]> &/ ^drop) =/> G>.")
             line = "G! :|:"
+        if line.endswith("! :|:") or line == "*internal":
+            NAR.AddInput("tick. :|:")
+            if picked:
+                NAR.AddInput("<gripper --> [closed]>. :|:")
+            else:
+                NAR.AddInput("<gripper --> [open]>. :|:")
         if line.endswith("! :|:") or line == "*see":
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
+            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = ("", -1, -1, -1, -1, 0)
             for detection in detections:
                 (obj, x, y, w, h, c) = detection
                 x_real = x+w/2
-                y_real = y+h
-                TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
-            print(detections)
+                y_real = y+h #down side of bb
+                if y_real > y_real_temp and (pickobj == None or pickobj == obj):
+                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real_temp, y_real_temp, w, h, c)
+            if y_real_temp != -1:
+                TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
+                print("//seen: ", obj, x_real, y_real)
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
             executions = NAR.AddInput(line)["executions"] #account for mental op
-            executions += NAR.AddInput("10")["executions"]
-            TransbotExecute(executions)
-            executions = NAR.AddInput(line)["executions"]
-            executions += NAR.AddInput("10")["executions"]
-            TransbotExecute(executions)
+            for i in range(10): #time limit to act
+                executions += NAR.AddInput("1")["executions"]
+                HadExternalAction = TransbotExecute(executions)
+                if HadExternalAction:
+                    break #external action triggered, done
+                executions = []
         if line.endswith(".") or line.endswith(". :|:"):
             NAR.AddInput(line)
         elif line == "*pick_with_feedback":
