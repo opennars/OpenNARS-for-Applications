@@ -218,6 +218,7 @@ int Shell_ProcessInput(char *line)
             int opID;
             char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
+            assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             Term newTerm = Narsese_AtomicTerm(opname);
             for(int i=0; i<OPERATIONS_MAX; i++)
             {

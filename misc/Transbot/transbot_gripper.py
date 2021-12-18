@@ -190,6 +190,8 @@ def pick():
 
 def drop():
     global picked
+    if not picked:
+        return
     forward()
     arm_down()
     open_gripper()
