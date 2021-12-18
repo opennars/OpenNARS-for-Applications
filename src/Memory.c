@@ -101,7 +101,7 @@ Concept *Memory_FindConceptByTerm(Term *term)
 
 Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
-    if(Narsese_getOperationID(term)) //don't conceptualize operations
+    if(Memory_getOperationID(term)) //don't conceptualize operations
     {
         return NULL;
     }
@@ -264,7 +264,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
                 if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
                 {
-                    opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
+                    opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                 }
                 else
@@ -371,4 +371,20 @@ void Memory_AddInputEvent(Event *event, long currentTime)
 bool Memory_ImplicationValid(Implication *imp)
 {
     return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
+}
+
+int Memory_getOperationID(Term *term)
+{
+    Atom op_atom = Narsese_getOperationAtom(term);
+    if(op_atom)
+    {
+        for(int k=1; k<OPERATIONS_MAX; k++)
+        {
+            if(operations[k-1].term.atoms[0] == op_atom)
+            {
+                return k;
+            }
+        }
+    }
+    return 0;
 }

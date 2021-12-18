@@ -377,7 +377,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(state == 1) //postcondition always len1
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
+                    int op_id = Memory_getOperationID(&postcondition.term);
                     Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {

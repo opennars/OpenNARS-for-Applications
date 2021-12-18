@@ -43,9 +43,9 @@ void NAR_Alien_Shoot()
 void NAR_Alien(long iterations)
 {
     puts(">>NAR Alien1 start");
-    NAR_AddOperation(Narsese_Term("^left"), NAR_Alien_Left); 
-    NAR_AddOperation(Narsese_Term("^right"), NAR_Alien_Right); 
-    NAR_AddOperation(Narsese_Term("^shoot"), NAR_Alien_Shoot); 
+    NAR_AddOperation("^left", NAR_Alien_Left);
+    NAR_AddOperation("^right", NAR_Alien_Right);
+    NAR_AddOperation("^shoot", NAR_Alien_Shoot);
     double alien0X = 0.5;
     double defenderX = 0.5;
     double alienWidth = 0.18;

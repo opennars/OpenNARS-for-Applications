@@ -32,8 +32,8 @@ void NAR_Cartpole(long iterations)
                      "                     |\n";
     int t=0;
     puts(">>NAR CP start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_CP_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_CP_Right); 
+    NAR_AddOperation("^left", NAR_CP_Left);
+    NAR_AddOperation("^right", NAR_CP_Right);
     while(1)
     {
         position += velocity;

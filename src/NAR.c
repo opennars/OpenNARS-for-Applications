@@ -26,6 +26,7 @@
 
 long currentTime = 1;
 static bool initialized = false;
+static int op_k = 0;
 
 void NAR_INIT()
 {
@@ -35,6 +36,7 @@ void NAR_INIT()
     Narsese_INIT();
     currentTime = 1; //reset time
     initialized = true;
+    op_k = 0;
 }
 
 void NAR_Cycles(int cycles)
@@ -72,13 +74,23 @@ Event NAR_AddInputGoal(Term term)
     return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false, 0);
 }
 
-void NAR_AddOperation(Term term, Action procedure)
+void NAR_AddOperation(char *term_name, Action procedure)
 {
+    assert(procedure != 0, "Cannot add an operation with null-procedure");
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
+    Term term = Narsese_AtomicTerm(term_name);
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
-    assert(Narsese_OperatorIndex(term_name) <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
-    operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
+    //check if term already exists
+    int existing_k = Memory_getOperationID(&term);
+    //use the running k if not existing yet
+    int use_k = existing_k == 0 ? op_k+1 : existing_k;
+    //if it wasn't existing, also increase the running k and check if it's still in bounds
+    assert(use_k <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
+    if(existing_k == 0)
+    {
+        op_k++;
+    }
+    operations[use_k-1] = (Operation) { .term = term, .action = procedure };
 }
 
 void NAR_AddInputNarsese(char *narsese_sentence)

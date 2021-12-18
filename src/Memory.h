@@ -94,5 +94,7 @@ bool Memory_ImplicationValid(Implication *imp);
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo);
 //Print an implication in memory:
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
+//Get operation ID
+int Memory_getOperationID(Term *term);
 
 #endif

@@ -47,6 +47,7 @@ void Decision_Execute(Decision *decision)
         }
         feedback = operation;
     }
+    Narsese_PrintTerm(&decision->op.term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments); puts(""); fflush(stdout);
     (*decision->op.action)(decision->arguments);
     NAR_AddInputBelief(feedback);
 }
@@ -56,7 +57,7 @@ static Decision Decision_MotorBabbling()
 {
     Decision decision = (Decision) {0};
     int n_ops = 0;
-    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
+    for(int i=0; i<OPERATIONS_MAX && operations[i].term.atoms[0] != 0; i++)
     {
         n_ops = i+1;
     }
@@ -133,7 +134,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].term.atoms[0] != 0; opi++)
         {
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {

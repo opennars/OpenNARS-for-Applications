@@ -270,28 +270,6 @@ char** Narsese_PrefixTransform(char* narsese_expanded)
     return tokens;
 }
 
-int operator_index = 0;
-int Narsese_OperatorIndex(char *name)
-{
-    int ret_index = -1;
-    for(int i=0; i<operator_index; i++)
-    {
-        if(!strcmp(Narsese_operatorNames[i], name))
-        {
-            ret_index = i+1;
-            break;
-        }
-    }
-    if(ret_index == -1)
-    {
-        assert(operator_index < OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
-        ret_index = operator_index+1;
-        strncpy(Narsese_operatorNames[operator_index], name, ATOMIC_TERM_LEN_MAX);
-        operator_index++;
-    }
-    return ret_index;
-}
-
 HashTable HTatoms;
 VMItem* HTatoms_storageptrs[ATOMS_MAX];
 VMItem HTatoms_storage[ATOMS_MAX];
@@ -308,10 +286,6 @@ int Narsese_AtomicTermIndex(char *name)
     if(retptr != NULL)
     {
         ret_index = (long) retptr; //we got the value
-    }
-    if(name[0] == '^')
-    {
-        Narsese_OperatorIndex(name);
     }
     if(ret_index == -1)
     {
@@ -615,7 +589,7 @@ bool Narsese_StringEqual(char *name1, char *name2)
 void Narsese_INIT()
 {
     HashTable_INIT(&HTatoms, HTatoms_storage, HTatoms_storageptrs, HTatoms_HT, ATOMS_HASHTABLE_BUCKETS, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
-    operator_index = term_index = 0;
+    term_index = 0;
     for(int i=0; i<ATOMS_MAX; i++)
     {
         memset(&Narsese_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
@@ -671,21 +645,21 @@ bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ 
             (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7]))); //  { SELF } or { VAR }
 }
 
-int Narsese_getOperationID(Term *term)
+Atom Narsese_getOperationAtom(Term *term)
 {
     if(Narsese_copulaEquals(term->atoms[0], '+')) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
         assert(!Narsese_copulaEquals(potential_operator.atoms[0], '+'), "Sequences should be left-nested encoded, never right-nested!!");
-        return Narsese_getOperationID(&potential_operator);
+        return Narsese_getOperationAtom(&potential_operator);
     }
     if(Narsese_isOperator(term->atoms[0])) //atomic operator
     {
-        return Narsese_OperatorIndex(Narsese_atomNames[(int) term->atoms[0]-1]);
+        return term->atoms[0];
     }
     if(Narsese_isOperation(term)) //an operation, we use the operator atom's index on the right side of the inheritance
     {
-        return Narsese_OperatorIndex(Narsese_atomNames[(int) term->atoms[2]-1]);
+        return term->atoms[2];
     }
     return 0; //not an operation term
 }
