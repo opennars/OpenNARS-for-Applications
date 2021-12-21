@@ -68,65 +68,60 @@ def TransbotExecute(executions):
     for execution in executions:
         op = execution["operator"]
         arguments = execution["arguments"]
-        try:
-            ActionInvoked = True
-            if op == "^forward":
-                OpStop()
-                OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
-                sleep(2.0)
-            elif op == "^left":
-                OpStop()
-                #left()
-                OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
-                sleep(1.0)
-            elif op == "^right":
-                OpStop()
-                #right()
-                OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
-                sleep(1.0)
-            elif op == "^pick":
-                OpStop()
-                pick_with_feedback(None if len(arguments) == 0 else arguments)
-            elif op == "^drop":
-                OpStop()
-                drop()
-                #to remember where it dropped the object, it needs to see it although arm is folded
-                right()
-                right()
-                right()
-                right()
-                right()
-            elif op == "^activate": #for later
-                None
-            elif op == "^deactivate": #for later
-                None
-            elif op == "^remember":
-                locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
-                if locationQueryAnswer["term"] != "None":
-                    NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
-                    NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
-            elif op == "^goto":
-                (x,y,z,w) = arguments.split("_")
-                print("GOTO: " + str((x, y)))
-                (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
-                OpGo(xf, yf, zf, wf)
-            elif op == "^say":
-                print("SAY: " + arguments)
-        except:
-            print("execution of wrong format " + str(execution))
+        ActionInvoked = True
+        if op == "^forward":
+            OpStop()
+            OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
+            sleep(2.0)
+        elif op == "^left":
+            OpStop()
+            #left()
+            OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
+            sleep(1.0)
+        elif op == "^right":
+            OpStop()
+            #right()
+            OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
+            sleep(1.0)
+        elif op == "^pick":
+            OpStop()
+            pick_with_feedback(None if len(arguments) == 0 else arguments)
+        elif op == "^drop":
+            OpStop()
+            drop()
+            right()
+            right()
+            right()
+            right()
+        elif op == "^activate": #for later
+            None
+        elif op == "^deactivate": #for later
+            None
+        elif op == "^remember":
+            locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
+            if locationQueryAnswer["term"] != "None":
+                NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
+                NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
+        elif op == "^goto":
+            (x,y,z,w) = arguments.split("_")
+            print("//GOTO: " + str((x, y, z, w)))
+            (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
+            OpGo(xf, yf, zf, wf)
+        elif op == "^say":
+            print("//SAY: " + arguments)
     return ActionInvoked
 
 def valueToTerm(x):
     return str(x+valueToTermOffset)[:5]
 
 def TransbotPerceiveAt(obj, trans, rot):
-    transXYrotZW = "_".join([valueToTerm(x) for x in trans[:2]]) + "_".join([valueToTerm(x) for x in rot[2:]])
+    transXYrotZW = "_".join([valueToTerm(x) for x in trans[:2]]) + "_" + "_".join([valueToTerm(x) for x in rot[2:]])
     NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
+    TransbotPerceiveAt(obj, trans, rot) #TODO improve
     if screenX < 320-centerSize:
-        TransbotPerceiveAt(obj, trans, rot) #TODO improve
         direction = "left"
     elif screenX > 320+centerSize:
         direction = "right"
@@ -145,28 +140,19 @@ def reset_ona():
     NAR.AddInput("*setopname 8 ^remember")
     NAR.AddInput("*setopname 9 ^goto")
     NAR.AddInput("*setopname 10 ^say")
-    NAR.AddInput("*motorbabbling=true")
+    NAR.AddInput("*motorbabbling=false")
     NAR.AddInput("*volume=0")
     #you need to ask the map in order to localize an object
-    NAR.AddInput("<(tick &/ <({SELF} * $obj) --> ^remember>) =/> <$obj --> [localized]>>.")
+    NAR.AddInput("<(<gripper --> [#sth]> &/ <({SELF} * $obj) --> ^remember>) =/> <$obj --> [localized]>>.")
     #once it's localized, and the location at the map is known, go to the location in order to see the object
-    NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [left]>>.")
-    #NAR.AddInput("<(a &/ ^forward) =/> G>.")
-    #NAR.AddInput("a. :|:")
-    #for i in range(50):
-    #    TransbotExecute(NAR.AddInput("G! :|:")["executions"])
+    NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [see]>>.")
     #CELL2: tell NARS about locations of objects:
-    #TransbotPerceiveAt("fridge", -0.25, 1.4)
+    #NAR.AddInput("<fridge * 500.0_500.0_500.0_500.0) --> at>. :|:"
     print("//transbot.py (ONA) go!")
 
 def process(line):
     if line != "":
-        if line == "*testmission":
-            NAR.AddInput("<((<gripper --> [open]> &/ <bottle --> [left]>) &/ ^pick) =/> <gripper --> [closed]>>.")
-            NAR.AddInput("<(<gripper --> [closed]> &/ ^drop) =/> G>.")
-            line = "G! :|:"
         if line.endswith("! :|:") or line == "*internal":
-            NAR.AddInput("tick. :|:")
             if picked:
                 NAR.AddInput("<gripper --> [closed]>. :|:")
             else:
@@ -184,7 +170,6 @@ def process(line):
                     (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
             if y_real_temp != -1:
                 TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
-                print("//seen: ", obj, x_real, y_real)
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
             executions = NAR.AddInput(line)["executions"] #account for mental op
@@ -220,15 +205,12 @@ def process(line):
             OpStop()
             init_pose()
             reset_ona()
-        elif line == "*explore":
-            NAR.AddInput("<(a &/ ^forward) =/> G>.")
-            NAR.AddInput("a. :|:")
-            for i in range(50):
-                TransbotExecute(NAR.AddInput("G! :|:")["executions"])
         elif line.isdigit() or line.startswith("*volume") or line.startswith("*motorbabbling") or line.endswith("}"):
             NAR.AddInput(line)
 
+lastGoal = "G! :|:"
 def shell_step(lastLine = ""):
+    global lastGoal
     #Get input line and forward potential command
     try:
         line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
@@ -236,21 +218,26 @@ def shell_step(lastLine = ""):
         exit(0)
     if len(line.strip()) == 0:
         line = lastLine;
-    print("PROCESSED LINE: " + line)
+    print("//PROCESSED LINE: " + line)
+    if line.endswith("! :|:"):
+        lastGoal = line
     if line == "*loop": #endless sense-act cycle if desired
-        line = "G! :|:"
         while True:
-            process(line)
+            process(lastGoal)
+    if line == "*testmission":
+        NAR.AddInput("<((<gripper --> [open]> &/ <bottle --> [left]>) &/ ^pick) =/> <gripper --> [closed]>>.")
+        NAR.AddInput("<(<gripper --> [closed]> &/ ^drop) =/> G>.")
+        line = "*steps 2"
     if line.startswith("*steps "): #k steps
         steps = int(line.split("*steps ")[1])
-        line = "G! :|:"
         for i in range(steps):
-            process(line)
+            process(lastGoal)
+        print("//*steps DONE")
     process(line)
     return line
 
 def transbot_shell():
-    lastLine = ""
+    lastLine = "G! :|:"
     while True:
         lastLine = shell_step(lastLine)
 
