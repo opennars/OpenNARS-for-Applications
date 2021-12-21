@@ -197,8 +197,6 @@ def drop():
     open_gripper()
     arm_up()
     backward()
-    backward()
-    backward()
     picked = False
 
 print("//transbot_gripper.py go!")
