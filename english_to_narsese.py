@@ -40,10 +40,11 @@ from nltk.corpus import stopwords
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('universal_tagset')
-nltk.download('wordnet')
+quiet = "quiet" in sys.argv
+nltk.download('punkt', quiet=quiet)
+nltk.download('averaged_perceptron_tagger', quiet=quiet)
+nltk.download('universal_tagset', quiet=quiet)
+nltk.download('wordnet', quiet=quiet)
 
 SyntacticalTransformations = [
     #types of tuples of words with optional members
