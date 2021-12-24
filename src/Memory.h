@@ -55,6 +55,7 @@ typedef struct
 {
     Term term;
     Action action;
+    Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
 }Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global

@@ -237,6 +237,17 @@ int Shell_ProcessInput(char *line)
             }
         }
         else
+        if(!strncmp("*setoparg ", line, strlen("*setoparg ")))
+        {
+            int opID;
+            int opArgID;
+            char argname[ATOMIC_TERM_LEN_MAX] = {0};
+            sscanf(&line[strlen("*setoparg ")], "%d %d %s", &opID, &opArgID, (char*) &argname);
+            assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
+            assert(opArgID >= 1 && opArgID <= OPERATIONS_BABBLE_ARGS_MAX, "Operator arg index out of bounds, it can only be between 1 and OPERATIONS_BABBLE_ARGS_MAX!");
+            operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
+        }
+        else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))
         {
             unsigned int steps;

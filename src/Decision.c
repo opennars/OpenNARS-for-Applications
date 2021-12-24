@@ -69,6 +69,23 @@ static Decision Decision_MotorBabbling()
         )
         decision.execute = true;
         decision.desire = 1.0;
+        if(operations[decision.operationID-1].arguments[0].atoms[0])
+        {
+            int n_args = 0;
+            for(int i=0; i<OPERATIONS_BABBLE_ARGS_MAX && operations[decision.operationID-1].arguments[i].atoms[0] != 0; i++)
+            {
+                n_args = i+1;
+            }
+            int argumentID = myrand() % n_args;
+            //({SELF} * num)
+            //*   "    arg  SELF
+            //0   1    2    3
+            decision.arguments.atoms[0] = Narsese_AtomicTermIndex("*");  //product
+            decision.arguments.atoms[1] = Narsese_AtomicTermIndex("\""); //ext set {SELF} on the left
+            Term_OverrideSubterm(&decision.arguments, 2, &operations[decision.operationID-1].arguments[argumentID]);
+            decision.arguments.atoms[3] = SELF;
+            decision.arguments.atoms[4] = Narsese_AtomicTermIndex("@");
+        }
     }
     return decision;
 }
