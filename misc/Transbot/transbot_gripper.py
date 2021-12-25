@@ -127,7 +127,7 @@ def open_gripper():
 #buy two additional degrees of freedom by moving base
 
 pub_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-angular = 0.5
+angular = 0.3
 linear = 0.3
 
 def left():

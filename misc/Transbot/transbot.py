@@ -10,7 +10,7 @@ from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
 
-centerSize = 15
+centerSize = 8
 def pick_with_feedback(pickobj=None):
     arm_down()
     sleep(1)
@@ -27,7 +27,7 @@ def pick_with_feedback(pickobj=None):
                 y_real_temp = y_real
                 x_real_temp = x_real
         if y_real_temp != -1:
-            mid = 360 #it's a bit to the right
+            mid = 375 #it's a bit to the right
             if y_real_temp < 340:
                 arm_up()
                 break
