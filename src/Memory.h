@@ -55,6 +55,7 @@ typedef struct
 {
     Term term;
     Action action;
+    Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
 }Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
@@ -84,8 +85,8 @@ Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted);
-void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime);
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised);
+void Memory_AddInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
@@ -94,5 +95,7 @@ bool Memory_ImplicationValid(Implication *imp);
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo);
 //Print an implication in memory:
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
+//Get operation ID
+int Memory_getOperationID(Term *term);
 
 #endif

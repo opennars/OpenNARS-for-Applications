@@ -101,7 +101,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     }
-    puts("NAL_DerivedEvent(RuleTable_Reduce(conclusion, false), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid);}\n");
+    puts("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid);}\n");
 }
 
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
@@ -118,7 +118,7 @@ void NAL_GenerateRuleTable()
 #include "NAL.h"
 #undef H_NAL_RULES
     printf("RULE_%d:;\n}\n", ruleID);
-    printf("Term RuleTable_Reduce(Term term1, bool doublePremise)\n{\ngoto RULE_%d;\n", ruleID);
+    printf("Term RuleTable_Reduce(Term term1)\n{\nbool doublePremise = false;\ngoto RULE_%d;\n", ruleID);
 #define H_NAL_REDUCTIONS
 #include "NAL.h"
 #undef H_NAL_REDUCTIONS
@@ -154,7 +154,8 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
-                .occurrenceTime = conclusionOccurrence ,
+                .occurrenceTime = conclusionOccurrence,
+                .occurrenceTimeOffset = occurrenceTimeOffset,
                 .creationTime = currentTime };
     #pragma omp critical(Memory)
     {
@@ -162,7 +163,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(!NAL_AtomAppearsTwice(&conclusionTerm))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }
         }
     }

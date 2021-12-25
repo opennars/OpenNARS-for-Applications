@@ -47,6 +47,7 @@ void Decision_Execute(Decision *decision)
         }
         feedback = operation;
     }
+    Narsese_PrintTerm(&decision->op.term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments); puts(""); fflush(stdout);
     (*decision->op.action)(decision->arguments);
     NAR_AddInputBelief(feedback);
 }
@@ -56,7 +57,7 @@ static Decision Decision_MotorBabbling()
 {
     Decision decision = (Decision) {0};
     int n_ops = 0;
-    for(int i=0; i<OPERATIONS_MAX && operations[i].action != 0; i++)
+    for(int i=0; i<OPERATIONS_MAX && operations[i].term.atoms[0] != 0; i++)
     {
         n_ops = i+1;
     }
@@ -68,6 +69,23 @@ static Decision Decision_MotorBabbling()
         )
         decision.execute = true;
         decision.desire = 1.0;
+        if(operations[decision.operationID-1].arguments[0].atoms[0])
+        {
+            int n_args = 0;
+            for(int i=0; i<OPERATIONS_BABBLE_ARGS_MAX && operations[decision.operationID-1].arguments[i].atoms[0] != 0; i++)
+            {
+                n_args = i+1;
+            }
+            int argumentID = myrand() % n_args;
+            //({SELF} * num)
+            //*   "    arg  SELF
+            //0   1    2    3
+            decision.arguments.atoms[0] = Narsese_AtomicTermIndex("*");  //product
+            decision.arguments.atoms[1] = Narsese_AtomicTermIndex("\""); //ext set {SELF} on the left
+            Term_OverrideSubterm(&decision.arguments, 2, &operations[decision.operationID-1].arguments[argumentID]);
+            decision.arguments.atoms[3] = SELF;
+            decision.arguments.atoms[4] = Narsese_AtomicTermIndex("@");
+        }
     }
     return decision;
 }
@@ -133,7 +151,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
-        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].action != 0; opi++)
+        for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].term.atoms[0] != 0; opi++)
         {
             for(int j=0; j<goalconcept->precondition_beliefs[opi].itemsAmount; j++)
             {
@@ -270,10 +288,6 @@ void Decision_Anticipate(int operationID, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
-                                    Event eternal = result;
-                                    eternal.truth = Truth_Eternalize(eternal.truth);
-                                    eternal.occurrenceTime = OCCURRENCE_ETERNAL;
-                                    c->belief = Inference_RevisionAndChoice(&c->belief, &eternal, currentTime, NULL);
                                 }
                             }
                         }

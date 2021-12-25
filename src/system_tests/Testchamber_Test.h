@@ -73,14 +73,14 @@ void NAR_TestChamber_deactivate()
 void NAR_TestChamber()
 {
     MOTOR_BABBLING_CHANCE = 0;
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_s0"), NAR_TestChamber_goto_s0); 
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_s1"), NAR_TestChamber_goto_s1); 
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_s2"), NAR_TestChamber_goto_s2); 
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_s3"), NAR_TestChamber_goto_s3); 
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_l0"), NAR_TestChamber_goto_l0); 
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_l1"), NAR_TestChamber_goto_l1); 
-    NAR_AddOperation(Narsese_AtomicTerm("^activate"), NAR_TestChamber_activate); 
-    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), NAR_TestChamber_deactivate);
+    NAR_AddOperation("^goto_s0", NAR_TestChamber_goto_s0);
+    NAR_AddOperation("^goto_s1", NAR_TestChamber_goto_s1);
+    NAR_AddOperation("^goto_s2", NAR_TestChamber_goto_s2);
+    NAR_AddOperation("^goto_s3", NAR_TestChamber_goto_s3);
+    NAR_AddOperation("^goto_l0", NAR_TestChamber_goto_l0);
+    NAR_AddOperation("^goto_l1", NAR_TestChamber_goto_l1);
+    NAR_AddOperation("^activate", NAR_TestChamber_activate);
+    NAR_AddOperation("^deactivate", NAR_TestChamber_deactivate);
     //metrics:
     int goals = 0;
     int reached = 0;

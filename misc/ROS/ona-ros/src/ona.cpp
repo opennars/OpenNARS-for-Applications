@@ -47,60 +47,60 @@ void narseseInputCallback(const std_msgs::String::ConstPtr& msg){
     NAR_AddInputNarsese((char*) msg->data.c_str());
 }
 
-static void ROSNAR_op_left(Term args){
-    publish("^left", args);
+static void ROSNAR_op1(Term args){
+    publish("^op1", args);
 }
 
-static void ROSNAR_op_right(Term args){
-    publish("^right", args);
+static void ROSNAR_op2(Term args){
+    publish("^op2", args);
 }
 
-static void ROSNAR_op_up(Term args){
-    publish("^up", args);
+static void ROSNAR_op3(Term args){
+    publish("^op3", args);
 }
 
-static void ROSNAR_op_down(Term args){
-    publish("^down", args);
+static void ROSNAR_op4(Term args){
+    publish("^op4", args);
 }
 
-static void ROSNAR_op_say(Term args){
-    publish("^say", args);
+static void ROSNAR_op5(Term args){
+    publish("^op5", args);
 }
 
-static void ROSNAR_op_pick(Term args){
-    publish("^pick", args);
+static void ROSNAR_op6(Term args){
+    publish("^op6", args);
 }
 
-static void ROSNAR_op_drop(Term args){
-    publish("^drop", args);
+static void ROSNAR_op7(Term args){
+    publish("^op7", args);
 }
 
-static void ROSNAR_op_go(Term args){
-    publish("^go", args);
+static void ROSNAR_op8(Term args){
+    publish("^op8", args);
 }
 
-static void ROSNAR_op_activate(Term args){
-    publish("^activate", args);
+static void ROSNAR_op9(Term args){
+    publish("^op9", args);
 }
 
-static void ROSNAR_op_deactivate(Term args){
-    publish("^deactivate", args);
+static void ROSNAR_op10(Term args){
+    publish("^op10", args);
 }
 
 void ROSNAR_INIT(){
     NAR_INIT();
     PRINT_DERIVATIONS = false;
     int k=0; if(k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^left"), ROSNAR_op_left); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^right"), ROSNAR_op_right); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^up"), ROSNAR_op_up); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^down"), ROSNAR_op_down); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^say"), ROSNAR_op_say); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^pick"), ROSNAR_op_pick); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^drop"), ROSNAR_op_drop); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^go"), ROSNAR_op_go); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^activate"), ROSNAR_op_activate); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm((char*)"^deactivate"), ROSNAR_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op1", ROSNAR_op1); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op2", ROSNAR_op2); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op3", ROSNAR_op3); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op4", ROSNAR_op4); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op5", ROSNAR_op5); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op6", ROSNAR_op6); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op7", ROSNAR_op7); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op8", ROSNAR_op8); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op9", ROSNAR_op9); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation((char*)"^op10", ROSNAR_op10); if(++k >= OPERATIONS_MAX) { return; };
     std::cout<<"Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!"<<std::endl;
     exit(1);
 }

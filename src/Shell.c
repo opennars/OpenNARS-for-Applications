@@ -24,45 +24,8 @@
 
 #include "Shell.h"
 
-static void Shell_op_left(Term args)
+static void Shell_op_nop(Term args)
 {
-    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_right(Term args)
-{
-    fputs(Narsese_operatorNames[1], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_up(Term args)
-{
-    fputs(Narsese_operatorNames[2], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_down(Term args)
-{
-    fputs(Narsese_operatorNames[3], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_say(Term args)
-{
-    fputs(Narsese_operatorNames[4], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_pick(Term args)
-{
-    fputs(Narsese_operatorNames[5], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_drop(Term args)
-{
-    fputs(Narsese_operatorNames[6], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_go(Term args)
-{
-    fputs(Narsese_operatorNames[7], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_activate(Term args)
-{
-    fputs(Narsese_operatorNames[8], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-}
-static void Shell_op_deactivate(Term args)
-{
-    fputs(Narsese_operatorNames[9], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
 }
 void Shell_NARInit()
 {
@@ -70,16 +33,16 @@ void Shell_NARInit()
     NAR_INIT();
     PRINT_DERIVATIONS = true;
     int k=0; if(k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), Shell_op_left); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), Shell_op_right); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^up"), Shell_op_up); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^down"), Shell_op_down); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^say"), Shell_op_say); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^pick"), Shell_op_pick); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^drop"), Shell_op_drop); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^go"), Shell_op_go); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^activate"), Shell_op_activate); if(++k >= OPERATIONS_MAX) { return; };
-    NAR_AddOperation(Narsese_AtomicTerm("^deactivate"), Shell_op_deactivate); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^left", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^right", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^up", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^down", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^say", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^pick", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^drop", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^go", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^activate", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
+    NAR_AddOperation("^deactivate", Shell_op_nop); if(++k >= OPERATIONS_MAX) { return; };
     assert(false, "Shell_NARInit: Ran out of operators, add more there, or decrease OPERATIONS_MAX!");
 }
 
@@ -251,13 +214,38 @@ int Shell_ProcessInput(char *line)
         else
         if(!strncmp("*setopname ", line, strlen("*setopname ")))
         {
+            assert(currentTime == 1, "Operators can only be registered right after initialization / reset!");
             int opID;
             char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
-            Term previousOpAtom = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
-            strncpy(Narsese_operatorNames[opID-1], opname, ATOMIC_TERM_LEN_MAX);
-            strncpy(Narsese_atomNames[previousOpAtom.atoms[0]-1], opname, ATOMIC_TERM_LEN_MAX);
-            operations[opID-1].term = Narsese_AtomicTerm(Narsese_operatorNames[opID-1]);
+            assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
+            Term newTerm = Narsese_AtomicTerm(opname);
+            for(int i=0; i<OPERATIONS_MAX; i++)
+            {
+                if(Term_Equal(&operations[i].term, &newTerm)) //already exists, so clear the duplicate name
+                {
+                    for(int k=i; k<OPERATIONS_MAX; k++) //and the names of all the operations after it
+                    {
+                        operations[k].term = (Term) {0};
+                    }
+                }
+            }
+            operations[opID - 1].term = newTerm;
+            if(!operations[opID - 1].action) //allows to use more ops than are registered by the C code to be utilized through NAR.py
+            {
+                operations[opID - 1].action = Shell_op_nop;
+            }
+        }
+        else
+        if(!strncmp("*setoparg ", line, strlen("*setoparg ")))
+        {
+            int opID;
+            int opArgID;
+            char argname[ATOMIC_TERM_LEN_MAX] = {0};
+            sscanf(&line[strlen("*setoparg ")], "%d %d %s", &opID, &opArgID, (char*) &argname);
+            assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
+            assert(opArgID >= 1 && opArgID <= OPERATIONS_BABBLE_ARGS_MAX, "Operator arg index out of bounds, it can only be between 1 and OPERATIONS_BABBLE_ARGS_MAX!");
+            operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
         }
         else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))

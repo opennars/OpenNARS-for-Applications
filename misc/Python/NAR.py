@@ -36,7 +36,7 @@ def parseReason(sraw):
 def parseExecution(e):
     if "args " not in e:
         return {"operator" : e.split(" ")[0], "arguments" : []}
-    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
+    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
 
 def GetRawOutput():
     NAR.sendline("0")

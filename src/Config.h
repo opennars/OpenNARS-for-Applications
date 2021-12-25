@@ -56,8 +56,6 @@
 #define GOAL_EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
 #define EVENT_DURABILITY 0.9999
-//Additional event priority decay of an event which was used
-#define EVENT_DURABILITY_ON_USAGE 0.0
 //Concept priority decay of events per cycle
 #define CONCEPT_DURABILITY 0.9
 //Minimum confidence to accept events
@@ -73,7 +71,7 @@
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
-#define UNIFICATION_DEPTH 7
+#define UNIFICATION_DEPTH 31
 
 /*------------------*/
 /* Space parameters */
@@ -88,6 +86,8 @@
 #define CYCLING_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
+//Maximum amount of arguments an operation can babble
+#define OPERATIONS_BABBLE_ARGS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
 //Maximum event FIFO size

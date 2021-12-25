@@ -46,7 +46,7 @@ extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
-#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!"
+#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?"
 
 //Methods//
 //-------//
@@ -59,15 +59,13 @@ char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Narsese_Term(char *narsese);
 //Parses a Narsese string to a compound term and a tv, tv is default if not present
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, bool *isUserKnowledge, Truth *destTv, double *occurrenceTimeOffset);
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, Truth *destTv, double *occurrenceTimeOffset);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b, bool *success);
 //Parses an atomic term string to a term
 Term Narsese_AtomicTerm(char *name);
 //Index of atomic term
 int Narsese_AtomicTermIndex(char *name);
-//Index of operator
-int Narsese_OperatorIndex(char *name);
 //Print an atom
 void Narsese_PrintAtom(Atom atom);
 //Print a term
@@ -77,7 +75,7 @@ bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Narsese_getOperationID(Term *term);
+Atom Narsese_getOperationAtom(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation

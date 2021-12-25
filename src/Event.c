@@ -25,13 +25,14 @@
 #include "Event.h"
 
 long base = 1;
-Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
+Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime)
 {
     return (Event) { .term = term,
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
                      .occurrenceTime = currentTime,
+                     .occurrenceTimeOffset = occurrenceTimeOffset,
                      .creationTime = currentTime };
 }
 

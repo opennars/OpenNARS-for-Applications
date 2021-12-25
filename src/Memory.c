@@ -47,8 +47,6 @@ Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
-//Special ontology handling if demanded
-bool ontology_handling = false;
 
 static void Memory_ResetEvents()
 {
@@ -94,7 +92,6 @@ void Memory_INIT()
         operations[i] = (Operation) {0};
     }
     concept_id = 0;
-    ontology_handling = false;
 }
 
 Concept *Memory_FindConceptByTerm(Term *term)
@@ -104,7 +101,7 @@ Concept *Memory_FindConceptByTerm(Term *term)
 
 Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
-    if(Narsese_getOperationID(term)) //don't conceptualize operations
+    if(Memory_getOperationID(term)) //don't conceptualize operations
     {
         return NULL;
     }
@@ -229,7 +226,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
 
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo)
 {
-    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, 0, priority, input, derived, revised, controlInfo);
+    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, event->occurrenceTimeOffset, priority, input, derived, revised, controlInfo);
 }
 
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo)
@@ -237,7 +234,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool predicted, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool isImplication)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -245,10 +242,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     {
         eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
         eternal_event.truth = Truth_Eternalize(event->truth);
-    }
-    if(event->isUserKnowledge)
-    {
-        ontology_handling = true;
     }
     if(isImplication)
     {
@@ -261,9 +254,8 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 			target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
-                                .occurrenceTimeOffset = occurrenceTimeOffset,
-                                .creationTime = currentTime,
-                                .isUserKnowledge = event->isUserKnowledge };
+                                .occurrenceTimeOffset = event->occurrenceTimeOffset,
+                                .creationTime = currentTime };
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
@@ -272,7 +264,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
                 if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
                 {
-                    opi = Narsese_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
+                    opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                 }
                 else
@@ -288,8 +280,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             if(source_concept != NULL)
             {
 				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-                source_concept->hasUserKnowledge |= event->isUserKnowledge;
-                target_concept->hasUserKnowledge |= event->isUserKnowledge;
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
@@ -297,7 +287,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
-                    Memory_printAddedImplication(&event->term, &event->truth, occurrenceTimeOffset, priority, input, false, true);
+                    Memory_printAddedImplication(&event->term, &event->truth, event->occurrenceTimeOffset, priority, input, false, true);
                     if(wasRevised)
                         Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
@@ -311,7 +301,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
             c->priority = MAX(c->priority, priority);
-            c->hasUserKnowledge |= event->isUserKnowledge;
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
@@ -327,58 +316,14 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, 0, false, false, false, true, predicted);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
             }
-            //BEGIN SPECIAL HANDLING FOR USER KNOWLEDGE
-            if(ontology_handling && !predicted)
-            {
-                for(int j=0; j<concepts.itemsAmount; j++)
-                {
-                    Concept *cpost = concepts.items[j].address;
-                    if(cpost->hasUserKnowledge)
-                    {
-                        for(int k=0; k<cpost->precondition_beliefs[0].itemsAmount; k++)
-                        {
-                            Implication *imp = &cpost->precondition_beliefs[0].array[k];
-                            if(imp->isUserKnowledge)
-                            {
-                                Term subject = Term_ExtractSubterm(&imp->term, 1);
-                                if(Variable_Unify(&subject, &event->term).success)
-                                {
-                                    assert(Narsese_copulaEquals(imp->term.atoms[0],'$'), "Not a valid implication term!");
-                                    Term precondition_with_op = Term_ExtractSubterm(&imp->term, 1);
-                                    Term precondition = Narsese_GetPreconditionWithoutOp(&precondition_with_op);
-                                    Substitution subs = Variable_Unify(&precondition, &event->term);
-                                    if(subs.success)
-                                    {
-                                        Implication updated_imp = *imp;
-                                        bool success;
-                                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                                        if(success)
-                                        {
-                                            Event predicted = Inference_BeliefDeduction(event, &updated_imp);
-                                            Memory_AddEvent(&predicted, currentTime, priority * Truth_Expectation(imp->truth) * Truth_Expectation(predicted.truth), 0, false, true, false, false, true);
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            //END SPECIAL HANDLING FOR USER KNOWLEDGE
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool readded, bool revised, bool predicted)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised)
 {
-    if(readded) //readded events get durability applied, they already got complexity-penalized
-    {
-        priority *= EVENT_DURABILITY_ON_USAGE;
-    }
-    else
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
@@ -400,36 +345,46 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, double occ
         }
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
-    if(!readded && !isImplication) //print new tasks
-    {
-        Memory_printAddedEvent(event, priority, input, derived, revised, true);
-    }
+    bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!readded)
-        {
-            Memory_ProcessNewBeliefEvent(event, currentTime, priority, occurrenceTimeOffset, input, predicted, isImplication);
-            if(isImplication)
-            {
-                return;
-            }
-        }
-        Memory_addCyclingEvent(event, priority, currentTime);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        Memory_addCyclingEvent(event, priority, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
+    }
+    if(addedToCyclingEventsQueue && !Narsese_copulaEquals(event->term.atoms[0], '$')) //print new tasks
+    {
+        Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
-void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime)
+void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, occurrenceTimeOffset, true, false, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
 {
     return imp->sourceConceptId == ((Concept*) imp->sourceConcept)->id;
+}
+
+int Memory_getOperationID(Term *term)
+{
+    Atom op_atom = Narsese_getOperationAtom(term);
+    if(op_atom)
+    {
+        for(int k=1; k<OPERATIONS_MAX; k++)
+        {
+            if(operations[k-1].term.atoms[0] == op_atom)
+            {
+                return k;
+            }
+        }
+    }
+    return 0;
 }

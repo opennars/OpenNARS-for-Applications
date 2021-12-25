@@ -38,8 +38,8 @@ void NAR_Follow_Test()
 {
     NAR_INIT();
     puts(">>NAR Follow test start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Follow_Test_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Follow_Test_Right); 
+    NAR_AddOperation("^left", NAR_Follow_Test_Left);
+    NAR_AddOperation("^right", NAR_Follow_Test_Right);
     int simsteps = 1000000;
     int LEFT = 0;
     int RIGHT = 1;
