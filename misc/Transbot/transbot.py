@@ -40,6 +40,7 @@ def pick_with_feedback(pickobj=None):
                     forward()
                     forward()
                     forward()
+                    forward()
                     success = close_gripper() #gripper feedback
                     if success:
                         print("//pick succeeded")
