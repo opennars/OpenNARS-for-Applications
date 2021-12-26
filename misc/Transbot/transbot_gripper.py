@@ -19,6 +19,8 @@ joints[9].id = 9
 joints[9].angle = 30
 joints[9].run_time = runtime
 
+# 控制机械臂关节运动
+# Control the joint movement of the manipulator
 def jointangle(id, angle):
     global joints
     arm = Arm()
@@ -29,48 +31,39 @@ def jointangle(id, angle):
     arm.joint.append(joints[9])
     pub_Arm.publish(arm)
 
-# 控制机械臂关节运动
-# Control the joint movement of the manipulator
-def arm_servo7(s_angle):
-    jointangle(7, s_angle)
-def arm_servo8(s_angle):
-    jointangle(8, s_angle)
-def arm_servo9(s_angle):
-    jointangle(9, s_angle)
-
 def arm_down():
-    arm_servo7(180)
+    jointangle(7, 180)
     sleep(0.5)
-    arm_servo7(180)
+    jointangle(7, 180)
     sleep(0.5)
-    arm_servo8(220)
+    jointangle(8, 220)
     sleep(0.5)
-    arm_servo8(220)
+    jointangle(8, 220)
     sleep(0.5)
-    arm_servo7(55)
+    jointangle(7, 55)
     sleep(0.5)
-    arm_servo7(55)
+    jointangle(7, 55)
     sleep(0.5)
 
 def arm_up():
-    arm_servo7(180)
+    jointangle(7, 180)
     sleep(0.5)
-    arm_servo7(180)
+    jointangle(7, 180)
     sleep(0.5)
-    arm_servo8(30)
+    jointangle(8, 30)
     sleep(0.5)
-    arm_servo8(30)
+    jointangle(8, 30)
     sleep(0.5)
-    arm_servo7(210)
+    jointangle(7, 210)
     sleep(0.5)
-    arm_servo7(210)
+    jointangle(7, 210)
     sleep(0.5)
 
 def init_pose():
     arm_up()
-    arm_servo9(30)
+    jointangle(9, 30)
     sleep(0.5)
-    arm_servo9(30)
+    jointangle(9, 30)
     sleep(0.5)
 
 init_pose()
@@ -109,19 +102,19 @@ def close_gripper():
         last_angles.append(current_angle)
         last_target_angles.append(target_angle)
         if current_angle >= 80 and len(last_angles) >= 2 and last_angles[-2] != last_angles[-1] and last_angles[-2] + 3 >= last_angles[-1]:
-            arm_servo9(last_target_angles[-2])
+            jointangle(9, last_target_angles[-2])
             print("FEEDBACK STOP 1")
             sleep(0.7)
             return True
         if comparable(target_angle, current_angle):
             target_angle += step_size
-            arm_servo9(target_angle)
+            jointangle(9, target_angle)
             sleep(0.7)
         else:
             return False
     
 def open_gripper():
-    arm_servo9(30)
+    jointangle(9, 30)
     sleep(1)
 
 #buy two additional degrees of freedom by moving base
