@@ -38,7 +38,7 @@ def pick_with_feedback(pickobj=None):
                     forward()
                 elif y_real_temp > closer_to_gripper:
                     forward()
-                    forward()
+                    forward(0.2)
                     forward(0.2)
                     success = close_gripper() #gripper feedback
                     if success:
@@ -47,6 +47,8 @@ def pick_with_feedback(pickobj=None):
                         break
                     else:
                         print("//pick failed")
+                        open_gripper()
+                        arm_up()
                         break
             elif x_real_temp > mid+centerSize:
                 print("//RIGHT<<<<<<<<<<<<<<<<")
