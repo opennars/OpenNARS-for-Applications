@@ -127,10 +127,10 @@ def open_gripper():
 #buy two additional degrees of freedom by moving base
 
 pub_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-angular = 0.3
+angular = 0.4
 linear = 0.3
 
-def left():
+def left(angular=angular):
     twist = Twist()
     twist.linear.x = 0
     twist.angular.z = angular
@@ -140,7 +140,7 @@ def left():
     twist.angular.z = 0
     pub_vel.publish(twist)
 
-def right():
+def right(angular=angular):
     twist = Twist()
     twist.linear.x = 0
     twist.angular.z = -angular
@@ -150,7 +150,7 @@ def right():
     twist.angular.z = 0
     pub_vel.publish(twist)
 
-def forward():
+def forward(linear=linear):
     twist = Twist()
     twist.linear.x = linear
     twist.angular.z = 0
@@ -160,7 +160,7 @@ def forward():
     twist.angular.z = 0
     pub_vel.publish(twist)
 
-def backward():
+def backward(linear=linear):
     twist = Twist()
     twist.linear.x = -linear
     twist.angular.z = 0
