@@ -10,7 +10,7 @@ from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
 
-centerSize = 8
+centerSize = 10
 def pick_with_feedback(pickobj=None):
     arm_down()
     sleep(1)
