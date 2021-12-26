@@ -14,7 +14,19 @@ centerSize = 10
 def pick_with_feedback(pickobj=None):
     arm_down()
     sleep(1)
+    max_ops = 30
+    ops = 0
+    max_swaps = 3
+    max_ops = 30
+    swaps = 0 #left/right focus attempts
+    swap_Left = False
+    swap_Right = False
     while True:
+        ops+=1
+        if ops > max_ops:
+            open_gripper()
+            arm_up()
+            break
         action = cv.waitKey(10) & 0xFF
         detections, frame = detect_objects()
         y_real_temp = -1
@@ -31,9 +43,10 @@ def pick_with_feedback(pickobj=None):
             if y_real_temp < 340:
                 arm_up()
                 break
-            if x_real_temp >= mid-centerSize and x_real_temp <= mid+centerSize:
+            if (x_real_temp >= mid-centerSize and x_real_temp <= mid+centerSize) or swaps > 3:
                 print("//CENTER------------")
                 closer_to_gripper = 475
+                swaps = 0
                 if y_real_temp < closer_to_gripper: #visual feedback
                     forward()
                 elif y_real_temp > closer_to_gripper:
@@ -54,9 +67,15 @@ def pick_with_feedback(pickobj=None):
             elif x_real_temp > mid+centerSize:
                 print("//RIGHT<<<<<<<<<<<<<<<<")
                 right()
+                swap_Right = True
             elif x_real_temp < mid-centerSize:
                 print("//LEFT>>>>>>>>>>>>>>>")
                 left()
+                swap_Left = True
+            if swap_Left and swap_Right:
+                swap_Left = False
+                swap_Right = False
+                swaps += 1
         else:
             arm_up()
             break
