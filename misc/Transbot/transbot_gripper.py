@@ -19,6 +19,8 @@ joints[9].id = 9
 joints[9].angle = 30
 joints[9].run_time = runtime
 
+
+# 控制机械臂关节运动                              # Control the joint movement of the manipulator
 def jointangle(id, angle):
     global joints
     arm = Arm()
@@ -29,49 +31,42 @@ def jointangle(id, angle):
     arm.joint.append(joints[9])
     pub_Arm.publish(arm)
 
-# 控制机械臂关节运动
-# Control the joint movement of the manipulator
-def arm_servo7(s_angle):
-    jointangle(7, s_angle)
-def arm_servo8(s_angle):
-    jointangle(8, s_angle)
-def arm_servo9(s_angle):
-    jointangle(9, s_angle)
+def angles():                                         RobotArm_client.wait_for_service()                request = RobotArmRequest()
+    request.apply = "getJoint"
+    joints = {}
+    try:                                                  response = RobotArm_client.call(request)          if isinstance(response, RobotArmResponse):            print(response.RobotArm.joint)
+            for joint in response.RobotArm.joint:
+                joints[joint.id] = joint.angle        except Exception:                                     print("//couldn't get joint angle")
+    return joints
+
+def read_gripper_angle(index=9):
+    ang = {}
+    while index not in ang:
+        ang = angles()
+    return ang[index]
+
+def jointangle_safe(index, start, target):
+    tolerance = 10.0
+    if start != None:
+        while abs(read_gripper_angle() - start) > tolerance:
+            sleep(0.1)
+    while abs(read_gripper_angle() - target) > tolerance:
+        jointangle(target)
+        sleep(0.1)
 
 def arm_down():
-    arm_servo7(180)
-    sleep(0.5)
-    arm_servo7(180)
-    sleep(0.5)
-    arm_servo8(220)
-    sleep(0.5)
-    arm_servo8(220)
-    sleep(0.5)
-    arm_servo7(55)
-    sleep(0.5)
-    arm_servo7(55)
-    sleep(0.5)
+    jointangle_safe(7, 210, 180)
+    jointangle_safe(8, 30,  220)
+    jointangle_safe(7, 180, 55)
 
 def arm_up():
-    arm_servo7(180)
-    sleep(0.5)
-    arm_servo7(180)
-    sleep(0.5)
-    arm_servo8(30)
-    sleep(0.5)
-    arm_servo8(30)
-    sleep(0.5)
-    arm_servo7(210)
-    sleep(0.5)
-    arm_servo7(210)
-    sleep(0.5)
+    jointangle_safe(7, None, 180)
+    jointangle_safe(8, None, 30)
+    jointangle_safe(7, 180,  210)
 
 def init_pose():
     arm_up()
-    arm_servo9(30)
-    sleep(0.5)
-    arm_servo9(30)
-    sleep(0.5)
+    jointangle_safe(9, None, 30)
 
 init_pose()
 
@@ -90,11 +85,11 @@ def angles():
         print("//couldn't get joint angle")
     return joints
 
-def read_gripper_angle():
+def read_gripper_angle(index=9):
     ang = {}
-    while 9 not in ang:
+    while index not in ang:
         ang = angles()
-    return ang[9]
+    return ang[index]
 
 def close_gripper():
     target_angle = 30
@@ -109,19 +104,19 @@ def close_gripper():
         last_angles.append(current_angle)
         last_target_angles.append(target_angle)
         if current_angle >= 80 and len(last_angles) >= 2 and last_angles[-2] != last_angles[-1] and last_angles[-2] + 3 >= last_angles[-1]:
-            arm_servo9(last_target_angles[-2])
-            print("FEEDBACK STOP 1")
+            jointangle(9, last_target_angles[-2])
             sleep(0.7)
+            print("FEEDBACK STOP 1")
             return True
         if comparable(target_angle, current_angle):
             target_angle += step_size
-            arm_servo9(target_angle)
+            jointangle(9, target_angle)
             sleep(0.7)
         else:
             return False
     
 def open_gripper():
-    arm_servo9(30)
+    jointangle_safe(9, None, 30)
     sleep(1)
 
 #buy two additional degrees of freedom by moving base
