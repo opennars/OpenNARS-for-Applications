@@ -187,8 +187,12 @@ ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
 //Extensional set
 ReduceTerm( ({A} | {B}), {A B} )
+ReduceTerm( ({A B} | {C}), {(A . B) C} )
+ReduceTerm( ({C} | {A B}), {C (A . B)} )
 //Intensional set
 ReduceTerm( ([A] & [B]), [A B] )
+ReduceTerm( ([A B] & [C]), [(A . B) C] )
+ReduceTerm( ([A] & [B C]), [A (B . C)] )
 //Reduce for set element copula
 ReduceTerm( {(A . B)}, {A B} )
 ReduceTerm( [(A . B)], [A B] )
