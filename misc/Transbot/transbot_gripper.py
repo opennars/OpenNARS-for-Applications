@@ -31,12 +31,19 @@ def jointangle(id, angle):
     arm.joint.append(joints[9])
     pub_Arm.publish(arm)
 
-def angles():                                         RobotArm_client.wait_for_service()                request = RobotArmRequest()
+def angles():                                         
+    RobotArm_client.wait_for_service()
+    request = RobotArmRequest()
     request.apply = "getJoint"
     joints = {}
-    try:                                                  response = RobotArm_client.call(request)          if isinstance(response, RobotArmResponse):            print(response.RobotArm.joint)
+    try:                                                  
+        response = RobotArm_client.call(request)
+        if isinstance(response, RobotArmResponse):
+            print(response.RobotArm.joint)
             for joint in response.RobotArm.joint:
-                joints[joint.id] = joint.angle        except Exception:                                     print("//couldn't get joint angle")
+                joints[joint.id] = joint.angle
+    except Exception:
+        print("//couldn't get joint angle")
     return joints
 
 def read_gripper_angle(index=9):
