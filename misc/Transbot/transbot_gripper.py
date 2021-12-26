@@ -55,10 +55,10 @@ def read_gripper_angle(index=9):
 def jointangle_safe(index, start, target):
     tolerance = 10.0
     if start != None:
-        while abs(read_gripper_angle() - start) > tolerance:
+        while abs(read_gripper_angle(index) - start) > tolerance:
             sleep(0.1)
-    while abs(read_gripper_angle() - target) > tolerance:
-        jointangle(target)
+    while abs(read_gripper_angle(index) - target) > tolerance:
+        jointangle(index, target)
         sleep(0.1)
 
 def arm_down():
