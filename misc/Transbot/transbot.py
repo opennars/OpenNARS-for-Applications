@@ -38,7 +38,7 @@ def pick_with_feedback(pickobj=None):
                     forward()
                 elif y_real_temp > closer_to_gripper:
                     forward()
-                    forward(0.2)
+                    forward()
                     forward(0.2)
                     success = close_gripper() #gripper feedback
                     if success:
