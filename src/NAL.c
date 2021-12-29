@@ -148,8 +148,37 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
+static bool NAL_ImplicationAppearsTwise(Term *conclusionTerm)
+{
+    //We don't allow two ==> in one statement:
+    for(int i=1; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Narsese_copulaEquals(conclusionTerm->atoms[i], '?'))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
 {
+    if(Narsese_copulaEquals(conclusionTerm.atoms[0], '?') && !Variable_hasVariable(&conclusionTerm, true, true, false))
+    {
+        bool success;
+        Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
+        if(Variable_hasVariable(&conclusionTermWithVarExt, true, true, false))
+        {
+             NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid);
+        }
+        bool success2;
+        Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
+        if(Variable_hasVariable(&conclusionTermWithVarInt, true, true, false))
+        {
+             NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid);
+        }
+        //return;
+    }
     Event e = { .term = conclusionTerm,
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
@@ -161,7 +190,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_ImplicationAppearsTwise(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }

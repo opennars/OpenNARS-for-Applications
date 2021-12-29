@@ -6,7 +6,7 @@
 <{patientC} --> [1 4]>.
 100
 <{patientC} --> [(ill * ?Nr)]>?
-//expected: Answer: <{patientC} --> [(ill * 1)]>. Truth: frequency=1.000000, confidence=0.356555
+//expected: Answer: <{patientC} --> [(ill * 1)]>. Truth: frequency=1.000000, confidence=0.341521
 
 *reset
 *volume=0
@@ -17,4 +17,4 @@
 <{patientC} --> [3 4]>.
 100
 <{patientC} --> [(ill * ?Nr)]>?
-//expected: Answer: <{patientC} --> [(ill * 2)]>. Truth: frequency=1.000000, confidence=0.356555
+//expected: Answer: <{patientC} --> [(ill * 2)]>. Truth: frequency=1.000000, confidence=0.341521

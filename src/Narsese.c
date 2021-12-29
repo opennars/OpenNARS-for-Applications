@@ -89,7 +89,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
-            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes .
+            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
             {
                 narsese_replaced[j] = ';';
                 i+=2; j++;

@@ -140,9 +140,9 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
     }
 }
 
-Term IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
+Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
-    assert(Narsese_copulaEquals(implication.atoms[0], '$'), "An implication is expected here!");
+    assert(Narsese_copulaEquals(implication.atoms[0], '$') || Narsese_copulaEquals(implication.atoms[0], '?'), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
     int appearing_left[ATOMS_MAX] = {0};
