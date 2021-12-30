@@ -148,7 +148,7 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
     return false;
 }
 
-static bool NAL_ImplicationAppearsTwise(Term *conclusionTerm)
+static bool NAL_ImplicationAppearsTwice(Term *conclusionTerm)
 {
     //We don't allow two ==> in one statement:
     for(int i=1; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -176,7 +176,7 @@ static bool NAL_InhOrSimHasDepVar(Term *conclusionTerm)
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
-    if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], '$') || Narsese_copulaEquals(conclusionTerm.atoms[0], '?')) && !Variable_hasVariable(&conclusionTerm, true, true, false))
+    if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], '$') || Narsese_copulaEquals(conclusionTerm.atoms[0], '?')))
     {
         bool success;
         Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
@@ -222,7 +222,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_ImplicationAppearsTwise(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_ImplicationAppearsTwice(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }

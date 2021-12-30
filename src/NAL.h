@@ -143,21 +143,21 @@ R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
 R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
 R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
 //NAL5/6 rules:
-R2( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction ) //also handles general var intro
-R2( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction ) //also handles general var intro
-R2( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection ) //also handles general var intro
-R2( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection ) //also handles general var intro
-R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Induction ) //also handles general var intro
-R2( A, (B ==> C), |-, ((A && B) ==> C), Truth_Induction ) //also handles general var intro
-R2( A, (B ==> C), |-, (A && (B ==> C)), Truth_Intersection ) //also handles general var intro
+R2( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
+R2( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
+R2( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
+R2( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
+R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Induction )
+R2( A, (B ==> C), |-, ((A && B) ==> C), Truth_Induction )
+R2( A, (B ==> C), |-, (A && (B ==> C)), Truth_Intersection )
 //R2( A, (A ==> B), |-, B, Truth_Deduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
 //R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
 //R2( B, (A ==> B), |-, A, Truth_Abduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
 //NAL6 rules
-R2( ((A * B) --> R), ((B * A) --> S), |-, ((($1 * $2) --> S) ==> (($2 * $1) --> R)), Truth_Induction )
-R2( (! ((B * A) --> R)), ((A * B) --> S), |-, ((($1 * $2) --> S) ==> (! (($2 * $1) --> R))), Truth_Induction )
+R2( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
-R2( ((A * C) --> M), (((A * #1) --> R) && ((#1 * C) --> S)), |-, (((($1 * #2) --> R) && ((#2 * $3) --> S)) ==> (($1 * $3) --> M)), Truth_Induction )
+R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //new NAL7 substitution rules to allow semantic inference to create additional contingencies:
 //consequent
 R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Abduction )

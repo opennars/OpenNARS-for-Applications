@@ -126,6 +126,12 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 //then introduce as independent variable, else as dependent variable
 static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally)
 {
+    if(Narsese_copulaEquals(cur_inheritance->atoms[0], '!'))
+    {
+        Term potential_inheritance = Term_ExtractSubterm(cur_inheritance, 1); //or sim
+        countAtoms(&potential_inheritance, appearing, extensionally);
+    }
+    else
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':') || Narsese_copulaEquals(cur_inheritance->atoms[0], '=')) //inheritance and similarity
     {
         Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
@@ -149,7 +155,7 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     int appearing_right[ATOMS_MAX] = {0};
     while(Narsese_copulaEquals(left_side.atoms[0], '+')) //sequence
     {
-        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
+        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2); //or sim
         countAtoms(&potential_inheritance, appearing_left, extensionally);
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
@@ -206,7 +212,7 @@ Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, boo
     Term left_side = conjunction;
     while(Narsese_copulaEquals(left_side.atoms[0], ';')) //conjunction
     {
-        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
+        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2); //or sim
         countAtoms(&potential_inheritance, appearing_conjunction, extensionally);
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
