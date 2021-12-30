@@ -199,6 +199,43 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     return implication;
 }
 
+Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
+{
+    assert(Narsese_copulaEquals(conjunction.atoms[0], ';'), "A conjunction is expected here!");
+    int appearing_conjunction[ATOMS_MAX] = {0};
+    Term left_side = conjunction;
+    while(Narsese_copulaEquals(left_side.atoms[0], ';')) //conjunction
+    {
+        Term potential_inheritance = Term_ExtractSubterm(&left_side, 2);
+        countAtoms(&potential_inheritance, appearing_conjunction, extensionally);
+        left_side = Term_ExtractSubterm(&left_side, 1);
+    }
+    countAtoms(&left_side, appearing_conjunction, extensionally);
+    char depvar_i = 1;
+    char variable_id[ATOMS_MAX] = {0};
+    Term conjunction_copy = conjunction;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        Atom atom = conjunction_copy.atoms[i];
+        if(appearing_conjunction[(int) atom] >= 2)
+        {
+            int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
+            if(var_id <= 9) //can only introduce up to 9 variables
+            {
+                char varname[3] = { '#', ('0' + var_id), 0 }; //#i
+                Term varterm = Narsese_AtomicTerm(varname);
+                if(!Term_OverrideSubterm(&conjunction, i, &varterm))
+                {
+                    *success = false;
+                    return conjunction;
+                }
+            }
+        }
+    }
+    *success = true;
+    return conjunction;
+}
+
 void Variable_Normalize(Term *term)
 {
     int independent_i = 1, dependent_i = 1, query_i = 1;

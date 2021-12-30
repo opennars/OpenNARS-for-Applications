@@ -206,3 +206,10 @@ Truth Truth_DecomposeNNN(Truth v1, Truth v2)
     double fn = (1.0 - f1) * (1.0 - f2);
     return (Truth) { .frequency = 1.0 - fn, .confidence = fn * c1 * c2 };
 }
+
+Truth Truth_AnonymousAnalogy(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    Truth v3 = { .frequency = 1.0, .confidence = Truth_w2c(f2 * c2) }; //page 125 in NAL book
+    return Truth_Analogy(v1, v3);
+}

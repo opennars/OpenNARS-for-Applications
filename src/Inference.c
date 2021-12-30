@@ -150,8 +150,9 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
         double confIncoming = Inference_EventUpdate(incoming_spike, currentTime).truth.confidence;
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
+        bool isDepVarConj = Narsese_copulaEquals(incoming_spike->term.atoms[0], ';') && Variable_hasVariable(&incoming_spike->term, false, true, false);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || isDepVarConj || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
             if(confIncoming > confExisting)
             {
