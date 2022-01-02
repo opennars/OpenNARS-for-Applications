@@ -180,13 +180,13 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         bool success;
         Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
-        if(Variable_hasVariable(&conclusionTermWithVarExt, true, true, false))
+        if(Variable_hasVariable(&conclusionTermWithVarExt, true, true, false) && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm))
         {
              NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
         }
         bool success2;
         Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
-        if(Variable_hasVariable(&conclusionTermWithVarInt, true, true, false))
+        if(Variable_hasVariable(&conclusionTermWithVarInt, true, true, false) && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm))
         {
              NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
         }
