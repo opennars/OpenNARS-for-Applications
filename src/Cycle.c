@@ -334,8 +334,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
             Implication precondition_implication = Inference_BeliefInduction(a, b, &success);
             if(success)
             {
-                precondition_implication.sourceConcept = A;
-                precondition_implication.sourceConceptId = A->id;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
                     NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
@@ -406,29 +404,33 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 //A, <A ==> B> |- B (Deduction)
 //A, <(A && B) ==> C> |- <B ==> C> (Deduction)
 //B, <A ==> B> |- A (Abduction')
-//(A && B), A |- B  with dep var elim (Anonymous Analogy)
+//A, (A && B) |- B  with dep var elim (Anonymous Analogy')
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
                        long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
     bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
+    if(!DeductionAbductionAnalogyWithVarElim)
+    {
+        return;
+    }
     if(IsImpl || Narsese_copulaEquals(term2.atoms[0], EQUIVALENCE))
     {
         Term impl_subject = Term_ExtractSubterm(&term2, 1);
         Term impl_predicate = Term_ExtractSubterm(&term2, 2);
-        //Deduction:
+        //Deduction and Analogy:
         Substitution subject_subs = Variable_Unify(&impl_subject, &term1);
         if(subject_subs.success)
         {
             bool success;
             Term conclusionTerm = Variable_ApplySubstitute(impl_predicate, subject_subs, &success);
-            Truth conclusionTruth = Truth_Deduction(truth1, truth2);
+            Truth conclusionTruth = IsImpl ? Truth_Deduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
                 NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
             }
         }
         //Deduction with remaining condition
-        if(Narsese_copulaEquals(impl_subject.atoms[0], CONJUNCTION)) //conj
+        if(IsImpl && Narsese_copulaEquals(impl_subject.atoms[0], CONJUNCTION)) //conj
         {
             Term unifying_term =       Term_ExtractSubterm(&impl_subject, 1);
             Term remaining_condition = Term_ExtractSubterm(&impl_subject, 2);
@@ -443,13 +445,13 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             if(cond_subs.success)
             {
                 Term conclusionTerm = {0};
-                conclusionTerm.atoms[0] = IsImpl ? Narsese_CopulaIndex(IMPLICATION) : Narsese_CopulaIndex(EQUIVALENCE);
+                conclusionTerm.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                 if(Term_OverrideSubterm(&conclusionTerm, 1, &remaining_condition) &&
                    Term_OverrideSubterm(&conclusionTerm, 2, &impl_predicate))
                 {
                     bool success;
                     conclusionTerm = Variable_ApplySubstitute(conclusionTerm, cond_subs, &success);
-                    Truth conclusionTruth = Truth_Deduction(truth1, truth2);
+                    Truth conclusionTruth = Truth_Deduction(truth2, truth1);
                     if(success)
                     {
                         NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
@@ -463,7 +465,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
         {
             bool success;
             Term conclusionTerm = Variable_ApplySubstitute(impl_subject, predicate_subs, &success);
-            Truth conclusionTruth = Truth_Abduction(truth2, truth1);
+            Truth conclusionTruth = IsImpl ? Truth_Abduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
                 NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
@@ -480,7 +482,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
         {
             bool success;
             Term conclusionTerm = Variable_ApplySubstitute(conj_predicate, subject_subs, &success);
-            Truth conclusionTruth = Truth_AnonymousAnalogy(truth1, truth2);
+            Truth conclusionTruth = Truth_AnonymousAnalogy(truth2, truth1);
             if(success)
             {
                 NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);

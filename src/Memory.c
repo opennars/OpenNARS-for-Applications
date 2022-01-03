@@ -333,16 +333,9 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         return;
     }
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    if(event->occurrenceTime != OCCURRENCE_ETERNAL && input && event->type == EVENT_TYPE_BELIEF)
     {
-        if(input)
-        {
-            //process event
-            if(event->type == EVENT_TYPE_BELIEF)
-            {
-                FIFO_Add(event, &belief_events); //not revised yet
-            }
-        }
+        FIFO_Add(event, &belief_events); //not revised yet
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION);
     bool addedToCyclingEventsQueue = false;
