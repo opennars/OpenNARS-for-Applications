@@ -403,14 +403,15 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
-//<A ==> B>, A |- B (Deduction)
-//<(A && B) ==> C>, A |- <B ==> C> (Deduction)
-//<A ==> B>, B |- A (Abduction)
+//A, <A ==> B> |- B (Deduction)
+//A, <(A && B) ==> C> |- <B ==> C> (Deduction)
+//B, <A ==> B> |- A (Abduction')
 //(A && B), A |- B  with dep var elim (Anonymous Analogy)
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
                        long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
-    if(Narsese_copulaEquals(term2.atoms[0], '?'))
+    bool IsImpl = Narsese_copulaEquals(term2.atoms[0], '?');
+    if(IsImpl || Narsese_copulaEquals(term2.atoms[0], '^'))
     {
         Term impl_subject = Term_ExtractSubterm(&term2, 1);
         Term impl_predicate = Term_ExtractSubterm(&term2, 2);
@@ -442,7 +443,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             if(cond_subs.success)
             {
                 Term conclusionTerm = {0};
-                conclusionTerm.atoms[0] = Narsese_AtomicTermIndex("?");
+                conclusionTerm.atoms[0] = IsImpl ? Narsese_AtomicTermIndex("?") : Narsese_AtomicTermIndex("^");
                 if(Term_OverrideSubterm(&conclusionTerm, 1, &remaining_condition) &&
                    Term_OverrideSubterm(&conclusionTerm, 2, &impl_predicate))
                 {
@@ -462,7 +463,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
         {
             bool success;
             Term conclusionTerm = Variable_ApplySubstitute(impl_subject, predicate_subs, &success);
-            Truth conclusionTruth = Truth_Abduction(truth1, truth2);
+            Truth conclusionTruth = Truth_Abduction(truth2, truth1);
             if(success)
             {
                 NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);

@@ -75,7 +75,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
             i++; j++; 
         }
         else
-        if(narsese[i] == '<' && narsese[i+1] != '-') // < becomes (
+        if(narsese[i] == '<' && narsese[i+1] != '-' && narsese[i+1] != '=') // < becomes (
         {
             narsese_replaced[j] = '(';
             i++; j++; 
@@ -92,6 +92,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
             if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
             {
                 narsese_replaced[j] = ';';
+                i+=2; j++;
+            }
+            else
+            if(narsese[i] == '|' && narsese[i+1] == '|') // || becomes _
+            {
+                narsese_replaced[j] = '_';
                 i+=2; j++;
             }
             else
@@ -142,6 +148,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes ?
                 {
                     narsese_replaced[j] = '?';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '<' && narsese[i+1] == '=' && narsese[i+2] == '>') // <=> becomes ^
+                {
+                    narsese_replaced[j] = '^';
                     i+=3; j++;
                 }
                 else
@@ -437,6 +449,16 @@ void Narsese_PrintAtom(Atom atom)
             fputs("=/>", stdout);
         }
         else
+        if(Narsese_copulaEquals(atom, '^'))
+        {
+            fputs("<=>", stdout);
+        }
+        else
+        if(Narsese_copulaEquals(atom, '_'))
+        {
+            fputs("||", stdout);
+        }
+        else
         if(Narsese_copulaEquals(atom, '+'))
         {
             fputs("&/", stdout);
@@ -501,7 +523,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     bool isNegation = Narsese_copulaEquals(atom, '!');
     bool isExtSet = Narsese_copulaEquals(atom, '"');
     bool isIntSet = Narsese_copulaEquals(atom, '\'');
-    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=') || Narsese_copulaEquals(atom, '?');
+    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=') || Narsese_copulaEquals(atom, '?') || Narsese_copulaEquals(atom, '^');
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);
@@ -633,7 +655,7 @@ bool Narsese_copulaEquals(Atom atom, char name)
 
 bool Narsese_isOperator(Atom atom)
 {
-    return atom>0 && Narsese_atomNames[(int) atom-1][0] == '^';
+    return atom>0 && Narsese_atomNames[(int) atom-1][0] == '^' && Narsese_atomNames[(int) atom-1][1];
 }
 
 bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op

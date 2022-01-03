@@ -145,6 +145,15 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
             }
         }
     }
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], '^') || Narsese_copulaEquals(conclusionTerm->atoms[0], '?'))
+    {
+        Term t1 = Term_ExtractSubterm(conclusionTerm, 1);
+        Term t2 = Term_ExtractSubterm(conclusionTerm, 2);
+        if(Term_Equal(&t1, &t2))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
