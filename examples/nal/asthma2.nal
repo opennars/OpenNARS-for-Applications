@@ -1,0 +1,31 @@
+*volume=0
+//Stressed people tend to smoke
+<<$1 --> [stressed]> ==> <$1 --> [smokes]>>. {1.0 0.99}
+//A smoker befriended with someone else often makes the other person smoke as well
+<(<#1 --> [smokes]> && <(#1 * $2) --> friend>) ==> <$2 --> [smokes]>>. {1.0 0.9}
+//If someone smokes, he gets asthma
+<<$1 --> [smokes]> ==> <$1 --> [asthma]>>. {1.0 0.9}
+10
+//Angelika smokes
+<{angelika} --> [smokes]>.
+//Angelika is a friend of Jonas
+<({angelika} * {jonas}) --> friend>.
+//Jonas is a friend of Angelika
+<({jonas} * {angelika}) --> friend>.
+10
+//Jonas has asthma?
+<{jonas} --> [asthma]>?
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.656100
+//Angelika has asthma?
+<{angelika} --> [asthma]>?
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000
+10
+//Jonas is stressed
+<{jonas} --> [stressed]>.
+10
+//Jonas has asthma?
+<{jonas} --> [asthma]>?
+//expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.656100
+//Angelika has asthma?
+<{angelika} --> [asthma]>?
+//expected: Answer: <{angelika} --> [asthma]>. Truth: frequency=1.000000, confidence=0.810000

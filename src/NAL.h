@@ -37,6 +37,15 @@
 #include "Narsese.h"
 #include "Memory.h"
 
+//Parameters//
+//----------//
+//Whether to allow higher-order decomposition with variable elimination
+#define DeductionAbductionAnalogyWithVarElim true
+//Whether to allow var introduction in conclusions
+#define AllowVarIntroInDerivations true
+//Whether to also allow specific versions of var intro derivations
+#define AllowSpecificVersionsOfVarIntroDerivations false
+
 //Methods//
 //-------//
 //Generates inference rule code
@@ -61,28 +70,33 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #ifdef H_NAL_RULES
 
 //NAL1 rules
+//!Syllogistic rules for Inheritance:
 R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 //NAL2 rules
+//!Rules for Similarity:
 R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
-R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
-R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralDeduction )
+R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
 R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
+//!Dealing with properties and instances:
+R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
+R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralDeduction )
 R2( ({M} --> P), (S <-> M), |-, ({S} --> P), Truth_Analogy )
 R2( (P --> [M]), (S <-> M), |-, (P --> [S]), Truth_Analogy )
-R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
 //NAL3 rules
+//!Set decomposition:
 R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
 R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
 R1( (M --> [A B]), |-, <M --> [A]>, Truth_StructuralDeduction )
 R1( (M --> [A B]), |-, <M --> [B]>, Truth_StructuralDeduction )
+//!Extensional and intensional intersection decomposition:
 R1( ((S | P) --> M), |-, (S --> M), Truth_StructuralDeduction )
 R1( (M --> (S & P)), |-, (M --> S), Truth_StructuralDeduction )
 R1( ((S | P) --> M), |-, (P --> M), Truth_StructuralDeduction )
@@ -91,12 +105,14 @@ R1( ((A ~ S) --> M), |-, (A --> M), Truth_StructuralDeduction )
 R1( (M --> (B - S)), |-, (M --> B), Truth_StructuralDeduction )
 R1( ((A ~ S) --> M), |-, (S --> M), Truth_StructuralDeductionNegated )
 R1( (M --> (B - S)), |-, (M --> S), Truth_StructuralDeductionNegated )
+//!Extensional and intensional intersection composition: (sets via reductions)
 R2( (P --> M), (S --> M), |-, ((P | S) --> M), Truth_Intersection )
 R2( (P --> M), (S --> M), |-, ((P & S) --> M), Truth_Union )
 R2( (P --> M), (S --> M), |-, ((P ~ S) --> M), Truth_Difference )
 R2( (M --> P), (M --> S), |-, (M --> (P & S)), Truth_Intersection )
 R2( (M --> P), (M --> S), |-, (M --> (P | S)), Truth_Union )
 R2( (M --> P), (M --> S), |-, (M --> (P - S)), Truth_Difference )
+//!Extensional and intensional intersection decomposition:
 R2( (S --> M), ((S | P) --> M), |-, (P --> M), Truth_DecomposePNN )
 R2( (P --> M), ((S | P) --> M), |-, (S --> M), Truth_DecomposePNN )
 R2( (S --> M), ((S & P) --> M), |-, (P --> M), Truth_DecomposeNPP )
@@ -110,10 +126,12 @@ R2( (M --> P), (M --> (S | P)), |-, (M --> S), Truth_DecomposeNPP )
 R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
 R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 //NAL4 rules
+//!Transformation rules between product and image:
 RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
 RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
 RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
+//!Optional rules for more efficient reasoning about relation components:
 R2( ((A * B) --> R), ((C * B) --> R), |-, (C --> A), Truth_Abduction )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (C --> B), Truth_Abduction )
 R2( (R --> (A * B)), (R --> (C * B)), |-, (C --> A), Truth_Induction )
@@ -135,6 +153,7 @@ R2( ((A * B) --> R), ((A * C) --> R), |-, (B <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (C * B)), |-, (A <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
 //NAL5 rules
+//!Negation conjunction and disjunction decomposition:
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
@@ -143,21 +162,22 @@ R2( S, (&& S A), |-, A, Truth_DecomposePNN )
 R2( S, (|| S A), |-, A, Truth_DecomposeNPP )
 R2( S, (&& (! S) A), |-, A, Truth_DecomposeNNN )
 R2( S, (|| (! S) A), |-, A, Truth_DecomposePPP )
+//!Syllogistic rules for Implication:
 R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
 R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
 R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
+//!Conditional composition for conjunction and disjunction:
 R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Union )
 R2( (A ==> C), (B ==> C), |-, ((A || B) ==> C), Truth_Intersection )
 R2( (C ==> A), (C ==> B), |-, (C ==> (A && B)), Truth_Intersection )
 R2( (C ==> A), (C ==> B), |-, (C ==> (A || B)), Truth_Union )
-//R2( A, (A ==> B), |-, B, Truth_Deduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
-//R2( B, (A ==> B), |-, A, Truth_Abduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
-//R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction ) //part of Cycle_SpecialInferences due to the need to eliminate variables
-R2( ((S && P) ==> M), (S ==> M), |-, P, Truth_Abduction )
 R2( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+//!Multi-conditional inference:
+R2( ((S && P) ==> M), (S ==> M), |-, P, Truth_Abduction )
 R2( ((C && M) ==> P), (S ==> M), |-, ((C && S) ==> P), Truth_Deduction )
 R2( ((C && P) ==> M), ((C && S) ==> M), |-, (S ==> P), Truth_Abduction )
 R2( ((C && M) ==> P), (M ==> S), |-, ((C && S) ==> P), Truth_Induction )
+//!Rules for equivalence:
 R1( (S <=> P), |-, (P <=> S), Truth_StructuralDeduction )
 R2( (S ==> P), (P ==> S), |-, (S <=> P), Truth_Intersection )
 R2( (P ==> M), (S ==> M), |-, (S <=> P), Truth_Comparison )
@@ -165,56 +185,65 @@ R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
-R2( M, (M <=> S), |-, S, Truth_Analogy )
 //NAL6 rules:
-R2( (C --> A), (C --> B), |-, (($1 --> B) ==> ($1 --> A)), Truth_Induction )
-R2( (A --> C), (B --> C), |-, ((A --> $1) ==> (B --> $1)), Truth_Induction )
-R2( (C --> A), (C --> B), |-, ((#1 --> B) && (#1 --> A)), Truth_Intersection )
-R2( (A --> C), (B --> C), |-, ((A --> #1) && (B --> #1)), Truth_Intersection )
+//!Higher-order decomposition in Cycle_SpecialInferences, enabled with DeductionAbductionAnalogyWithVarElim:
+//R2( A, (A ==> B), |-, B, Truth_Deduction )
+//R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
+//R2( B, (A ==> B), |-, A, Truth_Abduction )
+//R2( A, (A <=> B), |-, B, Truth_Analogy )
+//R2( ((#1 --> A) && (#1 --> B)), (C --> A), |-, (C --> B), Truth_AnonymousAnalogy )
+//!First var intro step: (var introduction policy in code):
+R2( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
+R2( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
+R2( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
+R2( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
+//!Second var intro step: (var introduction policy in code):
 R2( A, (<$1 --> B> ==> <$1 --> C>), |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
 R2( A, (<#1 --> B> && <#1 --> C>), |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-R2( ((A * B) --> R), ((B * A) --> S), |-, ((($1 * $2) --> S) ==> (($2 * $1) --> R)), Truth_Induction )
-R2( (! ((B * A) --> R)), ((A * B) --> S), |-, ((($1 * $2) --> S) ==> (! (($2 * $1) --> R))), Truth_Induction )
-R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * #1) --> R) && ((#1 * C) --> S)), Truth_Intersection )
-R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, (((($1 * #1) --> R) && ((#1 * $2) --> S)) ==> (($1 * $2) --> M)), Truth_Induction )
-//new NAL7 substitution rules to allow semantic inference to create additional contingencies:
-//consequent
-R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Abduction )
+//!Relation symmetry, asymmetry, and transitivity (var introduction policy in code):
+R2( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
+R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
+R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+//NAL5 NAL7 bridge substitution rules to allow semantic inference to create additional contingencies:
+//!Consequent substitutions
+R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Induction )
 R2( (A =/> B), (B ==> S), |-, (A =/> S), Truth_Deduction )
 R2( (A =/> B), (B <=> S), |-, (A =/> S), Truth_Analogy )
 R2( (A =/> (P --> B)), (P <-> S), |-, (A =/> (S --> B)), Truth_Analogy )
 R2( (A =/> (B --> P)), (P <-> S), |-, (A =/> (B --> S)), Truth_Analogy )
-//first sequence element (deeper isn't currently linked)
-R2( ((A &/ B) =/> C), (A ==> S), |-, ((S &/ B) =/> C), Truth_Abduction )
+//!First sequence element substitution (deeper isn't currently linked)
+R2( ((A &/ B) =/> C), (A ==> S), |-, ((S &/ B) =/> C), Truth_Induction )
 R2( ((A &/ B) =/> C), (S ==> A), |-, ((S &/ B) =/> C), Truth_Deduction )
 R2( ((A &/ B) =/> C), (S <=> A), |-, ((S &/ B) =/> C), Truth_Analogy )
 R2( (((P --> A) &/ B) =/> C), (A <-> S), |-, (((P --> S) &/ B) =/> C), Truth_Analogy )
 R2( (((A --> P) &/ B) =/> C), (A <-> S), |-, (((S --> P) &/ B) =/> C), Truth_Analogy )
-//second sequence element (deeper isn't currently linked)
-R2( ((A &/ B) =/> C), (B ==> S), |-, ((A &/ S) =/> C), Truth_Abduction )
+//!Second sequence element substitution (deeper isn't currently linked)
+R2( ((A &/ B) =/> C), (B ==> S), |-, ((A &/ S) =/> C), Truth_Induction )
 R2( ((A &/ B) =/> C), (S ==> B), |-, ((A &/ S) =/> C), Truth_Deduction )
 R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
 R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
-//Other NAL7/8 temporal induction, conditional inference and introduction of variables is handled by sensorimotor inference, see Inference.h!
+//Mandatory NAL7/8 temporal induction, conditional inference is handled by sensorimotor inference, see Inference.h!
 
 #endif
 
 #ifdef H_NAL_REDUCTIONS
 
-//Extensional intersection, union, conjunction
+//NAL term reductions
+//!Extensional intersection, union, conjunction reductions:
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
-//Extensional set
+//!Extensional set reductions:
 ReduceTerm( ({A} | {B}), {A B} )
 ReduceTerm( ({A B} | {C}), {(A . B) C} )
 ReduceTerm( ({C} | {A B}), {C (A . B)} )
-//Intensional set
+//!Intensional set reductions:
 ReduceTerm( ([A] & [B]), [A B] )
 ReduceTerm( ([A B] & [C]), [(A . B) C] )
 ReduceTerm( ([A] & [B C]), [A (B . C)] )
-//Reduce for set element copula
+//!Reduction for set element copula:
 ReduceTerm( {(A . B)}, {A B} )
 ReduceTerm( [(A . B)], [A B] )
 

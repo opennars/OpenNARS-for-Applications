@@ -135,23 +135,23 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
     else
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
     {
-        Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
-        Term other_side = Term_ExtractSubterm(cur_inheritance, extensionally ? 2 : 1);
+        Term subject = Term_ExtractSubterm(cur_inheritance, 1);
+        Term predicate = Term_ExtractSubterm(cur_inheritance, 2);
         if(extensionally || similarity)
         {
-            countAtoms(&side, appearing, extensionally, true);
-            if(Narsese_copulaEquals(other_side.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(other_side.atoms[0], EXT_IMAGE2))
+            countAtoms(&subject, appearing, extensionally, true);
+            if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
-                Term potential_image = Term_ExtractSubterm(&other_side, 2);
+                Term potential_image = Term_ExtractSubterm(&predicate, 2);
                 countAtoms(&potential_image, appearing, extensionally, true);
             }
         }
         if(!extensionally || similarity)
         {
-            countAtoms(&other_side, appearing, extensionally, true);
-            if(Narsese_copulaEquals(side.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(side.atoms[0], INT_IMAGE2))
+            countAtoms(&predicate, appearing, extensionally, true);
+            if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
-                Term potential_image = Term_ExtractSubterm(&side, 2);
+                Term potential_image = Term_ExtractSubterm(&subject, 2);
                 countAtoms(&potential_image, appearing, extensionally, true);
             }
         }
