@@ -136,14 +136,14 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
 {
     //1. Extract potential subgoals
-    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
     {
         return false;
     }
     Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
     Term cur_seq = selectedGoal->term;
     int i=0;
-    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], SEQUENCE); i++)
     {
         assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
         componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
@@ -410,8 +410,8 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
                        long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
-    bool IsImpl = Narsese_copulaEquals(term2.atoms[0], '?');
-    if(IsImpl || Narsese_copulaEquals(term2.atoms[0], '^'))
+    bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
+    if(IsImpl || Narsese_copulaEquals(term2.atoms[0], EQUIVALENCE))
     {
         Term impl_subject = Term_ExtractSubterm(&term2, 1);
         Term impl_predicate = Term_ExtractSubterm(&term2, 2);
@@ -428,7 +428,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             }
         }
         //Deduction with remaining condition
-        if(Narsese_copulaEquals(impl_subject.atoms[0], ';')) //conj
+        if(Narsese_copulaEquals(impl_subject.atoms[0], CONJUNCTION)) //conj
         {
             Term unifying_term =       Term_ExtractSubterm(&impl_subject, 1);
             Term remaining_condition = Term_ExtractSubterm(&impl_subject, 2);
@@ -443,7 +443,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             if(cond_subs.success)
             {
                 Term conclusionTerm = {0};
-                conclusionTerm.atoms[0] = IsImpl ? Narsese_AtomicTermIndex("?") : Narsese_AtomicTermIndex("^");
+                conclusionTerm.atoms[0] = IsImpl ? Narsese_CopulaIndex(IMPLICATION) : Narsese_CopulaIndex(EQUIVALENCE);
                 if(Term_OverrideSubterm(&conclusionTerm, 1, &remaining_condition) &&
                    Term_OverrideSubterm(&conclusionTerm, 2, &impl_predicate))
                 {
@@ -470,7 +470,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             }
         }
     }
-    if(Narsese_copulaEquals(term2.atoms[0], ';')) //conj
+    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION)) //conj
     {
         Term conj_subject = Term_ExtractSubterm(&term2, 1);
         Term conj_predicate = Term_ExtractSubterm(&term2, 2);

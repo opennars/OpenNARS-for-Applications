@@ -78,7 +78,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                 {
                     return substitution;
                 }
-                if(Narsese_copulaEquals(subtree.atoms[0], '@')) //not allowed to unify with set terminator
+                if(Narsese_copulaEquals(subtree.atoms[0], SET_TERMINATOR)) //not allowed to unify with set terminator
                 {
                     return substitution;	
                 }
@@ -126,21 +126,21 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 //then introduce as independent variable, else as dependent variable
 static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally, bool ignore_structure)
 {
-    bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], '=');
-    if(Narsese_copulaEquals(cur_inheritance->atoms[0], '!'))
+    bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], SIMILARITY);
+    if(Narsese_copulaEquals(cur_inheritance->atoms[0], NEGATION))
     {
         Term potential_inheritance = Term_ExtractSubterm(cur_inheritance, 1); //or sim
         countAtoms(&potential_inheritance, appearing, extensionally, false);
     }
     else
-    if(Narsese_copulaEquals(cur_inheritance->atoms[0], ':') || similarity) //inheritance and similarity
+    if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
     {
         Term side = Term_ExtractSubterm(cur_inheritance, extensionally ? 1 : 2);
         Term other_side = Term_ExtractSubterm(cur_inheritance, extensionally ? 2 : 1);
         if(extensionally || similarity)
         {
             countAtoms(&side, appearing, extensionally, true);
-            if(Narsese_copulaEquals(other_side.atoms[0], '/') || Narsese_copulaEquals(other_side.atoms[0], '%'))
+            if(Narsese_copulaEquals(other_side.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(other_side.atoms[0], EXT_IMAGE2))
             {
                 Term potential_image = Term_ExtractSubterm(&other_side, 2);
                 countAtoms(&potential_image, appearing, extensionally, true);
@@ -149,7 +149,7 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
         if(!extensionally || similarity)
         {
             countAtoms(&other_side, appearing, extensionally, true);
-            if(Narsese_copulaEquals(side.atoms[0], '\\') || Narsese_copulaEquals(side.atoms[0], '#'))
+            if(Narsese_copulaEquals(side.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(side.atoms[0], INT_IMAGE2))
             {
                 Term potential_image = Term_ExtractSubterm(&side, 2);
                 countAtoms(&potential_image, appearing, extensionally, true);
@@ -161,7 +161,7 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = cur_inheritance->atoms[i];
-            if(Narsese_IsNonCopulaAtom(atom) || Variable_isVariable(atom))
+            if(Narsese_IsSimpleAtom(atom) || Variable_isVariable(atom))
             {
                 appearing[(int) cur_inheritance->atoms[i]] += 1;
             }
@@ -171,18 +171,18 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
 
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
-    assert(Narsese_copulaEquals(implication.atoms[0], '$') || Narsese_copulaEquals(implication.atoms[0], '?'), "An implication is expected here!");
+    assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
     int appearing_left[ATOMS_MAX] = {0};
     int appearing_right[ATOMS_MAX] = {0};
-    while(Narsese_copulaEquals(left_side.atoms[0], '+') || Narsese_copulaEquals(left_side.atoms[0], ';')) //sequence or conj
+    while(Narsese_copulaEquals(left_side.atoms[0], SEQUENCE) || Narsese_copulaEquals(left_side.atoms[0], CONJUNCTION)) //sequence or conj
     {
         Term potential_inheritance = Term_ExtractSubterm(&left_side, 2); //or sim
         countAtoms(&potential_inheritance, appearing_left, extensionally, false);
         left_side = Term_ExtractSubterm(&left_side, 1);
     }
-    while(Narsese_copulaEquals(right_side.atoms[0], '+') || Narsese_copulaEquals(right_side.atoms[0], ';')) //sequence or conj
+    while(Narsese_copulaEquals(right_side.atoms[0], SEQUENCE) || Narsese_copulaEquals(right_side.atoms[0], CONJUNCTION)) //sequence or conj
     {
         Term potential_inheritance = Term_ExtractSubterm(&right_side, 2); //or sim
         countAtoms(&potential_inheritance, appearing_right, extensionally, false);
@@ -236,10 +236,10 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
 
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
-    assert(Narsese_copulaEquals(conjunction.atoms[0], ';'), "A conjunction is expected here!");
+    assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
     int appearing_conjunction[ATOMS_MAX] = {0};
     Term left_side = conjunction;
-    while(Narsese_copulaEquals(left_side.atoms[0], ';')) //conjunction
+    while(Narsese_copulaEquals(left_side.atoms[0], CONJUNCTION)) //conjunction
     {
         Term potential_inheritance = Term_ExtractSubterm(&left_side, 2); //or sim
         countAtoms(&potential_inheritance, appearing_conjunction, extensionally, false);

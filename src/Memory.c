@@ -203,7 +203,7 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     {
         if(controlInfo)
             fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
-        if(Narsese_copulaEquals(term->atoms[0], '$'))
+        if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION))
             printf("dt=%f ", occurrenceTimeOffset);
         Narsese_PrintTerm(term);
         fputs((type == EVENT_TYPE_BELIEF ? ". " : "! "), stdout);
@@ -259,7 +259,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
-            if(Narsese_copulaEquals(subject.atoms[0], '+')) //sequence
+            if(Narsese_copulaEquals(subject.atoms[0], SEQUENCE)) //sequence
             {
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
                 if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
@@ -344,7 +344,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
             }
         }
     }
-    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
+    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION);
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
@@ -356,7 +356,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
     }
-    if(addedToCyclingEventsQueue && !Narsese_copulaEquals(event->term.atoms[0], '$')) //print new tasks
+    if(addedToCyclingEventsQueue && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
