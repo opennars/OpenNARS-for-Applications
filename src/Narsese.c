@@ -75,7 +75,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
             i++; j++; 
         }
         else
-        if(narsese[i] == '<' && narsese[i+1] != '-') // < becomes (
+        if(narsese[i] == '<' && narsese[i+1] != '-' && narsese[i+1] != '=') // < becomes (
         {
             narsese_replaced[j] = '(';
             i++; j++; 
@@ -89,9 +89,15 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
-            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes .
+            if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
             {
                 narsese_replaced[j] = ';';
+                i+=2; j++;
+            }
+            else
+            if(narsese[i] == '|' && narsese[i+1] == '|') // || becomes _
+            {
+                narsese_replaced[j] = '_';
                 i+=2; j++;
             }
             else
@@ -142,6 +148,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '=' && narsese[i+1] == '=' && narsese[i+2] == '>') // ==> becomes ?
                 {
                     narsese_replaced[j] = '?';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '<' && narsese[i+1] == '=' && narsese[i+2] == '>') // <=> becomes ^
+                {
+                    narsese_replaced[j] = '^';
                     i+=3; j++;
                 }
                 else
@@ -298,6 +310,13 @@ int Narsese_AtomicTermIndex(char *name)
     return ret_index;
 }
 
+int Narsese_CopulaIndex(char name)
+{
+    char copname[2] = {0};
+    copname[0] = name;
+    return Narsese_AtomicTermIndex(copname);
+}
+
 //Encodes a binary tree in an array, based on the the S-expression tokenization with prefix order
 void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index, int nt)
 {
@@ -327,7 +346,7 @@ void buildBinaryTree(Term *bintree, char** tokens_prefix, int i1, int tree_index
         }
         else
         {
-            bintree->atoms[tree_index-1] = Narsese_AtomicTermIndex("@"); //just use "@" for second element as terminator, while "." acts for "deeper" sets than 2
+            bintree->atoms[tree_index-1] = Narsese_CopulaIndex(SET_TERMINATOR); //just use "@" for second element as terminator, while "." acts for "deeper" sets than 2
         }
     }
 }
@@ -410,7 +429,7 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *ten
 Term Narsese_Sequence(Term *a, Term *b, bool *success)
 {
     Term ret = {0};
-    ret.atoms[0] = Narsese_AtomicTermIndex("+");
+    ret.atoms[0] = Narsese_CopulaIndex(SEQUENCE);
     *success = Term_OverrideSubterm(&ret,1,a) && Term_OverrideSubterm(&ret,2,b);
     return *success ? ret : (Term) {0};
 }
@@ -427,52 +446,62 @@ void Narsese_PrintAtom(Atom atom)
 {
     if(atom)
     {
-        if(Narsese_copulaEquals(atom, ':'))
+        if(Narsese_copulaEquals(atom, INHERITANCE))
         {
             fputs("-->", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '$'))
+        if(Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION))
         {
             fputs("=/>", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '+'))
+        if(Narsese_copulaEquals(atom, EQUIVALENCE))
+        {
+            fputs("<=>", stdout);
+        }
+        else
+        if(Narsese_copulaEquals(atom, DISJUNCTION))
+        {
+            fputs("||", stdout);
+        }
+        else
+        if(Narsese_copulaEquals(atom, SEQUENCE))
         {
             fputs("&/", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '?'))
+        if(Narsese_copulaEquals(atom, IMPLICATION))
         {
             fputs("==>", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, ';'))
+        if(Narsese_copulaEquals(atom, CONJUNCTION))
         {
             fputs("&&", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '='))
+        if(Narsese_copulaEquals(atom, SIMILARITY))
         {
             fputs("<->", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '/'))
+        if(Narsese_copulaEquals(atom, EXT_IMAGE1))
         {
             fputs("/1", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '%'))
+        if(Narsese_copulaEquals(atom, EXT_IMAGE2))
         {
             fputs("/2", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '\\'))
+        if(Narsese_copulaEquals(atom, INT_IMAGE1))
         {
             fputs("\\1", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, '#'))
+        if(Narsese_copulaEquals(atom, INT_IMAGE2))
         {
             fputs("\\2", stdout);
         }
@@ -497,11 +526,11 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     int child1 = index*2;
     int child2 = index*2+1;
     bool hasLeftChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
-    bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], '@');
-    bool isNegation = Narsese_copulaEquals(atom, '!');
-    bool isExtSet = Narsese_copulaEquals(atom, '"');
-    bool isIntSet = Narsese_copulaEquals(atom, '\'');
-    bool isStatement = Narsese_copulaEquals(atom, '$') || Narsese_copulaEquals(atom, ':') || Narsese_copulaEquals(atom, '=') || Narsese_copulaEquals(atom, '?');
+    bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], SET_TERMINATOR);
+    bool isNegation = Narsese_copulaEquals(atom, NEGATION);
+    bool isExtSet = Narsese_copulaEquals(atom, EXT_SET);
+    bool isIntSet = Narsese_copulaEquals(atom, INT_SET);
+    bool isStatement = Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION) || Narsese_copulaEquals(atom, INHERITANCE) || Narsese_copulaEquals(atom, SIMILARITY) || Narsese_copulaEquals(atom, IMPLICATION) || Narsese_copulaEquals(atom, EQUIVALENCE);
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);
@@ -533,7 +562,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     {
         fputs(hasLeftChild ? " " : "", stdout);
     }
-    if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, '@'))
+    if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, SET_TERMINATOR))
     {
         if(!isNegation)
         {
@@ -633,24 +662,24 @@ bool Narsese_copulaEquals(Atom atom, char name)
 
 bool Narsese_isOperator(Atom atom)
 {
-    return atom>0 && Narsese_atomNames[(int) atom-1][0] == '^';
+    return atom>0 && Narsese_atomNames[(int) atom-1][0] == '^' && Narsese_atomNames[(int) atom-1][1];
 }
 
 bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ _ SELF] or simply ^op
 {
     return Narsese_isOperator(term->atoms[0]) ||
-           (Narsese_copulaEquals(term->atoms[0], ':') && Narsese_copulaEquals(term->atoms[1], '*') && //(_ * _) -->
+           (Narsese_copulaEquals(term->atoms[0], INHERITANCE) && Narsese_copulaEquals(term->atoms[1], PRODUCT) && //(_ * _) -->
             Narsese_isOperator(term->atoms[2]) && //^op
-            Narsese_copulaEquals(term->atoms[3], '"') && 
+            Narsese_copulaEquals(term->atoms[3], EXT_SET) && 
             (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7]))); //  { SELF } or { VAR }
 }
 
 Atom Narsese_getOperationAtom(Term *term)
 {
-    if(Narsese_copulaEquals(term->atoms[0], '+')) //sequence
+    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Narsese_copulaEquals(potential_operator.atoms[0], '+'), "Sequences should be left-nested encoded, never right-nested!!");
+        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
         return Narsese_getOperationAtom(&potential_operator);
     }
     if(Narsese_isOperator(term->atoms[0])) //atomic operator
@@ -666,7 +695,7 @@ Atom Narsese_getOperationAtom(Term *term)
 
 Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 {
-    if(Narsese_copulaEquals(precondition->atoms[0], '+'))
+    if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE))
     {
         Term potential_op = Term_ExtractSubterm(precondition, 2);
         if(Narsese_isOperation(&potential_op))
@@ -677,7 +706,7 @@ Term Narsese_GetPreconditionWithoutOp(Term *precondition)
     return *precondition;
 }
 
-bool Narsese_IsNonCopulaAtom(Atom atom)
+bool Narsese_IsSimpleAtom(Atom atom)
 {
     return atom > 0 && (Narsese_atomNames[(int) atom - 1][0] == '^' ||
            (Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
@@ -685,7 +714,3 @@ bool Narsese_IsNonCopulaAtom(Atom atom)
            (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
 }
 
-bool Narsese_IsSimpleAtom(Atom atom)
-{
-    return Narsese_IsNonCopulaAtom(atom) && !Variable_isVariable(atom);
-}

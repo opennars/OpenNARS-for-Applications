@@ -40,7 +40,7 @@ void Decision_Execute(Decision *decision)
     if(decision->arguments.atoms[0] > 0) //operation with args
     {
         Term operation = {0};
-        operation.atoms[0] = Narsese_AtomicTermIndex(":"); //<args --> ^op>
+        operation.atoms[0] = Narsese_CopulaIndex(INHERITANCE); //<args --> ^op>
         if(!Term_OverrideSubterm(&operation, 1, &decision->arguments) || !Term_OverrideSubterm(&operation, 2, &decision->op.term))
         {
             return;
@@ -80,11 +80,11 @@ static Decision Decision_MotorBabbling()
             //({SELF} * num)
             //*   "    arg  SELF
             //0   1    2    3
-            decision.arguments.atoms[0] = Narsese_AtomicTermIndex("*");  //product
-            decision.arguments.atoms[1] = Narsese_AtomicTermIndex("\""); //ext set {SELF} on the left
+            decision.arguments.atoms[0] = Narsese_CopulaIndex(PRODUCT);  //product
+            decision.arguments.atoms[1] = Narsese_CopulaIndex(EXT_SET); //ext set {SELF} on the left
             Term_OverrideSubterm(&decision.arguments, 2, &operations[decision.operationID-1].arguments[argumentID]);
             decision.arguments.atoms[3] = SELF;
-            decision.arguments.atoms[4] = Narsese_AtomicTermIndex("@");
+            decision.arguments.atoms[4] = Narsese_CopulaIndex(SET_TERMINATOR);
         }
     }
     return decision;
@@ -166,7 +166,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                 imp.term = Variable_ApplySubstitute(imp.term, subs, &success);
                 if(success)
                 {
-                    assert(Narsese_copulaEquals(imp.term.atoms[0], '$'), "This should be an implication!");
+                    assert(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION), "This should be a temporal implication!");
                     Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)

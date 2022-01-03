@@ -41,6 +41,7 @@
 #include "Narsese.h"
 #include "Implication.h"
 #include "Globals.h"
+#include "Variable.h"
 #include <string.h>
 
 //Methods//

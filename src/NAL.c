@@ -34,7 +34,7 @@ static void NAL_GeneratePremisesUnifier(int i, Atom atom, int premiseIndex)
         {
             //unification failure by inequal value assignment (value at position i versus previously assigned one), and variable binding
             printf("subtree = Term_ExtractSubterm(&term%d, %d);\n", premiseIndex, i);
-            printf("if((substitutions[%d].atoms[0]!=0 && !Term_Equal(&substitutions[%d], &subtree)) || Narsese_copulaEquals(subtree.atoms[0], '@')){ goto RULE_%d; }\n", atom, atom, ruleID);
+            printf("if((substitutions[%d].atoms[0]!=0 && !Term_Equal(&substitutions[%d], &subtree)) || Narsese_copulaEquals(subtree.atoms[0], SET_TERMINATOR)){ goto RULE_%d; }\n", atom, atom, ruleID);
             printf("substitutions[%d] = subtree;\n", atom);
         }
         else
@@ -101,7 +101,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     }
-    puts("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid);}\n");
+    printf("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, %s == Truth_Induction || %s == Truth_Intersection);}\n", truthFunction, truthFunction);
 }
 
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
@@ -129,7 +129,7 @@ static int atomsCounter = 1; //allows to avoid memset
 static int atomsAppeared[ATOMS_MAX] = {0};
 static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
 {
-    if(Narsese_copulaEquals(conclusionTerm->atoms[0], ':') || Narsese_copulaEquals(conclusionTerm->atoms[0], '=')) //similarity or inheritance
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], SIMILARITY)) //similarity or inheritance
     {
         atomsCounter++;
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -139,17 +139,97 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
             {
                 return true;
             }
-            if(Narsese_IsNonCopulaAtom(atom))
+            if(Narsese_IsSimpleAtom(atom))
             {
                 atomsAppeared[atom] = atomsCounter;
             }
         }
     }
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION))
+    {
+        Term t1 = Term_ExtractSubterm(conclusionTerm, 1);
+        Term t2 = Term_ExtractSubterm(conclusionTerm, 2);
+        if(Term_Equal(&t1, &t2))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid)
+static bool NAL_ImplicationAppearsTwice(Term *conclusionTerm)
 {
+    //We don't allow two ==> or <=> in one statement:
+    int imp = 0;
+    int equ = 0;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Narsese_copulaEquals(conclusionTerm->atoms[i], IMPLICATION))
+        {
+            imp++;
+        }
+        if(Narsese_copulaEquals(conclusionTerm->atoms[i], EQUIVALENCE))
+        {
+            equ++;
+        }
+        if(imp >= 2 || equ >= 2)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool NAL_InhOrSimHasDepVar(Term *conclusionTerm)
+{
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE) ||
+       Narsese_copulaEquals(conclusionTerm->atoms[0], SIMILARITY))
+    {
+        if(Variable_hasVariable(conclusionTerm, false, true, false))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
+{
+    if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION)))
+    {
+        bool success;
+        Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
+        if(Variable_hasVariable(&conclusionTermWithVarExt, true, true, false) && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm))
+        {
+             NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+        }
+        bool success2;
+        Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
+        if(Variable_hasVariable(&conclusionTermWithVarInt, true, true, false) && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm))
+        {
+             NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+        }
+        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION))
+        {
+            return;
+        }
+    }
+    if(varIntro && Narsese_copulaEquals(conclusionTerm.atoms[0], CONJUNCTION))
+    {
+        bool success;
+        Term conclusionTermWithVarExt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success, true);
+        if(Variable_hasVariable(&conclusionTermWithVarExt, true, true, false))
+        {
+            NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+        }
+        bool success2;
+        Term conclusionTermWithVarInt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success2, false);
+        if(Variable_hasVariable(&conclusionTermWithVarInt, true, true, false))
+        {
+            NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+        }
+        return;
+    }
     Event e = { .term = conclusionTerm,
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
@@ -161,7 +241,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_ImplicationAppearsTwice(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }

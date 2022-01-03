@@ -136,14 +136,14 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
 {
     //1. Extract potential subgoals
-    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
     {
         return false;
     }
     Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
     Term cur_seq = selectedGoal->term;
     int i=0;
-    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], SEQUENCE); i++)
     {
         assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
         componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
@@ -338,22 +338,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 precondition_implication.sourceConceptId = A->id;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    //extensional var intro:
-                    bool success;
-                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
-                    if(success && Variable_hasVariable(&general_implication_term_ext, true, true, false))
-                    {
-                        NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
-                    }
-                    //intensional var intro:
-                    bool success2;
-                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
-                    if(success2 && Variable_hasVariable(&general_implication_term_int, true, true, false))
-                    {
-                        NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
-                    }
-                    //specific implication
-                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
                 }
             }
         }
@@ -413,6 +398,92 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+//A, <A ==> B> |- B (Deduction)
+//A, <(A && B) ==> C> |- <B ==> C> (Deduction)
+//B, <A ==> B> |- A (Abduction')
+//(A && B), A |- B  with dep var elim (Anonymous Analogy)
+void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
+                       long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
+{
+    bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
+    if(IsImpl || Narsese_copulaEquals(term2.atoms[0], EQUIVALENCE))
+    {
+        Term impl_subject = Term_ExtractSubterm(&term2, 1);
+        Term impl_predicate = Term_ExtractSubterm(&term2, 2);
+        //Deduction:
+        Substitution subject_subs = Variable_Unify(&impl_subject, &term1);
+        if(subject_subs.success)
+        {
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(impl_predicate, subject_subs, &success);
+            Truth conclusionTruth = Truth_Deduction(truth1, truth2);
+            if(success)
+            {
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
+        }
+        //Deduction with remaining condition
+        if(Narsese_copulaEquals(impl_subject.atoms[0], CONJUNCTION)) //conj
+        {
+            Term unifying_term =       Term_ExtractSubterm(&impl_subject, 1);
+            Term remaining_condition = Term_ExtractSubterm(&impl_subject, 2);
+            Substitution cond_subs = Variable_Unify(&unifying_term, &term1);
+            if(!cond_subs.success)
+            {
+                Term temp = remaining_condition;
+                remaining_condition = unifying_term;
+                unifying_term = temp;
+                cond_subs = Variable_Unify(&unifying_term, &term1);
+            }
+            if(cond_subs.success)
+            {
+                Term conclusionTerm = {0};
+                conclusionTerm.atoms[0] = IsImpl ? Narsese_CopulaIndex(IMPLICATION) : Narsese_CopulaIndex(EQUIVALENCE);
+                if(Term_OverrideSubterm(&conclusionTerm, 1, &remaining_condition) &&
+                   Term_OverrideSubterm(&conclusionTerm, 2, &impl_predicate))
+                {
+                    bool success;
+                    conclusionTerm = Variable_ApplySubstitute(conclusionTerm, cond_subs, &success);
+                    Truth conclusionTruth = Truth_Deduction(truth1, truth2);
+                    if(success)
+                    {
+                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                    }
+                }
+            }
+        }
+        //Abduction:
+        Substitution predicate_subs = Variable_Unify(&impl_predicate, &term1);
+        if(predicate_subs.success)
+        {
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(impl_subject, predicate_subs, &success);
+            Truth conclusionTruth = Truth_Abduction(truth2, truth1);
+            if(success)
+            {
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
+        }
+    }
+    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION)) //conj
+    {
+        Term conj_subject = Term_ExtractSubterm(&term2, 1);
+        Term conj_predicate = Term_ExtractSubterm(&term2, 2);
+        //Anonymous Analogy:
+        Substitution subject_subs = Variable_Unify(&conj_subject, &term1);
+        if(subject_subs.success)
+        {
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(conj_predicate, subject_subs, &success);
+            Truth conclusionTruth = Truth_AnonymousAnalogy(truth1, truth2);
+            if(success)
+            {
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
             }
         }
     }
@@ -490,6 +561,7 @@ void Cycle_Inference(long currentTime)
                             puts("");
                         }
                         RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                     }
                 }
             })

@@ -113,7 +113,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         Term best_term = {0};
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
-        bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
+        bool isImplication = Narsese_copulaEquals(term.atoms[0], TEMPORAL_IMPLICATION);
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
