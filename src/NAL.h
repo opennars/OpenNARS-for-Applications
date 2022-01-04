@@ -44,11 +44,12 @@ void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
 //macro for syntactic representation, increases readability, double premise inference
-#define R2(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true,false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true);
+#define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
+#define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
 //macro for syntactic representation, increases readability, single premise inference
-#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false);
+#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false, false);
 //macro for bidirectional transformation rules
-#define RTrans(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false);
+#define R1Bidirectional(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false, false);
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
@@ -118,10 +119,10 @@ R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
 R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 //NAL4 rules
 //!Transformation rules between product and image:
-RTrans( ((A * B) --> R), -|-, (A --> (R /1 B)), Truth_StructuralDeduction )
-RTrans( ((A * B) --> R), -|-, (B --> (R /2 A)), Truth_StructuralDeduction )
-RTrans( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
-RTrans( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
+R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralDeduction )
+R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralDeduction )
+R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
+R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //!Optional rules for more efficient reasoning about relation components:
 R2( ((A * B) --> R), ((C * B) --> R), |-, (C --> A), Truth_Abduction )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (C --> B), Truth_Abduction )
@@ -157,12 +158,12 @@ R2( S, (|| (! S) A), |-, A, Truth_DecomposePPP )
 R2( (S ==> M), (M ==> P), |-, (S ==> P), Truth_Deduction )
 R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
 R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
+R2( (A ==> B), (B ==> C), |-, (C ==> A), Truth_Exemplification )
 //!Conditional composition for conjunction and disjunction:
 R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Union )
 R2( (A ==> C), (B ==> C), |-, ((A || B) ==> C), Truth_Intersection )
 R2( (C ==> A), (C ==> B), |-, (C ==> (A && B)), Truth_Intersection )
 R2( (C ==> A), (C ==> B), |-, (C ==> (A || B)), Truth_Union )
-R2( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
 //!Multi-conditional inference:
 R2( ((S && P) ==> M), (S ==> M), |-, P, Truth_Abduction )
 R2( ((C && M) ==> P), (S ==> M), |-, ((C && S) ==> P), Truth_Deduction )
@@ -177,25 +178,28 @@ R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
 //NAL6 rules:
-//!Higher-order decomposition in Cycle_SpecialInferences, enabled with DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM:
+//!Higher-order decomposition in Cycle_SpecialInferences, enabled by DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM:
 //R2( A, (A ==> B), |-, B, Truth_Deduction )
 //R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
 //R2( B, (A ==> B), |-, A, Truth_Abduction )
 //R2( A, (A <=> B), |-, B, Truth_Analogy )
 //R2( ((#1 --> A) && (#1 --> B)), (C --> A), |-, (C --> B), Truth_AnonymousAnalogy )
-//!First var intro step: (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
-R2( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
-R2( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
-R2( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
-R2( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
-//!Second var intro step: (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
-R2( A, (<$1 --> B> ==> <$1 --> C>), |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
-R2( A, (<#1 --> B> && <#1 --> C>), |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-//!Relation symmetry, asymmetry, and transitivity (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
-R2( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
-R2( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
-R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
-R2( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+//!First var intro step::
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
+R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
+//R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
+//R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) <=> (B --> C)), Truth_Comparison )
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
+R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
+//!Second var intro step::
+R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
+R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
+R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+//!Relation symmetry, asymmetry, and transitivity:
+R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
+R2VarIntro( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
+R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //NAL5 NAL7 bridge substitution rules to allow semantic inference to create additional contingencies:
 //!Consequent substitutions
 R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Induction )
