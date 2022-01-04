@@ -105,6 +105,8 @@ bool Narsese_isOperation(Term *term);
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
 //Get whether something is a true atom, not a copula or variable
 bool Narsese_IsSimpleAtom(Atom atom);
+//Whether the term has a simple atom
+bool Narsese_HasSimpleAtom(Term *term);
 //Whether two Narsese strings are equal
 bool Narsese_StringEqual(char *name1, char *name2);
 //The hash code of a string

@@ -714,3 +714,15 @@ bool Narsese_IsSimpleAtom(Atom atom)
            (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
 }
 
+bool Narsese_HasSimpleAtom(Term *term)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Narsese_IsSimpleAtom(term->atoms[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+

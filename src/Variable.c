@@ -139,7 +139,15 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
         Term predicate = Term_ExtractSubterm(cur_inheritance, 2);
         if(extensionally || similarity)
         {
-            countAtoms(&subject, appearing, extensionally, true);
+            if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
+            {
+                Term relation = Term_ExtractSubterm(&subject, 1);
+                countAtoms(&relation, appearing, extensionally, true);
+            }
+            else
+            {
+                countAtoms(&subject, appearing, extensionally, true);
+            }
             if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
                 Term potential_image = Term_ExtractSubterm(&predicate, 2);
@@ -148,16 +156,28 @@ static void countAtoms(Term *cur_inheritance, int *appearing, bool extensionally
         }
         if(!extensionally || similarity)
         {
-            countAtoms(&predicate, appearing, extensionally, true);
+            if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
+            {
+                Term relation = Term_ExtractSubterm(&predicate, 1);
+                countAtoms(&relation, appearing, extensionally, true);
+            }
+            else
+            {
+                countAtoms(&predicate, appearing, extensionally, true);
+            }
             if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
-                Term potential_image = Term_ExtractSubterm(&subject, 2);
-                countAtoms(&potential_image, appearing, extensionally, true);
+                Term argument = Term_ExtractSubterm(&subject, 2);
+                countAtoms(&argument, appearing, extensionally, true);
             }
         }
     }
     if(ignore_structure) //check avoids introducing vars for entire statements
     {
+        if(VARS_IN_MULTI_ELEMENT_SETS_FILTER && (Narsese_copulaEquals(cur_inheritance->atoms[0], EXT_SET) || Narsese_copulaEquals(cur_inheritance->atoms[0], INT_SET)) && !Narsese_copulaEquals(cur_inheritance->atoms[2], SET_TERMINATOR))
+        {
+            return;
+        }
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = cur_inheritance->atoms[i];

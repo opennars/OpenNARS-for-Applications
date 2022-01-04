@@ -143,8 +143,14 @@
 //We don't allow higher-order statements with <A --> A> or <var1 --> var2> components
 #define HOL_STATEMENT_COMPONENT_HAS_INVALID_INH_OR_SIM_FILTER true
 //Whether a higher-order statement is invalid if it contains a inh or sim without var
-#define HOL_COMPONENT_NO_VAR_IS_INVALID true
+#define HOL_COMPONENT_NO_VAR_IS_INVALID_FILTER true
+//Whether a higher-order statement is invalid if it contains a inh or sim without atomic term
+#define HOL_COMPONENT_NO_ATOMIC_IS_INVALID_FILTER true
 //Filter disjunction or conjunction in derivation if not right nested
 #define JUNCTION_NOT_RIGHT_NESTED_FILTER true
+//Variables introduced in set with more than 1 element filter
+#define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
+//Filtering sub-statement terms with variables and atoms both like (&, $1, a)
+#define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 
 #endif

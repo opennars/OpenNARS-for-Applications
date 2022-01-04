@@ -213,9 +213,41 @@ static bool NAL_HOLStatementComponentHasInvalidInhOrSim(Term *conclusionTerm, bo
         {
             return true;
         }
-        if(!Variable_hasVariable(conclusionTerm, true, true, false) && HOL_COMPONENT_NO_VAR_IS_INVALID)
+        if(!Variable_hasVariable(conclusionTerm, true, true, false) && HOL_COMPONENT_NO_VAR_IS_INVALID_FILTER)
         {
-            return true; //no specific components if specific hyp not allowed
+            return true;
+        }
+        if(!Narsese_HasSimpleAtom(conclusionTerm) && HOL_COMPONENT_NO_ATOMIC_IS_INVALID_FILTER)
+        {
+            return true;
+        }
+        bool SubjectIsImage =   Narsese_copulaEquals(  subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2);
+        bool PredicateIsImage = Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], EXT_IMAGE2);
+        if(TERMS_WITH_VARS_AND_ATOMS_FILTER && !SubjectIsImage && !PredicateIsImage &&
+           ((Variable_hasVariable(&subject, true, true, false)   && Narsese_HasSimpleAtom(&subject)) ||
+            (Variable_hasVariable(&predicate, true, true, false) && Narsese_HasSimpleAtom(&predicate))))
+        {
+            return true;
+        }
+        if(TERMS_WITH_VARS_AND_ATOMS_FILTER && SubjectIsImage)
+        {
+            Term relation = Term_ExtractSubterm(&subject, 1);
+            Term relata =   Term_ExtractSubterm(&subject, 2);
+            if((Variable_hasVariable(&relation, true, true, false) && Narsese_HasSimpleAtom(&relation)) ||
+               (Variable_hasVariable(&relata,   true, true, false) && Narsese_HasSimpleAtom(&relata)))
+            {
+                return true;
+            }
+        }
+        if(TERMS_WITH_VARS_AND_ATOMS_FILTER && PredicateIsImage)
+        {
+            Term relation = Term_ExtractSubterm(&predicate, 1);
+            Term relata =   Term_ExtractSubterm(&predicate, 2);
+            if((Variable_hasVariable(&relation, true, true, false) && Narsese_HasSimpleAtom(&relation)) ||
+               (Variable_hasVariable(&relata,   true, true, false) && Narsese_HasSimpleAtom(&relata)))
+            {
+                return true;
+            }
         }
     }
     return false;
@@ -233,6 +265,28 @@ static bool NAL_JunctionNotRightNested(Term *conclusionTerm)
         {
             int i_right_child = ((i+1)*2+1)-1;
             if(i < COMPOUND_TERM_SIZE_MAX &&  (Narsese_copulaEquals(conclusionTerm->atoms[i_right_child], CONJUNCTION) || Narsese_copulaEquals(conclusionTerm->atoms[i_right_child], DISJUNCTION)))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears twice restriction for now it's fine
+{
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE))
+    {
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE))
+        {
+            if(Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
+            {
+                return true;
+            }
+        }
+        if(Narsese_copulaEquals(conclusionTerm->atoms[2], INT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE))
+        {
+            if(Narsese_copulaEquals(conclusionTerm->atoms[5], INT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[6], INT_SET))
             {
                 return true;
             }
@@ -292,7 +346,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false);
             }
