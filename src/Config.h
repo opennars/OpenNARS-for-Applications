@@ -125,4 +125,26 @@
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
 
+/*-----------------------*/
+/* Derivation parameters */
+/*-----------------------*/
+//Whether to allow higher-order decomposition with variable elimination
+#define DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM true
+//Whether to allow var introduction in conclusions
+#define ALLOW_VAR_INTRO_IN_DERIVATIONS true
+//Whether to also allow specific versions of var intro derivations
+#define ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS false
+//Filter for twice appearing atoms
+#define ATOM_APPEARS_TWICE_FILTER true
+//Filter for derivations which include nested implications or equivalences
+#define NESTED_HOL_STATEMENT_FILTER true
+//Filter for inheritance or similarity statement with dependent var
+#define INH_OR_SIM_HAS_DEP_VAR_FILTER true
+//We don't allow higher-order statements with <A --> A> or <var1 --> var2> components
+#define HOL_STATEMENT_COMPONENT_HAS_INVALID_INH_OR_SIM_FILTER true
+//Whether a higher-order statement is invalid if it contains a inh or sim without var
+#define HOL_COMPONENT_NO_VAR_IS_INVALID true
+//Filter disjunction or conjunction in derivation if not right nested
+#define JUNCTION_NOT_RIGHT_NESTED_FILTER true
+
 #endif
