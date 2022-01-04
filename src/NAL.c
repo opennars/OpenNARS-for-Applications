@@ -297,7 +297,7 @@ static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears 
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
-    if(ALLOW_VAR_INTRO_IN_DERIVATIONS && varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION)))
+    if(ALLOW_VAR_INTRO_IN_DERIVATIONS && varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
         bool success;
         Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
@@ -311,7 +311,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
         }
-        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) && !ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS)
+        if((Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)) && !ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS)
         {
             return;
         }
