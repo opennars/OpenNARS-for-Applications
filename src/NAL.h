@@ -37,15 +37,6 @@
 #include "Narsese.h"
 #include "Memory.h"
 
-//Parameters//
-//----------//
-//Whether to allow higher-order decomposition with variable elimination
-#define DeductionAbductionAnalogyWithVarElim true
-//Whether to allow var introduction in conclusions
-#define AllowVarIntroInDerivations true
-//Whether to also allow specific versions of var intro derivations
-#define AllowSpecificVersionsOfVarIntroDerivations false
-
 //Methods//
 //-------//
 //Generates inference rule code
@@ -186,21 +177,21 @@ R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
 //NAL6 rules:
-//!Higher-order decomposition in Cycle_SpecialInferences, enabled with DeductionAbductionAnalogyWithVarElim:
+//!Higher-order decomposition in Cycle_SpecialInferences, enabled with DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM:
 //R2( A, (A ==> B), |-, B, Truth_Deduction )
 //R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
 //R2( B, (A ==> B), |-, A, Truth_Abduction )
 //R2( A, (A <=> B), |-, B, Truth_Analogy )
 //R2( ((#1 --> A) && (#1 --> B)), (C --> A), |-, (C --> B), Truth_AnonymousAnalogy )
-//!First var intro step: (var introduction policy in code):
+//!First var intro step: (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
 R2( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
 R2( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
 R2( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
 R2( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
-//!Second var intro step: (var introduction policy in code):
+//!Second var intro step: (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
 R2( A, (<$1 --> B> ==> <$1 --> C>), |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
 R2( A, (<#1 --> B> && <#1 --> C>), |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-//!Relation symmetry, asymmetry, and transitivity (var introduction policy in code):
+//!Relation symmetry, asymmetry, and transitivity (var intro policy via ALLOW_VAR_INTRO_IN_DERIVATIONS and ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS):
 R2( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
 R2( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
