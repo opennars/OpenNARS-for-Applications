@@ -186,12 +186,12 @@ R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
 //R2( ((#1 --> A) && (#1 --> B)), (C --> A), |-, (C --> B), Truth_AnonymousAnalogy )
 //!First var intro step::
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
-R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) ==> (B --> C)), Truth_Induction )
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
-R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) <=> (B --> C)), Truth_Comparison )
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison )
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
-R2VarIntro( (A --> C), (B --> C), |-, ((A --> C) && (B --> C)), Truth_Intersection )
-//!Second var intro step::
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) && (A --> C)), Truth_Intersection )
+//!Second var intro step:
 R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
 R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
 R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
