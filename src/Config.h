@@ -128,6 +128,8 @@
 /*-----------------------*/
 /* Derivation parameters */
 /*-----------------------*/
+//The NAL level of semantic inference
+#define SEMANTIC_INFERENCE_NAL_LEVEL 8
 //Whether to allow higher-order decomposition with variable elimination
 #define DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM true
 //Whether to allow var introduction in conclusions

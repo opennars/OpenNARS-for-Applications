@@ -408,6 +408,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
                        long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
     bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
     if(!DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM)
     {
@@ -489,6 +490,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             }
         }
     }
+#endif
 }
 
 void Cycle_Inference(long currentTime)

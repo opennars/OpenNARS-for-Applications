@@ -61,13 +61,15 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 //---------------//
 #ifdef H_NAL_RULES
 
-//NAL1 rules
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 1
 //!Syllogistic rules for Inheritance:
 R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
-//NAL2 rules
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
 //!Rules for Similarity:
 R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
@@ -82,7 +84,9 @@ R2( ({M} --> P), (S <-> M), |-, ({S} --> P), Truth_Analogy )
 R2( (P --> [M]), (S <-> M), |-, (P --> [S]), Truth_Analogy )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
 R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
-//NAL3 rules
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 3
 //!Set decomposition:
 R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
 R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
@@ -117,7 +121,9 @@ R2( (M --> S), (M --> (S | P)), |-, (M --> P), Truth_DecomposeNPP )
 R2( (M --> P), (M --> (S | P)), |-, (M --> S), Truth_DecomposeNPP )
 R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
 R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
-//NAL4 rules
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 4
 //!Transformation rules between product and image:
 R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralDeduction )
 R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralDeduction )
@@ -144,7 +150,9 @@ R2( ((A * B) --> R), ((C * B) --> R), |-, (A <-> C), Truth_Comparison )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (B <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (C * B)), |-, (A <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
-//NAL5 rules
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 5
 //!Negation conjunction and disjunction decomposition:
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
@@ -177,7 +185,9 @@ R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
-//NAL6 rules:
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
 //!Higher-order decomposition in Cycle_SpecialInferences, enabled by DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM:
 //R2( A, (A ==> B), |-, B, Truth_Deduction )
 //R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
@@ -200,7 +210,9 @@ R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) 
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
-//NAL5 NAL7 bridge substitution rules to allow semantic inference to create additional contingencies:
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7 //NAL5-NAL7 bridge substitution rules
 //!Consequent substitutions
 R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Induction )
 R2( (A =/> B), (B ==> S), |-, (A =/> S), Truth_Deduction )
@@ -219,6 +231,7 @@ R2( ((A &/ B) =/> C), (S ==> B), |-, ((A &/ S) =/> C), Truth_Deduction )
 R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
 R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
+#endif
 //Mandatory NAL7/8 temporal induction, conditional inference is handled by sensorimotor inference, see Inference.h!
 
 #endif
