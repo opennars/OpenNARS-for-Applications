@@ -287,7 +287,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
-                    Memory_printAddedImplication(&event->term, &event->truth, event->occurrenceTimeOffset, priority, input, false, true);
+                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
                     if(wasRevised)
                         Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
@@ -316,6 +316,8 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
+                if(input)
+                    Memory_printAddedEvent(event, priority, input, false, false, true);
                 Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
             }
         }

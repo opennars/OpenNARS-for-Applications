@@ -130,12 +130,6 @@
 /*-----------------------*/
 //The NAL level of semantic inference
 #define SEMANTIC_INFERENCE_NAL_LEVEL 8
-//Whether to allow higher-order decomposition with variable elimination
-#define DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM true
-//Whether to allow var introduction in conclusions
-#define ALLOW_VAR_INTRO_IN_DERIVATIONS true
-//Whether to also allow specific versions of var intro derivations
-#define ALLOW_SPECIFIC_VERSIONS_OF_VAR_INTRO_DERIVATIONS false
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences

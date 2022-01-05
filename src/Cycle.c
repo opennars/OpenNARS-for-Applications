@@ -336,7 +336,7 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
                 }
             }
         }
@@ -410,10 +410,6 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
 {
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
     bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
-    if(!DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM)
-    {
-        return;
-    }
     if(IsImpl || Narsese_copulaEquals(term2.atoms[0], EQUIVALENCE))
     {
         Term impl_subject = Term_ExtractSubterm(&term2, 1);

@@ -196,6 +196,19 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     Term right_side = Term_ExtractSubterm(&implication, 2);
     int appearing_left[ATOMS_MAX] = {0};
     int appearing_right[ATOMS_MAX] = {0};
+    if(Narsese_copulaEquals(right_side.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(left_side.atoms[0], TEMPORAL_IMPLICATION)) //<<(a * b) --> r> <=> <(x &/ y) =/> z>
+    {
+        if(Narsese_copulaEquals(right_side.atoms[0], TEMPORAL_IMPLICATION)) //swap
+        {
+            Term temp = left_side;
+            left_side = right_side;
+            right_side = temp;
+        }
+        Term subject = Term_ExtractSubterm(&left_side, 1); //(x &/ y)
+        Term predicate = Term_ExtractSubterm(&left_side, 2); //z
+        countAtoms(&predicate, appearing_left, extensionally, false);
+        left_side = subject; //continue
+    }
     while(Narsese_copulaEquals(left_side.atoms[0], SEQUENCE) || Narsese_copulaEquals(left_side.atoms[0], CONJUNCTION)) //sequence or conj
     {
         Term potential_inheritance = Term_ExtractSubterm(&left_side, 2); //or sim

@@ -645,6 +645,7 @@ void Narsese_INIT()
         varname[0] = Narsese_RuleTableVars[i];
         Narsese_AtomicTerm(varname);
     }
+    Narsese_AtomicTermIndex("Op");
     //index the copulas as well, to make sure these will have same index on next run
     for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
     {

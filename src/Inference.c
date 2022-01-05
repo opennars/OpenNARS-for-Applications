@@ -61,7 +61,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
     term.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
     *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
     return *success ? (Implication) { .term = term, 
-                                      .truth = Truth_Eternalize(Truth_Induction(truthB, truthA)),
+                                      .truth = Truth_Induction(truthB, truthA),
                                       .stamp = conclusionStamp,
                                       .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
                                       .creationTime = creationTime }

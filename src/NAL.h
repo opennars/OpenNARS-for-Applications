@@ -158,7 +158,7 @@ R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
 R1( (A && B), |-, (B && A), Truth_StructuralDeduction )
-R2( S, (&& S A), |-, A, Truth_DecomposePNN )
+R2( S, (&& S A), |-, A, Truth_DecomposePNN ) //Truth_AnonymousAnalogy in Cycle_SpecialInferences for var elimination
 R2( S, (|| S A), |-, A, Truth_DecomposeNPP )
 R2( S, (&& (! S) A), |-, A, Truth_DecomposeNNN )
 R2( S, (|| (! S) A), |-, A, Truth_DecomposePPP )
@@ -187,14 +187,16 @@ R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
 #endif
 
+//!Higher-order decomposition in Cycle_SpecialInferences (with var elimination in Cycle_SpecialInferences)
+#if SEMANTIC_INFERENCE_NAL_LEVEL == 5
+R2( A, (A ==> B), |-, B, Truth_Deduction )
+R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
+R2( B, (A ==> B), |-, A, Truth_Abduction )
+R2( A, (A <=> B), |-, B, Truth_Analogy )
+#endif
+
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
-//!Higher-order decomposition in Cycle_SpecialInferences, enabled by DEDUCTION_ABDUCTION_ANALOGY_WITH_VAR_ELIM:
-//R2( A, (A ==> B), |-, B, Truth_Deduction )
-//R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
-//R2( B, (A ==> B), |-, A, Truth_Abduction )
-//R2( A, (A <=> B), |-, B, Truth_Analogy )
-//R2( ((#1 --> A) && (#1 --> B)), (C --> A), |-, (C --> B), Truth_AnonymousAnalogy )
-//!First var intro step::
+//!First var intro step:
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
 R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
@@ -210,9 +212,10 @@ R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) 
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+//!Variable elimination in Cycle_SpecialInferences
 #endif
 
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7 //NAL5-NAL7 bridge substitution rules
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7 //NAL7 substitution rules
 //!Consequent substitutions
 R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Induction )
 R2( (A =/> B), (B ==> S), |-, (A =/> S), Truth_Deduction )
@@ -232,7 +235,14 @@ R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
 R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
 #endif
-//Mandatory NAL7/8 temporal induction, conditional inference is handled by sensorimotor inference, see Inference.h!
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
+R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
+R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) ==> (S --> P)), Truth_Abduction )
+R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)), Truth_Comparison )
+#endif
+
+//Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
 
 #endif
 
