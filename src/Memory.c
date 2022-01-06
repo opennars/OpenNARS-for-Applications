@@ -47,6 +47,8 @@ Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
+//Priority threshold for printing derivations
+double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
 static void Memory_ResetEvents()
 {
@@ -199,7 +201,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 
 static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo)
 {
-    if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority > PRINT_DERIVATIONS_PRIORITY_THRESHOLD && (input || derived || revised))
+    if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority >= PRINT_EVENTS_PRIORITY_THRESHOLD && (input || derived || revised))
     {
         if(controlInfo)
             fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);

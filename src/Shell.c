@@ -79,7 +79,19 @@ int Shell_ProcessInput(char *line)
         else
         if(!strcmp(line,"*volume=0"))
         {
-            PRINT_DERIVATIONS = false;
+            PRINT_EVENTS_PRIORITY_THRESHOLD = 1.0;
+        }
+        else
+        if(!strcmp(line,"*volume=100"))
+        {
+            PRINT_EVENTS_PRIORITY_THRESHOLD = 0.0;
+        }
+        else
+        if(!strncmp("*volume=", line, strlen("*volume=")))
+        {
+            int volume = 0;
+            sscanf(&line[strlen("*volume=")], "%d", &volume);
+            PRINT_EVENTS_PRIORITY_THRESHOLD = 1.0 - ((double) volume) / 100.0;
         }
         else
         if(!strcmp(line,"*stats"))
@@ -185,11 +197,6 @@ int Shell_ProcessInput(char *line)
         if(!strcmp(line,"quit"))
         {
             return SHELL_EXIT;
-        }
-        else
-        if(!strcmp(line,"*volume=100"))
-        {
-            PRINT_DERIVATIONS = true;
         }
         else
         if(!strncmp("*babblingops=", line, strlen("*babblingops=")))

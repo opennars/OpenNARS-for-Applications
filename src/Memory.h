@@ -75,6 +75,8 @@ extern HashTable HTconcepts;
 extern FIFO belief_events;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
+//Priority threshold for printing derivations
+double PRINT_EVENTS_PRIORITY_THRESHOLD;
 
 //Methods//
 //-------//

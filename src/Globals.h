@@ -46,7 +46,7 @@
 //Whether control information should be printed
 #define PRINT_CONTROL_INFO false
 //Priority threshold for printing derivations
-#define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
+#define PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL 0.0
 //Debug macros, debug printing, assert:
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
