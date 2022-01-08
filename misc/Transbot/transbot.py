@@ -12,6 +12,9 @@ from transbot_vision import *
 
 centerSize = 10
 def pick_with_feedback(pickobj=None):
+    global picked
+    if picked:
+        return
     arm_down()
     sleep(1)
     max_ops = 30
@@ -57,6 +60,7 @@ def pick_with_feedback(pickobj=None):
                     success = close_gripper() #gripper feedback
                     if success:
                         print("//pick succeeded")
+                        picked = True
                         arm_up()
                         break
                     else:

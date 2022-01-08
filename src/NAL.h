@@ -187,8 +187,8 @@ R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
 #endif
 
-//!Higher-order decomposition in Cycle_SpecialInferences (with var elimination in Cycle_SpecialInferences)
 #if SEMANTIC_INFERENCE_NAL_LEVEL == 5
+//!Higher-order decomposition in Cycle_SpecialInferences (with var elimination in Cycle_SpecialInferences)
 R2( A, (A ==> B), |-, B, Truth_Deduction )
 R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
 R2( B, (A ==> B), |-, A, Truth_Abduction )

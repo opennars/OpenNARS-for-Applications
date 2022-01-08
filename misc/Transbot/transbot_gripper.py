@@ -98,12 +98,12 @@ def close_gripper():
     last_target_angles = []
     while(target_angle <= 180-step_size):
         current_angle = read_gripper_angle()
-        print("current angle and target angle %d %d" % (current_angle, target_angle))
+        print("//current angle and target angle %d %d" % (current_angle, target_angle))
         last_angles.append(current_angle)
         last_target_angles.append(target_angle)
         if current_angle >= 80 and len(last_angles) >= 2 and last_angles[-2] != last_angles[-1] and last_angles[-2] + 3 >= last_angles[-1]:
             jointangle(9, last_target_angles[-2])
-            print("FEEDBACK STOP 1")
+            print("//FEEDBACK STOP 1")
             sleep(0.7)
             return True
         if comparable(target_angle, current_angle):
