@@ -397,14 +397,27 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *ten
     assert(len < NARSESE_LEN_MAX, "Parsing error: Narsese string too long!"); //< because of '0' terminated strings
     memcpy(narseseInplace, narsese, len);
     //tv is present if last letter is '}'
-    if(len>=2 && narseseInplace[len-1] == '}')
+    bool oldFormat = len>=2 && narseseInplace[len-1] == '%';
+    if(len>=2 && (narseseInplace[len-1] == '}' || oldFormat))
     {
         //scan for opening '{'
         int openingIdx;
-        for(openingIdx=len-2; openingIdx>=0 && narseseInplace[openingIdx] != '{'; openingIdx--);
-        assert(narseseInplace[openingIdx] == '{', "Parsing error: Truth value opener not found!");
+        bool hasComma = false;
+        for(openingIdx=len-2; openingIdx>=0 && narseseInplace[openingIdx] != '{' && narseseInplace[openingIdx] != '%'; openingIdx--)
+        {
+            hasComma = hasComma || narseseInplace[openingIdx] == ';';
+        }
+        assert(narseseInplace[openingIdx] == '{' || narseseInplace[openingIdx] == '%', "Parsing error: Truth value opener not found!");
         double conf, freq;
-        sscanf(&narseseInplace[openingIdx], "{%lf %lf}", &freq, &conf);
+        if(oldFormat && !hasComma)
+        {
+            conf = NAR_DEFAULT_CONFIDENCE;
+            sscanf(&narseseInplace[openingIdx], "%%%lf%%", &freq);
+        }
+        else
+        {
+            sscanf(&narseseInplace[openingIdx], oldFormat ? "%%%lf;%lf%%" : "{%lf %lf}", &freq, &conf);
+        }
         destTv->frequency = freq;
         destTv->confidence = conf;
         assert(narseseInplace[openingIdx-1] == ' ', "Parsing error: Space before truth value required!");
