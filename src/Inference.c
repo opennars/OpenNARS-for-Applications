@@ -111,11 +111,11 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
 }
 
 //{Event a.} |- Event a. updated to currentTime
-Event Inference_EventUpdate(Event *ev, long currentTime)
+Event Inference_EventUpdate(Event *ev, long targetTime)
 {
     Event ret = *ev;
-    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
-    ret.occurrenceTime = currentTime;
+    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, targetTime);
+    ret.occurrenceTime = targetTime;
     return ret;
 }
 
@@ -146,24 +146,25 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
     }
     else
     {
-        double confExisting = Inference_EventUpdate(existing_potential, currentTime).truth.confidence;
-        double confIncoming = Inference_EventUpdate(incoming_spike, currentTime).truth.confidence;
+        long laterOccurrence = existing_potential->occurrenceTime > incoming_spike->occurrenceTime ? existing_potential->occurrenceTime : incoming_spike->occurrenceTime;
+        Event existing_updated = Inference_EventUpdate(existing_potential, laterOccurrence);
+        Event incoming_updated = Inference_EventUpdate(incoming_spike, laterOccurrence);
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         bool isDepVarConj = (Narsese_copulaEquals(incoming_spike->term.atoms[0], CONJUNCTION) || Narsese_copulaEquals(incoming_spike->term.atoms[0], SEQUENCE)) && Variable_hasVariable(&incoming_spike->term, false, true, false);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
         if(overlap || isDepVarConj || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
-            if(confIncoming > confExisting)
+            if(incoming_updated.truth.confidence > existing_updated.truth.confidence)
             {
-                return *incoming_spike;
+                return *incoming_spike; //preserves timing of incoming
             }
         }
         else
         //and else revise, increasing the "activation potential"
         {
-            Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
-            if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
+            Event revised_spike = Inference_EventRevision(&existing_updated, &incoming_updated);
+            if(revised_spike.truth.confidence >= existing_updated.truth.confidence)
             {
                 if(revised != NULL)
                 {
@@ -171,11 +172,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
                 }
                 return revised_spike;
             }
-            //lower, also use choice
-            if(confIncoming > confExisting)
-            {
-                return *incoming_spike;
-            }
+            assert(false, "Revision outcome can't be lower in confidence than existing event");
         }
     }
     return *existing_potential;

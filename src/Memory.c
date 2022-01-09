@@ -179,11 +179,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
     {
-        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
-        {
-            return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
-        }   //more radical than OpenNARS!
-        if(e->type == EVENT_TYPE_GOAL && c->goal_spike.type != EVENT_TYPE_DELETED && ((e->occurrenceTime == OCCURRENCE_ETERNAL && c->goal_spike.truth.confidence > e->truth.confidence) || (e->occurrenceTime != OCCURRENCE_ETERNAL && Truth_Projection(c->goal_spike.truth, c->goal_spike.occurrenceTime, currentTime).confidence > Truth_Projection(e->truth, e->occurrenceTime, currentTime).confidence)))
+        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence)
         {
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
@@ -201,7 +197,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 
 static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo)
 {
-    if(((input && PRINT_INPUT) || PRINT_DERIVATIONS) && priority >= PRINT_EVENTS_PRIORITY_THRESHOLD && (input || derived || revised))
+    if(((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS)) && (input || priority > PRINT_EVENTS_PRIORITY_THRESHOLD))
     {
         if(controlInfo)
             fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
@@ -318,7 +314,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
-                if(input)
+                if(input && event->occurrenceTime == OCCURRENCE_ETERNAL)
                     Memory_printAddedEvent(event, priority, input, false, false, true);
                 Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
             }
