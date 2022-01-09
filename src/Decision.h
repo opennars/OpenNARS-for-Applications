@@ -56,7 +56,6 @@ typedef struct
     int operationID;
     Operation op;
     Term arguments;
-    bool specialized;
     Event *reason;
 }Decision;
 

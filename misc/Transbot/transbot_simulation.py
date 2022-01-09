@@ -6,14 +6,17 @@ import NAR
 from time import sleep
 import random
 
+picked = False
+frame = ""
+
 def detect_objects():
-    return ([("bottle", random.randint(0,640), 479, 10, 10, 0.9)], "")
+    return ([("bottle" if not picked else "person", random.choice([0,375]), 480, 10, 10, 0.9)], "")
 
 def getLocation():
     return [(0,0,0),(0,0,0,0)]
 
-picked = False
-frame = ""
+def getCollision():
+    return "free" if random.random() > 0.3 else random.choice(["front", "left", "right"])
 
 def OpStop():
     None
