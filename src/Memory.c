@@ -314,9 +314,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(revision_happened)
             {
+                Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
                 if(input && event->occurrenceTime == OCCURRENCE_ETERNAL)
                     Memory_printAddedEvent(event, priority, input, false, false, true);
-                Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
             }
         }
     }
