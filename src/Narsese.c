@@ -707,6 +707,26 @@ Atom Narsese_getOperationAtom(Term *term)
     return 0; //not an operation term
 }
 
+Term Narsese_getOperationTerm(Term *term)
+{
+    if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION)) //implication
+    {
+        Term potential_sequence = Term_ExtractSubterm(term, 1); //(a &/ ^op) =/> b
+        return Narsese_getOperationTerm(&potential_sequence);
+    }
+    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
+    {
+        Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
+        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
+        return Narsese_getOperationTerm(&potential_operator);
+    }
+    if(Narsese_isOperation(term)) //operator
+    {
+        return *term;
+    }
+    return (Term) {0}; //not an operation term
+}
+
 Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 {
     if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE))

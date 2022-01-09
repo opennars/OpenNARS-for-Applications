@@ -236,7 +236,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
-void Decision_Anticipate(int operationID, long currentTime)
+void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
@@ -255,6 +255,22 @@ void Decision_Anticipate(int operationID, long currentTime)
             Event *precondition = &current_prec->belief_spike;
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {
+                if(operationID > 0) //it's a real operation, check if the link's operation is the same
+                {
+                    Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                    Term a_term_nop = Narsese_GetPreconditionWithoutOp(&imp_subject);
+                    Term operation = Narsese_getOperationTerm(&imp_subject);
+                    Substitution subs = Variable_Unify(&a_term_nop, &precondition->term);
+                    if(subs.success)
+                    {
+                        bool success2;
+                        Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
+                        if(!success2 || !Variable_Unify(&opTerm, &specificOp).success)
+                        {
+                            continue; //same op id but different op args
+                        }
+                    }
+                }
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,

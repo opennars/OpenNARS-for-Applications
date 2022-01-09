@@ -361,7 +361,8 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 if(state == 1) //postcondition always len1
                 {
                     int op_id = Memory_getOperationID(&postcondition.term);
-                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
+                    Term op_term = Narsese_getOperationTerm(&postcondition.term);
+                    Decision_Anticipate(op_id, op_term, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
