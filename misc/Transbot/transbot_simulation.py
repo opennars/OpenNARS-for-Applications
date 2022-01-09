@@ -10,7 +10,7 @@ picked = False
 frame = ""
 
 def detect_objects():
-    return ([("bottle" if not picked else "person", random.choice([0,375]), 480, 10, 10, 0.9)], "")
+    return ([("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9)], "")
 
 def getLocation():
     return [(0,0,0),(0,0,0,0)]

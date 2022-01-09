@@ -130,18 +130,12 @@ def TransbotExecute(executions):
             None
         elif op == "^deactivate": #for later
             None
-        elif op == "^remember":
-            locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
-            print("WWWFFFF ", locationQueryAnswer, arguments, "<(%s * ?where) --> at>? :|:" % arguments)
-            if locationQueryAnswer["term"] != "None":
-                NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
-                NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
         elif op == "^goto":
-            None
-            #(x,y,z,w) = arguments.split("_")
-            #print("//GOTO: " + str((x, y, z, w)))
-            #(xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
-            #OpGo(xf, yf, zf, wf)
+            locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
+            if locationQueryAnswer["term"] != "None":
+                (x,y,z,w) = locationQueryAnswer["term"].split(" * ")[1].split(") --> at>")[0].split("_")
+                (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
+                OpGo(xf, yf, zf, wf)
         elif op == "^say":
             print("//SAY: " + arguments)
     return ActionInvoked
@@ -175,9 +169,6 @@ Configuration = """
 *setopname 8 ^remember
 *setopname 9 ^goto
 *setopname 10 ^say
-*motorbabbling=false
-*volume=0
-*decisionthreshold=0.51
 """
 def reset_ona():
     with open("knowledge.nal", 'r') as f:
