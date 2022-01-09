@@ -43,5 +43,5 @@ void Event_INIT()
 
 bool Event_Equal(Event *event, Event *existing)
 {
-    return Truth_Equal(&event->truth, &existing->truth) && Term_Equal(&event->term, &existing->term);
+    return Truth_Equal(&event->truth, &existing->truth) && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term);
 }
