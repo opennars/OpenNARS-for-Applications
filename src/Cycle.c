@@ -83,7 +83,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             {
                 ecp.term = e->term;
                 Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                if(decision.execute && decision.desire >= best_decision.desire)
                 {
                     best_decision = decision;
                 }
@@ -99,7 +99,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 if(success)
                 {
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                    if(decision.execute && decision.desire >= best_decision.desire)
                     {
                         best_decision = decision;
                     }
@@ -260,7 +260,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
             continue;
         }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
+        if(decision.execute && decision.desire > best_decision.desire)
         {
             best_decision = decision;
         }
