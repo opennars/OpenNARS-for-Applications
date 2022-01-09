@@ -160,7 +160,7 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] != '>') // -- becomes !
                 {
                     narsese_replaced[j] = '!';
-                    i+=3; j++;
+                    i+=2; j++;
                 }
                 else
                 {
