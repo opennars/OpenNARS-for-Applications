@@ -188,8 +188,6 @@ def reset_ona():
         bgstr = bg.strip()
         if len(bgstr) > 0:
             NAR.AddInput(bgstr)
-    #tell NARS about locations of objects example:
-    NAR.AddInput("<(person * 500.0_500.0_500.0_500.0) --> at>. :|:")
     print("//transbot.py (ONA) go!")
 
 def process(line):
