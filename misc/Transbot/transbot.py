@@ -13,7 +13,7 @@ from transbot_lidar import *
 
 #Parameters:
 motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
-gotosleep = 10 if sys.argv[0] != "transbot_simulation.py" else 0
+gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
 cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 centerSize = 10
 y_too_far_to_grab = 340
