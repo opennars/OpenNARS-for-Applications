@@ -56,11 +56,14 @@ typedef struct
     int operationID;
     Operation op;
     Term arguments;
+    Implication missing_specific_implication;
     Event *reason;
 }Decision;
 
 //Methods//
 //-------//
+//Init module
+void Decision_INIT();
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
