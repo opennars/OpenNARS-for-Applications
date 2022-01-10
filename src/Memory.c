@@ -166,13 +166,43 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
     return false;
 }
 
+bool Memory_containsBelief(Event *e)
+{
+    Concept *c = Memory_FindConceptByTerm(&e->term);
+    if(c != NULL)
+    {
+        if(e->type == EVENT_TYPE_BELIEF)
+        {
+            if(e->occurrenceTime == OCCURRENCE_ETERNAL)
+            {
+                if(c->belief.type != EVENT_TYPE_DELETED && Event_Equal(&c->belief, e))
+                {
+                    return true;
+                }
+            }
+            else
+            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_Equal(&c->belief_spike, e))
+            {
+                return true;
+            }
+        }
+        else
+        if(e->type == EVENT_TYPE_GOAL && c->goal_spike.type != EVENT_TYPE_DELETED && Event_Equal(&c->goal_spike, e))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
 bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e))) //avoid duplicate derivations
+       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e)) ||
+       Memory_containsBelief(e)) //avoid duplicate derivations
     {
         return false;
     }
@@ -341,8 +371,8 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
