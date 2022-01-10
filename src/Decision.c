@@ -193,7 +193,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             for(int jj=0; jj<relatedc->precondition_beliefs[opi].itemsAmount; jj++)
                                             {
                                                 Implication *relatedimp = &relatedc->precondition_beliefs[opi].array[jj];
-                                                if(Term_Equal(&specific_imp.term, &relatedimp->term))
+                                                if(relatedimp->truth.confidence > SUBSUMPTION_CONFIDENCE_THRESHOLD && Term_Equal(&specific_imp.term, &relatedimp->term))
                                                 {
                                                     inhibited = true;
                                                 }

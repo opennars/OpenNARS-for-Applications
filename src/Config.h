@@ -46,6 +46,8 @@
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
 //Whether temporal non-procedural implications are allowed to derive subgoals
 #define NOP_SUBGOALING true
+//Subsumption confidence threshold for a specific hypothesis to inhibit more generals
+#define SUBSUMPTION_CONFIDENCE_THRESHOLD 0.3
 
 /*----------------------*/
 /* Attention parameters */
