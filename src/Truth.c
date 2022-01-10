@@ -164,11 +164,6 @@ Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2)
     return Truth_Negation(Truth_Deduction(v1, STRUCTURAL_TRUTH), v2);
 }
 
-Truth Truth_StructuralAbduction(Truth v1, Truth v2)
-{
-    return Truth_Abduction(v1, STRUCTURAL_TRUTH);
-}
-
 bool Truth_Equal(Truth *v1, Truth *v2)
 {
     return v1->confidence == v2->confidence && v1->frequency == v2->frequency;
