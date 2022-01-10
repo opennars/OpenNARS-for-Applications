@@ -30,6 +30,30 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
+int anticipationStampID = -1;
+
+void Decision_INIT()
+{
+    anticipationStampID = -1;
+}
+
+static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
+{
+    Implication negative_confirmation = imp;
+    Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
+    Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
+    negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
+    negative_confirmation.stamp = (Stamp) { .evidentalBase = { -anticipationStampID } };
+    anticipationStampID--;
+    assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
+    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
+    if(added != NULL)
+    {
+        added->sourceConcept = negative_confirmation.sourceConcept;
+        added->sourceConceptId = negative_confirmation.sourceConceptId;
+    }
+}
+
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
@@ -50,6 +74,16 @@ void Decision_Execute(Decision *decision)
     Narsese_PrintTerm(&decision->op.term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments); puts(""); fflush(stdout);
     (*decision->op.action)(decision->arguments);
     NAR_AddInputBelief(feedback);
+    //assumption of failure extension to specific cases not experienced before:
+    if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
+    {
+        Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
+        Concept *postc = Memory_Conceptualize(&postcondition, currentTime);
+        if(postc != NULL)
+        {
+            Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID, postc);
+        }
+    }
 }
 
 //"reflexes" to try different operations, especially important in the beginning
@@ -139,7 +173,6 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
     return decision;
 }
 
-int stampID = -1;
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
 {
     Decision decision = {0};
@@ -188,16 +221,26 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                         bool inhibited = false;
                                         Term predicate = Term_ExtractSubterm(&specific_imp.term, 2);
                                         Concept *relatedc = Memory_FindConceptByTerm(&predicate);
+                                        bool hypothesis_existed = false;
                                         if(relatedc != NULL)
                                         {
                                             for(int jj=0; jj<relatedc->precondition_beliefs[opi].itemsAmount; jj++)
                                             {
                                                 Implication *relatedimp = &relatedc->precondition_beliefs[opi].array[jj];
-                                                if(Term_Equal(&specific_imp.term, &relatedimp->term))
+                                                bool specific_exists = Term_Equal(&specific_imp.term, &relatedimp->term);
+                                                if(specific_exists)
                                                 {
-                                                    inhibited = true;
+                                                    hypothesis_existed = true;
+                                                    if(relatedimp->truth.confidence > SUBSUMPTION_CONFIDENCE_THRESHOLD && relatedimp->truth.frequency < SUBSUMPTION_FREQUENCY_THRESHOLD)
+                                                    {
+                                                        inhibited = true;
+                                                    }
                                                 }
                                             }
+                                        }
+                                        if(!hypothesis_existed) //this specific implication was never observed before, so we have to keep track of it to apply anticipation
+                                        {                       //in addition to Decision_Anticipate which applies it to existing implications
+                                            considered.missing_specific_implication = specific_imp;
                                         }
                                         if(!inhibited && (considered.desire > decision.desire || (considered.desire == decision.desire && specific_imp_complexity < bestComplexity)))
                                         {
@@ -236,7 +279,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
-void Decision_Anticipate(int operationID, long currentTime)
+void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
@@ -255,6 +298,22 @@ void Decision_Anticipate(int operationID, long currentTime)
             Event *precondition = &current_prec->belief_spike;
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {
+                if(operationID > 0) //it's a real operation, check if the link's operation is the same
+                {
+                    Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                    Term a_term_nop = Narsese_GetPreconditionWithoutOp(&imp_subject);
+                    Term operation = Narsese_getOperationTerm(&imp_subject);
+                    Substitution subs = Variable_Unify(&a_term_nop, &precondition->term);
+                    if(subs.success)
+                    {
+                        bool success2;
+                        Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
+                        if(!success2 || !Variable_Unify(&opTerm, &specificOp).success)
+                        {
+                            continue; //same op id but different op args
+                        }
+                    }
+                }
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
@@ -265,21 +324,9 @@ void Decision_Anticipate(int operationID, long currentTime)
                 if(success)
                 {
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD)
+                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
                     {
-                        Implication negative_confirmation = imp;
-                        Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
-                        Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
-                        negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-                        negative_confirmation.stamp = (Stamp) { .evidentalBase = { -stampID } };
-                        stampID--;
-                        assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-                        Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
-                        if(added != NULL)
-                        {
-                            added->sourceConcept = negative_confirmation.sourceConcept;
-                            added->sourceConceptId = negative_confirmation.sourceConceptId;
-                        } 
+                        Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
                         Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
                         if(subs.success)
                         {

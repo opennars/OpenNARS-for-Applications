@@ -100,4 +100,3 @@ if __name__ == '__main__':
         if detections != None:
             print(detections)
         sleep(0.1)
-

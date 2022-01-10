@@ -32,6 +32,8 @@
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
 #define ANTICIPATION_CONFIDENCE_INITIAL 0.01
+//Anticipate for concrete yet unexperienced outcomes derived from generals
+#define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 
 /*---------------------*/
 /* Decision parameters */
@@ -46,6 +48,10 @@
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
 //Whether temporal non-procedural implications are allowed to derive subgoals
 #define NOP_SUBGOALING true
+//Subsumption confidence threshold above which a specific hypothesis inhibits more generals
+#define SUBSUMPTION_CONFIDENCE_THRESHOLD 0.05
+//Subsumption confidence threshold below which a specific hypothesis inhibits more generals
+#define SUBSUMPTION_FREQUENCY_THRESHOLD 0.5
 
 /*----------------------*/
 /* Attention parameters */

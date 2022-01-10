@@ -9,8 +9,16 @@ from time import sleep
 from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
+from transbot_lidar import *
 
+#Parameters:
+motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
+gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
+cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 centerSize = 10
+y_too_far_to_grab = 340
+robotVisualMiddle = 375 #middle of the robot
+
 def pick_with_feedback(pickobj=None):
     global picked
     if picked:
@@ -25,6 +33,7 @@ def pick_with_feedback(pickobj=None):
     swap_Left = False
     swap_Right = False
     while True:
+        sys.stdout.flush()
         ops+=1
         if ops > max_ops:
             open_gripper()
@@ -42,11 +51,11 @@ def pick_with_feedback(pickobj=None):
                 y_real_temp = y_real
                 x_real_temp = x_real
         if y_real_temp != -1:
-            mid = 375 #it's a bit to the right
-            if y_real_temp < 340:
+            if y_real_temp < y_too_far_to_grab:
+                print("//pick failed, too far away to grab")
                 arm_up()
                 break
-            if (x_real_temp >= mid-centerSize and x_real_temp <= mid+centerSize) or swaps > 3:
+            if (x_real_temp >= robotVisualMiddle-centerSize and x_real_temp <= robotVisualMiddle+centerSize) or swaps > 3:
                 print("//CENTER------------")
                 closer_to_gripper = 475
                 swaps = 0
@@ -64,15 +73,15 @@ def pick_with_feedback(pickobj=None):
                         arm_up()
                         break
                     else:
-                        print("//pick failed")
+                        print("//pick failed, sensed nothing to grab")
                         open_gripper()
                         arm_up()
                         break
-            elif x_real_temp > mid+centerSize:
+            elif x_real_temp > robotVisualMiddle+centerSize:
                 print("//RIGHT<<<<<<<<<<<<<<<<")
                 right()
                 swap_Right = True
-            elif x_real_temp < mid-centerSize:
+            elif x_real_temp < robotVisualMiddle-centerSize:
                 print("//LEFT>>>>>>>>>>>>>>>")
                 left()
                 swap_Left = True
@@ -81,6 +90,7 @@ def pick_with_feedback(pickobj=None):
                 swap_Right = False
                 swaps += 1
         else:
+            print("//pick failed, object disappeared visually")
             arm_up()
             break
         #print(detections)
@@ -98,17 +108,20 @@ def TransbotExecute(executions):
         if op == "^forward":
             OpStop()
             OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
-            sleep(2.0)
+            sleep(motorsleep)
+            OpStop()
         elif op == "^left":
             OpStop()
             #left()
             OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
-            sleep(1.0)
+            sleep(motorsleep)
+            OpStop()
         elif op == "^right":
             OpStop()
             #right()
             OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
-            sleep(1.0)
+            sleep(motorsleep)
+            OpStop()
         elif op == "^pick":
             OpStop()
             pick_with_feedback(None if len(arguments) == 0 else arguments)
@@ -123,16 +136,17 @@ def TransbotExecute(executions):
             None
         elif op == "^deactivate": #for later
             None
-        elif op == "^remember":
+        elif op == "^goto":
             locationQueryAnswer = NAR.AddInput("<(%s * ?where) --> at>? :|:" % arguments)["answers"][0]
             if locationQueryAnswer["term"] != "None":
-                NAR.AddInput("<%s --> [localized]>. :|:" % arguments)
-                NAR.AddInput("%s. :|:" % (locationQueryAnswer["term"]))
-        elif op == "^goto":
-            (x,y,z,w) = arguments.split("_")
-            print("//GOTO: " + str((x, y, z, w)))
-            (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
-            OpGo(xf, yf, zf, wf)
+                (x,y,z,w) = locationQueryAnswer["term"].split(" * ")[1].split(") --> at>")[0].split("_")
+                (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
+                OpGo(xf, yf, zf, wf)
+                for i in range(gotosleep):
+                    sleep(1)
+                    print("//^goto wait %d / %d" % (i+1, gotosleep))
+                    sys.stdout.flush()
+                OpStop()
         elif op == "^say":
             print("//SAY: " + arguments)
     return ActionInvoked
@@ -147,43 +161,46 @@ def TransbotPerceiveAt(obj, trans, rot):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
-    if screenX < 320-centerSize:
+    if screenX < robotVisualMiddle-centerSize:
         direction = "left"
-    elif screenX > 320+centerSize:
+    elif screenX > robotVisualMiddle+centerSize:
         direction = "right"
     NAR.AddInput("<%s --> [%s]>. :|:" % (obj, direction))
 
+Configuration = """
+*reset
+*setopname 1 ^forward
+*setopname 2 ^left
+*setopname 3 ^right
+*babblingops=3
+*setopname 4 ^pick
+*setopname 5 ^drop
+*setopname 6 ^activate
+*setopname 7 ^deactivate
+*setopname 8 ^remember
+*setopname 9 ^goto
+*setopname 10 ^say
+"""
 def reset_ona():
-    NAR.AddInput("*reset")
-    NAR.AddInput("*setopname 1 ^forward")
-    NAR.AddInput("*setopname 2 ^left")
-    NAR.AddInput("*setopname 3 ^right")
-    NAR.AddInput("*setopname 4 ^pick")
-    NAR.AddInput("*setopname 5 ^drop")
-    NAR.AddInput("*setopname 6 ^activate")
-    NAR.AddInput("*setopname 7 ^deactivate")
-    NAR.AddInput("*babblingops=3")
-    NAR.AddInput("*setopname 8 ^remember")
-    NAR.AddInput("*setopname 9 ^goto")
-    NAR.AddInput("*setopname 10 ^say")
-    NAR.AddInput("*motorbabbling=false")
-    NAR.AddInput("*volume=0")
-    #you need to ask the map in order to localize an object
-    NAR.AddInput("<(<gripper --> [#sth]> &/ <({SELF} * $obj) --> ^remember>) =/> <$obj --> [localized]>>.")
-    #once it's localized, and the location at the map is known, go to the location in order to see the object
-    NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [see]>>.")
-    #CELL2: tell NARS about locations of objects:
-    #NAR.AddInput("<fridge * 500.0_500.0_500.0_500.0) --> at>. :|:"
+    with open("knowledge.nal", 'r') as f:
+        BackgroundKnowledge = f.read()
+    for bg in (Configuration + BackgroundKnowledge).split("\n"):
+        bgstr = bg.strip()
+        if len(bgstr) > 0:
+            NAR.AddInput(bgstr)
+    #tell NARS about locations of objects example:
+    NAR.AddInput("<(person * 500.0_500.0_500.0_500.0) --> at>. :|:")
     print("//transbot.py (ONA) go!")
 
 def process(line):
     if line != "":
         if line.endswith("! :|:") or line == "*internal":
             if picked:
-                NAR.AddInput("<gripper --> [closed]>. :|:")
+                NAR.AddInput("<gripper --> [holding]>. :|:")
             else:
                 NAR.AddInput("<gripper --> [open]>. :|:")
         if line.endswith("! :|:") or line == "*see":
+            collision = getCollision()
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
@@ -194,15 +211,19 @@ def process(line):
                 y_real = y+h #down side of bb
                 if y_real > y_real_temp:
                     (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
-            if y_real_temp != -1:
+            if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
+                NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
+            elif y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
                 TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
             executions = NAR.AddInput(line)["executions"] #account for mental op
-            for i in range(10): #time limit to act
+            reasoningtime = 10
+            for i in range(reasoningtime): #time limit to act
                 executions += NAR.AddInput("1")["executions"]
                 ActionInvoked = TransbotExecute(executions)
                 if ActionInvoked:
+                    NAR.AddInput(str(reasoningtime-(i+1))) #still same think time even when already reacted
                     break #acted, done
                 executions = []
         if line.endswith(".") or line.endswith(". :|:") or line.endswith("?") or line.endswith("? :|:"):
@@ -210,13 +231,13 @@ def process(line):
         elif line == "*pick_with_feedback":
             pick_with_feedback()
         elif line == "*left":
-            left()
+            left(angular=0.6)
         elif line == "*right":
-            right()
+            right(angular=0.6)
         elif line == "*forward":
-            forward()
+            forward(linear=0.6)
         elif line == "*backward":
-            backward()
+            backward(linear=0.6)
         elif line == "*arm_down":
             arm_down()
         elif line == "*arm_up":
@@ -250,14 +271,12 @@ def shell_step(lastLine = ""):
     if line == "*loop": #endless sense-act cycle if desired
         while True:
             process(lastGoal)
-    if line == "*testmission":
-        NAR.AddInput("<((<gripper --> [open]> &/ <bottle --> [left]>) &/ ^pick) =/> <gripper --> [closed]>>.")
-        NAR.AddInput("<(<gripper --> [closed]> &/ ^drop) =/> G>.")
-        line = "*steps 2"
+            sleep(cyclesleep)
     if line.startswith("*steps "): #k steps
         steps = int(line.split("*steps ")[1])
         for i in range(steps):
             process(lastGoal)
+            sleep(cyclesleep)
         print("//*steps DONE")
     process(line)
     return line
@@ -271,5 +290,6 @@ if __name__ == '__main__':
     reset_ona()
     print("//Welcome to ONA-Transbot shell!")
     transbot_shell()
+
 
 

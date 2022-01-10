@@ -99,6 +99,8 @@ bool Narsese_copulaEquals(Atom atom, char name);
 bool Narsese_isOperator(Atom atom);
 //Get operator id
 Atom Narsese_getOperationAtom(Term *term);
+//Get operation term
+Term Narsese_getOperationTerm(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
 //Get precondition without operation

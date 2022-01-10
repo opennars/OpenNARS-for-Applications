@@ -6,3 +6,9 @@
 <{room1} --> room>. :|:
 <{room1} --> [lit]>! :|:
 //expected: ^activate executed with args ({SELF} * torch)
+<(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>?
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=0.994089, confidence=0.601422
+<(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>?
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=0.000000, confidence=0.900000
+<(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>?
+//expected: Answer: <(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>. Truth: frequency=1.000000, confidence=0.900000
