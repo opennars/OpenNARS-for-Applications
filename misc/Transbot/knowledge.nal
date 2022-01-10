@@ -1,4 +1,4 @@
-*motorbabbling=false
+*motorbabbling=0.05
 *decisionthreshold=0.51
 *volume=0
 
@@ -15,3 +15,4 @@
 <((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 //If the gripper is holding an object and a human is seen, drop it there
 <((<gripper --> [holding]> &/ <person --> [left]>) &/ ^drop) =/> G>.
+
