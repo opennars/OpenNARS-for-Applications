@@ -136,6 +136,11 @@ def TransbotExecute(executions):
                 (x,y,z,w) = locationQueryAnswer["term"].split(" * ")[1].split(") --> at>")[0].split("_")
                 (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
                 OpGo(xf, yf, zf, wf)
+                waitseconds = 10
+                for i in range(waitseconds):
+                    sleep(1)
+                    print("//^goto wait %d / %d" % (i+1, waitseconds))
+                    sys.stdout.flush()
         elif op == "^say":
             print("//SAY: " + arguments)
     return ActionInvoked

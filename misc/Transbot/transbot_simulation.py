@@ -8,8 +8,13 @@ import random
 
 picked = False
 frame = ""
+going = False
 
 def detect_objects():
+    global going
+    if going:
+        going = False
+        return ([("person", 0, 480, 10, 10, 0.9)], "")
     return ([("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9)], "")
 
 def getLocation():
@@ -17,7 +22,7 @@ def getLocation():
 
 def getCollision():
     return "free" if random.random() > 0.3 else random.choice(["front", "left", "right"])
-
+#<(<gripper --> [holding]> &/ <({SELF} * person) --> ^goto>) =/> <person --> [left]>>.
 def OpStop():
     None
 
@@ -51,7 +56,9 @@ def open_gripper():
     None
 
 def OpGo(x, y, z=0, w=1, frame_id = 'map'):
-    None
+    global going
+    if frame_id == 'map':
+        going = True
 
 def drop():
     global picked

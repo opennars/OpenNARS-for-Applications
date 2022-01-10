@@ -20,8 +20,23 @@
 
 <{room1} --> room>. :|:
 <({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
 <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>?
-//expected: Answer: <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=0.000000, confidence=0.026062
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=0.000000, confidence=0.050800
 
 20
 

@@ -231,7 +231,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                                 if(specific_exists)
                                                 {
                                                     hypothesis_existed = true;
-                                                    if(relatedimp->truth.confidence > SUBSUMPTION_CONFIDENCE_THRESHOLD)
+                                                    if(relatedimp->truth.confidence > SUBSUMPTION_CONFIDENCE_THRESHOLD && relatedimp->truth.frequency < SUBSUMPTION_FREQUENCY_THRESHOLD)
                                                     {
                                                         inhibited = true;
                                                     }
