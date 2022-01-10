@@ -1,15 +1,16 @@
+import rospy
 import numpy as np
-from common import *
+#from common import *
 from time import sleep
 from sensor_msgs.msg import LaserScan
 
-ResponseDist = 0.55
-LaserAngle = 30  # 10~180
+ResponseDist = 1.0
+LaserAngle = 30 #30  # 10~180
 Right_warning = 0
 Left_warning = 0
 front_warning = 0
 
-def registerScan(self, scan_data):
+def registerScan(scan_data):
     global Left_warning, Right_warning, front_warning
     # 记录激光扫描并发布最近物体的位置（或指向某点）
     # Record the laser scan and publish the position of the nearest object (or point to a point)
@@ -47,11 +48,20 @@ def registerScan(self, scan_data):
 sub_laser = rospy.Subscriber('/scan', LaserScan, registerScan)
 
 def getCollision():
-    if self.front_warning > 10:
+    print("//lidar (front, left, right) =", front_warning, Left_warning, Right_warning)
+    if front_warning > 10 and front_warning > Left_warning and front_warning > Right_warning:
         return "front"
-    if self.Left_warning > 10:
+    if Left_warning > 10 and Left_warning > front_warning and Left_warning > Right_warning:
         return "left"
-    if self.Right_warning > 10:
+    if Right_warning > 10 and Right_warning > front_warning and Right_warning > Left_warning:
         return "right"
     return "free"
+
+print("//transbot_lidar.py go!")
+
+if __name__ == '__main__':
+    rospy.init_node('NARTest')
+    while True:
+        print("collision =", getCollision())
+        sleep(1.0)
 

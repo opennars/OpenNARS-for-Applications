@@ -52,3 +52,4 @@ def updateLocation():
 Thread(target=updateLocation).start()
 
 print("//transbot_nav.py go!")
+

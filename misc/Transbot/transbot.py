@@ -11,9 +11,14 @@ from transbot_gripper import *
 from transbot_vision import *
 from transbot_lidar import *
 
+#Parameters:
+motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
+gotosleep = 10 if sys.argv[0] != "transbot_simulation.py" else 0
+cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 centerSize = 10
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
+
 def pick_with_feedback(pickobj=None):
     global picked
     if picked:
@@ -103,19 +108,20 @@ def TransbotExecute(executions):
         if op == "^forward":
             OpStop()
             OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
-            sleep(2.0)
-            if getCollision == "free":
-                NAR.AddInput("<{SELF} --> [moving]>. :|:") #feedback for successful movement
+            sleep(motorsleep)
+            OpStop()
         elif op == "^left":
             OpStop()
             #left()
             OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
-            sleep(1.0)
+            sleep(motorsleep)
+            OpStop()
         elif op == "^right":
             OpStop()
             #right()
             OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
-            sleep(1.0)
+            sleep(motorsleep)
+            OpStop()
         elif op == "^pick":
             OpStop()
             pick_with_feedback(None if len(arguments) == 0 else arguments)
@@ -136,11 +142,11 @@ def TransbotExecute(executions):
                 (x,y,z,w) = locationQueryAnswer["term"].split(" * ")[1].split(") --> at>")[0].split("_")
                 (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
                 OpGo(xf, yf, zf, wf)
-                waitseconds = 10
-                for i in range(waitseconds):
+                for i in range(gotosleep):
                     sleep(1)
-                    print("//^goto wait %d / %d" % (i+1, waitseconds))
+                    print("//^goto wait %d / %d" % (i+1, gotosleep))
                     sys.stdout.flush()
+                OpStop()
         elif op == "^say":
             print("//SAY: " + arguments)
     return ActionInvoked
@@ -265,10 +271,12 @@ def shell_step(lastLine = ""):
     if line == "*loop": #endless sense-act cycle if desired
         while True:
             process(lastGoal)
+            sleep(cyclesleep)
     if line.startswith("*steps "): #k steps
         steps = int(line.split("*steps ")[1])
         for i in range(steps):
             process(lastGoal)
+            sleep(cyclesleep)
         print("//*steps DONE")
     process(line)
     return line
@@ -282,5 +290,6 @@ if __name__ == '__main__':
     reset_ona()
     print("//Welcome to ONA-Transbot shell!")
     transbot_shell()
+
 
 
