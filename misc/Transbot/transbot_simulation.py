@@ -10,6 +10,12 @@ picked = False
 frame = ""
 going = False
 
+def getPicked():
+    return picked
+    
+def setPicked(value):
+    picked = value
+
 def detect_objects():
     global going
     if going:

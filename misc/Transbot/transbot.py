@@ -19,9 +19,17 @@ centerSize = 10
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
 
+def pick_failed():
+    arm_up()
+    backward()
+    backward()
+    backward()
+    right()
+    right()
+    open_gripper()
+
 def pick_with_feedback(pickobj=None):
-    global picked
-    if picked:
+    if getPicked():
         return
     arm_down()
     sleep(1)
@@ -37,7 +45,7 @@ def pick_with_feedback(pickobj=None):
         ops+=1
         if ops > max_ops:
             open_gripper()
-            arm_up()
+            pick_failed()
             break
         action = cv.waitKey(10) & 0xFF
         detections, frame = detect_objects()
@@ -53,7 +61,7 @@ def pick_with_feedback(pickobj=None):
         if y_real_temp != -1:
             if y_real_temp < y_too_far_to_grab:
                 print("//pick failed, too far away to grab")
-                arm_up()
+                pick_failed()
                 break
             if (x_real_temp >= robotVisualMiddle-centerSize and x_real_temp <= robotVisualMiddle+centerSize) or swaps > 3:
                 print("//CENTER------------")
@@ -69,12 +77,12 @@ def pick_with_feedback(pickobj=None):
                     success = close_gripper() #gripper feedback
                     if success:
                         print("//pick succeeded")
-                        picked = True
+                        setPicked(True)
                         arm_up()
                         break
                     else:
                         print("//pick failed, sensed nothing to grab")
-                        open_gripper()
+                        pick_failed()
                         arm_up()
                         break
             elif x_real_temp > robotVisualMiddle+centerSize:
@@ -91,7 +99,7 @@ def pick_with_feedback(pickobj=None):
                 swaps += 1
         else:
             print("//pick failed, object disappeared visually")
-            arm_up()
+            pick_failed()
             break
         #print(detections)
         cv.imshow('frame', frame)
@@ -128,10 +136,6 @@ def TransbotExecute(executions):
         elif op == "^drop":
             OpStop()
             drop()
-            right()
-            right()
-            right()
-            right()
         elif op == "^activate": #for later
             None
         elif op == "^deactivate": #for later
@@ -192,8 +196,11 @@ def reset_ona():
 
 def process(line):
     if line != "":
+        if line.endswith("? :|:"):
+            (trans, rot) = getLocation()
+            TransbotPerceiveAt("{SELF}", trans, rot)
         if line.endswith("! :|:") or line == "*internal":
-            if picked:
+            if getPicked():
                 NAR.AddInput("<gripper --> [holding]>. :|:")
             else:
                 NAR.AddInput("<gripper --> [open]>. :|:")
@@ -242,11 +249,12 @@ def process(line):
             arm_up()
         elif line == "*pick":
             OpStop()
-            pick()
+            pick(force=True)
         elif line == "*drop":
             OpStop()
-            drop()
+            drop(force=True)
         elif line == "*reset":
+            setPicked(False)
             OpStop()
             init_pose()
             reset_ona()

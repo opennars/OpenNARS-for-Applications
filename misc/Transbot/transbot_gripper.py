@@ -112,8 +112,11 @@ def close_gripper():
             sleep(0.7)
         else:
             return False
+    return False
     
 def open_gripper():
+    jointangle(9, 30)
+    sleep(1)
     jointangle(9, 30)
     sleep(1)
 
@@ -164,12 +167,15 @@ def backward(linear=linear):
     pub_vel.publish(twist)
 
 picked = False
+def setPicked(value):
+    global picked
+    picked = value
 def getPicked():
     return picked
 
-def pick():
+def pick(force=False):
     global picked
-    if picked:
+    if picked and not force:
         return
     arm_down()
     forward()
@@ -181,15 +187,20 @@ def pick():
     backward()
     return feedback
 
-def drop():
+def drop(force=False):
     global picked
-    if not picked:
+    if not picked and not force:
         return
     forward()
     arm_down()
     open_gripper()
     arm_up()
     backward()
+    backward()
+    backward()
+    backward()
+    right()
+    right()
     picked = False
 
 print("//transbot_gripper.py go!")
