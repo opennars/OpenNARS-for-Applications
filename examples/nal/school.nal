@@ -32,14 +32,14 @@
 //knobs are on door
 <(knob * door) --> on>.
 
-10
+15
 //obj1 is on the door
 <({obj1} * door) --> on>. :|:
 //and an object on a window
 <({obj2} * window) --> on>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-10
+15
 //expected: ^pick executed with args ({SELF} * {obj1})
 //you are in a place with a large clock now (the corridor!)
 <door --> [open]>. :|:
@@ -48,7 +48,7 @@
 <floor --> [red]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-10
+15
 //expected: ^go executed with args ({SELF} * classrom)
 //you are somewhere with a clean blackboard (you are in the classroom!)
 <blackboard --> [clean]>. :|:
@@ -56,7 +56,7 @@
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-10
+15
 //expected: ^pick executed with args ({SELF} * write)
 //your are at a place with a blackboard which now is dirty (blackboard was used!)
 <blackboard --> [dirty]>. :|:
@@ -64,7 +64,7 @@
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-10
+15
 //expected: ^pick executed with args ({SELF} * sponge)
 //you are at a place with a clean blackboard now (still in the classroom!)
 <blackboard --> [clean]>. :|:
@@ -72,7 +72,7 @@
 <floor --> [blue]>. :|:
 //you are really tired now, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-10
+15
 
 //expected: ^go executed with args ({SELF} * corridor)
 //now you are in the place with a large clock (the corridor!)
@@ -82,7 +82,7 @@
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
 
-10
+15
 
 //expected: ^go executed with args ({SELF} * kitchen)
 //now you are at a place with a microwave which is on
@@ -100,7 +100,4 @@
 //Q&A time
 //What color does the floor have where the large clock is?
 <<clock --> [large]> =/> <floor --> [?what]>>?
-//expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.932209, confidence=0.457582
-//If you are where the floor is red, where do you need to go to see a cyan floor?
-<(<floor --> [red]> &/ <({SELF} * ?where) --> ^go>) =/> <floor --> [cyan]>>?
-//expected: Answer: <(<floor --> [red]> &/ <({SELF} * kitchen) --> ^go>) =/> <floor --> [cyan]>>. Truth: frequency=1.000000, confidence=0.010290
+//expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.948280, confidence=0.453342
