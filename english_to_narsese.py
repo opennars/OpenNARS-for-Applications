@@ -219,7 +219,7 @@ while True:
         print("\n")
     isQuestion = line.endswith("?")
     isGoal = line.endswith("!")
-    isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
+    isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<') or line.endswith(":|:")
     isNegated = " not " in (" " + line.lower() + " ") or " no " in (" " + line.lower() + " ")
     if isCommand:
         if line.startswith("*eternal=false"):
