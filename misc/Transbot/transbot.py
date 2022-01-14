@@ -196,7 +196,7 @@ def reset_ona():
 
 def process(line):
     if line != "":
-        if line.endswith("? :|:"):
+        if line.endswith("? :|:") and "{SELF}" in line:
             (trans, rot) = getLocation()
             TransbotPerceiveAt("{SELF}", trans, rot)
         if line.endswith("! :|:") or line == "*internal":
