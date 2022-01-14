@@ -215,6 +215,8 @@ while True:
         line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
     except:
         exit(0)
+    if len(line) == 0:
+        print("\n")
     isQuestion = line.endswith("?")
     isGoal = line.endswith("!")
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
