@@ -1,0 +1,29 @@
+*volume=100
+*motorbabbling=false
+*setopname 1 ^clap
+*setopname 2 ^wave
+
+<(<B1 --> [seen]> &/ ^clap) =/> G>.
+<(<B2 --> [seen]> &/ ^wave) =/> G>.
+
+<<($1 * $2) --> same> ==> <($2 * $1) --> same>>.
+<(<($1 * #1) --> same> && <(#1 * $2) --> same>) ==> <($1 * $2) --> same>>.
+
+<(A1 * B1) --> same>.
+<(A1 * C1) --> same>.
+<(A2 * B2) --> same>.
+<(B2 * C2) --> same>.
+
+20
+
+(<#1 --> [seen]> && <(#1 * C1) --> same>). :|:
+10
+G! :|:
+//expected: ^clap executed with args
+
+10
+
+(<#1 --> [seen]> && <(#1 * C2) --> same>). :|:
+10
+G! :|:
+//expected: ^wave executed with args

@@ -164,6 +164,9 @@ print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
+print("\nSheep counting task:")
+print(subprocess.getoutput("python3 ./misc/Python/count_sheep.py").split("\n")[-1])
+
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")
 ctests("Pong", "./NAR pong 10000", True)
