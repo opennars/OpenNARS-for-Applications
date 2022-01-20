@@ -70,6 +70,7 @@ def pick_with_feedback(pickobj=None):
                 if y_real_temp < closer_to_gripper: #visual feedback
                     forward()
                 elif y_real_temp > closer_to_gripper:
+                    left()
                     forward()
                     forward()
                     forward()
@@ -181,9 +182,8 @@ Configuration = """
 *setopname 5 ^drop
 *setopname 6 ^activate
 *setopname 7 ^deactivate
-*setopname 8 ^remember
+*setopname 8 ^say
 *setopname 9 ^goto
-*setopname 10 ^say
 """
 def reset_ona():
     with open("knowledge.nal", 'r') as f:
@@ -266,7 +266,7 @@ def shell_step(lastLine = ""):
     global lastGoal
     #Get input line and forward potential command
     try:
-        line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
+        line = input().rstrip("\n").replace("leave","left") #"the green cat quickly eats the yellow mouse in the old house"
     except:
         exit(0)
     if len(line.strip()) == 0:
