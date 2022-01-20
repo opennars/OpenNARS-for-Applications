@@ -14,5 +14,5 @@
 //If gripper is open and a bottle is seen, pick it up to hold it
 <((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 //If the gripper is holding an object and a human is seen, drop it there
-<((<gripper --> [holding]> &/ <person --> [left]>) &/ ^drop) =/> G>.
+<((<gripper --> [hold]> &/ <person --> [left]>) &/ ^drop) =/> G>.
 

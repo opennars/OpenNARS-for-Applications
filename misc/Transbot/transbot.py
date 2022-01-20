@@ -201,7 +201,7 @@ def process(line):
             TransbotPerceiveAt("{SELF}", trans, rot)
         if line.endswith("! :|:") or line == "*internal":
             if getPicked():
-                NAR.AddInput("<gripper --> [holding]>. :|:")
+                NAR.AddInput("<gripper --> [hold]>. :|:")
             else:
                 NAR.AddInput("<gripper --> [open]>. :|:")
         if line.endswith("! :|:") or line == "*see":
