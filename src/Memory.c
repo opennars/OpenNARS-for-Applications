@@ -342,11 +342,17 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             bool revision_happened = false;
             c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
             c->belief.creationTime = currentTime; //for metrics
+            if(input && event->occurrenceTime == OCCURRENCE_ETERNAL)
+            {
+                Memory_printAddedEvent(event, priority, input, false, false, true);
+            }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, false, true);
-                if(input && event->occurrenceTime == OCCURRENCE_ETERNAL)
-                    Memory_printAddedEvent(event, priority, input, false, false, true);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true);
+                if(event->occurrenceTime == OCCURRENCE_ETERNAL)
+                {
+                    Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
+                }
             }
         }
     }
@@ -379,7 +385,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
     }
-    if(addedToCyclingEventsQueue && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
+    if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
