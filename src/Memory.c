@@ -342,7 +342,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             bool revision_happened = false;
             c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
             c->belief.creationTime = currentTime; //for metrics
-            if(input && event->occurrenceTime == OCCURRENCE_ETERNAL)
+            if(input)
             {
                 Memory_printAddedEvent(event, priority, input, false, false, true);
             }

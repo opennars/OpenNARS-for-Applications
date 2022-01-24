@@ -47,7 +47,7 @@ def GetOutput():
     lines = GetRawOutput()
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
-    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
+    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     reason = parseReason("\n".join(lines))
     return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}
