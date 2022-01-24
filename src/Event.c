@@ -45,3 +45,8 @@ bool Event_Equal(Event *event, Event *existing)
 {
     return Truth_Equal(&event->truth, &existing->truth) && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
 }
+
+bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
+{
+    return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
+}

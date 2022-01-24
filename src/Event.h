@@ -59,5 +59,7 @@ void Event_INIT();
 Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime);
 //Whether two events are the same
 bool Event_Equal(Event *event, Event *existing);
+//Whether the left event with same term and stamp overlap is less true than the second
+bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing);
 
 #endif
