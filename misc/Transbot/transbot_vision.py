@@ -9,6 +9,62 @@ import sys
 import os
 import pycuda.autoinit
 
+def dominantColorsWithPixelCounts(img):
+    pixels = np.float32(img.reshape(-1, 3))
+    n_color_clusters = 5
+    _, labels, palette = cv.kmeans(pixels, n_color_clusters, None, (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 200, .1), 10, cv.KMEANS_RANDOM_CENTERS)
+    _, counts = np.unique(labels, return_counts=True)
+    DominantColorsWithCounts = list(zip(palette, counts))
+    #DominantColorsWithCounts.sort(key=lambda x: -x[1]) #not necessary
+    return DominantColorsWithCounts
+
+def isRed(Color):
+    return Color[2] > 2*Color[0] and Color[2] > 2*Color[1] #at least 2x as red as green or blue
+
+def isGreen(Color):
+    return Color[1] > 2*Color[0] and Color[1] > 2*Color[2] #at least 2x as green as red or blue
+
+def isBlue(Color):
+    return Color[0] > 2*Color[1] and Color[0] > 2*Color[2] #at least 2x as green as red or blue
+
+#assign each relevant color with dominant colors close enough the max. pixel count of the qualifying dominant color
+def objectColor(DominantColorsWithPixelCounts):
+    redCount = 0
+    greenCount = 0
+    blueCount = 0
+    for (color, count) in DominantColorsWithPixelCounts:
+        red = isRed(color)
+        green = isGreen(color)
+        blue = isBlue(color)
+        if red:
+            if count > redCount:
+                redCount = count
+        if green:
+            if count > greenCount:
+                greenCount = count
+        if blue:
+            if count > blueCount:
+                blueCount = count
+    if redCount > greenCount and redCount > blueCount:
+        return "red"
+    elif greenCount > redCount and greenCount > blueCount:
+        return "green"
+    elif blueCount > redCount and blueCount > redCount:
+        return "blue"
+    else:
+        return "noColor"
+
+#image needs to be in RGB, else convert with img = cv.cvtColor(img, cv.COLOR_BGR2RGB) 
+def objectColorFromDetection(img, BB):
+    (x,y,x2,y2) = BB
+    cropped = img[int(y):int(y2), int(x):int(x2), :]
+    if cropped.size == 0:
+        return None
+    DominantColorsWithPixelCounts = dominantColorsWithPixelCounts(cropped)
+    #for s in DominantColorsWithPixelCounts:
+    #    print(s)
+    return objectColor(DominantColorsWithPixelCounts)
+
 path = os.getcwd()
 sys.path.append("/home/jetson/tensorrt_demos/")
 os.chdir("/home/jetson/tensorrt_demos/")
@@ -49,15 +105,17 @@ def applyYOLO(img):
     detection_confidence_threshold = 0.3
     boxes, confs, clss = yolo.detect(img, detection_confidence_threshold)
     detections = []
+    colors = []
     for i in range(len(clss)):
         class_id = int(clss[i])
         box = boxes[i]
         class_name = COCO_CLASSES_LIST[class_id]
         detections.append([class_name, box[0], box[1], box[2]-box[0], box[3]-box[1], confs[i]])
-        color = COLORS[class_id]
+        color = objectColorFromDetection(img, (box[0], box[1], box[2], box[3]))
+        colors.append(color)
         cv.rectangle(img, (box[0], box[1]), (box[2], box[3]), color, thickness=2)
         cv.putText(img, class_name +":"+str(box[0]) + "," + str(box[1]), (box[0], box[1] - 5), cv.FONT_HERSHEY_SIMPLEX, 1, color, 2)
-    return img, detections
+    return img, detections, colors
 
 def detect_objects():
     global frame, framelock
@@ -71,14 +129,14 @@ def detect_objects():
     #depthframelock.release()
     if frame != "":
         start = time.time()
-        (framecopy, detections) = applyYOLO(framecopy)
+        (framecopy, detections, colors) = applyYOLO(framecopy)
         end = time.time()
         fps = 1 / (end - start)
         text = "FPS : " + str(int(fps))
         cv.putText(framecopy, text, (20, 30), cv.FONT_HERSHEY_SIMPLEX, 0.9, (100, 200, 200), 1)
         cv.imshow('frame', framecopy)
         #cv.imshow('depthframe', depthframecopy)
-        return detections, framecopy
+        return detections, framecopy, colors
     return None, None
 
 #1. Wait for frame:

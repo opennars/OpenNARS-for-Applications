@@ -48,14 +48,15 @@ def pick_with_feedback(pickobj=None):
             pick_failed()
             break
         action = cv.waitKey(10) & 0xFF
-        detections, frame = detect_objects()
+        detections, frame, colors = detect_objects()
         y_real_temp = -1
         x_real_temp = -1
-        for detection in detections:
+        for i, detection in enumerate(detections):
             (obj, x, y, w, h, c) = detection
+            color = colors[i]
             x_real = x+w/2
             y_real = y+h #down side of bb
-            if y_real > y_real_temp and (pickobj == None or pickobj == obj):
+            if y_real > y_real_temp and (pickobj == None or (color == "noColor" and pickobj == obj) or "([" + color + "] & " + obj + ")" == pickobj):
                 y_real_temp = y_real
                 x_real_temp = x_real
         if y_real_temp != -1:
@@ -163,7 +164,9 @@ def TransbotPerceiveAt(obj, trans, rot):
     transXYrotZW = "_".join([valueToTerm(x) for x in trans[:2]]) + "_" + "_".join([valueToTerm(x) for x in rot[2:]])
     NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
-def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
+def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot, color):
+    if color != "noColor":
+        obj = "([" + color + "] & " + obj + ")"
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
     if screenX < robotVisualMiddle-centerSize:
@@ -208,18 +211,18 @@ def process(line):
             collision = getCollision()
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
-            detections, frame = detect_objects()
-            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = ("", -1, -1, -1, -1, 0)
-            for detection in detections:
+            detections, frame, colors = detect_objects()
+            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = ("", -1, -1, -1, -1, 0, "noColor")
+            for i, detection in enumerate(detections):
                 (obj, x, y, w, h, c) = detection
                 x_real = x+w/2
                 y_real = y+h #down side of bb
                 if y_real > y_real_temp:
-                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
+                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = (obj, x_real, y_real, w, h, c, colors[i])
             if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
                 NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
             elif y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
-                TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
+                TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot, color_temp)
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
             executions = NAR.AddInput(line)["executions"] #account for mental op
