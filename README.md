@@ -13,6 +13,8 @@ Or click on the picture to watch the newest summary videos (summary and demo):
 
 [![OpenNARS for Applications v0.8.8: Demos](https://img.youtube.com/vi/oyQ250H5owE/0.jpg)](https://www.youtube.com/watch?v=oyQ250H5owE "OpenNARS for Applications v0.8.8: Demos")
 
+[![OpenNARS for Applications v0.9.0: Transbot](https://img.youtube.com/vi/lp6rNO-nIms/0.jpg)](https://www.youtube.com/watch?v=lp6rNO-nIms "ONA v0.9.0: Playing Fetch with Henry the robot")
+
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
 ```
