@@ -11,9 +11,9 @@ Or click on the picture to watch the newest summary videos (summary and demo):
 
 [![Autonomy through real-time learning and OpenNARS for Applications](https://img.youtube.com/vi/B9SKu7u6G-I/0.jpg)](https://www.youtube.com/watch?v=B9SKu7u6G-I "Autonomy through real-time learning and OpenNARS for Applications")
 
-[![OpenNARS for Applications v0.8.8: Demos](https://img.youtube.com/vi/oyQ250H5owE/0.jpg)](https://www.youtube.com/watch?v=oyQ250H5owE "OpenNARS for Applications v0.8.8: Demos")
-
 [![OpenNARS for Applications v0.9.0: Transbot](https://img.youtube.com/vi/lp6rNO-nIms/0.jpg)](https://www.youtube.com/watch?v=lp6rNO-nIms "ONA v0.9.0: Playing Fetch with Henry the robot")
+
+Procedure learning demos (variants of Pong and Space Invaders, Test Chamber, Cartpole, food collecting agent, ...): https://www.youtube.com/watch?v=oyQ250H5owE
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
