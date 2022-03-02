@@ -104,7 +104,7 @@ def sentence_and_types(text):
     handleInstance = lambda word: "{"+word+"}" if word[0].isupper() else word
     tokens = [handleInstance(lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word]))) for word in tokens]
     wordtypes = dict([(tokens[i], wordtypes_ordered[i][1]) for i in range(len(tokens))])
-    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else value))) for (key,value) in wordtypes.items()}
+    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else ("ADP" if value=="PRT" else value)))) for (key,value) in wordtypes.items()}
     indexed_wordtypes = []
     i = 0
     lasttoken = None
