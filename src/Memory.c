@@ -407,7 +407,7 @@ int Memory_getOperationID(Term *term)
     Atom op_atom = Narsese_getOperationAtom(term);
     if(op_atom)
     {
-        for(int k=1; k<OPERATIONS_MAX; k++)
+        for(int k=1; k<=OPERATIONS_MAX; k++)
         {
             if(operations[k-1].term.atoms[0] == op_atom)
             {
