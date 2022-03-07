@@ -125,10 +125,10 @@ R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 4
 //!Transformation rules between product and image:
-R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralDeduction )
-R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralDeduction )
-R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
-R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
+//R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralDeduction )
+//R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralDeduction )
+//R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
+//R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
 //!Optional rules for more efficient reasoning about relation components:
 R2( ((A * B) --> R), ((C * B) --> R), |-, (C --> A), Truth_Abduction )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (C --> B), Truth_Abduction )

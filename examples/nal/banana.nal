@@ -1,0 +1,44 @@
+*setopname 1 ^match
+*motorbabbling=false
+*volume=0
+
+<(cat * MM) --> percept1>. :|:
+<(c-a-t * RM) --> percept2>. :|:
+<({SELF} * RM) --> ^match>. :|:
+<(cat * c-a-t) --> same>.
+G. :|:
+100
+<<($1 * $2) --> same> ==> <((<($1 * MM) --> percept1> &/ <($2 * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>>?
+
+*reset
+*setopname 1 ^match
+*motorbabbling=false
+*volume=0
+
+<(c-a-t * MM) --> percept1>. :|:
+<(cat * MU) --> percept2>. :|:
+<({SELF} * MU) --> ^match>. :|:
+<(cat * c-a-t) --> same>.
+G. :|:
+100
+<<($1 * $2) --> same> ==> <((<($2 * MM) --> percept1> &/ <($1 * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>>?
+
+*reset
+*setopname 1 ^match
+*motorbabbling=false
+*volume=0
+
+<<($1 * $2) --> same> ==> <((<($1 * MM) --> percept1> &/ <($2 * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>>.
+<<($1 * $2) --> same> ==> <((<($2 * MM) --> percept1> &/ <($1 * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>>.
+<(banana * MM) --> percept1>. :|:
+<(b-a-n-a-n-a * RU) --> percept2>. :|:
+<({SELF} * RU) --> ^match>. :|:
+G. :|:
+100
+<((<(banana * MM) --> percept1> &/ <(b-a-n-a-n-a * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>?
+<((<(b-a-n-a-n-a * MM) --> percept1> &/ <(banana * #1) --> percept2>) &/ <({SELF} * #1) --> ^match>) =/> G>?
+<(?1 * ?2) --> same>?
+
+<(b-a-n-a-n-a * MM) --> percept1>. :|:
+<(banana * RD) --> percept2>. :|:
+G! :|:

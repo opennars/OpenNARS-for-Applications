@@ -77,7 +77,7 @@
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
-#define UNIFICATION_DEPTH 31
+#define UNIFICATION_DEPTH 63
 
 /*------------------*/
 /* Space parameters */
@@ -103,7 +103,7 @@
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 64
+#define COMPOUND_TERM_SIZE_MAX 128
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap
