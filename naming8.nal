@@ -1,0 +1,38 @@
+*volume=0
+*motorbabbling=false
+((((#3 --> Event) &/ ($2 --> Event)) =/> ($1 --> VisualEvent)) ==> ((((#4 --> Event) &/ ($1 --> VisualEvent)) &/ <({SELF} * $2) --> ^say>) =/> G)).
+
+(ThisIsAWrong --> Event). :|:
+(Cat --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+100
+
+100
+
+(ThisIsAWrong --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * Cat)
+
+(ThisIsAWrong --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * Cat)
+
+(ThisIsAWrong --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+G! :|:
+//expected: DONT DONT DONT ^say executed with args ({SELF} * Cat)
+
+100
+
+(ThisIsA --> Event). :|:
+(Cat --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+100
+
+(ThisIsA --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * Cat)
+

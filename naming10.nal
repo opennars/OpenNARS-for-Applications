@@ -1,0 +1,13 @@
+*volume=0
+
+((((#3 --> Event) &/ ($2 --> Event)) =/> ($1 --> VisualEvent)) ==> ((((#4 --> Event) &/ ($2 --> Event)) &/ <({SELF} * $1) --> ^say>) =/> G)).
+
+<SameAs --> Event>. :|:
+<Cat --> Event>. :|:
+<VisualCat --> VisualEvent>. :|:
+
+100
+
+<WhatSameAs --> Event>. :|:
+<Cat --> Event>. :|:
+G! :|:

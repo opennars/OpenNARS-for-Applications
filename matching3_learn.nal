@@ -1,0 +1,38 @@
+////////////////// Example learn first side:
+<v1 --> [see]>. :|:
+<s1 --> [hear]>. :|:
+^go. :|:
+<(s1 * v1) --> same>.
+G. :|:
+20
+<<($1 * $2) --> same> ==> <((<$2 --> [see]> &/ <$1 --> [hear]>) &/ ^go) =/> G>>?
+//expected: Answer: <<($1 * $2) --> same> ==> <((<$2 --> [see]> &/ <$1 --> [hear]>) &/ ^go) =/> G>>. creationTime=15 Truth: frequency=1.000000, confidence=0.138014
+
+////////////////// Example learn second side:
+<s1 --> [hear]>. :|:
+<v1 --> [see]>. :|:
+^go. :|:
+<(s1 * v1) --> same>.
+G. :|:
+20
+<<($1 * $2) --> same> ==> <((<$1 --> [hear]> &/ <$2 --> [see]>) &/ ^go) =/> G>>?
+//expected: Answer: <<($1 * $2) --> same> ==> <((<$1 --> [hear]> &/ <$2 --> [see]>) &/ ^go) =/> G>>. creationTime=15 Truth: frequency=1.000000, confidence=0.138014
+
+////////////////// Example usage
+<<($1 * $2) --> same> ==> <((<$1 --> [see]> &/ <$2 --> [hear]>) &/ ^go) =/> G>>.
+<<($1 * $2) --> same> ==> <((<$2 --> [hear]> &/ <$1 --> [see]>) &/ ^go) =/> G>>.
+
+<v2 --> [see]>. :|:
+<s2 --> [hear]>. :|:
+^go. :|:
+G. :|:
+100
+<(v2 * s2) --> same>?
+<((<s2 --> [hear]> &/ <v2 --> [see]>) &/ ^go) =/> G>?
+
+1000
+
+<s2 --> [hear]>. :|:
+<v2 --> [see]>. :|:
+G! :|:
+//expected: ^go executed

@@ -1,0 +1,26 @@
+*volume=0
+
+ThisIsA. :|:
+Triangle. :|:
+VisualTriangle. :|:
+
+100
+
+WhatIsA. :|:
+Triangle. :|:
+VisualTriangle. :|:
+
+100
+
+//example:
+
+ThisIsA. :|:
+Square. :|:
+VisualSquare. :|:
+
+100
+
+WhatIsA. :|:
+Square. :|:
+VisualSquare? :/:
+VisualTriangle? :/:

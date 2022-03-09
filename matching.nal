@@ -1,0 +1,73 @@
+*setopname 1 ^go
+*motorbabbling=false
+*volume=0
+
+s1. :|:
+v1. :|:
+^go. :|:
+G. :|:
+
+100
+
+s2. :|:
+v2. :|:
+^go. :|:
+G. :|:
+
+100
+
+s1. :|:
+v2. :|:
+^go. :|:
+G. :|: {0.0 0.9}
+
+100
+
+s2. :|:
+v1. :|:
+^go. :|:
+G. :|: {0.0 0.9}
+
+100
+
+s1. :|:
+v1. :|:
+G! :|:
+//expected: ^go executed with args
+
+100
+
+v1. :|:
+s1. :|:
+G. :|:
+10
+
+
+
+
+<((s1 &/ v1) &/ ^go) =/> G>.
+<((v1 &/ s1) &/ ^go) =/> G>.
+
+
+//directly relating contingencies (seemingly not possible for humans)
+<<((<$1 --> [hear]> &/ <$2 --> [see]>) &/ ^go) =/> G>
+<=>
+<((<$2 --> [see]> &/ <$1 --> [hear]> &/ ^go) =/> G>>.
+
+
+//with relational cue:
+<<($1 * $2) --> same> ==> <<((<$1 --> [hear]> &/ <$2 --> [see]>) &/ ^go) =/> G>>.
+<<($1 * $2) --> same> ==> <((<$2 --> [see]> &/ <$1 --> [hear]> &/ ^go) =/> G>>>.
+<<($1 * $2) --> same> ==> <<((<$1 --> [hear]> &/ <$2 --> [see]>) &/ ^activate) =/> G>>.
+<<($1 * $2) --> same> ==> <((<$2 --> [see]> &/ <$1 --> [hear]> &/ ^activate) =/> G>>>.
+
+
+<<($1 * $2) --> same> ==> <<((<$1 --> [hear]> &/ <$2 --> [see]>) &/ (^go || ^activate)) =/> G>>.
+<<($1 * $2) --> same> ==> <((<$2 --> [see]> &/ <$1 --> [hear]> &/ (^go || ^activate)) =/> G>>>.
+
+//example:
+<s1 --> [hear]>. :|:
+<v1 --> [see]>. :|:
+^go. :|:
+<(s1 * v1) --> same>.
+G. :|:

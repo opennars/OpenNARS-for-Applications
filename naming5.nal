@@ -1,0 +1,4 @@
+((((ThisIsA --> Event) &/ (#1 --> Event)) =/> ($2 --> Event)) ==> ((((WhatIsA --> Event) &/ ($2 --> Event)) &/ <({SELF} * #1) --> ^say>) =/> G)).
+<(<ThisIsA --> Event> &/ <Cat --> Event>) =/> <VisualCat --> Event>>.
+10
+((((WhatIsA --> Event) &/ (VisualCat --> Event)) &/ <({SELF} * Cat) --> ^say>) =/> G)?

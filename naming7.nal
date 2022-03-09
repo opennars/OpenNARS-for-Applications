@@ -1,0 +1,4 @@
+((((#3 --> Event) &/ ($2 --> Event)) =/> ($1 --> VisualEvent)) ==> ((((#4 --> Event) &/ ($1 --> VisualEvent)) &/ <({SELF} * $2) --> ^say>) =/> G)).
+
+
+((((#3 --> Event) &/ ($2 --> Event)) =/> ($1 --> VisualEvent)) ==> ((((#4 --> Event) &/ ($1 --> VisualEvent)) &/ <({SELF} * $2) --> ^say>) =/> G)).

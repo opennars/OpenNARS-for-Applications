@@ -1,0 +1,21 @@
+
+
+<ThisIsA --> Event>. :|:
+<Cat --> Event>. :|:
+<VisualCat --> VisualEvent>. :|:
+
+<<ThisIsA --> Event> =/> <<Cat --> Event> =/> <VisualCat --> VisualEvent>>>.
+
+<<WhatIsA --> Event> =/> <<<VisualCat --> VisualEvent> =/> <Cat --> Event>>> =/> G>.
+
+
+(((WhatIsA --> Event) =/> (VisualCat --> VisualEvent) =/> (Cat --> Event)) =/> G).
+
+
+(((ThisIsA --> Event) =/> (($1 --> Event) =/> ($2 --> VisualEvent)))
+==>
+(((WhatIsA --> Event) =/> ($2 --> VisualEvent) =/> ($1 --> Event)) =/> G)).
+
+
+((((ThisIsA --> Event) &/ ($1 --> Event)) =/> ($2 --> VisualEvent)) ==> ((((WhatIsA --> Event) &/ ($2 --> VisualEvent)) &/ <({SELF} * $1) -->ˆsay>) =/> G)).
+

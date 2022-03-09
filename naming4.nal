@@ -1,0 +1,16 @@
+*volume=0
+((((ThisIsA --> Event) &/ ($2 --> Event)) =/> ($1 --> VisualEvent)) ==> ((((WhatIsA --> Event) &/ ($1 --> VisualEvent)) &/ <({SELF} * $2) --> ^say>) =/> G)).
+
+(ThisIsA --> Event). :|:
+(Cat --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+100
+(((ThisIsA --> Event) &/ (Cat --> Event)) =/> (VisualCat --> VisualEvent))?
+((((WhatIsA --> Event) &/ (VisualCat --> VisualEvent)) &/ <({SELF} * Cat) --> ^say>) =/> G)?
+
+100
+
+(WhatIsA --> Event). :|:
+(VisualCat --> VisualEvent). :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * Cat)

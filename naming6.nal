@@ -1,0 +1,17 @@
+*volume=0
+*motorbabbling=false
+((((ThisIsA --> [hear]) &/ ($2 --> [hear])) =/> ($1 --> [see])) ==> 
+((((WhatIsA --> [hear]) &/ ($1 --> [see])) &/ ($2 --> [hear])) =/> G)).
+<((WhatIsA --> [hear]) &/ <({SELF} * $1) --> ^say>) =/> ($1 --> [hear])>.
+
+
+(ThisIsA --> [hear]). :|:
+(Cat --> [hear]). :|:
+(Visual16 --> [see]). :|:
+
+100
+"what is a"
+(WhatIsA --> [hear]). :|:
+(Visual16 --> [see]). :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * Cat)

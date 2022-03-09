@@ -1,0 +1,27 @@
+*volume=0
+
+<ThisIsA --> ev>. :|:
+<Triangle --> ev>. :|:
+<VisualTriangle --> visualEvent>. :|:
+
+100
+
+<WhatIsA --> ev>. :|:
+<Triangle --> ev>. :|:
+<VisualTriangle --> visualEvent>. :|:
+
+100
+
+//example:
+
+<ThisIsA --> ev>. :|:
+<Square --> ev>. :|:
+<VisualSquare --> visualEvent>. :|:
+
+10000
+
+<WhatIsA --> ev>. :|:
+<Square --> ev>. :|:
+<?1 --> visualEvent>? :/:
+<<Square --> ev> =/> <?what --> visualEvent>>?
+<<Triangle --> ev> =/> <?what --> visualEvent>>?
