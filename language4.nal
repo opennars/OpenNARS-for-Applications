@@ -1,0 +1,12 @@
+*volume=0
+<<(<a --> E> &/ <$2 --> E>) =/> <$1 --> E>> ==> <(<c --> E> &/ <$1 --> E>) =/> <$2 --> E>>>.
+<a --> E>. :|:
+<h --> E>. :|:
+<x --> E>. :|:
+
+50
+
+<c --> E>. :|:
+<x --> E>. :|:
+?what? :/:
+//expected: Answer: <h --> E>. :|: occurrenceTime=59 creationTime=58 Truth: frequency=1.000000, confidence=0.129813

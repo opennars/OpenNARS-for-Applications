@@ -1,0 +1,28 @@
+*volume=100
+
+<<<$2 --> [hear]> =/> <$1 --> [see]>> ==> <<$1 --> [see]> =/> <$2 --> [hear]>>>. {0.0 0.99}
+<<(<A --> [hear]> &/ <$2 --> [hear]>) =/> <$1 --> [see]>> ==> <(<C --> [hear]> &/ <$1 --> [see]>) =/> <$2 --> [hear]>>>.
+
+<A --> [hear]>. :|:
+<h1 --> [hear]>. :|:
+<x1 --> [see]>. :|:
+
+50
+
+<C --> [hear]>. :|:
+<x1 --> [see]>. :|:
+<h1 --> [hear]>. :|:
+
+50
+
+<A --> [hear]>. :|:
+<h2 --> [hear]>. :|:
+<x2 --> [see]>. :|:
+
+50
+
+<C --> [hear]>. :|:
+<x2 --> [see]>. :|:
+<?what --> [hear]>? :/:
+//expected: Answer: <h2 --> [hear]>. :|: occurrenceTime=228 creationTime=227 Truth: frequency=1.000000, confidence=0.098456
+<<(<A --> [hear]> &/ <$2 --> [hear]>) =/> <$1 --> [see]>> ==> <(<C --> [hear]> &/ <$1 --> [see]>) =/> <$2 --> [hear]>>>?

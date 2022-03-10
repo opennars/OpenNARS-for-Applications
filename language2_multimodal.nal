@@ -1,0 +1,12 @@
+<v1 --> [see]>. :|:
+<s1 --> [hear]>. :|:
+50
+<s1 --> [hear]>. :|:
+<v1 --> [see]>. :|:
+100
+<v2 --> [see]>. :|:
+<s2 --> [hear]>. :|:
+100
+<s2 --> [hear]>. :|:
+?what? :/:
+//expected: Answer: <v2 --> [see]>. :|: occurrenceTime=258 creationTime=257 Truth: frequency=1.000000, confidence=0.138622
