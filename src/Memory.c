@@ -107,6 +107,16 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
     {
         return NULL;
     }
+    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_isOperator(term->atoms[i]))
+            {
+                return NULL;
+            }
+        }
+    }
     Concept *ret = Memory_FindConceptByTerm(term);
     if(ret == NULL)
     {
