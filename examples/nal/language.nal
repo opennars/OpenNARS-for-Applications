@@ -1,0 +1,18 @@
+<thisIs --> [hear]>. :|:
+<s1 --> [hear]>. :|:
+<v1 --> [see]>. :|:
+50
+<whatIs --> [hear]>. :|:
+<v1 --> [see]>. :|:
+<s1 --> [hear]>. :|:
+50
+
+100
+<thisIs --> [hear]>. :|:
+<s2 --> [hear]>. :|:
+<v2 --> [see]>. :|:
+100
+<whatIs --> [hear]>. :|:
+<v2 --> [see]>. :|:
+<?What --> [hear]>? :/:
+//expected: Answer: <s2 --> [hear]>. :|: occurrenceTime=310 Truth: frequency=1.000000, confidence=0.191709
