@@ -171,17 +171,24 @@ static bool NAL_NestedHOLStatement(Term *conclusionTerm)
     //We don't allow two ==> or <=> in one statement:
     int imp_equ = 0;
     int temp_equ = 0;
+    int junction = 0;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         if(Narsese_copulaEquals(conclusionTerm->atoms[i], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[i], EQUIVALENCE))
         {
             imp_equ++;
         }
+        else
         if(Narsese_copulaEquals(conclusionTerm->atoms[i], TEMPORAL_IMPLICATION))
         {
             temp_equ++;
         }
-        if(imp_equ >= 2 || temp_equ >= 2)
+        else
+        if(Narsese_copulaEquals(conclusionTerm->atoms[i], CONJUNCTION) || Narsese_copulaEquals(conclusionTerm->atoms[i], DISJUNCTION))
+        {
+             junction++;
+        }
+        if(imp_equ >= 2 || (temp_equ >= 2 && junction >= 1))
         {
             return true;
         }
@@ -334,12 +341,12 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
         }
-        bool success2;
-        Term conclusionTermWithVarInt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success2, false);
-        if(success2 && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarInt, true))
-        {
-            NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
-        }
+        //bool success2;
+        //Term conclusionTermWithVarInt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success2, false);
+        //if(success2 && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarInt, true))
+        //{
+        //    NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+        //}
         return;
     }
     Event e = { .term = conclusionTerm,

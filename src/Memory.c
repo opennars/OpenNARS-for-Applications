@@ -336,7 +336,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    else
+    //else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
