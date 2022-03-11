@@ -1,0 +1,12 @@
+*motorbabbling=false
+*volume=0
+//saying something leads to hearing it in all circumstances
+<(#1 &/ <({SELF} * $1) --> ^say>) =/> <$1 --> [hear]>>.
+<{sam} --> [hungry]>. :|:
+<(want * pizza) --> [hear]>. :|:
+<({sam} * pizza) --> get>. :|:
+50
+<{SELF} --> [hungry]>. :|:
+<({SELF} * beer) --> get>! :|:
+10
+//expected: ^say executed with args ({SELF} * (want * beer))
