@@ -315,7 +315,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     }
 }
 
-//Reinforce link between concept a and b (creating it if non-existent)
+//Reinforce link between concept a and b
 static void Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)

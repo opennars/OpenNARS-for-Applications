@@ -300,8 +300,12 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             if(Narsese_copulaEquals(subject.atoms[0], SEQUENCE)) //sequence
             {
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
-                if(Narsese_isOperation(&potential_op)) //atom starts with ^, making it an operator
+                if(Narsese_isOperation(&potential_op)) //necessary to be an executable operator
                 {
+                    if(!Narsese_isExecutableOperation(&potential_op))
+                    {
+                        return; //we can't store proc. knowledge of other agents
+                    }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
                 }

@@ -684,8 +684,12 @@ bool Narsese_isOperation(Term *term) //<(*,{SELF},x) --> ^op> -> [: * ^op " x _ 
     return Narsese_isOperator(term->atoms[0]) ||
            (Narsese_copulaEquals(term->atoms[0], INHERITANCE) && Narsese_copulaEquals(term->atoms[1], PRODUCT) && //(_ * _) -->
             Narsese_isOperator(term->atoms[2]) && //^op
-            Narsese_copulaEquals(term->atoms[3], EXT_SET) && 
-            (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7]))); //  { SELF } or { VAR }
+            Narsese_copulaEquals(term->atoms[3], EXT_SET)); //  { SELF } or { VAR }
+}
+
+bool Narsese_isExecutableOperation(Term *term)
+{
+    return Narsese_isOperation(term) && (Narsese_isOperator(term->atoms[0]) || (term->atoms[7] == SELF || Variable_isVariable(term->atoms[7])));
 }
 
 Atom Narsese_getOperationAtom(Term *term)

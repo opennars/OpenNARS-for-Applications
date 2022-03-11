@@ -103,6 +103,8 @@ Atom Narsese_getOperationAtom(Term *term);
 Term Narsese_getOperationTerm(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
+//Is an executable op (has {SELF} or variable as first arg)
+bool Narsese_isExecutableOperation(Term *term);
 //Get precondition without operation
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
 //Get whether something is a true atom, not a copula or variable
