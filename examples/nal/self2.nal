@@ -1,0 +1,10 @@
+*motorbabbling=false
+*volume=0
+<{sam} --> [hungry]>. :|:
+<({sam} * (want * pizza)) --> ^say>. :|:
+<({sam} * pizza) --> get>. :|:
+50
+<{SELF} --> [hungry]>. :|:
+<({SELF} * beer) --> get>! :|:
+10
+//expected: ^say executed with args ({SELF} * (want * beer))
