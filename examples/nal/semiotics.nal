@@ -1,0 +1,23 @@
+*volume=0
+<A --> [hear]>. :|:
+<h1 --> [hear]>. :|:
+<x1 --> [see]>. :|:
+
+50
+
+<C --> [hear]>. :|:
+<x1 --> [see]>. :|:
+<h1 --> [hear]>. :|:
+
+50
+
+<A --> [hear]>. :|:
+<h2 --> [hear]>. :|:
+<x2 --> [see]>. :|:
+
+50
+
+<C --> [hear]>. :|:
+<x2 --> [see]>. :|:
+<?what --> [hear]>? :/:
+//expected: Answer: <h2 --> [hear]>. :|: occurrenceTime=168 Truth: frequency=1.000000, confidence=0.053452
