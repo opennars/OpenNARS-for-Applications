@@ -37,6 +37,9 @@
 #include "Narsese.h"
 #include "Memory.h"
 
+#define xstr(a) str(a)
+#define str(a) #a
+
 //Methods//
 //-------//
 //Generates inference rule code
@@ -44,16 +47,16 @@ void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
 //macro for syntactic representation, increases readability, double premise inference
-#define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
-#define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
+#define R2(premise1, premise2, _, conclusion, truthFunction)         printf("//%s %s %s %s\n", #premise1, #premise2, #conclusion, #truthFunction); NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
+#define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) printf("//%s %s %s, %s\n", #premise1, #premise2, #conclusion, #truthFunction); NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
 //macro for syntactic representation, increases readability, single premise inference
-#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false, false);
+#define R1(premise1, _, conclusion, truthFunction) printf("//%s %s %s\n", #premise1, #conclusion, #truthFunction); NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false, false);
 //macro for bidirectional transformation rules
-#define R1Bidirectional(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false, false);
+#define R1Bidirectional(rep1, _, rep2, truthFunction) printf("//%s %s %s\n", #rep1, #rep2, #truthFunction);  NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false, false);
 //macro for term reductions
-#define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
+#define ReduceTerm(pattern, replacement) printf("//%s %s\n", #pattern, #replacement); NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
-#define ReduceStatement(pattern, replacement) NAL_GenerateReduction(#pattern, #replacement); 
+#define ReduceStatement(pattern, replacement) printf("//%s %s\n", #pattern, #replacement);  NAL_GenerateReduction(#pattern, #replacement); 
 
 #endif
 
