@@ -68,6 +68,21 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
                     : (Implication) {0};
 }
 
+//{Event a., Event <b =/> c>.} |- Implication <a ==> <b =/> c>>.
+Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success)
+{
+    DERIVATION_STAMP(a,b)
+    Term term = {0};
+    term.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+    *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
+    return *success ? (Implication) { .term = term, 
+                                      .truth = Truth_Induction(b->truth, a->truth),
+                                      .stamp = conclusionStamp,
+                                      .occurrenceTimeOffset = b->occurrenceTimeOffset,
+                                      .creationTime = creationTime }
+                    : (Implication) {0};
+}
+
 //{Event a., Event a.} |- Event a.
 //{Event a!, Event a!} |- Event a!
 static Event Inference_EventRevision(Event *a, Event *b)
@@ -190,5 +205,19 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
                                                                     OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset,
+                     .creationTime = creationTime };
+}
+
+//{Event a., Implication <a ==> <b =/> c>>.} |- Event <b =/> c>.
+Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compound)
+{
+    assert(Narsese_copulaEquals(compound->term.atoms[0], IMPLICATION), "Not a valid implication term!");
+    DERIVATION_STAMP(component,compound)
+    Term postcondition = Term_ExtractSubterm(&compound->term, 2);
+    return (Event) { .term = postcondition, 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL,
                      .creationTime = creationTime };
 }

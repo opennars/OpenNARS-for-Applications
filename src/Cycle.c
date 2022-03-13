@@ -316,11 +316,11 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
 }
 
 //Reinforce link between concept a and b
-static void Cycle_ReinforceLink(Event *a, Event *b)
+static Implication Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
-        return;
+        return (Implication) {0};
     }
     Term a_term_nop = Narsese_GetPreconditionWithoutOp(&a->term);
     Concept *A = Memory_FindConceptByTerm(&a_term_nop);
@@ -337,10 +337,12 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
                     NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
+                    return precondition_implication;
                 }
             }
         }
     }
+    return (Implication) {0};
 }
 
 void Cycle_ProcessInputBeliefEvents(long currentTime)
@@ -356,6 +358,17 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
+                //derive implied relationships
+                Concept *postc = Memory_Conceptualize(&toProcess->term, currentTime);
+                for(int x=0; postc != NULL && x<TABLE_SIZE; x++)
+                {
+                    Implication *imp = &postc->implied_contingencies.array[x];
+                    if(imp->term.atoms[0] != 0) //TODO is imp valid
+                    {
+                        Event deduced_impl = Inference_BeliefDeductionDeclarative(toProcess, imp);
+                        NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                    }
+                }
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(state == 1) //postcondition always len1
@@ -391,7 +404,45 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                                         }
                                     }
                                 }
-                                Cycle_ReinforceLink(precondition, &postcondition);
+                                Implication ret = Cycle_ReinforceLink(precondition, &postcondition);
+                                for(int k2=k+1; ret.term.atoms[0] > 0 && k2<belief_events.itemsAmount; k2++)
+                                {
+                                    for(int state3=1; state3<(1 << MAX_SEQUENCE_LEN); state3++)
+                                    {
+                                        Event *preseq = FIFO_GetKthNewestSequence(&belief_events, k2, state3);
+                                        if(preseq != NULL && preseq->type != EVENT_TYPE_DELETED)
+                                        {
+                                            if(state3 > 1)
+                                            {
+                                                int substate = state3;
+                                                int shift = 0;
+                                                while(substate)
+                                                {
+                                                    substate = (substate >> 1);
+                                                    shift++;
+                                                    if(substate & 1)
+                                                    {
+                                                        if(k2+shift < FIFO_SIZE)
+                                                        {
+                                                            Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k2+shift, 1);
+                                                            if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
+                                                            {
+                                                                goto CONTINUE2;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            bool success;
+                                            Implication implied_contingency = Inference_BeliefInductionDeclarative(preseq, &ret, &success);
+                                            if(success && Narsese_copulaEquals(preseq->term.atoms[0], SEQUENCE))
+                                            {
+                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, ret.occurrenceTimeOffset, NULL, 0, true, false);
+                                            }
+                                            CONTINUE2:;
+                                        }
+                                    }
+                                }
                                 CONTINUE:;
                             }
                         }
@@ -615,7 +666,7 @@ void Cycle_Perform(long currentTime)
     //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
-    Cycle_Inference(currentTime);
+    //Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }

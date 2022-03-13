@@ -272,7 +272,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = *event;
@@ -281,7 +281,40 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
         eternal_event.truth = Truth_Eternalize(event->truth);
     }
-    if(isImplication)
+    if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION))
+    {
+        //get predicate and add the subject to precondition table as an implication
+        Term subject = Term_ExtractSubterm(&event->term, 1);
+        Term predicate = Term_ExtractSubterm(&event->term, 2);
+        Concept *source_concept = Memory_Conceptualize(&subject, currentTime);
+        if(source_concept != NULL)
+        {
+			source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+            Implication imp = { .truth = eternal_event.truth,
+                                .stamp = eternal_event.stamp,
+                                .occurrenceTimeOffset = event->occurrenceTimeOffset,
+                                .creationTime = currentTime };          
+            Term sourceConceptTerm = subject;
+            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            if(source_concept != NULL)
+            {                
+				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                imp.sourceConceptId = source_concept->id;
+                imp.sourceConcept = source_concept;
+                imp.term = event->term;
+                Implication *revised =Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
+                if(revised != NULL)
+                {
+                    bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
+                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
+                    if(wasRevised)
+                        Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
+                }
+            }
+        }
+    }
+    else
+    if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
     {
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
@@ -336,7 +369,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    //else
+    else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -391,12 +424,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         Memory_printAddedEvent(event, priority, input, false, false, true);
     }
-    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION);
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
