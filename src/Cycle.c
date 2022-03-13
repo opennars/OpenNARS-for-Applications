@@ -345,6 +345,22 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     return (Implication) {0};
 }
 
+
+static void Decision_AddNegativeConfirmationDeclarative(Implication imp, Concept *prec)
+{
+    Implication negative_confirmation = imp;
+    negative_confirmation.truth = (Truth) { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
+    negative_confirmation.stamp = (Stamp) { anticipationStampID };
+    anticipationStampID--;
+    assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
+    Implication *added = Table_AddAndRevise(&prec->implied_contingencies, &negative_confirmation);
+    if(added != NULL)
+    {
+        added->sourceConcept = negative_confirmation.sourceConcept;
+        added->sourceConceptId = negative_confirmation.sourceConceptId;
+    }
+}
+
 void Cycle_ProcessInputBeliefEvents(long currentTime)
 {
     //1. process newest event
@@ -359,14 +375,27 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 //derive implied relationships
-                Concept *postc = Memory_Conceptualize(&toProcess->term, currentTime);
-                for(int x=0; postc != NULL && x<TABLE_SIZE; x++)
+                for(int j=0; j<concepts.itemsAmount; j++)
                 {
-                    Implication *imp = &postc->implied_contingencies.array[x];
-                    if(imp->term.atoms[0] != 0) //TODO is imp valid
+                    Concept *postc = concepts.items[j].address;
+                    Substitution subs = Variable_Unify(&postc->term, &toProcess->term);
+                    if(subs.success)
                     {
-                        Event deduced_impl = Inference_BeliefDeductionDeclarative(toProcess, imp);
-                        NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                        for(int x=0; x<TABLE_SIZE; x++)
+                        {
+                            Implication *imp = &postc->implied_contingencies.array[x];
+                            if(imp->term.atoms[0] != 0) //TODO is imp valid
+                            {
+                                Event deduced_impl = Inference_BeliefDeductionDeclarative(toProcess, imp);
+                                bool success2;
+                                deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
+                                if(success2)
+                                {
+                                    NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                                    Decision_AddNegativeConfirmationDeclarative(*imp, postc);
+                                }
+                            }
+                        }
                     }
                 }
                 Event postcondition = *toProcess;
