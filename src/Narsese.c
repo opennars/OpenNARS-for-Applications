@@ -697,7 +697,10 @@ Atom Narsese_getOperationAtom(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
+        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        {
+            return 0;
+        }
         return Narsese_getOperationAtom(&potential_operator);
     }
     if(Narsese_isOperator(term->atoms[0])) //atomic operator
@@ -721,7 +724,10 @@ Term Narsese_getOperationTerm(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
+        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        {
+            return (Term) {0};
+        }
         return Narsese_getOperationTerm(&potential_operator);
     }
     if(Narsese_isOperation(term)) //operator

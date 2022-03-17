@@ -241,7 +241,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false);
     return true;
 }
 
@@ -306,7 +306,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false);
                         }
                     }
                 }
@@ -354,6 +354,11 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
+                Concept *c = Memory_Conceptualize(&toProcess->term, currentTime);
+                if(c != NULL && SEMANTIC_INFERENCE_NAL_LEVEL >= 8)
+                {
+                    Memory_AddEvent(toProcess, currentTime, SEQUENCE_BASE_PRIORITY, false, true, false, true);
+                }
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;

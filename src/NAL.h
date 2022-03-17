@@ -243,6 +243,12 @@ R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)),
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) && (S --> P)), Truth_Intersection )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) ==> ((A &/ Op) =/> C)), Truth_Induction )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) ==> (S &/ P)), Truth_Abduction )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) <=> (S &/ P)), Truth_Comparison )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) && (S &/ P)), Truth_Intersection )
+R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) && ((A &/ Op) =/> C)), Truth_Intersection )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
