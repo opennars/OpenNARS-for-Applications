@@ -234,15 +234,24 @@ R2( ((A &/ B) =/> C), (S ==> B), |-, ((A &/ S) =/> C), Truth_Deduction )
 R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
 R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
+//!Relating sequences to each other
+R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) ==> (A &/ B)), Truth_Induction )
+R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) ==> (S &/ P)), Truth_Abduction )
+R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) <=> (S &/ P)), Truth_Comparison )
+R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) <=> (A &/ B)), Truth_Comparison )
+R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) && (S &/ P)), Truth_Intersection )
+R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) && (A &/ B)), Truth_Intersection )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
+//!Relating statements to contingencies
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) ==> (S --> P)), Truth_Abduction )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)), Truth_Comparison )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) && (S --> P)), Truth_Intersection )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
+//!Relating sequences to contingencies
 R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) ==> ((A &/ Op) =/> C)), Truth_Induction )
 R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) ==> (S &/ P)), Truth_Abduction )
 R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) <=> (S &/ P)), Truth_Comparison )
