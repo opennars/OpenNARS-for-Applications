@@ -15,10 +15,10 @@ the car has width 2
 //does car fit into parking lot?
 G! :|:
 5
-//expected: ^mul executed with args ({SELF} * (6 * 4))
+//expected: ^mul executed with args ({SELF} * (4 * 2))
 G! :|:
 5
-//expected: ^smaller executed with args ({SELF} * (24.0 * 10))
+//expected: ^smaller executed with args ({SELF} * (8.0 * 10))
 G! :|:
 5
 //expected: ^say executed with args ({SELF} * True)
