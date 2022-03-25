@@ -49,8 +49,8 @@ if "noColors" in sys.argv:
     narseseToEnglish_noColors()
 
 def narseseToEnglish(line):
-    line = line.rstrip().replace("#1","it").replace("$1","it").replace("#2","thing").replace("$2","thing")
     COLOR = GREEN
+    line = line.rstrip().replace("(! ", CYAN + "not " + COLOR).replace("#1","it").replace("$1","it").replace("#2","thing").replace("$2","thing")
     if line.startswith("performing ") or line.startswith("done with"):
         COLOR = CYAN
     elif line.startswith("Comment: expected:"):
@@ -78,7 +78,7 @@ def narseseToEnglish(line):
         l = re.sub(r"<([^><:]*)\s(<->)\s([^><:]*)>", RED+ STATEMENT_OPENER + GREEN + r"\1" + RED + r" resembles " + GREEN + r"\3" + RED + STATEMENT_CLOSER + COLOR, l)
         #Other compound term copulas (not higher order)
         l = re.sub(r"\(([^><:]*)\s(\*|&)\s([^><:]*)\)", YELLOW+r"" + GREEN + r"\1" + YELLOW + r" " + GREEN + r"\3" + YELLOW + "" + COLOR, l)
-        return COLOR + l.replace(")","").replace("(","").replace("&/","and").replace(" * "," ").replace(" & "," ").replace(" /1","").replace("/2","by") + RESET
+        return COLOR + l.replace(")","").replace("(","").replace("||", MAGENTA + "or" + COLOR).replace("==>", CYAN + "implies" + COLOR).replace("<=>", CYAN + "equals" + COLOR).replace(">","").replace("<","").replace("&/","and").replace(" * "," ").replace(" & "," ").replace(" /1","").replace("/2","by") + RESET
     return ""
 
 if __name__ == "__main__":
