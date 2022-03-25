@@ -14,13 +14,21 @@ for i, (name, f) in enumerate(ops.items()):
 def NAR_numerics_execute(executions):
     if len(executions) > 0:
         execution = executions[0]
-        if execution["operator"] in ops.keys() and len(execution["arguments"]) > 0:
-            x, y = execution["arguments"].replace("(","").replace(")","").split(" * ")
-            result = ops[execution["operator"]](float(x), float(y))
-            NAR.AddInput("<%s --> result>. :|:" % str(result)) 
+        opname = execution["operator"]
+        if opname in ops.keys() and len(execution["arguments"]) > 0:
+            try:
+                x, y = execution["arguments"].replace("(","").replace(")","").split(" * ")
+                result = ops[opname](float(x), float(y))
+                NAR.AddInput("<%s --> [executed]>. :|:" % str(opname.replace("^","")))
+                NAR.AddInput("<%s --> result>. :|:" % str(result))
+            except:
+                None #wrong args, no result
 
 if __name__ == "__main__":
     while True:
-        inp = input().rstrip("\n")
+        try:
+            inp = input().rstrip("\n")
+        except:
+            exit(0)
         executions = NAR.AddInput(inp)["executions"]
         NAR_numerics_execute(executions)
