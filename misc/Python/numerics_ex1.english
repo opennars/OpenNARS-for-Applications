@@ -3,7 +3,7 @@
 *setopname 9 ^say
 
 //how to calculate bird view area of car
-<((<(car * $x) --> length> &/ <(car * $y) --> width>) &/ <({SELF} * ($x * $y)) --> ^mul>) =/> <mul --> [executed]>>.
+<((<(car * #1) --> length> &/ <(car * #2) --> width>) &/ <({SELF} * (#1 * #2)) --> ^mul>) =/> <mul --> [executed]>>.
 //comparison with parking lot of size 10
 <((<mul --> [executed]> &/ <#1 --> result>) &/ <({SELF} * (#1 * 10)) --> ^smaller>) =/> <smaller --> [executed]>>.
 //report comparison result
