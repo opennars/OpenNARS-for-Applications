@@ -347,6 +347,16 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
+                if(PRINT_SURPRISE && input)
+                {
+                    double surprise = 1.0;
+                    if(c->predicted_belief.type != EVENT_TYPE_DELETED)
+                    {
+                        float expectation = Truth_Expectation(Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->belief_spike.occurrenceTime));
+                        surprise = fabs(expectation - Truth_Expectation(c->belief_spike.truth));
+                    }
+                    printf("//SURPRISE %f\n", surprise);
+                }
             }
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
             {

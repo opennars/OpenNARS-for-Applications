@@ -45,6 +45,8 @@
 #define PRINT_DERIVATIONS_INITIAL false
 //Whether control information should be printed
 #define PRINT_CONTROL_INFO false
+//Whether surprisingness of events should be printed
+#define PRINT_SURPRISE false
 //Priority threshold for printing derivations
 #define PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL 0.0
 //Debug macros, debug printing, assert:
