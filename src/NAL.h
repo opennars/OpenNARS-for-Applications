@@ -67,6 +67,8 @@ R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
+R2( S, (S --> P), |-, P, Truth_Deduction )
+R2( P, (S --> P), |-, S, Truth_Abduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
