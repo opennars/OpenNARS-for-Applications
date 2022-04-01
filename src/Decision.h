@@ -56,16 +56,18 @@ typedef struct
     int operationID;
     Operation op;
     Term arguments;
-    bool specialized;
+    Implication missing_specific_implication;
     Event *reason;
 }Decision;
 
 //Methods//
 //-------//
+//Init module
+void Decision_INIT();
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
-void Decision_Anticipate(int operationID, long currentTime);
+void Decision_Anticipate(int operationID, Term op_term, long currentTime);
 //NAR decision making rule applying when goal is an operation
 Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
 

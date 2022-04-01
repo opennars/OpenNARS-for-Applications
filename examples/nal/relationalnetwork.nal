@@ -1,0 +1,24 @@
+*volume=100
+*motorbabbling=false
+
+<<($1 * $2) --> same> ==> <($2 * $1) --> same>>.
+<(<($1 * #1) --> same> && <(#1 * $2) --> same>) ==> <($1 * $2) --> same>>.
+
+<<($1 * $2) --> opposite> ==> <($2 * $1) --> opposite>>.
+<(<($1 * #1) --> opposite> && <(#1 * $2) --> opposite>) ==> <($1 * $2) --> same>>.
+<(<($1 * #1) --> same> && <(#1 * $2) --> opposite>) ==> <($1 * $2) --> opposite>>.
+<(<($1 * #1) --> opposite> && <(#1 * $2) --> same>) ==> <($1 * $2) --> opposite>>.
+
+<(*,A1,B1) --> same>.
+<(*,A1,C1) --> same>.
+<(*,A1,B2) --> opposite>.
+<(*,A1,C2) --> opposite>.
+
+<(*,C1,B1) --> same>?
+//expected: Answer: <(C1 * B1) --> same>. Truth: frequency=1.000000, confidence=0.211980
+<(*,B2,C2) --> same>?
+//expected: Answer: <(B2 * C2) --> same>. Truth: frequency=1.000000, confidence=0.421631
+<(*,B1,C2) --> opposite>?
+//expected: Answer: <(B1 * C2) --> opposite>. Truth: frequency=1.000000, confidence=0.421631
+<(*,C1,B2) --> opposite>?
+//expected: Answer: <(C1 * B2) --> opposite>. Truth: frequency=1.000000, confidence=0.421631

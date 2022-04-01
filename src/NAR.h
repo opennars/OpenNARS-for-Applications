@@ -55,7 +55,7 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occur
 Event NAR_AddInputBelief(Term term);
 Event NAR_AddInputGoal(Term term);
 //Add an operation
-void NAR_AddOperation(Term term, Action procedure);
+void NAR_AddOperation(char *atomname, Action procedure);
 //Add an Narsese sentence:
 void NAR_AddInputNarsese(char *narsese_sentence);
 

@@ -40,10 +40,12 @@ from nltk.corpus import stopwords
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('universal_tagset')
-nltk.download('wordnet')
+quiet = "quiet" in sys.argv
+nltk.download('punkt', quiet=quiet)
+nltk.download('averaged_perceptron_tagger', quiet=quiet)
+nltk.download('universal_tagset', quiet=quiet)
+nltk.download('wordnet', quiet=quiet)
+nltk.download('omw-1.4', quiet=quiet)
 
 SyntacticalTransformations = [
     #types of tuples of words with optional members
@@ -103,7 +105,7 @@ def sentence_and_types(text):
     handleInstance = lambda word: "{"+word+"}" if word[0].isupper() else word
     tokens = [handleInstance(lemma.lemmatize(word, pos = wordnet_tag(wordtypes[word]))) for word in tokens]
     wordtypes = dict([(tokens[i], wordtypes_ordered[i][1]) for i in range(len(tokens))])
-    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else value))) for (key,value) in wordtypes.items()}
+    wordtypes = {key : ("BE" if key == "be" else ("IF" if key == "if" else ("NOUN" if value=="PRON" or value=="NUM" else ("ADP" if value=="PRT" else value)))) for (key,value) in wordtypes.items()}
     indexed_wordtypes = []
     i = 0
     lasttoken = None
@@ -214,9 +216,11 @@ while True:
         line = input().rstrip("\n") #"the green cat quickly eats the yellow mouse in the old house"
     except:
         exit(0)
+    if len(line) == 0:
+        print("\n")
     isQuestion = line.endswith("?")
     isGoal = line.endswith("!")
-    isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<')
+    isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<') or line.endswith(":|:")
     isNegated = " not " in (" " + line.lower() + " ") or " no " in (" " + line.lower() + " ")
     if isCommand:
         if line.startswith("*eternal=false"):

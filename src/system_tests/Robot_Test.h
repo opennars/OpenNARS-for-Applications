@@ -506,9 +506,9 @@ void NAR_Robot(long iterations)
 {
     MOTOR_BABBLING_CHANCE = 0.3;
     puts(">>NAR Robot start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Robot_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
+    NAR_AddOperation("^left", NAR_Robot_Left);
+    NAR_AddOperation("^right", NAR_Robot_Right);
+    NAR_AddOperation("^forward", NAR_Robot_Forward);
     buildRooms();
     for(int i=0; i<23; i++) { spawnFood(true); }
     for(int i=0; i<23; i++) { spawnFood(false); }

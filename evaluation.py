@@ -145,7 +145,7 @@ QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
 for filename in glob.glob('./examples/english/*.english'):
-    Test(filename, subprocess.getoutput("python3 english_to_narsese.py < " + filename + " | ./NAR shell"))
+    Test(filename, subprocess.getoutput("python3 english_to_narsese.py quiet < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
     print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
 else:
@@ -163,6 +163,9 @@ print("\nQ&A answer rate global")
 print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
+
+print("\nSheep counting task:")
+print(subprocess.getoutput("python3 ./misc/Python/count_sheep.py").split("\n")[-1])
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")

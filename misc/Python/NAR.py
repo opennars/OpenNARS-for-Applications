@@ -36,7 +36,7 @@ def parseReason(sraw):
 def parseExecution(e):
     if "args " not in e:
         return {"operator" : e.split(" ")[0], "arguments" : []}
-    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
+    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
 
 def GetRawOutput():
     NAR.sendline("0")
@@ -47,7 +47,7 @@ def GetOutput():
     lines = GetRawOutput()
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
-    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
+    derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised:")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     reason = parseReason("\n".join(lines))
     return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}

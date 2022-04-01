@@ -11,7 +11,7 @@ void NAR_Op()
 int main()
 {
     NAR_INIT();
-    NAR_AddOperation(Narsese_AtomicTerm("^op"), NAR_Op);
+    NAR_AddOperation("^op", NAR_Op);
     NAR_AddInputNarsese("<(a &/ ^op) =/> g>.");
     NAR_AddInputNarsese("a. :|:");
     NAR_AddInputNarsese("g! :|:");

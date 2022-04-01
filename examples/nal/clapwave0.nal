@@ -1,0 +1,22 @@
+*volume=100
+*motorbabbling=false
+*setopname 1 ^clap
+*setopname 2 ^wave
+
+<(B1 &/ ^clap) =/> G>.
+<(B2 &/ ^wave) =/> G>.
+
+<A1 <=> B1>.
+<A1 <=> C1>.
+<A2 <=> B2>.
+<A2 <=> C2>.
+
+C1. :|:
+G! :|:
+//expected: ^clap executed with args
+
+100
+
+C2. :|:
+G! :|:
+//expected: ^wave executed with args

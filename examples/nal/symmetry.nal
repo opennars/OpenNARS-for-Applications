@@ -47,3 +47,4 @@
 <(x * w) --> like>. :|:
 <<($1 * $2) --> like> =/> <($2 * $1) --> like>>?
 //expected: Answer: <<($1 * $2) --> like> =/> <($2 * $1) --> like>>. Truth: frequency=0.983550, confidence=0.827508
+

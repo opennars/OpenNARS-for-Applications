@@ -25,13 +25,14 @@
 #include "Event.h"
 
 long base = 1;
-Event Event_InputEvent(Term term, char type, Truth truth, long currentTime)
+Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime)
 {
     return (Event) { .term = term,
                      .type = type, 
                      .truth = truth, 
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
                      .occurrenceTime = currentTime,
+                     .occurrenceTimeOffset = occurrenceTimeOffset,
                      .creationTime = currentTime };
 }
 
@@ -42,5 +43,10 @@ void Event_INIT()
 
 bool Event_Equal(Event *event, Event *existing)
 {
-    return Truth_Equal(&event->truth, &existing->truth) && Term_Equal(&event->term, &existing->term);
+    return Truth_Equal(&event->truth, &existing->truth) && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
+}
+
+bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
+{
+    return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
 }

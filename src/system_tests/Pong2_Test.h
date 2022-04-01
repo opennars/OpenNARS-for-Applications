@@ -40,9 +40,9 @@ void NAR_Pong_Stop()
 void NAR_Pong2(long iterations)
 {
     puts(">>NAR Pong start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^stop"), NAR_Pong_Stop); 
+    NAR_AddOperation("^left", NAR_Pong_Left);
+    NAR_AddOperation("^right", NAR_Pong_Right);
+    NAR_AddOperation("^stop", NAR_Pong_Stop);
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;

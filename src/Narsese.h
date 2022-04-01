@@ -46,7 +46,29 @@ extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
-#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!"
+#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?^_"
+#define PRODUCT '*'
+#define EXT_INTERSECTION '&'
+#define INT_INTERSECTION '|'
+#define CONJUNCTION ';'
+#define INHERITANCE ':'
+#define SIMILARITY '='
+#define TEMPORAL_IMPLICATION '$'
+#define INT_SET '\''
+#define EXT_SET '"'
+#define EXT_IMAGE1 '/'
+#define INT_IMAGE1 '\\'
+#define SET_ELEMT '.'
+#define EXT_DIFFERENCE '-'
+#define EXT_IMAGE2 '%'
+#define INT_IMAGE2 '#'
+#define INT_DIFFERENCE '~'
+#define SEQUENCE '+'
+#define NEGATION '!'
+#define IMPLICATION '?'
+#define EQUIVALENCE '^'
+#define DISJUNCTION '_'
+#define SET_TERMINATOR '@'
 
 //Methods//
 //-------//
@@ -59,15 +81,14 @@ char** Narsese_PrefixTransform(char* narsese_expanded);
 //Parses a Narsese string to a compound term
 Term Narsese_Term(char *narsese);
 //Parses a Narsese string to a compound term and a tv, tv is default if not present
-void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, bool *isUserKnowledge, Truth *destTv, double *occurrenceTimeOffset);
+void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, Truth *destTv, double *occurrenceTimeOffset);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b, bool *success);
 //Parses an atomic term string to a term
 Term Narsese_AtomicTerm(char *name);
 //Index of atomic term
 int Narsese_AtomicTermIndex(char *name);
-//Index of operator
-int Narsese_OperatorIndex(char *name);
+int Narsese_CopulaIndex(char name);
 //Print an atom
 void Narsese_PrintAtom(Atom atom);
 //Print a term
@@ -77,18 +98,22 @@ bool Narsese_copulaEquals(Atom atom, char name);
 //Whether it is an operator
 bool Narsese_isOperator(Atom atom);
 //Get operator id
-int Narsese_getOperationID(Term *term);
+Atom Narsese_getOperationAtom(Term *term);
+//Get operation term
+Term Narsese_getOperationTerm(Term *term);
 //Is an operation
 bool Narsese_isOperation(Term *term);
+//Is an executable op (has {SELF} or variable as first arg)
+bool Narsese_isExecutableOperation(Term *term);
 //Get precondition without operation
 Term Narsese_GetPreconditionWithoutOp(Term *precondition);
-//Get whether something is a true atom, not a copula
-bool Narsese_IsNonCopulaAtom(Atom atom);
+//Get whether something is a true atom, not a copula or variable
+bool Narsese_IsSimpleAtom(Atom atom);
+//Whether the term has a simple atom
+bool Narsese_HasSimpleAtom(Term *term);
 //Whether two Narsese strings are equal
 bool Narsese_StringEqual(char *name1, char *name2);
 //The hash code of a string
 HASH_TYPE Narsese_StringHash(char *name);
-//Whether something is a simple atom such as "cat"
-bool Narsese_IsSimpleAtom(Atom atom);
 
 #endif

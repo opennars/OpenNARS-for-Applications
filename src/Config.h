@@ -32,6 +32,8 @@
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
 #define ANTICIPATION_CONFIDENCE_INITIAL 0.01
+//Anticipate for concrete yet unexperienced outcomes derived from generals
+#define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 
 /*---------------------*/
 /* Decision parameters */
@@ -46,6 +48,10 @@
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
 //Whether temporal non-procedural implications are allowed to derive subgoals
 #define NOP_SUBGOALING true
+//Subsumption confidence threshold above which a specific hypothesis inhibits more generals
+#define SUBSUMPTION_CONFIDENCE_THRESHOLD 0.05
+//Subsumption confidence threshold below which a specific hypothesis inhibits more generals
+#define SUBSUMPTION_FREQUENCY_THRESHOLD 0.5
 
 /*----------------------*/
 /* Attention parameters */
@@ -56,8 +62,6 @@
 #define GOAL_EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
 #define EVENT_DURABILITY 0.9999
-//Additional event priority decay of an event which was used
-#define EVENT_DURABILITY_ON_USAGE 0.0
 //Concept priority decay of events per cycle
 #define CONCEPT_DURABILITY 0.9
 //Minimum confidence to accept events
@@ -73,7 +77,9 @@
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
-#define UNIFICATION_DEPTH 7
+#define UNIFICATION_DEPTH 31
+//Base priority for declarative inference on sequences
+#define SEQUENCE_BASE_PRIORITY 0.01
 
 /*------------------*/
 /* Space parameters */
@@ -88,6 +94,8 @@
 #define CYCLING_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
+//Maximum amount of arguments an operation can babble
+#define OPERATIONS_BABBLE_ARGS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
 //Maximum event FIFO size
@@ -124,5 +132,29 @@
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
+
+/*-----------------------*/
+/* Derivation parameters */
+/*-----------------------*/
+//The NAL level of semantic inference
+#define SEMANTIC_INFERENCE_NAL_LEVEL 8
+//Filter for twice appearing atoms
+#define ATOM_APPEARS_TWICE_FILTER true
+//Filter for derivations which include nested implications or equivalences
+#define NESTED_HOL_STATEMENT_FILTER true
+//Filter for inheritance or similarity statement with dependent var
+#define INH_OR_SIM_HAS_DEP_VAR_FILTER true
+//We don't allow higher-order statements with <A --> A> or <var1 --> var2> components
+#define HOL_STATEMENT_COMPONENT_HAS_INVALID_INH_OR_SIM_FILTER true
+//Whether a higher-order statement is invalid if it contains a inh or sim without var
+#define HOL_COMPONENT_NO_VAR_IS_INVALID_FILTER true
+//Whether a higher-order statement is invalid if it contains a inh or sim without atomic term
+#define HOL_COMPONENT_NO_ATOMIC_IS_INVALID_FILTER true
+//Filter disjunction or conjunction in derivation if not right nested
+#define JUNCTION_NOT_RIGHT_NESTED_FILTER true
+//Variables introduced in set with more than 1 element filter
+#define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
+//Filtering sub-statement terms with variables and atoms both like (&, $1, a)
+#define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 
 #endif

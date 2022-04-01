@@ -83,7 +83,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             {
                 ecp.term = e->term;
                 Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                if(decision.execute && decision.desire >= best_decision.desire)
                 {
                     best_decision = decision;
                 }
@@ -99,7 +99,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 if(success)
                 {
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+                    if(decision.execute && decision.desire >= best_decision.desire)
                     {
                         best_decision = decision;
                     }
@@ -136,14 +136,14 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
 {
     //1. Extract potential subgoals
-    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
     {
         return false;
     }
     Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
     Term cur_seq = selectedGoal->term;
     int i=0;
-    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], SEQUENCE); i++)
     {
         assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
         componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
@@ -241,7 +241,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, false, false);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false);
     return true;
 }
 
@@ -260,7 +260,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
             continue;
         }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime);
-        if(decision.execute && decision.desire > best_decision.desire && (!best_decision.specialized || decision.specialized))
+        if(decision.execute && decision.desire > best_decision.desire)
         {
             best_decision = decision;
         }
@@ -306,7 +306,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, false, false);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false);
                         }
                     }
                 }
@@ -322,18 +322,19 @@ void Cycle_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth co
                 .type = EVENT_TYPE_BELIEF, 
                 .truth = conclusionTruth, 
                 .stamp = stamp,
-                .occurrenceTime = conclusionOccurrence ,
+                .occurrenceTime = conclusionOccurrence,
+                .occurrenceTimeOffset = occurrenceTimeOffset,
                 .creationTime = currentTime };
     #pragma omp critical(Memory)
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), occurrenceTimeOffset, false, true, false, false, false);
+            Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false);
         }
     }
 }
 
-//Reinforce link between concept a and b (creating it if non-existent)
+//Reinforce link between concept a and b
 static void Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
@@ -352,20 +353,18 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
             Implication precondition_implication = Inference_BeliefInduction(a, b, &success);
             if(success)
             {
-                precondition_implication.sourceConcept = A;
-                precondition_implication.sourceConceptId = A->id;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
                     //extensional var intro:
                     bool success;
-                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
+                    Term general_implication_term_ext = Variable_IntroduceImplicationVariables(precondition_implication.term, &success, true);
                     if(success && Variable_hasVariable(&general_implication_term_ext, true, true, false))
                     {
                         Cycle_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
                     }
                     //intensional var intro:
                     bool success2;
-                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
+                    Term general_implication_term_int = Variable_IntroduceImplicationVariables(precondition_implication.term, &success2, false);
                     if(success2 && Variable_hasVariable(&general_implication_term_int, true, true, false))
                     {
                         Cycle_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
@@ -375,14 +374,6 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
                 }
             }
         }
-    }
-}
-
-void Cycle_PushEvents(long currentTime)
-{
-    for(int i=0; i<goalsSelectedCnt; i++)
-    {
-        Memory_AddEvent(&selectedGoals[i], currentTime, selectedGoalsPriority[i], 0, false, false, true, false, false);
     }
 }
 
@@ -397,14 +388,20 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
+                Concept *c = Memory_Conceptualize(&toProcess->term, currentTime);
+                if(c != NULL && SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && state > 1)
+                {
+                    Memory_AddEvent(toProcess, currentTime, SEQUENCE_BASE_PRIORITY, false, true, false, true);
+                }
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
                 if(state == 1) //postcondition always len1
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
-                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
+                    int op_id = Memory_getOperationID(&postcondition.term);
+                    Term op_term = Narsese_getOperationTerm(&postcondition.term);
+                    Decision_Anticipate(op_id, op_term, currentTime); //collection of negative evidence, new way
                     for(int k=1; k<belief_events.itemsAmount; k++)
                     {
                         for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
@@ -474,6 +471,4 @@ void Cycle_Perform(long currentTime)
     Cycle_ProcessInputGoalEvents(currentTime);
     //4. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
-    //5. Push in 1. selected events back to the queue as well, applying relative forgetting based on BELIEF_EVENT_DURABILITY_ON_USAGE
-    Cycle_PushEvents(currentTime);
 }

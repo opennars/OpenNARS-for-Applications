@@ -27,8 +27,8 @@ void NAR_Multistep2_Test()
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>NAR Multistep2 test start");
     NAR_INIT();
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_switch"), NAR_Lightswitch_GotoSwitch); 
-    NAR_AddOperation(Narsese_AtomicTerm("^activate_switch"), NAR_Lightswitch_ActivateSwitch); 
+    NAR_AddOperation("^goto_switch", NAR_Lightswitch_GotoSwitch);
+    NAR_AddOperation("^activate_switch", NAR_Lightswitch_ActivateSwitch);
     for(int i=0; i<5; i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));
