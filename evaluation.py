@@ -105,6 +105,7 @@ def Test(Example, outputString):
             if isExecutionCondition:
                 AnswerRatioTest = False
                 Message = line.split(expect_condition)[1]
+                HadAnswer = False
                 for j in reversed(range(i)):
                     line_before = lines[j].strip()
                     if line_before.startswith("^"):
@@ -114,7 +115,11 @@ def Test(Example, outputString):
                         else:
                             QuestionsAnswered += 1.0
                             QuestionsAnsweredGlobal += 1.0
+                            HadAnswer = True
                             break
+                if not HadAnswer:
+                    print("Failure for " + line + " in "+ Example)
+                    exit(0)
     if AnswerRatioTest:
         if QuestionsTotal > 0:
             print("\nQ&A stress test results for test " + Example)
@@ -163,9 +168,6 @@ print("\nQ&A answer rate global")
 print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
-
-print("\nSheep counting task:")
-print(subprocess.getoutput("python3 ./misc/Python/count_sheep.py").split("\n")[-1])
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")

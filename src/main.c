@@ -54,11 +54,6 @@ void Process_Args(int argc, char *argv[])
     if(argc >= 2)
     {
         NAR_INIT();
-        if(!strcmp(argv[1],"NAL_GenerateRuleTable"))
-        {
-            NAL_GenerateRuleTable();
-            exit(0);
-        }
         if(!strcmp(argv[1],"shell"))
         {
             Shell_Start();
