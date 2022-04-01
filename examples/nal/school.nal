@@ -39,6 +39,7 @@
 //the goal is to educate children
 <child --> [educated]>! :|:
 7
+
 //expected: ^pick executed with args ({SELF} * {obj1})
 //you are in a place with a large clock now (the corridor!)
 <door --> [open]>. :|:
