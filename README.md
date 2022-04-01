@@ -1,19 +1,10 @@
-<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/74609985-02087e80-50e7-11ea-9562-218dec34714d.png" height="250"></div>
+**Minimal Sensorimotor Component 2**
 
-Implementation of a Non-Axiomatic Reasoning System [6], a general-purpose reasoner that adapts under the Assumption of Insufficient Knowledge and Resources [7].
+<div style="text-align:center"><img src="https://user-images.githubusercontent.com/8284677/98208148-be83c800-1f34-11eb-8ab4-d6a0eb0eef77.png" height="350"></div>
 
-This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations in terms of reasoning performance, and has also been experimentally compared with Reinforcement Learning [5, 6] and means-end reasoning approaches such as BDI models [6]. Additionally, it has become the core reasoning component of a system assisting first responders (Trusted and explainable Artificial Intelligence for Saving Lives, [6]) while driving and completing their mission. This was done in cooperation with NASA Jet Propulsion Laboratory. Also it has been tried for real-time traffic surveillance in cooperation with Cisco Systems [7]. Last, initial experiments for using the system for autonomous robots have been carried out [6], and more is yet to come.
+This is a NARS implementation which supports only NAL6-8 inference, it's a stripped down version of what will become ONA v0.9.1.
 
-The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [8, 9] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [10] which was developed for research purposes. 
-
-Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
-Or click on the picture to watch the newest summary videos (summary and demo):
-
-[![Autonomy through real-time learning and OpenNARS for Applications](https://img.youtube.com/vi/B9SKu7u6G-I/0.jpg)](https://www.youtube.com/watch?v=B9SKu7u6G-I "Autonomy through real-time learning and OpenNARS for Applications")
-
-[![OpenNARS for Applications v0.9.0: Transbot](https://img.youtube.com/vi/lp6rNO-nIms/0.jpg)](https://www.youtube.com/watch?v=lp6rNO-nIms "ONA v0.9.0: Playing Fetch with Henry the robot")
-
-Procedure learning demos (variants of Pong and Space Invaders, Test Chamber, Cartpole, food collecting agent, ...): https://www.youtube.com/watch?v=oyQ250H5owE
+Video tutorials and demo videos of ONA (some of which also work with MSC3, especially the procedure learning examples), can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
