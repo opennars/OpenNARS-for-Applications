@@ -56,8 +56,6 @@
 /*----------------------*/
 /* Attention parameters */
 /*----------------------*/
-//Event selections per cycle for inference
-#define BELIEF_EVENT_SELECTIONS 1
 //Goal event selections per cycle for inference
 #define GOAL_EVENT_SELECTIONS 1
 //Event priority decay of events per cycle
@@ -88,8 +86,6 @@
 #define CONCEPTS_MAX 16384
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
-//Maximum amount of belief events attention buffer holds
-#define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
 #define CYCLING_GOAL_EVENTS_MAX 40
 //Maximum amount of operations which can be registered

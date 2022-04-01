@@ -171,20 +171,6 @@ int Shell_ProcessInput(char *line)
             puts("//*done");
         }
         else
-        if(!strcmp(line,"*cycling_belief_events"))
-        {
-            puts("//*cycling_belief_events");
-            for(int i=0; i<cycling_belief_events.itemsAmount; i++)
-            {
-                Event *e = cycling_belief_events.items[i].address;
-                assert(e != NULL, "Event is null");
-                Narsese_PrintTerm(&e->term);
-                printf(": { \"priority\": %f, \"time\": %ld } ", cycling_belief_events.items[i].priority, e->occurrenceTime);
-                Truth_Print(&e->truth);
-            }
-            puts("//*done");
-        }
-        else
         if(!strcmp(line,"*cycling_goal_events"))
         {
             puts("//*cycling_goal_events");

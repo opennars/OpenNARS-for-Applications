@@ -27,7 +27,6 @@
 //Concepts in main memory:
 PriorityQueue concepts;
 //cycling events cycling in main memory:
-PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events;
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
@@ -41,8 +40,6 @@ bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 //Storage arrays for the datastructures
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
-Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
-Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
 Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
 Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
@@ -53,13 +50,7 @@ double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL
 static void Memory_ResetEvents()
 {
     belief_events = (FIFO) {0};
-    PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
-    for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
-    {
-        cycling_belief_event_storage[i] = (Event) {0};
-        cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
-    }
     for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
     {
         cycling_goal_event_storage[i] = (Event) {0};
@@ -157,9 +148,6 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
     return NULL;
 }
 
-Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
-double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
-int beliefsSelectedCnt = 0;
 Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 int goalsSelectedCnt = 0;
@@ -176,56 +164,16 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
     return false;
 }
 
-bool Memory_containsBelief(Event *e)
-{
-    Concept *c = Memory_FindConceptByTerm(&e->term);
-    if(c != NULL)
-    {
-        if(e->type == EVENT_TYPE_BELIEF)
-        {
-            if(e->occurrenceTime == OCCURRENCE_ETERNAL)
-            {
-                if(c->belief.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief, e))
-                {
-                    return true;
-                }
-            }
-            else
-            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief_spike, e))
-            {
-                return true;
-            }
-        }
-        else
-        if(e->type == EVENT_TYPE_GOAL && c->goal_spike.type != EVENT_TYPE_DELETED && Event_Equal(&c->goal_spike, e))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
 bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime)
 {
-    assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
-    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e)) ||
-       (!sequenced && Memory_containsBelief(e))) //avoid duplicate derivations
+    assert(e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
+    if((e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e))) //avoid duplicate derivations
     {
         return false;
     }
-    Concept *c = Memory_FindConceptByTerm(&e->term);
-    if(c != NULL)
-    {
-        if(e->type == EVENT_TYPE_BELIEF && c->belief.type != EVENT_TYPE_DELETED && e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.truth.confidence > e->truth.confidence)
-        {
-            return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
-        }   //more radical than OpenNARS!
-    }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
-    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
+    PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&cycling_goal_events, priority);
     if(feedback.added)
     {
         Event *toRecyle = feedback.addedItem.address;
@@ -405,7 +353,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime);
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
     }
     if(event->type == EVENT_TYPE_GOAL)

@@ -410,10 +410,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
 void Cycle_RelativeForgetting(long currentTime)
 {
     //Apply event forgetting:
-    for(int i=0; i<cycling_belief_events.itemsAmount; i++)
-    {
-        cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
-    }
     for(int i=0; i<cycling_goal_events.itemsAmount; i++)
     {
         cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
@@ -427,7 +423,6 @@ void Cycle_RelativeForgetting(long currentTime)
     }
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
-    PriorityQueue_Rebuild(&cycling_belief_events);
     PriorityQueue_Rebuild(&cycling_goal_events);
 }
 
@@ -436,7 +431,6 @@ void Cycle_Perform(long currentTime)
     Metric_send("NARNode.Cycle", 1);
     //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
-    Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessInputBeliefEvents(currentTime);
     //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
