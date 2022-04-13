@@ -226,7 +226,7 @@ int Shell_ProcessInput(char *line)
         else
         if(!strncmp("*setopname ", line, strlen("*setopname ")))
         {
-            assert(currentTime == 1, "Operators can only be registered right after initialization / reset!");
+            assert(concepts.itemsAmount == 0, "Operators can only be registered right after initialization / reset!");
             int opID;
             char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
