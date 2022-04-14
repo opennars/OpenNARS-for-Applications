@@ -211,8 +211,8 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
-    memset(appearing_left, 0, ATOMS_MAX);
-    memset(appearing_right, 0, ATOMS_MAX);
+    memset(appearing_left, 0, ATOMS_MAX*sizeof(Atom));
+    memset(appearing_right, 0, ATOMS_MAX*sizeof(Atom));
     countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
     countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
     char depvar_i = 1;
@@ -259,10 +259,11 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     return implication;
 }
 
+int appearing_conjunction[ATOMS_MAX] = {0};
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
-    int appearing_conjunction[ATOMS_MAX] = {0};
+    memset(appearing_conjunction, 0, ATOMS_MAX*sizeof(Atom));
     Term left_side = conjunction;
     countHigherOrderStatementAtoms(&left_side, appearing_conjunction, extensionally);
     char depvar_i = 1;
