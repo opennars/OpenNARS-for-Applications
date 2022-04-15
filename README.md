@@ -22,11 +22,13 @@ git clone https://github.com/opennars/OpenNARS-for-Applications
 cd OpenNARS-for-Applications
 ./build.sh
 ```
+You can set a specific compiler to use via `CC` environment variable.
 
 ***How to set the amount of threads the system should run with: (to be tested more, compile with ./build.sh -fopenmp)***
 ```
 export OMP_NUM_THREADS=4  // 4 threads seems to be the sweet spot. More threads leads to more contention and less speed currently
 ```
+If you have trouble building with OpenMP, then you probably need to specify library (and / or sources) directory alongside the `-fopenmp` option, like `-L<path to your openmp>` or `-I<path to your openmp>`.
 
 If you have trouble building with OpenMP, then you probably need to specify library (and / or sources) directory alongside the `-fopenmp` option, like `-L<path to your openmp>` or `-I<path to your openmp>`.
 
