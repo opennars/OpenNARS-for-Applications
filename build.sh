@@ -13,8 +13,15 @@ echo "Compilation started:"
 BaseFlags="-g -pthread -lpthread -D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -g3 -O3 $sources -lm -oNAR"
 NoWarn="-Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unused-parameter -Wno-unused-variable"
 
+# check if we are on Windows, use SSE2 then
+if [ "$OSTYPE" == "cygwin" ]; then
+    echo "Compiling for Windows (x86/x64)."
+    # CC=i686-w64-mingw32-gcc
+    BaseFlags="-mfpmath=sse -msse2 $BaseFlags"
+fi
+
 # if CPU architecture is x86/x64, then use SSE2
-if [[ "$(uname -m)" == "x86"* ]]; then
+if [[ "$OSTYPE" != "cygwin" && "$(uname -m)" == "x86"* ]]; then
     echo "Compiling for x86/x64."
     BaseFlags="-mfpmath=sse -msse2 $BaseFlags"
 fi
