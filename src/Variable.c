@@ -204,13 +204,15 @@ static void countHigherOrderStatementAtoms(Term *term, int *appearing, bool exte
     countStatementAtoms(term, appearing, extensionally, false);
 }
 
+int appearing_left[ATOMS_MAX] = {0};
+int appearing_right[ATOMS_MAX] = {0};
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
-    int appearing_left[ATOMS_MAX] = {0};
-    int appearing_right[ATOMS_MAX] = {0};
+    memset(appearing_left, 0, ATOMS_MAX);
+    memset(appearing_right, 0, ATOMS_MAX);
     countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
     countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
     char depvar_i = 1;
