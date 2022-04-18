@@ -10,5 +10,5 @@ NoWarn="-Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unuse
 gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $NoWarn $BaseFlags
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 ./NAR NAL_GenerateRuleTable > ./src/RuleTable.c
-gcc $1 -mfpmath=sse -msse2 -DSTAGE=2 $NoWarn $BaseFlags src/RuleTable.c || (echo "Error with SSE, hence compiling without SSE:" && gcc $1 -DSTAGE=2 $NoWarn $BaseFlags src/RuleTable.c)
+gcc $@ -mfpmath=sse -msse2 -DSTAGE=2 $NoWarn $BaseFlags src/RuleTable.c || (echo "Error with SSE, hence compiling without SSE:" && gcc $1 -DSTAGE=2 $NoWarn $BaseFlags src/RuleTable.c)
 echo "Done."
