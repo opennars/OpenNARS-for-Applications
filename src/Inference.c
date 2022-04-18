@@ -43,7 +43,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
 	Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
-	if(Narsese_copulaEquals(a->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))
+	if(ALLOW_SEQUENCE_COMPRESSION && Narsese_copulaEquals(a->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))
 	{
 		Term predicate_a = Term_ExtractSubterm(&a->term, 2);
 		Term predicate_b = Term_ExtractSubterm(&b->term, 2);

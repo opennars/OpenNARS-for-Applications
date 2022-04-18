@@ -138,6 +138,8 @@
 /*-----------------------*/
 //The NAL level of semantic inference
 #define SEMANTIC_INFERENCE_NAL_LEVEL 8
+//Allow sequence compression:
+#define ALLOW_SEQUENCE_COMPRESSION false
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
