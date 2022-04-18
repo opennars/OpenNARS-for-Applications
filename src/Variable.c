@@ -206,18 +206,19 @@ static void countHigherOrderStatementAtoms(Term *term, int *appearing, bool exte
 
 int appearing_left[ATOMS_MAX] = {0};
 int appearing_right[ATOMS_MAX] = {0};
+char variable_id[ATOMS_MAX] = {0};
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
-    memset(appearing_left, 0, ATOMS_MAX*sizeof(Atom));
-    memset(appearing_right, 0, ATOMS_MAX*sizeof(Atom));
+    memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
+    memset(appearing_right, 0, ATOMS_MAX*sizeof(int));
     countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
     countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
     char depvar_i = 1;
     char indepvar_i = 1;
-    char variable_id[ATOMS_MAX] = {0};
+    memset(variable_id, 0, ATOMS_MAX*sizeof(char));
     Term implication_copy = implication;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
@@ -259,20 +260,19 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     return implication;
 }
 
-int appearing_conjunction[ATOMS_MAX] = {0};
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
-    memset(appearing_conjunction, 0, ATOMS_MAX*sizeof(Atom));
+    memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
     Term left_side = conjunction;
-    countHigherOrderStatementAtoms(&left_side, appearing_conjunction, extensionally);
+    countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
     char depvar_i = 1;
-    char variable_id[ATOMS_MAX] = {0};
+    memset(variable_id, 0, ATOMS_MAX*sizeof(char));
     Term conjunction_copy = conjunction;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom atom = conjunction_copy.atoms[i];
-        if(appearing_conjunction[(int) atom] >= 2)
+        if(appearing_left[(int) atom] >= 2)
         {
             int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
             if(var_id <= 9) //can only introduce up to 9 variables
