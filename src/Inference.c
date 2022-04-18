@@ -42,28 +42,6 @@ Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    bool makeSequence = false;
-   /* if(Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))//--> a b
-    {
-		Term predicate = Term_ExtractSubterm(&b->term, 2);
-		Term potential_seq = a->term;
-		while(Narsese_copulaEquals(potential_seq, SEQUENCE))//&/ a b
-		{
-			Term inheritance = Term_ExtractSubterm(&potential_seq, 2);
-			potential_seq = Term_ExtractSubterm(potential_seq, 1);
-#define NOT_INHERITANCE_WITH_SAME_PREDICATE (!Narsese_copulaEquals(inheritance->atoms[0], INHERITANCE) || !Term_Equal(&predicate, &inheritance))
-			if(NOT_INHERITANCE_WITH_SAME_PREDICATE)
-			{
-				makeSequence = true;
-				break;
-			}
-		}
-		Term inheritance = potential_seq; //the remaining inheritance needs the same check
-		if(NOT_INHERITANCE_WITH_SAME_PREDICATE)
-		{
-			makeSequence = true;
-		}
-	}*/
 	Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
 	if(Narsese_copulaEquals(a->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))
 	{
