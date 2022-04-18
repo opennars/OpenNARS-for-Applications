@@ -84,6 +84,8 @@ Term Narsese_Term(char *narsese);
 void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *tense, Truth *destTv, double *occurrenceTimeOffset);
 //Encodes a sequence
 Term Narsese_Sequence(Term *a, Term *b, bool *success);
+//Encodes a list statement
+Term Narsese_ListStatement(Term *a, Term *b, Term *predicate, bool *success);
 //Parses an atomic term string to a term
 Term Narsese_AtomicTerm(char *name);
 //Index of atomic term

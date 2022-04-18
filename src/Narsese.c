@@ -447,6 +447,16 @@ Term Narsese_Sequence(Term *a, Term *b, bool *success)
     return *success ? ret : (Term) {0};
 }
 
+Term Narsese_ListStatement(Term *a, Term *b, Term *predicate, bool *success)
+{   //                            1   2  3          4 5
+	//<(a . b) --> predicate>:  -->   .  predicate  a b
+    Term ret = {0};
+    ret.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+    ret.atoms[1] = Narsese_CopulaIndex(SET_ELEMT);
+    *success = Term_OverrideSubterm(&ret,3,a) && Term_OverrideSubterm(&ret,4,b) && Term_OverrideSubterm(&ret,2,predicate);
+    return *success ? ret : (Term) {0};
+}
+
 Term Narsese_AtomicTerm(char *name)
 {
     int number = Narsese_AtomicTermIndex(name);

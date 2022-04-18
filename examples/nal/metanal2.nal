@@ -1,0 +1,29 @@
+<garfield --> [hear]>. :|:
+<is --> [hear]>. :|:
+<cat --> [hear]>. :|:
+
+<cat --> [hear]>. :|:
+<is --> [hear]>. :|:
+<animal --> [hear]>. :|:
+
+20
+
+<garfield --> [hear]>. :|:
+<is --> [hear]>. :|:
+<animal --> [hear]>. :|:
+
+100
+
+<tweety --> [hear]>. :|:
+<is --> [hear]>. :|:
+<bird --> [hear]>. :|:
+
+20
+
+<bird --> [hear]>. :|:
+<is --> [hear]>. :|:
+<animal --> [hear]>. :|:
+
+10
+
+<((tweety . is) . animal) --> [hear]>? :|:

@@ -36,13 +36,50 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 {
     return (a1*w1+a2*w2)/(w1+w2);
 }
-                
+
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
-    Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
+    bool makeSequence = false;
+   /* if(Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))//--> a b
+    {
+		Term predicate = Term_ExtractSubterm(&b->term, 2);
+		Term potential_seq = a->term;
+		while(Narsese_copulaEquals(potential_seq, SEQUENCE))//&/ a b
+		{
+			Term inheritance = Term_ExtractSubterm(&potential_seq, 2);
+			potential_seq = Term_ExtractSubterm(potential_seq, 1);
+#define NOT_INHERITANCE_WITH_SAME_PREDICATE (!Narsese_copulaEquals(inheritance->atoms[0], INHERITANCE) || !Term_Equal(&predicate, &inheritance))
+			if(NOT_INHERITANCE_WITH_SAME_PREDICATE)
+			{
+				makeSequence = true;
+				break;
+			}
+		}
+		Term inheritance = potential_seq; //the remaining inheritance needs the same check
+		if(NOT_INHERITANCE_WITH_SAME_PREDICATE)
+		{
+			makeSequence = true;
+		}
+	}*/
+	Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
+	if(Narsese_copulaEquals(a->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))
+	{
+		Term predicate_a = Term_ExtractSubterm(&a->term, 2);
+		Term predicate_b = Term_ExtractSubterm(&b->term, 2);
+		if(Term_Equal(&predicate_a, &predicate_b))
+		{
+			Term subject_a = Term_ExtractSubterm(&a->term, 1);
+			Term subject_b = Term_ExtractSubterm(&b->term, 1);
+			Term listStatementTerm = Narsese_ListStatement(&subject_a, &subject_b, &predicate_a, success);
+			if(*success)
+			{
+				conclusionTerm = listStatementTerm;
+			}
+		}
+	}
     return *success ? (Event) { .term = conclusionTerm,
                                 .type = EVENT_TYPE_BELIEF,
                                 .truth = Truth_Intersection(truthA, truthB),
