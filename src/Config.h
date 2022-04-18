@@ -116,6 +116,8 @@
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
 #define NARSESE_LEN_MAX 256
+//Hashtable bucket size for atom counters in term
+#define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
 
 /*------------------*/
 /* Truth parameters */
