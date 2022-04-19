@@ -1,12 +1,12 @@
 #!/bin/sh
+rm NAR
+rm src/RuleTable.c
 set -e
 
 if [ -z "$CC" ]; then
     CC=gcc
 fi
 
-rm NAR
-rm src/RuleTable.c
 sources=$(ls src/*.c src/NetworkNAR/*.c | xargs)
 echo $sources
 echo "Compilation started:"
