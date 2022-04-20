@@ -354,11 +354,6 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
             Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
             if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
             {
-                Concept *c = Memory_Conceptualize(&toProcess->term, currentTime);
-                if(c != NULL && SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && state > 1)
-                {
-                    Memory_AddEvent(toProcess, currentTime, SEQUENCE_BASE_PRIORITY, false, true, false, true);
-                }
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
