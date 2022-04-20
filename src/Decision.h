@@ -53,9 +53,9 @@ typedef struct
 {
     double desire;
     bool execute;
-    int operationID;
-    Operation op;
-    Term arguments;
+    int operationID[MAX_SEQUENCE_LEN-1];
+    Operation op[MAX_SEQUENCE_LEN-1];
+    Term arguments[MAX_SEQUENCE_LEN-1];
     Implication missing_specific_implication;
     Event *reason;
 }Decision;

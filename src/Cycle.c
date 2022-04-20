@@ -265,7 +265,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
             best_decision = decision;
         }
     }
-    if(best_decision.execute && best_decision.operationID > 0)
+    if(best_decision.execute && best_decision.operationID[0] > 0)
     {
         //reset cycling goal events after execution to avoid "residue actions"
         PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
@@ -370,29 +370,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
                             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                             {
-                                if(state2 > 1)
-                                {
-                                    int substate = state2;
-                                    int shift = 0;
-                                    while(substate)
-                                    {
-                                        substate = (substate >> 1);
-                                        shift++;
-                                        if(substate & 1)
-                                        {
-                                            if(k+shift < FIFO_SIZE)
-                                            {
-                                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+shift, 1);
-                                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
-                                                {
-                                                    goto CONTINUE;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
                                 Cycle_ReinforceLink(precondition, &postcondition);
-                                CONTINUE:;
                             }
                         }
                     }
