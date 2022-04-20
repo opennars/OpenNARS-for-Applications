@@ -307,7 +307,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                         return; //we can't store proc. knowledge of other agents
                     }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
-                    sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                    sourceConceptTerm = Narsese_GetPreconditionWithoutOp(&subject); //gets rid of op as MSC links cannot use it
                 }
                 else
                 {

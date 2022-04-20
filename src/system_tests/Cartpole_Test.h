@@ -86,6 +86,7 @@ void NAR_Cartpole(long iterations)
         sprintf(str, "%d. :|:", encodingInt);
         NAR_AddInputNarsese(str);
         NAR_AddInputNarsese("good! :|:");
+        NAR_Cycles(3);
         fflush(stdout);
         if(iterations == -1)
         {

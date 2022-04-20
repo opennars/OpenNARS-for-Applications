@@ -739,12 +739,13 @@ Term Narsese_getOperationTerm(Term *term)
 
 Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 {
-    if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE))
+    if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE)) //&/ S P
     {
         Term potential_op = Term_ExtractSubterm(precondition, 2);
         if(Narsese_isOperation(&potential_op))
         {
-            return Term_ExtractSubterm(precondition, 1);
+            Term new_precondition = Term_ExtractSubterm(precondition, 1);
+            return Narsese_GetPreconditionWithoutOp(&new_precondition);
         }
     }
     return *precondition;
