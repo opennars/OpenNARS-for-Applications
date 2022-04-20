@@ -307,6 +307,10 @@ static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears 
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
+    if(varIntro && validation_concept != NULL && Narsese_copulaEquals(validation_concept->term.atoms[1], SET_ELEMT)) //--> .
+    {
+        return; //no generic var intro for list, instead var intro rules for this copula are explicitly stated in NAL.h
+    }
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
         bool success;
