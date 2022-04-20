@@ -1,0 +1,8 @@
+*volume=0
+*motorbabbling=false
+
+<((a &/ ^left) &/ ^right) =/> b>.
+a. :|:
+b! :|:
+//--expected: ^left executed with args (test system doesn't support two op exec checks currently)
+//expected: ^right executed with args
