@@ -215,6 +215,8 @@ R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!and for lists:
+R1( ((A . B) --> X), |-, (A --> X), Truth_StructuralDeduction )
+R1( ((A . B) --> X), |-, (B --> X), Truth_StructuralDeduction )
 R1( (((A . B) . C) --> X), |-, ((A . B) --> X), Truth_StructuralDeduction )
 R1( (((A . B) . C) --> X), |-, ((B . C) --> X), Truth_StructuralDeduction )
 R1( (((A . B) . C) --> X), |-, ((A . C) --> X), Truth_StructuralDeduction )
