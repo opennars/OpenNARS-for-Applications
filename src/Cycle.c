@@ -383,7 +383,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                                                 if(IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS || (!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION)))
                                                 {
                                                     bool success;
-                                                    Event seq_op = Inference_BeliefIntersection(&c->belief_spike, precondition, &success);
+                                                    Event seq_op = Inference_BeliefIntersection(&c->belief_spike, precondition, false, &success);
                                                     if(success)
                                                     {
                                                         Cycle_ReinforceLink(&seq_op, &postcondition); //<(A &/ op) =/> B>
@@ -413,12 +413,23 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
     }
 }
 
+//<A --> B>. :|:, <C --> B>. :|: after |- <(A . C) --> B>
+void Cycle_InferOrderedList(Event *a, Event *b, long currentTime, double parentPriority, double conceptPriority, Concept *validation_concept, long validation_cid)
+{
+    bool success;
+    Event conclusion = Inference_BeliefIntersection(a, b, true, &success);
+    if(success && Narsese_copulaEquals(conclusion.term.atoms[1], SET_ELEMT))
+    {
+        NAL_DerivedEvent(conclusion.term, conclusion.occurrenceTime, conclusion.truth, conclusion.stamp, currentTime, parentPriority, conceptPriority, 0.0, validation_concept, validation_cid, false);
+    }
+}
+
 //A, <A ==> B> |- B (Deduction)
 //A, <(A && B) ==> C> |- <B ==> C> (Deduction)
 //B, <A ==> B> |- A (Abduction')
 //A, (A && B) |- B  with dep var elim (Anonymous Analogy')
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
-                       long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
+                                    long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
     bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
@@ -573,8 +584,8 @@ void Cycle_Inference(long currentTime)
                             puts("");
                         }
                         RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                        Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                         Cycle_SpecialInferences(c->term, e->term, belief->truth, e->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        Cycle_InferOrderedList(belief, e, currentTime, priority, c->priority, c, validation_cid);
                     }
                 }
             })

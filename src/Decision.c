@@ -345,7 +345,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                              .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime };
                 bool success;
-                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
+                Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, false, &success);
                 if(success)
                 {
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:

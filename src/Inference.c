@@ -38,11 +38,26 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 }
                 
 //{Event a., Event b.} |- Event (&/,a,b).
-Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
+Event Inference_BeliefIntersection(Event *a, Event *b, bool buildList, bool *success)
 {
     assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
     DERIVATION_STAMP_AND_TIME(a,b)
     Term conclusionTerm = Narsese_Sequence(&a->term, &b->term, success);
+    if(buildList && Narsese_copulaEquals(a->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(b->term.atoms[0], INHERITANCE))
+	{
+		Term predicate_a = Term_ExtractSubterm(&a->term, 2);
+		Term predicate_b = Term_ExtractSubterm(&b->term, 2);
+		if(Term_Equal(&predicate_a, &predicate_b))
+		{
+			Term subject_a = Term_ExtractSubterm(&a->term, 1);
+			Term subject_b = Term_ExtractSubterm(&b->term, 1);
+			Term listStatementTerm = Narsese_ListStatement(&subject_a, &subject_b, &predicate_a, success);
+			if(*success)
+			{
+				conclusionTerm = listStatementTerm;
+			}
+		}
+	}
     return *success ? (Event) { .term = conclusionTerm,
                                 .type = EVENT_TYPE_BELIEF,
                                 .truth = Truth_Intersection(truthA, truthB),

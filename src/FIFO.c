@@ -66,7 +66,7 @@ void FIFO_Add(Event *event, FIFO *fifo)
         //and build and cache new sequence
         assert(event != NULL, "Event is not supposed to be NULL since sequence wasn't NULL!");
         bool success;
-        Event new_sequence = Inference_BeliefIntersection(sequence, event, &success);
+        Event new_sequence = Inference_BeliefIntersection(sequence, event, false, &success);
         if(!success || new_sequence.truth.confidence < MIN_CONFIDENCE) //Subsitution success and Apriory criteria
         {
             continue;

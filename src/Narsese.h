@@ -115,5 +115,7 @@ bool Narsese_HasSimpleAtom(Term *term);
 bool Narsese_StringEqual(char *name1, char *name2);
 //The hash code of a string
 HASH_TYPE Narsese_StringHash(char *name);
+//Encodes a list statement
+Term Narsese_ListStatement(Term *a, Term *b, Term *predicate, bool *success);
 
 #endif
