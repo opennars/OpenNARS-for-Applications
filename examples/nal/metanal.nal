@@ -6,4 +6,4 @@
 <((tweety . is) . bird) --> [hear]>. :|:
 <((bird . is) . animal) --> [hear]>. :|:
 <((tweety . is) . animal) --> [hear]>? :|:
-//expected: Answer: <((tweety . is) . animal) --> [hear]>. :|: occurrenceTime=107 Truth: frequency=1.000000, confidence=0.140756
+//expected: Answer: <((tweety . is) . animal) --> [hear]>. :|: occurrenceTime=107 Truth: frequency=0.984048, confidence=0.140207

@@ -154,5 +154,7 @@
 #define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
+//Don't use ==> and <=> as precondition in temporal compounding
+#define IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS true
 
 #endif
