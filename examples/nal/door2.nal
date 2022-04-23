@@ -1,7 +1,7 @@
 *setopname 1 ^go
-*setopname 1 ^pick
+*setopname 2 ^pick
 *motorbabbling=false
-*volume=100
+*volume=0
 
 <door1 --> [unlocked]>.
 10
@@ -9,9 +9,9 @@
 ^go. :|:
 <door1 --> [open]>. :|:
 
-10000
+20
 <<$1 --> [unlocked]> <=> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>?
-//expected: Answer: <<$1 --> [unlocked]> <=> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>. Truth: frequency=1.000000, confidence=0.166895
+//expected: Answer: <<$1 --> [unlocked]> <=> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>. Truth: frequency=1.000000, confidence=0.182063
 <<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>?
 //expected: Answer: <<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>. Truth: frequency=1.000000, confidence=0.182063
 

@@ -357,7 +357,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
                 Event postcondition = *toProcess;
-                //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
+                //Mine for <(&/,precondition,operation) =/> postcondition> and <precondition =/> postcondition> patterns using FIFO and ConceptMemory:
                 if(state == 1) //postcondition always len1
                 {
                     int op_id = Memory_getOperationID(&postcondition.term);
@@ -368,9 +368,42 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
-                            if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
+                            if(state2 == 1) //we just check for operation
                             {
-                                Cycle_ReinforceLink(precondition, &postcondition);
+                                int op_id_prec = Memory_getOperationID(&precondition->term);
+                                if(op_id_prec)
+                                {
+                                    for(int i=0; i<concepts.itemsAmount; i++)
+                                    {
+                                        Concept *c = concepts.items[i].address;
+                                        if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                                        {
+                                            if(c->belief_spike.occurrenceTime <= precondition->occurrenceTime && precondition->occurrenceTime < postcondition.occurrenceTime)
+                                            {
+                                                if(!NO_IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS || (!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION)))
+                                                {
+                                                    bool success;
+                                                    Event seq_op = Inference_BeliefIntersection(&c->belief_spike, precondition, &success);
+                                                    if(success)
+                                                    {
+                                                        Cycle_ReinforceLink(&seq_op, &postcondition); //<(A &/ op) =/> B>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for(int i=0; i<concepts.itemsAmount; i++)
+                    {
+                        Concept *c = concepts.items[i].address;
+                        if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                        {
+                            if(!NO_IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS || (!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION)))
+                            {
+                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
                             }
                         }
                     }
