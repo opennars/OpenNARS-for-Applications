@@ -155,6 +155,6 @@
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 //Don't use ==> and <=> as precondition in temporal compounding
-#define NO_IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS false
+#define IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS true
 
 #endif
