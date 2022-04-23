@@ -156,5 +156,7 @@
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 //Don't use ==> and <=> as precondition in temporal compounding
 #define IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS true
+//Whether conditioning on derived events is allowed or not
+#define DERIVED_EVENT_PRECONDITIONS true
 
 #endif

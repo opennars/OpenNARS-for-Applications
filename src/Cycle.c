@@ -368,7 +368,11 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                         for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
                         {
                             Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
-                            if(state2 == 1) //we just check for operation
+                            if(!DERIVED_EVENT_PRECONDITIONS)
+                            {
+                                Cycle_ReinforceLink(precondition, &postcondition);
+                            }
+                            if(DERIVED_EVENT_PRECONDITIONS && state2 == 1) //we just check for operation
                             {
                                 int op_id_prec = Memory_getOperationID(&precondition->term);
                                 if(op_id_prec)
@@ -396,7 +400,7 @@ void Cycle_ProcessInputBeliefEvents(long currentTime)
                             }
                         }
                     }
-                    for(int i=0; i<concepts.itemsAmount; i++)
+                    for(int i=0; DERIVED_EVENT_PRECONDITIONS && i<concepts.itemsAmount; i++)
                     {
                         Concept *c = concepts.items[i].address;
                         if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
