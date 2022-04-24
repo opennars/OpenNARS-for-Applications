@@ -220,7 +220,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
     }
     if(e->type == EVENT_TYPE_GOAL) //avoid duplicate derivations
     {
-        for(int layer=0; layer<CYCLING_GOAL_EVENTS_MAX; layer++)
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
         {
             if(Memory_containsEvent(&cycling_goal_events[layer], e))
             {
