@@ -114,6 +114,8 @@
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
 #define NARSESE_LEN_MAX 256
+//Goal events queue derivation depth layers
+#define CYCLING_GOAL_EVENTS_LAYERS 5
 
 /*------------------*/
 /* Truth parameters */

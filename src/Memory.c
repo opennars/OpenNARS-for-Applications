@@ -28,7 +28,7 @@
 PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_belief_events;
-PriorityQueue cycling_goal_events;
+PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event fifo:
@@ -43,8 +43,8 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
-Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
-Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
+Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
@@ -54,16 +54,19 @@ static void Memory_ResetEvents()
 {
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
-    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        cycling_goal_event_storage[i] = (Event) {0};
-        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
+        PriorityQueue_INIT(&cycling_goal_events[layer], cycling_goal_event_items_storage[layer], CYCLING_GOAL_EVENTS_MAX);
+        for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+        {
+            cycling_goal_event_storage[layer][i] = (Event) {0};
+            cycling_goal_events[layer].items[i] = (Item) { .address = &(cycling_goal_event_storage[layer][i]) };
+        }
     }
 }
 
@@ -207,14 +210,23 @@ bool Memory_containsBelief(Event *e)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime, int layer)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e)) ||
        (!sequenced && Memory_containsBelief(e))) //avoid duplicate derivations
     {
         return false;
+    }
+    if(e->type == EVENT_TYPE_GOAL) //avoid duplicate derivations
+    {
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+        {
+            if(Memory_containsEvent(&cycling_goal_events[layer], e))
+            {
+                return false;
+            }
+        }
     }
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
@@ -224,7 +236,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events[MIN(CYCLING_GOAL_EVENTS_LAYERS-1, layer+1)];
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
@@ -372,7 +384,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
@@ -382,7 +394,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer)
 {
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -405,13 +417,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
     }
     if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
@@ -422,7 +434,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
