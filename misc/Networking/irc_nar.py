@@ -33,7 +33,7 @@ import itertools
 
 server = "irc.freenode.net"
 channel = "#nars"
-botnick = "yan42"
+botnick = "nars42"
 Narsese_Filter=["^","Answer:"]
 process_start = ["./../../NAR","shell"]
 
@@ -59,27 +59,28 @@ thread.start_new_thread(receive_thread,(1,))
 while True:
     try:
         text=irc.recv(2040)
+        print(text)
         if "PING" in text:
             STR='PONG :' + text.split("PING :")[1].split("\n")[0] + '\r\n';
             irc.send(STR)
         else:
-            if "VERSION" in text:
+            if "VERSION" in text or "End of message of the day" in text:
                 irc.send("JOIN "+ channel +"\r\n") #join when version private message comes :D
             else:
                 SPL=text.split(":")
                 TEXT=":".join(SPL[2:len(SPL)])
                 if TEXT.replace(" ","").replace("\n","").replace("\r","")=="":
-		    continue
+                    continue
                 if TEXT.startswith("*reset"):
                     proc.stdin.write("*reset\n")
-                if TEXT.startswith("yan: ") or TEXT.startswith("(") or TEXT.startswith("<") or TEXT.startswith("100"):
-		    if TEXT.startswith("yan: "):
+                if TEXT.startswith("yan: ") or TEXT.startswith("(") or TEXT.startswith("<") or TEXT.startswith("100") or " :|:" in TEXT:
+                    if TEXT.startswith("yan: "):
                         TEXT = TEXT.split("yan: ")[1]
                     print "NAR input: "+TEXT
                     try:
                         proc.stdin.write(TEXT+"\n")
                     except:
                         None
-    except:
-        print "exception"
+    except Exception as exception:
+        print "exception" + str(exception)
 None
