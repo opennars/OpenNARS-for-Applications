@@ -133,7 +133,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 //{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 //if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
 //{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
-bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority)
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, int layer)
 {
     //1. Extract potential subgoals
     if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
@@ -241,12 +241,12 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false, layer);
     return true;
 }
 
 //Propagate subgoals, leading to decisions
-static void Cycle_ProcessInputGoalEvents(long currentTime)
+static void Cycle_ProcessInputGoalEvents(long currentTime, int layer)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -255,7 +255,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         //if goal is a sequence, overwrite with first deduced non-fulfilled element
-        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i])) //the goal was a sequence which leaded to a subgoal derivation
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], layer)) //the goal was a sequence which leaded to a subgoal derivation
         {
             continue;
         }
@@ -268,7 +268,10 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
     if(best_decision.execute && best_decision.operationID[0] > 0)
     {
         //reset cycling goal events after execution to avoid "residue actions"
-        PriorityQueue_INIT(&cycling_goal_events, cycling_goal_events.items, cycling_goal_events.maxElements);
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+        {
+            PriorityQueue_INIT(&cycling_goal_events[layer], cycling_goal_events[layer].items, cycling_goal_events[layer].maxElements);
+        }
         //also don't re-add the selected goal:
         goalsSelectedCnt = 0;
         //execute decision
@@ -306,7 +309,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false, layer);
                         }
                     }
                 }
@@ -602,9 +605,12 @@ void Cycle_RelativeForgetting(long currentTime)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
-    for(int i=0; i<cycling_goal_events.itemsAmount; i++)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        cycling_goal_events.items[i].priority *= EVENT_DURABILITY;
+        for(int i=0; i<cycling_goal_events[layer].itemsAmount; i++)
+        {
+            cycling_goal_events[layer].items[i].priority *= EVENT_DURABILITY;
+        }
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
@@ -616,19 +622,26 @@ void Cycle_RelativeForgetting(long currentTime)
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_belief_events);
-    PriorityQueue_Rebuild(&cycling_goal_events);
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        PriorityQueue_Rebuild(&cycling_goal_events[layer]);
+    }
 }
 
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
-    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events, GOAL_EVENT_SELECTIONS);
+    //1a. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
-    //2. Process incoming belief events from FIFO, building implications utilizing input sequences
+    //2a. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessInputBeliefEvents(currentTime);
-    //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_ProcessInputGoalEvents(currentTime);
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        //1b. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+        Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events[layer], GOAL_EVENT_SELECTIONS);
+        //2b. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
+        Cycle_ProcessInputGoalEvents(currentTime, layer);
+    }
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
