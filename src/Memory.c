@@ -28,7 +28,7 @@
 PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_belief_events;
-PriorityQueue cycling_goal_events;
+PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event fifo:
@@ -43,8 +43,8 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
-Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
-Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
+Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
@@ -54,16 +54,19 @@ static void Memory_ResetEvents()
 {
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
-    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        cycling_goal_event_storage[i] = (Event) {0};
-        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
+        PriorityQueue_INIT(&cycling_goal_events[layer], cycling_goal_event_items_storage[layer], CYCLING_GOAL_EVENTS_MAX);
+        for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+        {
+            cycling_goal_event_storage[layer][i] = (Event) {0};
+            cycling_goal_events[layer].items[i] = (Item) { .address = &(cycling_goal_event_storage[layer][i]) };
+        }
     }
 }
 
@@ -211,10 +214,19 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e)) ||
        (!sequenced && Memory_containsBelief(e))) //avoid duplicate derivations
     {
         return false;
+    }
+    if(e->type == EVENT_TYPE_GOAL) //avoid duplicate derivations
+    {
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_MAX; layer++)
+        {
+            if(Memory_containsEvent(&cycling_goal_events[layer], e))
+            {
+                return false;
+            }
+        }
     }
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
@@ -224,7 +236,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events[0];
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
