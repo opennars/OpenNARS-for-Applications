@@ -67,12 +67,10 @@ void Stats_Print(long currentTime)
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
     printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
-    int goal_events_cnt = 0;
     for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        goal_events_cnt += cycling_goal_events[layer].itemsAmount;
+        printf("curring goal events cnt:\t\t%d in layer %d\n", cycling_goal_events[layer].itemsAmount, layer);
     }
-    printf("curring goal events cnt:\t\t%d\n", goal_events_cnt);
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
     printf("current average goal event priority:\t%f\n", Stats_averageGoalEventPriority);
     printf("Maximum chain length in concept hashtable: %d\n", HashTable_MaximumChainLength(&HTconcepts));

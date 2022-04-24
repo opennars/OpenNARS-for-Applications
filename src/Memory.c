@@ -210,7 +210,7 @@ bool Memory_containsBelief(Event *e)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime, int layer)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
@@ -236,7 +236,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events[0];
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events[MIN(CYCLING_GOAL_EVENTS_LAYERS-1, layer+1)];
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
@@ -384,7 +384,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
@@ -394,7 +394,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer)
 {
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -417,13 +417,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
     }
     if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
@@ -434,7 +434,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
