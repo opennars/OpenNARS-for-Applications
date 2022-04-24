@@ -631,14 +631,15 @@ void Cycle_RelativeForgetting(long currentTime)
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+    //1a. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
-    //2. Process incoming belief events from FIFO, building implications utilizing input sequences
+    //2a. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessInputBeliefEvents(currentTime);
-    //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
-    for(int layer=CYCLING_GOAL_EVENTS_LAYERS-1; layer>=0; layer--)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
+        //1b. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
         Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_goal_events[layer], GOAL_EVENT_SELECTIONS);
+        //2b. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
         Cycle_ProcessInputGoalEvents(currentTime, layer);
     }
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
