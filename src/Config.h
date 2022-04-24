@@ -160,5 +160,7 @@
 #define IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS true
 //Whether conditioning on derived events is allowed or not
 #define DERIVED_EVENT_PRECONDITIONS true
+//Allow negation if negated result is above
+#define NEGATION_RESULT_ACCEPT_ABOVE_FREQUENCY 0.5
 
 #endif

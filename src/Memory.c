@@ -415,17 +415,25 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION);
     bool addedToCyclingEventsQueue = false;
+    bool derivedNegation = derived && Narsese_copulaEquals(event->term.atoms[0], NEGATION);
+    bool derivedNegationAccepted = event->truth.frequency > NEGATION_RESULT_ACCEPT_ABOVE_FREQUENCY;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
+        if(!derivedNegation)
+        {
+            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
+        }
+        if(!derivedNegation || derivedNegationAccepted)
+        {
+            Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
+        }
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
     }
-    if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
+    if((addedToCyclingEventsQueue || derivedNegationAccepted) && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
         Memory_printAddedEvent(event, priority, input, derived, revised, true);
     }
