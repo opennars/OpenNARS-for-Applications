@@ -95,7 +95,7 @@
 <{drink2} --> [white]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-//--expected: ^pick executed with args ({SELF} * {drink1})
+//expected: ^pick executed with args ({SELF} * {drink1})
 
 //Q&A time
 //What color does the floor have where the large clock is?
