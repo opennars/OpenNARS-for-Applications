@@ -34,7 +34,7 @@ import itertools
 server = "irc.libera.chat"
 channel = "#nars"
 botnick = "nars42"
-Narsese_Filter=["^","Answer:"]
+Narsese_Filter=[" executed with args","Answer:"]
 process_start = ["./../../NAR","shell"]
 
 proc = subprocess.Popen(process_start, stdin=subprocess.PIPE, stdout=subprocess.PIPE) 
