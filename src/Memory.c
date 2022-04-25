@@ -405,10 +405,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         return;
     }
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL && input && event->type == EVENT_TYPE_BELIEF)
-    {
-        FIFO_Add(event, &belief_events); //not revised yet
-    }
     if(input && (Narsese_isOperation(&event->term) || event->type == EVENT_TYPE_GOAL))
     {
         Memory_printAddedEvent(event, priority, input, false, false, true);

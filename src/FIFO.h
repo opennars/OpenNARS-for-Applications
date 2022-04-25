@@ -44,21 +44,16 @@ typedef struct
 {
     int itemsAmount;
     int currentIndex;
-    Event array[(1 << MAX_SEQUENCE_LEN)][FIFO_SIZE];
+    Event array[FIFO_SIZE];
 } FIFO;
-typedef struct
-{
-    Event *originalEvent;
-    Event projectedEvent;
-} FIFO_Query_Result;
 
 //Methods//
 //-------//
 //Add an event to the FIFO
 void FIFO_Add(Event *event, FIFO *fifo);
 //Get the newest element
-Event* FIFO_GetNewestSequence(FIFO *fifo, int state);
+Event* FIFO_GetNewestSequence(FIFO *fifo);
 //Get the k-th newest FIFO element
-Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int state);
+Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k);
 
 #endif
