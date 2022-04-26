@@ -352,7 +352,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
         Event *toProcess = &selectedBeliefs[i];
-        FIFO_Add(toProcess, &belief_events);
         if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && selectedBeliefsPriority[i] >= CORRELATE_OUTCOME_PRIORITY)
         {
             assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
@@ -361,28 +360,52 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             //Mine for <(&/,precondition,operation) =/> postcondition> and <precondition =/> postcondition> patterns using FIFO and ConceptMemory:
             int op_id = Memory_getOperationID(&postcondition.term);
             Term op_term = Narsese_getOperationTerm(&postcondition.term);
-            for(int k=1; k<belief_events.itemsAmount; k++)
+            if(op_id && postcondition.occurrenceTime != OCCURRENCE_ETERNAL)
             {
-                Event *operation = FIFO_GetKthNewestSequence(&belief_events, k);
-                int op_id_prec = Memory_getOperationID(&operation->term);
-                if(op_id_prec && Narsese_isOperation(&operation->term) && operation->occurrenceTime != OCCURRENCE_ETERNAL)
+                FIFO_Add(toProcess, &belief_events);
+            }
+            for(int i=0; !op_id && i<concepts.itemsAmount; i++)
+            {
+                Concept *c = concepts.items[i].address;
+                if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
                 {
-                    for(int i=0; i<concepts.itemsAmount; i++)
+                    if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
                     {
-                        Concept *c = concepts.items[i].address;
-                        if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                        for(int k2=0; k2<belief_events.itemsAmount; k2++) //search for next op to the right of FIFO
                         {
-                            if(c->belief_spike.occurrenceTime < operation->occurrenceTime && operation->occurrenceTime < postcondition.occurrenceTime)
+                            for(int cnt=0; cnt<=MAX_COMPOUND_OP_LEN; cnt++) //and only searching for cnt  ops
                             {
-                                if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
+                                Event seq_op_cur = c->belief_spike;
+                                int found = 0;
+                                for(int k3=k2; k3>=0; k3--) //let the search begin
                                 {
-                                    bool success;
-                                    Event seq_op = Inference_BeliefIntersection(&c->belief_spike, operation, &success);
-                                    if(success && seq_op.truth.confidence >= MIN_CONFIDENCE)
+                                    Event *op2 = FIFO_GetKthNewestSequence(&belief_events, k3);
+                                    int op2_id = Memory_getOperationID(&op2->term);
+                                    if(op2_id && Narsese_isOperation(&op2->term) && op2->occurrenceTime != OCCURRENCE_ETERNAL)
                                     {
-                                        Cycle_ReinforceLink(&seq_op, &postcondition); //<(A &/ op) =/> B>
+                                        if(seq_op_cur.occurrenceTime >= op2->occurrenceTime || op2->occurrenceTime >= postcondition.occurrenceTime)
+                                        {
+                                            goto FAIL;
+                                        }
+                                        bool success2;
+                                        seq_op_cur = Inference_BeliefIntersection(&seq_op_cur, op2, &success2);
+                                        if(!success2)
+                                        {
+                                            goto FAIL;
+                                        }
+                                        found++;
+                                        if(found == cnt)
+                                        {
+                                            break; //we found as many as we wanted
+                                        }
                                     }
                                 }
+                                //so now derive it
+                                if(found == cnt && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
+                                {
+                                    Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
+                                }
+                                FAIL:;
                             }
                         }
                     }

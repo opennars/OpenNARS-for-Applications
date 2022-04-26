@@ -82,6 +82,8 @@
 #define CORRELATE_OUTCOME_PRIORITY 0.3
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 2
+//Maximum compound op length
+#define MAX_COMPOUND_OP_LEN 2
 //Maximum time difference to form sequence between events
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 

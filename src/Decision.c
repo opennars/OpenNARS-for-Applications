@@ -58,7 +58,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 void Decision_Execute(Decision *decision)
 {
     int n_ops_to_execute = 0;
-    for(int i=0; i<MAX_SEQUENCE_LEN-1; i++)
+    for(int i=0; i<MAX_COMPOUND_OP_LEN; i++)
     {
         if(!decision->operationID[i])
         {
@@ -176,7 +176,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             {
                 break;
             }
-            if(i >= MAX_SEQUENCE_LEN)
+            if(i-1 >= MAX_COMPOUND_OP_LEN)
             {
                 assert(false, "Operation sequence longer than the FIFO can build, increase MAX_SEQUENCE_LEN if this knowledge should be supported.");
             }
