@@ -48,6 +48,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
+        c->lastSensorimotorActivation = currentTime;
         c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
@@ -371,7 +372,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         for(int i=0; i<concepts.itemsAmount; i++)
                         {
                             Concept *c = concepts.items[i].address;
-                            if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                            if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE) && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
                             {
                                 if(c->belief_spike.occurrenceTime < operation->occurrenceTime && operation->occurrenceTime < postcondition.occurrenceTime)
                                 {
@@ -393,7 +394,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             for(int i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
-                if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF)
+                if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF)
                 {
                     if(c->belief_spike.occurrenceTime < postcondition.occurrenceTime)
                     {

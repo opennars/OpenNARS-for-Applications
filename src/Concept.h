@@ -49,6 +49,7 @@ typedef struct {
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
     long processID; //avoids duplicate processing
+    long lastSensorimotorActivation;
 } Concept;
 
 //Methods//
