@@ -305,23 +305,6 @@ static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears 
     return false;
 }
 
-static bool NAL_HasIndepVarOnOneSideOfImpOrEq(Term *conclusionTerm)
-{
-    if(Narsese_copulaEquals(conclusionTerm->atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE))
-    {
-        Term subject = Term_ExtractSubterm(conclusionTerm, 1);
-        Term predicate = Term_ExtractSubterm(conclusionTerm, 2);
-        bool subject_has_indep_var = Variable_hasVariable(&subject, true, false, false);
-        bool predicate_has_indep_var = Variable_hasVariable(&subject, true, false, false);
-        if(( subject_has_indep_var && !predicate_has_indep_var) ||
-           (!subject_has_indep_var &&  predicate_has_indep_var))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
     if(varIntro && validation_concept != NULL && Narsese_copulaEquals(validation_concept->term.atoms[1], SET_ELEMT)) //--> .
@@ -374,7 +357,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_HasIndepVarOnOneSideOfImpOrEq(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false, 0);
             }
