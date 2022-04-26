@@ -78,6 +78,8 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
+//Priority to correlate an outcome
+#define CORRELATE_OUTCOME_PRIORITY 0.3
 
 /*------------------*/
 /* Space parameters */
@@ -102,6 +104,8 @@
 #define TABLE_SIZE 20
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 3
+//Maximum time difference to form sequence between events
+#define MAX_SEQUENCE_TIMEDIFF 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
