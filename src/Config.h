@@ -80,6 +80,10 @@
 #define UNIFICATION_DEPTH 31
 //Priority to correlate an outcome
 #define CORRELATE_OUTCOME_PRIORITY 0.3
+//Maximum length of sequences
+#define MAX_SEQUENCE_LEN 3
+//Maximum time difference to form sequence between events
+#define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */
@@ -102,10 +106,6 @@
 #define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
-//Maximum length of sequences
-#define MAX_SEQUENCE_LEN 3
-//Maximum time difference to form sequence between events
-#define MAX_SEQUENCE_TIMEDIFF 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
