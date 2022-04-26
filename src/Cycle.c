@@ -364,26 +364,23 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             for(int k=1; k<belief_events.itemsAmount; k++)
             {
                 Event *operation = FIFO_GetKthNewestSequence(&belief_events, k);
-                if(DERIVED_EVENT_PRECONDITIONS)// && state2 == 1) //we just check for operation
+                int op_id_prec = Memory_getOperationID(&operation->term);
+                if(op_id_prec)
                 {
-                    int op_id_prec = Memory_getOperationID(&operation->term);
-                    if(op_id_prec)
+                    for(int i=0; i<concepts.itemsAmount; i++)
                     {
-                        for(int i=0; i<concepts.itemsAmount; i++)
+                        Concept *c = concepts.items[i].address;
+                        if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
                         {
-                            Concept *c = concepts.items[i].address;
-                            if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                            if(c->belief_spike.occurrenceTime < operation->occurrenceTime && operation->occurrenceTime < postcondition.occurrenceTime)
                             {
-                                if(c->belief_spike.occurrenceTime < operation->occurrenceTime && operation->occurrenceTime < postcondition.occurrenceTime)
+                                if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
                                 {
-                                    if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
+                                    bool success;
+                                    Event seq_op = Inference_BeliefIntersection(&c->belief_spike, operation, &success);
+                                    if(success && seq_op.truth.confidence >= MIN_CONFIDENCE)
                                     {
-                                        bool success;
-                                        Event seq_op = Inference_BeliefIntersection(&c->belief_spike, operation, &success);
-                                        if(success && seq_op.truth.confidence >= MIN_CONFIDENCE)
-                                        {
-                                            Cycle_ReinforceLink(&seq_op, &postcondition); //<(A &/ op) =/> B>
-                                        }
+                                        Cycle_ReinforceLink(&seq_op, &postcondition); //<(A &/ op) =/> B>
                                     }
                                 }
                             }

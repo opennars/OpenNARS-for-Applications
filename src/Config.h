@@ -160,7 +160,5 @@
 #define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
-//Whether conditioning on derived events is allowed or not
-#define DERIVED_EVENT_PRECONDITIONS true
 
 #endif
