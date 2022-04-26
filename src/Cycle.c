@@ -402,16 +402,15 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
                             if(success && seq.truth.confidence >= MIN_CONFIDENCE && !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
                             {
-                                bool aboveMaxLenSeq = true;
-                                for(int i=1; i<=MAX_SEQUENCE_LEN+1; i*=2)
+                                int sequence_len = 0;
+                                for(int i=1; sequence_len<MAX_SEQUENCE_LEN && i<COMPOUND_TERM_SIZE_MAX; i*=2, sequence_len++)
                                 {
                                     if(!Narsese_copulaEquals(seq.term.atoms[i-1], SEQUENCE))
                                     {
-                                        aboveMaxLenSeq = false;
                                         break;
                                     }
                                 }
-                                if(!aboveMaxLenSeq) //only build seq if within len
+                                if(sequence_len < MAX_SEQUENCE_LEN) //only build seq if within len
                                 {
                                     Cycle_ProcessSensorimotorEvent(&seq, currentTime);
                                 }

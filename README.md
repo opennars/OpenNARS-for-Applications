@@ -91,7 +91,7 @@ where the output can be logged simply by appending
 
 **How to reach us:**
 
-Real-time team chat: #nars IRC channel @ freenode.net, #nars:matrix.org (accessible via Riot.im)
+Real-time team chat: #nars IRC channel @ libera.chat, #nars:matrix.org (accessible via Riot.im)
 
 Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
