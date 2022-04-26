@@ -365,7 +365,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             {
                 Event *operation = FIFO_GetKthNewestSequence(&belief_events, k);
                 int op_id_prec = Memory_getOperationID(&operation->term);
-                if(op_id_prec)
+                if(op_id_prec && Narsese_isOperation(&operation->term) && operation->occurrenceTime != OCCURRENCE_ETERNAL)
                 {
                     for(int i=0; i<concepts.itemsAmount; i++)
                     {
