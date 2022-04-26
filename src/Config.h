@@ -78,6 +78,12 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
+//Priority to correlate an outcome
+#define CORRELATE_OUTCOME_PRIORITY 0.3
+//Maximum length of sequences
+#define MAX_SEQUENCE_LEN 3
+//Maximum time difference to form sequence between events
+#define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */
@@ -100,8 +106,6 @@
 #define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
-//Maximum length of sequences
-#define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
@@ -156,9 +160,5 @@
 #define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
-//Don't use ==> and <=> as precondition in temporal compounding
-#define IMPLICATION_OR_EQUIVALENCE_PRECONDITIONS true
-//Whether conditioning on derived events is allowed or not
-#define DERIVED_EVENT_PRECONDITIONS true
 
 #endif

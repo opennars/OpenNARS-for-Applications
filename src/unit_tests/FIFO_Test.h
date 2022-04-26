@@ -39,7 +39,7 @@ void FIFO_Test()
     }
     for(int i=0; i<FIFO_SIZE; i++)
     {
-        assert(FIFO_SIZE-i == fifo.array[0][i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
+        assert(FIFO_SIZE-i == fifo.array[i].stamp.evidentalBase[0], "Item at FIFO position has to be right");
     }
     assert(fifo.itemsAmount == FIFO_SIZE, "FIFO size differs");
     puts("<<FIFO Test successful");
