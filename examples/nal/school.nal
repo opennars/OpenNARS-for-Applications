@@ -31,7 +31,7 @@
 //knobs are on door
 <(knob * door) --> on>.
 
-7
+5
 //obj1 is on the door
 <({obj1} * door) --> on>. :|:
 //and an object on a window
@@ -48,7 +48,7 @@
 <floor --> [red]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-7
+5
 //expected: ^go executed with args ({SELF} * classrom)
 //you are somewhere with a clean blackboard (you are in the classroom!)
 <blackboard --> [clean]>. :|:
@@ -56,7 +56,7 @@
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-7
+5
 //expected: ^pick executed with args ({SELF} * write)
 //your are at a place with a blackboard which now is dirty (blackboard was used!)
 <blackboard --> [dirty]>. :|:
@@ -64,7 +64,7 @@
 <floor --> [blue]>. :|:
 //the goal is to educate children
 <child --> [educated]>! :|:
-7
+5
 //expected: ^pick executed with args ({SELF} * sponge)
 //you are at a place with a clean blackboard now (still in the classroom!)
 <blackboard --> [clean]>. :|:
@@ -72,7 +72,7 @@
 <floor --> [blue]>. :|:
 //you are really tired now, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-7
+5
 
 //expected: ^go executed with args ({SELF} * corridor)
 //now you are in the place with a large clock (the corridor!)
@@ -82,7 +82,7 @@
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
 
-7
+5
 
 //expected: ^go executed with args ({SELF} * kitchen)
 //now you are at a place with a microwave which is on

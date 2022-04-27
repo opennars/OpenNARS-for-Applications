@@ -78,8 +78,14 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
-//Base priority for declarative inference on sequences
-#define SEQUENCE_BASE_PRIORITY 0.01
+//Priority to correlate an outcome
+#define CORRELATE_OUTCOME_PRIORITY 0.3
+//Maximum length of sequences
+#define MAX_SEQUENCE_LEN 2
+//Maximum compound op length
+#define MAX_COMPOUND_OP_LEN 2
+//Maximum time difference to form sequence between events
+#define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */
@@ -102,8 +108,6 @@
 #define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
-//Maximum length of sequences
-#define MAX_SEQUENCE_LEN 3
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
@@ -116,6 +120,8 @@
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
 #define NARSESE_LEN_MAX 256
+//Goal events queue derivation depth layers
+#define CYCLING_GOAL_EVENTS_LAYERS 5
 
 /*------------------*/
 /* Truth parameters */

@@ -209,85 +209,90 @@ int appearing_right[ATOMS_MAX] = {0};
 char variable_id[ATOMS_MAX] = {0};
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
-    assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
-    Term left_side = Term_ExtractSubterm(&implication, 1);
-    Term right_side = Term_ExtractSubterm(&implication, 2);
-    memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
-    memset(appearing_right, 0, ATOMS_MAX*sizeof(int));
-    countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
-    countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
-    char depvar_i = 1;
-    char indepvar_i = 1;
-    memset(variable_id, 0, ATOMS_MAX*sizeof(char));
-    Term implication_copy = implication;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    #pragma omp critical(VarIntro)
     {
-        Atom atom = implication_copy.atoms[i];
-        if(appearing_left[(int) atom] >= 2 || appearing_right[(int) atom] >= 2 || (appearing_left[(int) atom] && appearing_right[(int) atom]))
+        assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
+        Term left_side = Term_ExtractSubterm(&implication, 1);
+        Term right_side = Term_ExtractSubterm(&implication, 2);
+        memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
+        memset(appearing_right, 0, ATOMS_MAX*sizeof(int));
+        countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
+        countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
+        char depvar_i = 1;
+        char indepvar_i = 1;
+        memset(variable_id, 0, ATOMS_MAX*sizeof(char));
+        Term implication_copy = implication;
+        *success = true;
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
-            if(appearing_right[(int) atom] && appearing_left[(int) atom])
+            Atom atom = implication_copy.atoms[i];
+            if(appearing_left[(int) atom] >= 2 || appearing_right[(int) atom] >= 2 || (appearing_left[(int) atom] && appearing_right[(int) atom]))
             {
-                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
-                if(var_id <= 9) //can only introduce up to 9 variables
+                if(appearing_right[(int) atom] && appearing_left[(int) atom])
                 {
-                    char varname[3] = { '$', ('0' + var_id), 0 }; //$i
-                    Term varterm = Narsese_AtomicTerm(varname);
-                    if(!Term_OverrideSubterm(&implication, i, &varterm))
+                    int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
+                    if(var_id <= 9) //can only introduce up to 9 variables
                     {
-                        *success = false;
-                        return implication;
+                        char varname[3] = { '$', ('0' + var_id), 0 }; //$i
+                        Term varterm = Narsese_AtomicTerm(varname);
+                        if(!Term_OverrideSubterm(&implication, i, &varterm))
+                        {
+                            *success = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
+                    if(var_id <= 9) //can only introduce up to 9 variables
+                    {
+                        char varname[3] = { '#', ('0' + var_id), 0 }; //#i
+                        Term varterm = Narsese_AtomicTerm(varname);
+                        if(!Term_OverrideSubterm(&implication, i, &varterm))
+                        {
+                            *success = false;
+                            break;
+                        }
                     }
                 }
             }
-            else
+        }
+    }
+    return implication;
+}
+
+Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
+{
+    #pragma omp critical(VarIntro)
+    {
+        assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
+        memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
+        Term left_side = conjunction;
+        countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
+        char depvar_i = 1;
+        memset(variable_id, 0, ATOMS_MAX*sizeof(char));
+        Term conjunction_copy = conjunction;
+        *success = true;
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            Atom atom = conjunction_copy.atoms[i];
+            if(appearing_left[(int) atom] >= 2)
             {
                 int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
                 if(var_id <= 9) //can only introduce up to 9 variables
                 {
                     char varname[3] = { '#', ('0' + var_id), 0 }; //#i
                     Term varterm = Narsese_AtomicTerm(varname);
-                    if(!Term_OverrideSubterm(&implication, i, &varterm))
+                    if(!Term_OverrideSubterm(&conjunction, i, &varterm))
                     {
                         *success = false;
-                        return implication;
+                        break;
                     }
                 }
             }
         }
-        
     }
-    *success = true;
-    return implication;
-}
-
-Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
-{
-    assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
-    memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
-    Term left_side = conjunction;
-    countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
-    char depvar_i = 1;
-    memset(variable_id, 0, ATOMS_MAX*sizeof(char));
-    Term conjunction_copy = conjunction;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-    {
-        Atom atom = conjunction_copy.atoms[i];
-        if(appearing_left[(int) atom] >= 2)
-        {
-            int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
-            if(var_id <= 9) //can only introduce up to 9 variables
-            {
-                char varname[3] = { '#', ('0' + var_id), 0 }; //#i
-                Term varterm = Narsese_AtomicTerm(varname);
-                if(!Term_OverrideSubterm(&conjunction, i, &varterm))
-                {
-                    *success = false;
-                    return conjunction;
-                }
-            }
-        }
-    }
-    *success = true;
     return conjunction;
 }
 

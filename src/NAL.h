@@ -214,6 +214,23 @@ R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) 
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+//!and for lists:
+R1( ((A . B) --> X), |-, (A --> X), Truth_StructuralDeduction )
+R1( ((A . B) --> X), |-, (B --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((A . B) --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((B . C) --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((A . C) --> X), Truth_StructuralDeduction )
+R2( (((A . R) . B) --> X), (((B . R) . A) --> X), |-, (((($2 . R) . $1) --> X) ==> ((($1 . R) . $2) --> X)), Truth_Induction ) //SVP
+R2( (((R . A) . B) --> X), (((R . B) . A) --> X), |-, ((((R . $2) . $1) --> X) ==> (((R . $1) . $2) --> X)), Truth_Induction ) //VSP
+R2( (((A . B) . R) --> X), (((B . A) . R) --> X), |-, (((($1 . $2) . R) --> X) ==> ((($2 . $1) . R) --> X)), Truth_Induction ) //SPV
+R2( (((A . R) . B) --> X), (((B . R) . C) --> X), |-, ((((A . R) . B) --> X) && (((B . R) . C) --> X)), Truth_Intersection ) //SVP
+R2( (((R . A) . B) --> X), (((R . B) . C) --> X), |-, ((((R . A) . B) --> X) && (((R . B) . C) --> X)), Truth_Intersection ) //VSP
+R2( (((A . B) . R) --> X), (((B . C) . R) --> X), |-, ((((A . B) . R) --> X) && (((B . C) . R) --> X)), Truth_Intersection ) //SPV
+R2( (((A . R) . C) --> X), ((((A . R) . B) --> X) && (((B . R) . C) --> X)), |-, ((((($2 . R) . #1) --> X) && (((#1 . R) . $1) --> X)) ==> ((($2 . R) . $1) --> X)), Truth_Induction ) //SVP
+R2( (((R . A) . C) --> X), ((((R . A) . B) --> X) && (((R . B) . C) --> X)), |-, (((((R . $2) . #1) --> X) && (((R . #1) . $1) --> X)) ==> (((R . $2) . $1) --> X)), Truth_Induction ) //VSP
+R2( (((A . C) . R) --> X), ((((A . B) . R) --> X) && (((B . C) . R) --> X)), |-, ((((($1 . #1) . R) --> X) && (((#1 . $2) . R) --> X)) ==> ((($1 . $2) . R) --> X)), Truth_Induction ) //SPV
+R2( ((A . B) --> R), (C <-> A), |-, ((C . B) --> R), Truth_Analogy )
+R2( ((A . B) --> R), (C <-> B), |-, ((A . C) --> R), Truth_Analogy )
 //!Variable elimination in Cycle_SpecialInferences
 #endif
 
@@ -236,13 +253,6 @@ R2( ((A &/ B) =/> C), (S ==> B), |-, ((A &/ S) =/> C), Truth_Deduction )
 R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
 R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
 R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
-//!Relating sequences to each other
-R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) ==> (A &/ B)), Truth_Induction )
-R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) ==> (S &/ P)), Truth_Abduction )
-R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) <=> (S &/ P)), Truth_Comparison )
-R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) <=> (A &/ B)), Truth_Comparison )
-R2VarIntro( (A &/ B), (S &/ P), |-, ((A &/ B) && (S &/ P)), Truth_Intersection )
-R2VarIntro( (A &/ B), (S &/ P), |-, ((S &/ P) && (A &/ B)), Truth_Intersection )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
@@ -253,13 +263,6 @@ R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)),
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) && (S --> P)), Truth_Intersection )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
-//!Relating sequences to contingencies
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) ==> ((A &/ Op) =/> C)), Truth_Induction )
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) ==> (S &/ P)), Truth_Abduction )
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) <=> (S &/ P)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, (((A &/ Op) =/> C) && (S &/ P)), Truth_Intersection )
-R2VarIntro( ((A &/ Op) =/> C), (S &/ P), |-, ((S &/ P) && ((A &/ Op) =/> C)), Truth_Intersection )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
