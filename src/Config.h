@@ -86,6 +86,8 @@
 #define MAX_COMPOUND_OP_LEN 2
 //Maximum time difference to form sequence between events
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
+//Allow events which have not been selected to become preconditions
+#define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
 
 /*------------------*/
 /* Space parameters */
