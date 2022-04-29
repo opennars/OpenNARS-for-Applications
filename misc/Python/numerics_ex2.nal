@@ -1,6 +1,5 @@
 *volume=0
 *setopname 9 ^say
-*motivation=G! :|:
 *motorbabbling=false
 
 <((<(#1 * #2) --> dimension> &/ <({SELF} * (#1 * 10)) --> ^smaller>) &/ <({SELF} * (#2 * 20)) --> ^smaller>) =/> <smaller --> [executed]>>.
