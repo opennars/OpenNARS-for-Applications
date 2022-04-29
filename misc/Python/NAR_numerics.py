@@ -45,15 +45,19 @@ def NAR_numerics_execute(executions):
                     if " *" in execution["arguments"]:
                         x, y = execution["arguments"].replace("(","").replace(")","").split(" * ")
                         result = ops[opname](float(x), float(y))
-                        if i == len(executions) - 1:
+                        if i == len(executions) - 1 or result == False:
                             NAR.AddInput("<%s --> [executed]>. :|:" % str(opname.replace("^","")))
                             NAR.AddInput("<%s --> result>. :|:" % str(result))
+                        if result == False:
+                            break
                     else:
                         y = execution["arguments"]
                         result = ops[opname](float(result), float(y))
-                        if i == len(executions) - 1:
+                        if i == len(executions) - 1 or result == False:
                             NAR.AddInput("<%s --> [executed]>. :|:" % str(opname.replace("^","")))
                             NAR.AddInput("<%s --> result>. :|:" % str(result))
+                        if result == False:
+                            break
                 except:
                     None #wrong args, no result
 
