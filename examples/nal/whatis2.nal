@@ -1,0 +1,36 @@
+*volume=0
+<(THIS . DOG) --> [hear]>. :|:
+<dog --> [see]>. :|:
+30
+
+<dog --> [see]>. :|:
+<({SELF} * DOG) --> ^say>. :|:
+G. :|:
+50
+<(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ <({SELF} * $2) --> ^say>) =/> G>>?
+//expected: Answer: <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ <({SELF} * $2) --> ^say>) =/> G>>. creationTime=41 Truth: frequency=1.000000, confidence=0.079761
+
+<(<$1 --> [see]> &/ <({SELF} * $2) --> ^say>) =/> G>. %0%
+
+100
+
+<(THIS . BANANA) --> [hear]>. :|:
+<banana --> [see]>. :|:
+
+100
+
+<(THIS . CAT) --> [hear]>. :|:
+<cat --> [see]>. :|:
+
+100
+
+<cat --> [see]>. :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * CAT)
+
+100
+
+<banana --> [see]>. :|:
+G! :|:
+//expected: ^say executed with args ({SELF} * BANANA)
+
