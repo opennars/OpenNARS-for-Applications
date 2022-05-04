@@ -1,0 +1,8 @@
+<(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <((<(WHERE . $2) --> [hear]> &/ <$1 --> [see]>) &/ <({SELF} * $1) --> ^pick>) =/> G>.
+<(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <((<(WHAT . THAT) --> [hear]> &/ <$1 --> [see]>) &/ <({SELF} * $2) --> ^say>) =/> G>>.
+<(THIS . CAT) --> [hear]>. :|:
+<cat --> [see]>. :|:
+<((<(WHERE . CAT) --> [hear]> &/ <cat --> [see]>) &/ <({SELF} * cat) --> ^pick>) =/> G>?
+//expected: Answer: <((<(WHERE . CAT) --> [hear]> &/ <cat --> [see]>) &/ <({SELF} * cat) --> ^pick>) =/> G>. Truth: frequency=1.000000, confidence=0.261384
+<((<(WHAT . THAT) --> [hear]> &/ <cat --> [see]>) &/ <({SELF} * CAT) --> ^say>) =/> G>?
+//expected: Answer: <((<(WHAT . THAT) --> [hear]> &/ <cat --> [see]>) &/ <({SELF} * CAT) --> ^say>) =/> G>. Truth: frequency=1.000000, confidence=0.261384
