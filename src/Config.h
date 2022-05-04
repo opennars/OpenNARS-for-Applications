@@ -70,6 +70,8 @@
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
+//Creation time distance to allow result sequence (a ^op res) to imply a new contingency which has been formed
+#define RESULT_SEQUENCE_DISTANCE 100
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
@@ -111,7 +113,7 @@
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 64
+#define COMPOUND_TERM_SIZE_MAX 128
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap

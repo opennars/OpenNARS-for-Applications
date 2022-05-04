@@ -287,40 +287,39 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
-    Event eternal_event = *event;
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    Event eternal_event = Event_Eternalized(event);
+    if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && Narsese_copulaEquals(event->term.atoms[2], TEMPORAL_IMPLICATION) && Narsese_copulaEquals(event->term.atoms[5], SEQUENCE)) //only <S ==> <(A &/ Op) =/> B>>
     {
-        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-        eternal_event.truth = Truth_Eternalize(event->truth);
-    }
-    if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION))
-    {
-        //get predicate and add the subject to precondition table as an implication
-        Term subject = Term_ExtractSubterm(&event->term, 1);
-        Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *source_concept = Memory_Conceptualize(&subject, currentTime, false);
-        if(source_concept != NULL)
+        Term potential_op = Term_ExtractSubterm(&event->term, 12);
+        if(Narsese_isOperation(&potential_op) && Variable_hasVariable(&event->term, true, true, false))
         {
-			source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-            Implication imp = { .truth = eternal_event.truth,
-                                .stamp = eternal_event.stamp,
-                                .occurrenceTimeOffset = event->occurrenceTimeOffset,
-                                .creationTime = currentTime };
-            Term sourceConceptTerm = subject;
-            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
+            //get predicate and add the subject to precondition table as an implication
+            Term subject = Term_ExtractSubterm(&event->term, 1);
+            Term predicate = Term_ExtractSubterm(&event->term, 2);
+            Concept *source_concept = Memory_Conceptualize(&subject, currentTime, false);
             if(source_concept != NULL)
             {
-				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-                imp.sourceConceptId = source_concept->id;
-                imp.sourceConcept = source_concept;
-                imp.term = event->term;
-                Implication *revised =Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
-                if(revised != NULL)
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                Implication imp = { .truth = eternal_event.truth,
+                                    .stamp = eternal_event.stamp,
+                                    .occurrenceTimeOffset = event->occurrenceTimeOffset,
+                                    .creationTime = currentTime };
+                Term sourceConceptTerm = subject;
+                Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
+                if(source_concept != NULL)
                 {
-                    bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
-                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
-                    if(wasRevised)
-                        Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
+                    source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                    imp.sourceConceptId = source_concept->id;
+                    imp.sourceConcept = source_concept;
+                    imp.term = event->term;
+                    Implication *revised =Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
+                    if(revised != NULL)
+                    {
+                        bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
+                        Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
+                        if(wasRevised)
+                            Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
+                    }
                 }
             }
         }

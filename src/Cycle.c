@@ -92,6 +92,27 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                 {
                     best_decision = decision;
                 }
+                //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
+                if(e->type == EVENT_TYPE_BELIEF)
+                {
+                    Concept *home_concept = Memory_FindConceptByTerm(&e->term);
+                    if(home_concept != NULL && home_concept->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        for(int x=0; home_concept->belief_spike.type != EVENT_TYPE_DELETED && x<c->implied_contingencies.itemsAmount; x++)
+                        {
+                            Event eternalized_seq = Event_Eternalized(&home_concept->belief_spike);
+                            Implication *imp = &c->implied_contingencies.array[x];
+                            assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
+                            Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
+                            bool success2;
+                            deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
+                            if(success2)
+                            {
+                                NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                            }
+                        }
+                    }
+                }
             }
         }
         else
@@ -358,9 +379,50 @@ void Cycle_ProcessBeliefEvents(long currentTime)
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
         Event *toProcess = &selectedBeliefs[i];
-        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && selectedBeliefsPriority[i] >= CORRELATE_OUTCOME_PRIORITY)
+        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (selectedBeliefsPriority[i] >= CORRELATE_OUTCOME_PRIORITY || Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION)))
         {
-            if(!Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
+            if(Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
+            {
+                if(!Variable_hasVariable(&toProcess->term, true, true, false))
+                {
+                    //First retrieve the temporal implication in concept memory (it has the necessary truth value revisions which happened after it was induced)
+                    Term postcondition = Term_ExtractSubterm(&toProcess->term, 2);
+                    Term precondition = Term_ExtractSubterm(&toProcess->term, 1);
+                    Concept *cons = Memory_FindConceptByTerm(&postcondition);
+                    if(cons != NULL)
+                    {
+                        int op_id = Memory_getOperationID(&precondition);
+                        for(int j=0; op_id && j<cons->precondition_beliefs[op_id].itemsAmount; j++)
+                        {
+                            Implication imp = cons->precondition_beliefs[op_id].array[j];
+                            if(Term_Equal(&imp.term, &toProcess->term))
+                            {
+                                //build an implication between a result sequence and a contingency
+                                for(int i=0; i<concepts.itemsAmount; i++)
+                                {
+                                    Concept *c = concepts.items[i].address;
+                                    if(c->belief_spike.type != EVENT_TYPE_DELETED)// && ((labs(c->lastSensorimotorActivation - toProcess->creationTime) < RESULT_SEQUENCE_DISTANCE && c->isResultSequence) || labs(c->lastSensorimotorActivation - toProcess->creationTime) < EVENT_BELIEF_DISTANCE))
+                                    {
+                                        if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp))
+                                        {
+                                            bool success4;
+                                            Event eternalized = c->belief_spike;
+                                            eternalized.truth = Truth_Eternalize(eternalized.truth);
+                                            Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
+                                            if(success4)
+                                            {
+                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, false);
+                                            }
+                                        }
+                                    }
+                                }
+                                break; //no need to search further
+                            }
+                        }
+                    }
+                }
+            }
+            else
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
                 Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);

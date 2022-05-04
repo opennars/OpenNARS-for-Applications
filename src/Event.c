@@ -50,3 +50,13 @@ bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
 {
     return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
 }
+Event Event_Eternalized(Event *event)
+{
+    Event eternal_event = *event;
+    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    {
+        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
+        eternal_event.truth = Truth_Eternalize(event->truth);
+    }
+    return eternal_event;
+}

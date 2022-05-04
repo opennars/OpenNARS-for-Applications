@@ -61,5 +61,7 @@ Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeO
 bool Event_Equal(Event *event, Event *existing);
 //Whether the left event with same term and stamp overlap is less true than the second
 bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing);
+//Eternalized event
+Event Event_Eternalized(Event *event);
 
 #endif
