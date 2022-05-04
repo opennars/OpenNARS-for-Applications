@@ -57,7 +57,10 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
         {
-            c->belief_spike = *e;
+            if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
+            {
+                c->belief_spike = *e;
+            }
         }
         else
         {
