@@ -305,6 +305,26 @@ static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears 
     return false;
 }
 
+static bool NAL_IndepOrDepVariableAppearsOnce(Term *conclusionTerm)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Variable_isDependentVariable(conclusionTerm->atoms[i]) || Variable_isDependentVariable(conclusionTerm->atoms[i]))
+        {
+            for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
+            {
+                if(i != j && conclusionTerm->atoms[i] == conclusionTerm->atoms[j])
+                {
+                    goto CONTINUE;
+                }
+            }
+            return true; //not appeared twice
+        }
+        CONTINUE:;
+    }
+    return false;
+}
+
 void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowWithoutVar)
 {
     if(varIntro && validation_concept != NULL && Narsese_copulaEquals(validation_concept->term.atoms[1], SET_ELEMT)) //--> .
@@ -360,7 +380,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false, 0);
             }
