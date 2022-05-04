@@ -401,7 +401,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 for(int i=0; i<concepts.itemsAmount; i++)
                                 {
                                     Concept *c = concepts.items[i].address;
-                                    if(c->belief_spike.type != EVENT_TYPE_DELETED)// && ((labs(c->lastSensorimotorActivation - toProcess->creationTime) < RESULT_SEQUENCE_DISTANCE && c->isResultSequence) || labs(c->lastSensorimotorActivation - toProcess->creationTime) < EVENT_BELIEF_DISTANCE))
+                                    if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->lastSensorimotorActivation - toProcess->creationTime) < SEQUENCE_TO_CONTINGENCY_DISTANCE)
                                     {
                                         if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp))
                                         {

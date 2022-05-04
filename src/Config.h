@@ -70,8 +70,8 @@
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
-//Creation time distance to allow result sequence (a ^op res) to imply a new contingency which has been formed
-#define RESULT_SEQUENCE_DISTANCE 100
+//Creation time distance to allow sequence to imply a new contingency which has been formed
+#define SEQUENCE_TO_CONTINGENCY_DISTANCE 200
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
