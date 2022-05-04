@@ -325,12 +325,8 @@ static bool NAL_IndepOrDepVariableAppearsOnce(Term *conclusionTerm)
     return false;
 }
 
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowWithoutVar)
+void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntro)
 {
-    if(varIntro && validation_concept != NULL && Narsese_copulaEquals(validation_concept->term.atoms[1], SET_ELEMT)) //--> .
-    {
-        return; //no generic var intro for list, instead var intro rules for this copula are explicitly stated in NAL.h
-    }
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
         bool success;
@@ -339,7 +335,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
         {
             NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
         }
-        if(allowWithoutVar) //todo rename var to something else
+        if(!allowOnlyExtVarIntro) //todo rename var to something else
         {
             bool success2;
             Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
@@ -348,7 +344,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
                 NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
             }
         }
-        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || !allowWithoutVar)
+        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || allowOnlyExtVarIntro)
         {
             return;
         }
@@ -390,5 +386,5 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
-    NAL_DerivedEvent2(conclusionTerm, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, true);
+    NAL_DerivedEvent2(conclusionTerm, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, false);
 }

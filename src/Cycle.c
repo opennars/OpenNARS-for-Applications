@@ -414,7 +414,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
                                             if(success4)
                                             {
-                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, false);
+                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
                                             }
                                         }
                                     }
