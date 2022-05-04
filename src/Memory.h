@@ -85,7 +85,7 @@ void Memory_INIT();
 //Find a concept
 Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
-Concept* Memory_Conceptualize(Term *term, long currentTime);
+Concept* Memory_Conceptualize(Term *term, long currentTime, bool ignoreOp);
 //Add event to memory
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer);
 void Memory_AddInputEvent(Event *event, long currentTime);
