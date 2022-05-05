@@ -13,7 +13,6 @@ G. :|:
 <((C1 . is) . A1) --> [hear]>. :|:
 30
 <C1 --> [hear]>. :|:
-<(is . A1) --> [hear]>. :|: 
 5
 G! :|:
 //expected: ^clap executed with args
