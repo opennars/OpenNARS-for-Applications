@@ -47,9 +47,7 @@ typedef struct {
     Event predicted_belief;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX+1];
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
     Table implied_contingencies; //righthand of ==> includes =/> with op
-#endif
     double priority;
     long processID; //avoids duplicate processing
     long lastSensorimotorActivation;

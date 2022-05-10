@@ -114,6 +114,10 @@
 #define TABLE_SIZE 20
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 128
+#ifdef HARDENED
+#undef COMPOUND_TERM_SIZE_MAX
+#define COMPOUND_TERM_SIZE_MAX 64
+#endif
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap
@@ -148,6 +152,10 @@
 /*-----------------------*/
 //The NAL level of semantic inference
 #define SEMANTIC_INFERENCE_NAL_LEVEL 8
+#ifdef HARDENED
+#undef SEMANTIC_INFERENCE_NAL_LEVEL
+#define SEMANTIC_INFERENCE_NAL_LEVEL 6
+#endif
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
