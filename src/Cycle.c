@@ -96,7 +96,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                     best_decision = decision;
                 }
                 //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
-                if(e->type == EVENT_TYPE_BELIEF)
+                if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && e->type == EVENT_TYPE_BELIEF)
                 {
                     Concept *home_concept = Memory_FindConceptByTerm(&e->term);
                     if(home_concept != NULL && home_concept->belief_spike.type != EVENT_TYPE_DELETED)
@@ -386,6 +386,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
         {
             if(Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
             {
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
                 if(!Variable_hasVariable(&toProcess->term, true, true, false))
                 {
                     //First retrieve the temporal implication in concept memory (it has the necessary truth value revisions which happened after it was induced)
@@ -424,6 +425,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         }
                     }
                 }
+#endif
             }
             else
             {
@@ -478,15 +480,14 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     {
                                         Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
                                         //Also build a sequence ((A &/ op) &/ B):
-                                        if(ALLOW_RESULT_SEQUENCES)
+#if ALLOW_RESULT_SEQUENCES && SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+                                        bool success3;
+                                        Event result_seq = Inference_BeliefIntersection(&seq_op_cur, &postcondition, &success3);
+                                        if(success3)
                                         {
-                                            bool success3;
-                                            Event result_seq = Inference_BeliefIntersection(&seq_op_cur, &postcondition, &success3);
-                                            if(success3)
-                                            {
-                                                Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true);
-                                            }
+                                            Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true);
                                         }
+#endif
                                     }
                                     FAIL:;
                                 }

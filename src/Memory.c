@@ -288,6 +288,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
     if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && Narsese_copulaEquals(event->term.atoms[2], TEMPORAL_IMPLICATION) && Narsese_copulaEquals(event->term.atoms[5], SEQUENCE)) //only <S ==> <(A &/ Op) =/> B>>
     {
         Term potential_op = Term_ExtractSubterm(&event->term, 12);
@@ -312,7 +313,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                     imp.sourceConceptId = source_concept->id;
                     imp.sourceConcept = source_concept;
                     imp.term = event->term;
-                    Implication *revised =Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
+                    Implication *revised = Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
                     if(revised != NULL)
                     {
                         bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
@@ -324,6 +325,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
+#endif
     if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
     {
         //get predicate and add the subject to precondition table as an implication
@@ -453,7 +455,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
+        if(SEMANTIC_INFERENCE_NAL_LEVEL >= 7 || !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        {
+            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
+        }
     }
     if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
