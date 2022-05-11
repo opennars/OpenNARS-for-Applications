@@ -304,7 +304,7 @@ int Narsese_AtomicTermIndex(char *name)
         assert(term_index < ATOMS_MAX, "Too many terms for NAR");
         ret_index = term_index+1;
         strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX-1);
-        HashTable_Set(&HTatoms, (HASH_TYPE*) Narsese_atomNames[term_index], (void*) ret_index);
+        HashTable_Set(&HTatoms, (void*) Narsese_atomNames[term_index], (void*) ret_index);
         term_index++;
     }
     return ret_index;

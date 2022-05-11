@@ -23,6 +23,8 @@
  */
 
 #include "Variable.h"
+#include "HashTable.h"
+#include <stdint.h>
 
 bool Variable_isIndependentVariable(Atom atom)
 {
@@ -124,7 +126,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 
 //Search for variables which appear twice extensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countStatementAtoms(Term *cur_inheritance, int *appearing, bool extensionally, bool ignore_structure)
+static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure)
 {
     bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], SIMILARITY);
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
@@ -177,13 +179,22 @@ static void countStatementAtoms(Term *cur_inheritance, int *appearing, bool exte
             Atom atom = cur_inheritance->atoms[i];
             if(Narsese_IsSimpleAtom(atom) || Variable_isVariable(atom))
             {
-                appearing[(int) cur_inheritance->atoms[i]] += 1;
+                Atom key = cur_inheritance->atoms[i];
+                void *value = HashTable_Get(appearing, (void*) (intptr_t) key);
+                if(value == NULL)
+                {
+                    HashTable_Set(appearing, (void*) (intptr_t) key, (void*) 1);
+                }
+                else
+                {
+                    HashTable_Set(appearing, (void*) (intptr_t) key, (void*) (1 + (intptr_t) value));
+                }
             }
         }
     }
 }
 
-static void countHigherOrderStatementAtoms(Term *term, int *appearing, bool extensionally)
+static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, bool extensionally)
 {
     if(Narsese_copulaEquals(term->atoms[0], NEGATION))
     {
@@ -204,56 +215,83 @@ static void countHigherOrderStatementAtoms(Term *term, int *appearing, bool exte
     countStatementAtoms(term, appearing, extensionally, false);
 }
 
-int appearing_left[ATOMS_MAX] = {0};
-int appearing_right[ATOMS_MAX] = {0};
-char variable_id[ATOMS_MAX] = {0};
+static bool Atom_Equal(void *a, void *b)
+{
+    return a == b;
+}
+static HASH_TYPE Atom_Hash(void *a)
+{
+    return (HASH_TYPE) a;
+}
+
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
-    #pragma omp critical(VarIntro)
+    assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
+    HashTable HT_appearing_left;
+    VMItem* HT_appearing_left_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_appearing_left_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_appearing_left_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable HT_appearing_right;
+    VMItem* HT_appearing_right_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_appearing_right_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_appearing_right_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable HT_variable_id;
+    VMItem* HT_variable_id_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_variable_id_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_variable_id_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable_INIT(&HT_appearing_left,  HT_appearing_left_storage,  HT_appearing_left_storageptrs,  HT_appearing_left_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    HashTable_INIT(&HT_appearing_right, HT_appearing_right_storage, HT_appearing_right_storageptrs, HT_appearing_right_HT, VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    HashTable_INIT(&HT_variable_id,  HT_variable_id_storage, HT_variable_id_storageptrs,  HT_variable_id_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    Term left_side = Term_ExtractSubterm(&implication, 1);
+    Term right_side = Term_ExtractSubterm(&implication, 2);
+    countHigherOrderStatementAtoms(&left_side,  &HT_appearing_left,  extensionally);
+    countHigherOrderStatementAtoms(&right_side, &HT_appearing_right, extensionally);
+    char depvar_i = 1;
+    char indepvar_i = 1;
+    Term implication_copy = implication;
+    *success = true;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
-        Term left_side = Term_ExtractSubterm(&implication, 1);
-        Term right_side = Term_ExtractSubterm(&implication, 2);
-        memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
-        memset(appearing_right, 0, ATOMS_MAX*sizeof(int));
-        countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
-        countHigherOrderStatementAtoms(&right_side, appearing_right, extensionally);
-        char depvar_i = 1;
-        char indepvar_i = 1;
-        memset(variable_id, 0, ATOMS_MAX*sizeof(char));
-        Term implication_copy = implication;
-        *success = true;
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        Atom atom = implication_copy.atoms[i];
+        void* valueL = HashTable_Get(&HT_appearing_left,  (void*) (intptr_t) atom);
+        void* valueR = HashTable_Get(&HT_appearing_right, (void*) (intptr_t) atom);
+        if((valueL != NULL && ((long) valueL >= 2)) || (valueR != NULL && ((long) valueR) >= 2) || (valueL != NULL && valueR != NULL))
         {
-            Atom atom = implication_copy.atoms[i];
-            if(appearing_left[(int) atom] >= 2 || appearing_right[(int) atom] >= 2 || (appearing_left[(int) atom] && appearing_right[(int) atom]))
+            if(valueL != NULL && valueR != NULL)
             {
-                if(appearing_right[(int) atom] && appearing_left[(int) atom])
+                int var_id = (intptr_t) HashTable_Get(&HT_variable_id, (void*) (intptr_t) atom);
+                if(!var_id)
                 {
-                    int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : indepvar_i++;
-                    if(var_id <= 9) //can only introduce up to 9 variables
+                    var_id = indepvar_i++;
+                    HashTable_Set(&HT_variable_id, (void*) (intptr_t) atom, (void*) (intptr_t) var_id);
+                }
+                if(var_id <= 9) //can only introduce up to 9 variables
+                {
+                    char varname[3] = { '$', ('0' + var_id), 0 }; //$i
+                    Term varterm = Narsese_AtomicTerm(varname);
+                    if(!Term_OverrideSubterm(&implication, i, &varterm))
                     {
-                        char varname[3] = { '$', ('0' + var_id), 0 }; //$i
-                        Term varterm = Narsese_AtomicTerm(varname);
-                        if(!Term_OverrideSubterm(&implication, i, &varterm))
-                        {
-                            *success = false;
-                            break;
-                        }
+                        *success = false;
+                        break;
                     }
                 }
-                else
+            }
+            else
+            {
+                int var_id = (intptr_t) HashTable_Get(&HT_variable_id, (void*) (intptr_t) atom);
+                if(!var_id)
                 {
-                    int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
-                    if(var_id <= 9) //can only introduce up to 9 variables
+                    var_id = depvar_i++;
+                    HashTable_Set(&HT_variable_id, (void*) (intptr_t) atom, (void*) (intptr_t) var_id);
+                }
+                if(var_id <= 9) //can only introduce up to 9 variables
+                {
+                    char varname[3] = { '#', ('0' + var_id), 0 }; //#i
+                    Term varterm = Narsese_AtomicTerm(varname);
+                    if(!Term_OverrideSubterm(&implication, i, &varterm))
                     {
-                        char varname[3] = { '#', ('0' + var_id), 0 }; //#i
-                        Term varterm = Narsese_AtomicTerm(varname);
-                        if(!Term_OverrideSubterm(&implication, i, &varterm))
-                        {
-                            *success = false;
-                            break;
-                        }
+                        *success = false;
+                        break;
                     }
                 }
             }
@@ -264,31 +302,42 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
 
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
-    #pragma omp critical(VarIntro)
+    assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
+    HashTable HT_appearing_left;
+    VMItem* HT_appearing_left_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_appearing_left_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_appearing_left_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable HT_variable_id;
+    VMItem* HT_variable_id_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_variable_id_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_variable_id_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable_INIT(&HT_appearing_left, HT_appearing_left_storage, HT_appearing_left_storageptrs, HT_appearing_left_HT, VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    HashTable_INIT(&HT_variable_id,  HT_variable_id_storage, HT_variable_id_storageptrs,  HT_variable_id_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    Term left_side = conjunction;
+    countHigherOrderStatementAtoms(&left_side, &HT_appearing_left, extensionally);
+    char depvar_i = 1;
+    Term conjunction_copy = conjunction;
+    *success = true;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
-        memset(appearing_left, 0, ATOMS_MAX*sizeof(int));
-        Term left_side = conjunction;
-        countHigherOrderStatementAtoms(&left_side, appearing_left, extensionally);
-        char depvar_i = 1;
-        memset(variable_id, 0, ATOMS_MAX*sizeof(char));
-        Term conjunction_copy = conjunction;
-        *success = true;
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        Atom atom = conjunction_copy.atoms[i];
+        intptr_t value = (intptr_t) HashTable_Get(&HT_appearing_left, (void*) (intptr_t) atom);
+        if(value && ((long) value) >= 2)
         {
-            Atom atom = conjunction_copy.atoms[i];
-            if(appearing_left[(int) atom] >= 2)
+            int var_id = (intptr_t) HashTable_Get(&HT_variable_id, (void*) (intptr_t) atom);
+            if(!var_id)
             {
-                int var_id = variable_id[(int) atom] = variable_id[(int) atom] ? variable_id[(int) atom] : depvar_i++;
-                if(var_id <= 9) //can only introduce up to 9 variables
+                var_id = depvar_i++;
+                HashTable_Set(&HT_variable_id, (void*) (intptr_t) atom, (void*) (intptr_t) var_id);
+            }
+            if(var_id <= 9) //can only introduce up to 9 variables
+            {
+                char varname[3] = { '#', ('0' + var_id), 0 }; //#i
+                Term varterm = Narsese_AtomicTerm(varname);
+                if(!Term_OverrideSubterm(&conjunction, i, &varterm))
                 {
-                    char varname[3] = { '#', ('0' + var_id), 0 }; //#i
-                    Term varterm = Narsese_AtomicTerm(varname);
-                    if(!Term_OverrideSubterm(&conjunction, i, &varterm))
-                    {
-                        *success = false;
-                        break;
-                    }
+                    *success = false;
+                    break;
                 }
             }
         }

@@ -130,6 +130,8 @@
 #define NARSESE_LEN_MAX 256
 //Goal events queue derivation depth layers
 #define CYCLING_GOAL_EVENTS_LAYERS 5
+//Hashtable bucket size for atom counters in term
+#define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
 
 /*------------------*/
 /* Truth parameters */
