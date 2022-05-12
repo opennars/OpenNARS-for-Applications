@@ -1,0 +1,25 @@
+*motorbabbling=false
+*volume=0
+<a --> [see]>. :|:
+^left. :|:
+<b --> [see]>. :|:
+3
+<b --> [see]>. :|:
+^right. :|:
+<a --> [see]>. :|:
+
+//some time later
+100
+
+<x --> [see]>. :|:
+^right. :|:
+<y --> [see]>. :|:
+10
+<y --> [see]>. :|:
+<x --> [see]>! :|:
+//expected: ^left executed with args
+
+<(<y --> [see]> &/ ^left) =/> <x --> [see]>>?
+//expected: Answer: <(<y --> [see]> &/ ^left) =/> <x --> [see]>>. Truth: frequency=0.910221, confidence=0.059965
+<((<$2 --> [see]> &/ ^right) &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ ^left) =/> <$2 --> [see]>>>?
+//expected: Answer: <((<$2 --> [see]> &/ ^right) &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ ^left) =/> <$2 --> [see]>>>. Truth: frequency=1.000000, confidence=0.085386

@@ -38,56 +38,23 @@ static int FIFO_Index(FIFO *fifo, int k)
 void FIFO_Add(Event *event, FIFO *fifo)
 {
     //build sequence elements:
-    fifo->array[1-1][fifo->currentIndex] = *event;
+    fifo->array[fifo->currentIndex] = *event;
     fifo->currentIndex = (fifo->currentIndex + 1) % FIFO_SIZE;
     fifo->itemsAmount = MIN(fifo->itemsAmount + 1, FIFO_SIZE);
-    for(int state=3; state<(1 << MAX_SEQUENCE_LEN); state++) //3=11 in binary
-    {
-        if(!(state & 1))
-        {
-            continue;
-        }
-        //query the substate (everything left of the 1 at the end of the bit sequence)
-        int substate = state >> 1;
-        int shifts = 1;
-        while(!(substate & 1))
-        {
-            assert(substate > 0, "Substate is not supposed to vanish due to shift since we had state > 1");
-            substate = substate >> 1;
-            shifts++;
-        }
-        //If yes retrieve sequence and new event
-        Event *sequence = FIFO_GetKthNewestSequence(fifo, shifts, substate); //cached sequence
-        if(sequence == NULL)
-        {
-            continue;
-        }
-        Event *event = FIFO_GetNewestSequence(fifo, 1); //new event
-        //and build and cache new sequence
-        assert(event != NULL, "Event is not supposed to be NULL since sequence wasn't NULL!");
-        bool success;
-        Event new_sequence = Inference_BeliefIntersection(sequence, event, &success);
-        if(!success || new_sequence.truth.confidence < MIN_CONFIDENCE) //Subsitution success and Apriory criteria
-        {
-            continue;
-        }
-        fifo->array[state-1][FIFO_Index(fifo, 0)] = new_sequence;
-    }
 }
 
-Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int state)
+Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k)
 {
-    assert(state > 0, "No event requested from FIFO!");
     //an element must exist, rightmost element needs to be included to avoid duplicates, shift needs to be within FIFO array
-    if(fifo->itemsAmount == 0 || !(state & 1))
+    if(fifo->itemsAmount == 0)
     {
         return NULL;
     }
     //try to return cached sequence if existing
-    return &fifo->array[state-1][FIFO_Index(fifo, k)];
+    return &fifo->array[FIFO_Index(fifo, k)];
 }
 
-Event* FIFO_GetNewestSequence(FIFO *fifo, int state)
+Event* FIFO_GetNewestSequence(FIFO *fifo)
 {
-    return FIFO_GetKthNewestSequence(fifo, 0, state);
+    return FIFO_GetKthNewestSequence(fifo, 0);
 }

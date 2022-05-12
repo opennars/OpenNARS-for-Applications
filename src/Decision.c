@@ -57,31 +57,43 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 //Inject action event after execution or babbling
 void Decision_Execute(Decision *decision)
 {
-    assert(decision->operationID > 0, "Operation 0 is reserved for no action");
-    decision->op = operations[decision->operationID-1];
-    Term feedback = decision->op.term; //atomic operation / operator
-    //and add operator feedback
-    if(decision->arguments.atoms[0] > 0) //operation with args
+    int n_ops_to_execute = 0;
+    for(int i=0; i<MAX_COMPOUND_OP_LEN; i++)
     {
-        Term operation = {0};
-        operation.atoms[0] = Narsese_CopulaIndex(INHERITANCE); //<args --> ^op>
-        if(!Term_OverrideSubterm(&operation, 1, &decision->arguments) || !Term_OverrideSubterm(&operation, 2, &decision->op.term))
+        if(!decision->operationID[i])
         {
-            return;
+            break;
         }
-        feedback = operation;
+        n_ops_to_execute += 1;
     }
-    Narsese_PrintTerm(&decision->op.term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments); puts(""); fflush(stdout);
-    (*decision->op.action)(decision->arguments);
-    NAR_AddInputBelief(feedback);
-    //assumption of failure extension to specific cases not experienced before:
-    if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
+    for(int i=n_ops_to_execute-1; i>=0; i--)
     {
-        Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
-        Concept *postc = Memory_Conceptualize(&postcondition, currentTime);
-        if(postc != NULL)
+        assert(decision->operationID[i], "Error");
+        decision->op[i] = operations[decision->operationID[i]-1];
+        Term feedback = decision->op[i].term; //atomic operation / operator
+        //and add operator feedback
+        if(decision->arguments[i].atoms[0] > 0) //operation with args
         {
-            Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID, postc);
+            Term operation = {0};
+            operation.atoms[0] = Narsese_CopulaIndex(INHERITANCE); //<args --> ^op>
+            if(!Term_OverrideSubterm(&operation, 1, &decision->arguments[i]) || !Term_OverrideSubterm(&operation, 2, &decision->op[i].term))
+            {
+                return;
+            }
+            feedback = operation;
+        }
+        Narsese_PrintTerm(&decision->op[i].term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments[i]); puts(""); fflush(stdout);
+        (*decision->op[i].action)(decision->arguments[i]);
+        NAR_AddInputBelief(feedback);
+        //assumption of failure extension to specific cases not experienced before:
+        if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
+        {
+            Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
+            Concept *postc = Memory_Conceptualize(&postcondition, currentTime, false);
+            if(postc != NULL)
+            {
+                Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID[i], postc);
+            }
         }
     }
 }
@@ -97,16 +109,16 @@ static Decision Decision_MotorBabbling()
     }
     if(n_ops > 0)
     {
-        decision.operationID = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
+        decision.operationID[0] = 1+(myrand() % (MIN(BABBLING_OPS, n_ops)));
         IN_DEBUG (
-            printf(" NAR BABBLE %d\n", decision.operationID);
+            printf(" NAR BABBLE %d\n", decision.operationID[0]);
         )
         decision.execute = true;
         decision.desire = 1.0;
-        if(operations[decision.operationID-1].arguments[0].atoms[0])
+        if(operations[decision.operationID[0]-1].arguments[0].atoms[0])
         {
             int n_args = 0;
-            for(int i=0; i<OPERATIONS_BABBLE_ARGS_MAX && operations[decision.operationID-1].arguments[i].atoms[0] != 0; i++)
+            for(int i=0; i<OPERATIONS_BABBLE_ARGS_MAX && operations[decision.operationID[0]-1].arguments[i].atoms[0] != 0; i++)
             {
                 n_args = i+1;
             }
@@ -114,17 +126,17 @@ static Decision Decision_MotorBabbling()
             //({SELF} * num)
             //*   "    arg  SELF
             //0   1    2    3
-            decision.arguments.atoms[0] = Narsese_CopulaIndex(PRODUCT);  //product
-            decision.arguments.atoms[1] = Narsese_CopulaIndex(EXT_SET); //ext set {SELF} on the left
-            Term_OverrideSubterm(&decision.arguments, 2, &operations[decision.operationID-1].arguments[argumentID]);
-            decision.arguments.atoms[3] = SELF;
-            decision.arguments.atoms[4] = Narsese_CopulaIndex(SET_TERMINATOR);
+            decision.arguments[0].atoms[0] = Narsese_CopulaIndex(PRODUCT);  //product
+            decision.arguments[0].atoms[1] = Narsese_CopulaIndex(EXT_SET); //ext set {SELF} on the left
+            Term_OverrideSubterm(&decision.arguments[0], 2, &operations[decision.operationID[0]-1].arguments[argumentID]);
+            decision.arguments[0].atoms[3] = SELF;
+            decision.arguments[0].atoms[4] = Narsese_CopulaIndex(SET_TERMINATOR);
         }
     }
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int considered_opi, Implication *imp)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp)
 {
     Decision decision = {0};
     IN_DEBUG
@@ -153,22 +165,35 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, int 
             printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
             Narsese_PrintTerm(&precondition->term); puts("");
         )
-        //<(precon &/ <args --> ^op>) =/> postcon>. -> [$ , postcon precon : _ _ _ _ args ^op
-        Term operation = Term_ExtractSubterm(&imp->term, 4); //^op or [: args ^op]
-        if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
-        {
-            assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
-            Term arguments = Term_ExtractSubterm(&imp->term, 9); //[* ' ARG SELF]
-            if(arguments.atoms[3] != SELF) //either wasn't SELF or var didn't resolve to SELF
-            {
-                return decision;
-            }
-            decision.arguments = arguments;
-            
-        }
         decision.reason = precondition;
-        decision.operationID = considered_opi;
         decision.desire = operationGoalTruthExpectation;
+        Term seq = Term_ExtractSubterm(&imp->term, 1);
+        int i=1;
+        while(Narsese_copulaEquals(seq.atoms[0], SEQUENCE)) //(a &/ ^op)
+        {
+            Term operation = Term_ExtractSubterm(&seq, 2);
+            if(!Narsese_isOperation(&operation))
+            {
+                break;
+            }
+            if(i-1 >= MAX_COMPOUND_OP_LEN)
+            {
+                assert(false, "Operation sequence longer than the FIFO can build, increase MAX_SEQUENCE_LEN if this knowledge should be supported.");
+            }
+            if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
+            {
+                assert(Narsese_isOperator(operation.atoms[2]), "If it's not atomic, it needs to be an operation with args here");
+                Term arguments = Term_ExtractSubterm(&operation, 1); //[* ' ARG SELF]
+                if(arguments.atoms[3] != SELF) //either wasn't SELF or var didn't resolve to SELF
+                {
+                    return (Decision) {0};
+                }
+                decision.arguments[i-1] = arguments;
+            }
+            decision.operationID[i-1] = Memory_getOperationID(&operation);
+            seq = Term_ExtractSubterm(&seq, 1);
+            i++;
+        }
     }
     return decision;
 }
@@ -214,7 +239,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, opi, &specific_imp);
+                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, &specific_imp);
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
@@ -334,7 +359,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             result.term = Variable_ApplySubstitute(result.term, subs, &success2);
                             if(success2)
                             {
-                                Concept *c = Memory_Conceptualize(&result.term, currentTime);
+                                Concept *c = Memory_Conceptualize(&result.term, currentTime, false);
                                 if(c != NULL)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);

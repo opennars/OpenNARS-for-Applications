@@ -304,7 +304,7 @@ int Narsese_AtomicTermIndex(char *name)
         assert(term_index < ATOMS_MAX, "Too many terms for NAR");
         ret_index = term_index+1;
         strncpy(Narsese_atomNames[term_index], name, ATOMIC_TERM_LEN_MAX-1);
-        HashTable_Set(&HTatoms, (HASH_TYPE*) Narsese_atomNames[term_index], (void*) ret_index);
+        HashTable_Set(&HTatoms, (void*) Narsese_atomNames[term_index], (void*) ret_index);
         term_index++;
     }
     return ret_index;
@@ -697,7 +697,10 @@ Atom Narsese_getOperationAtom(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
+        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        {
+            return 0;
+        }
         return Narsese_getOperationAtom(&potential_operator);
     }
     if(Narsese_isOperator(term->atoms[0])) //atomic operator
@@ -721,7 +724,10 @@ Term Narsese_getOperationTerm(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        assert(!Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE), "Sequences should be left-nested encoded, never right-nested!!");
+        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        {
+            return (Term) {0};
+        }
         return Narsese_getOperationTerm(&potential_operator);
     }
     if(Narsese_isOperation(term)) //operator
@@ -733,12 +739,13 @@ Term Narsese_getOperationTerm(Term *term)
 
 Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 {
-    if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE))
+    if(Narsese_copulaEquals(precondition->atoms[0], SEQUENCE)) //&/ S P
     {
         Term potential_op = Term_ExtractSubterm(precondition, 2);
         if(Narsese_isOperation(&potential_op))
         {
-            return Term_ExtractSubterm(precondition, 1);
+            Term new_precondition = Term_ExtractSubterm(precondition, 1);
+            return Narsese_GetPreconditionWithoutOp(&new_precondition);
         }
     }
     return *precondition;

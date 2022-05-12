@@ -46,6 +46,7 @@
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
+void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowWithoutVar);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction)         printf("//%s %s %s %s\n", #premise1, #premise2, #conclusion, #truthFunction); NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
 #define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) printf("//%s %s %s, %s\n", #premise1, #premise2, #conclusion, #truthFunction); NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
@@ -70,6 +71,8 @@ R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
+R2( S, (S --> P), |-, P, Truth_Deduction )
+R2( P, (S --> P), |-, S, Truth_Abduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
@@ -215,6 +218,23 @@ R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) 
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+//!and for lists:
+R1( ((A . B) --> X), |-, (A --> X), Truth_StructuralDeduction )
+R1( ((A . B) --> X), |-, (B --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((A . B) --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((B . C) --> X), Truth_StructuralDeduction )
+R1( (((A . B) . C) --> X), |-, ((A . C) --> X), Truth_StructuralDeduction )
+R2( (((A . R) . B) --> X), (((B . S) . A) --> X), |-, (((($2 . S) . $1) --> X) ==> ((($1 . R) . $2) --> X)), Truth_Induction ) //SVP
+R2( (((R . A) . B) --> X), (((S . B) . A) --> X), |-, ((((S . $2) . $1) --> X) ==> (((R . $1) . $2) --> X)), Truth_Induction ) //VSP
+R2( (((A . B) . R) --> X), (((B . A) . S) --> X), |-, (((($1 . $2) . S) --> X) ==> ((($2 . $1) . R) --> X)), Truth_Induction ) //SPV
+R2( (((A . R) . B) --> X), (((B . S) . C) --> X), |-, ((((A . S) . B) --> X) && (((B . R) . C) --> X)), Truth_Intersection ) //SVP
+R2( (((R . A) . B) --> X), (((S . B) . C) --> X), |-, ((((S . A) . B) --> X) && (((R . B) . C) --> X)), Truth_Intersection ) //VSP
+R2( (((A . B) . R) --> X), (((B . C) . S) --> X), |-, ((((A . B) . S) --> X) && (((B . C) . R) --> X)), Truth_Intersection ) //SPV
+R2( (((A . R) . C) --> X), ((((A . S) . B) --> X) && (((B . R) . C) --> X)), |-, ((((($2 . S) . #1) --> X) && (((#1 . R) . $1) --> X)) ==> ((($2 . R) . $1) --> X)), Truth_Induction ) //SVP
+R2( (((R . A) . C) --> X), ((((S . A) . B) --> X) && (((R . B) . C) --> X)), |-, (((((S . $2) . #1) --> X) && (((R . #1) . $1) --> X)) ==> (((R . $2) . $1) --> X)), Truth_Induction ) //VSP
+R2( (((A . C) . M) --> X), ((((A . B) . S) --> X) && (((B . C) . R) --> X)), |-, ((((($1 . #1) . S) --> X) && (((#1 . $2) . R) --> X)) ==> ((($1 . $2) . M) --> X)), Truth_Induction ) //SPV
+R2( ((A . B) --> R), (C <-> A), |-, ((C . B) --> R), Truth_Analogy )
+R2( ((A . B) --> R), (C <-> B), |-, ((A . C) --> R), Truth_Analogy )
 //!Variable elimination in Cycle_SpecialInferences
 #endif
 
@@ -240,6 +260,7 @@ R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Ana
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
+//!Relating statements to contingencies
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) ==> (S --> P)), Truth_Abduction )
 R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)), Truth_Comparison )

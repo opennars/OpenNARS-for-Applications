@@ -45,6 +45,7 @@ nltk.download('punkt', quiet=quiet)
 nltk.download('averaged_perceptron_tagger', quiet=quiet)
 nltk.download('universal_tagset', quiet=quiet)
 nltk.download('wordnet', quiet=quiet)
+nltk.download('omw-1.4', quiet=quiet)
 
 SyntacticalTransformations = [
     #types of tuples of words with optional members

@@ -174,6 +174,7 @@ void NAR_Pong2(long iterations)
         }
         batX=MAX(-batWidth*2,MIN(szX-1+batWidth,batX+batVX*batWidth/2));
         printf("Hits=%d misses=%d ratio=%f time=%d\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), t);
+        NAR_Cycles(5);
         if(iterations == -1)
         {
             SLEEP;

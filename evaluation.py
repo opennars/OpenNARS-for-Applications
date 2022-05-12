@@ -105,6 +105,7 @@ def Test(Example, outputString):
             if isExecutionCondition:
                 AnswerRatioTest = False
                 Message = line.split(expect_condition)[1]
+                HadAnswer = False
                 for j in reversed(range(i)):
                     line_before = lines[j].strip()
                     if line_before.startswith("^"):
@@ -112,9 +113,13 @@ def Test(Example, outputString):
                             print("Failure for " + line + " in "+ Example)
                             exit(0)
                         else:
+                            HadAnswer = True
                             QuestionsAnswered += 1.0
                             QuestionsAnsweredGlobal += 1.0
                             break
+                if not HadAnswer:
+                    print("Failure for " + line + " in "+ Example)
+                    exit(0)
     if AnswerRatioTest:
         if QuestionsTotal > 0:
             print("\nQ&A stress test results for test " + Example)

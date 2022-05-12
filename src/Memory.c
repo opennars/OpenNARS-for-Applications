@@ -28,7 +28,7 @@
 PriorityQueue concepts;
 //cycling events cycling in main memory:
 PriorityQueue cycling_belief_events;
-PriorityQueue cycling_goal_events;
+PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
 //Input event fifo:
@@ -43,8 +43,8 @@ Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
 Item cycling_belief_event_items_storage[CYCLING_BELIEF_EVENTS_MAX];
-Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_MAX];
-Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_MAX];
+Event cycling_goal_event_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
+Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_EVENTS_MAX];
 //Dynamic concept firing threshold
 double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
@@ -54,16 +54,19 @@ static void Memory_ResetEvents()
 {
     belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
-    PriorityQueue_INIT(&cycling_goal_events, cycling_goal_event_items_storage, CYCLING_GOAL_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
         cycling_belief_event_storage[i] = (Event) {0};
         cycling_belief_events.items[i] = (Item) { .address = &(cycling_belief_event_storage[i]) };
     }
-    for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        cycling_goal_event_storage[i] = (Event) {0};
-        cycling_goal_events.items[i] = (Item) { .address = &(cycling_goal_event_storage[i]) };
+        PriorityQueue_INIT(&cycling_goal_events[layer], cycling_goal_event_items_storage[layer], CYCLING_GOAL_EVENTS_MAX);
+        for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+        {
+            cycling_goal_event_storage[layer][i] = (Event) {0};
+            cycling_goal_events[layer].items[i] = (Item) { .address = &(cycling_goal_event_storage[layer][i]) };
+        }
     }
 }
 
@@ -101,13 +104,13 @@ Concept *Memory_FindConceptByTerm(Term *term)
     return HashTable_Get(&HTconcepts, term);
 }
 
-Concept* Memory_Conceptualize(Term *term, long currentTime)
+Concept* Memory_Conceptualize(Term *term, long currentTime, bool ignoreOp)
 {
-    if(Memory_getOperationID(term)) //don't conceptualize operations
+    if(!ignoreOp && Memory_getOperationID(term)) //don't conceptualize operations
     {
         return NULL;
     }
-    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
+    if(!ignoreOp && Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
     {
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
@@ -207,14 +210,23 @@ bool Memory_containsBelief(Event *e)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
+bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime, int layer)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (e->type == EVENT_TYPE_GOAL && Memory_containsEvent(&cycling_goal_events, e)) ||
-       Memory_containsBelief(e)) //avoid duplicate derivations
+       (!sequenced && Memory_containsBelief(e))) //avoid duplicate derivations
     {
         return false;
+    }
+    if(e->type == EVENT_TYPE_GOAL) //avoid duplicate derivations
+    {
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+        {
+            if(Memory_containsEvent(&cycling_goal_events[layer], e))
+            {
+                return false;
+            }
+        }
     }
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
@@ -224,7 +236,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime)
             return false; //the belief has a higher confidence and was already revised up (or a cyclic transformation happened!), get rid of the event!
         }   //more radical than OpenNARS!
     }
-    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events;
+    PriorityQueue *priority_queue = e->type == EVENT_TYPE_BELIEF ? &cycling_belief_events : &cycling_goal_events[MIN(CYCLING_GOAL_EVENTS_LAYERS-1, layer+1)];
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
@@ -272,21 +284,49 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool isImplication)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
-    Event eternal_event = *event;
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+    Event eternal_event = Event_Eternalized(event);
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+    if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && Narsese_copulaEquals(event->term.atoms[2], TEMPORAL_IMPLICATION) && Narsese_copulaEquals(event->term.atoms[5], SEQUENCE)) //only <S ==> <(A &/ Op) =/> B>>
     {
-        eternal_event.occurrenceTime = OCCURRENCE_ETERNAL;
-        eternal_event.truth = Truth_Eternalize(event->truth);
+        Term potential_op = Term_ExtractSubterm(&event->term, 12);
+        if(Narsese_isOperation(&potential_op) && Variable_hasVariable(&event->term, true, true, false))
+        {
+            //get predicate and add the subject to precondition table as an implication
+            Term subject = Term_ExtractSubterm(&event->term, 1);
+            Term predicate = Term_ExtractSubterm(&event->term, 2);
+            Concept *source_concept = Memory_Conceptualize(&subject, currentTime, true);
+            if(source_concept != NULL)
+            {
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                Implication imp = { .truth = eternal_event.truth,
+                                    .stamp = eternal_event.stamp,
+                                    .occurrenceTimeOffset = event->occurrenceTimeOffset,
+                                    .creationTime = currentTime };
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                imp.sourceConceptId = source_concept->id;
+                imp.sourceConcept = source_concept;
+                imp.term = event->term;
+                Implication *revised = Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
+                if(revised != NULL)
+                {
+                    bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
+                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
+                    if(wasRevised)
+                        Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
+                }
+            }
+        }
     }
-    if(isImplication)
+#endif
+    if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
     {
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
+        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime, false);
         if(target_concept != NULL)
         {
 			target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
@@ -307,7 +347,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                         return; //we can't store proc. knowledge of other agents
                     }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
-                    sourceConceptTerm = Term_ExtractSubterm(&subject, 1); //gets rid of op as MSC links cannot use it
+                    sourceConceptTerm = Narsese_GetPreconditionWithoutOp(&subject); //gets rid of op as MSC links cannot use it
                 }
                 else
                 {
@@ -318,7 +358,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 sourceConceptTerm = subject;
             }
-            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
             if(source_concept != NULL)
             {
 				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
@@ -338,15 +378,29 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
     else
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        Concept *c = Memory_Conceptualize(&event->term, currentTime, false);
         if(c != NULL)
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
             c->priority = MAX(c->priority, priority);
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)
             {
+                if(ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING)
+                {
+                    c->lastSensorimotorActivation = currentTime;
+                }
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
+                if(PRINT_SURPRISE && input)
+                {
+                    double surprise = 1.0;
+                    if(c->predicted_belief.type != EVENT_TYPE_DELETED)
+                    {
+                        float expectation = Truth_Expectation(Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->belief_spike.occurrenceTime));
+                        surprise = fabs(expectation - Truth_Expectation(c->belief_spike.truth));
+                    }
+                    printf("//SURPRISE %f\n", surprise);
+                }
             }
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)
             {
@@ -362,7 +416,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
@@ -372,7 +426,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer)
 {
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -383,25 +437,23 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         return;
     }
-    if(event->occurrenceTime != OCCURRENCE_ETERNAL && input && event->type == EVENT_TYPE_BELIEF)
-    {
-        FIFO_Add(event, &belief_events); //not revised yet
-    }
     if(input && (Narsese_isOperation(&event->term) || event->type == EVENT_TYPE_GOAL))
     {
         Memory_printAddedEvent(event, priority, input, false, false, true);
     }
-    bool isImplication = Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION);
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, isImplication);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime);
+        if(SEMANTIC_INFERENCE_NAL_LEVEL >= 7 || !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        {
+            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer);
+        }
     }
     if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
@@ -412,7 +464,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0);
 }
 
 bool Memory_ImplicationValid(Implication *imp)
