@@ -98,12 +98,11 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                 //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
                 if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && e->type == EVENT_TYPE_BELIEF)
                 {
-                    Concept *home_concept = Memory_FindConceptByTerm(&e->term);
-                    if(home_concept != NULL && home_concept->belief_spike.type != EVENT_TYPE_DELETED)
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
                     {
-                        for(int x=0; home_concept->belief_spike.type != EVENT_TYPE_DELETED && x<c->implied_contingencies.itemsAmount; x++)
+                        for(int x=0; x<c->implied_contingencies.itemsAmount; x++)
                         {
-                            Event eternalized_seq = Event_Eternalized(&home_concept->belief_spike);
+                            Event eternalized_seq = Event_Eternalized(&c->belief_spike);
                             Implication *imp = &c->implied_contingencies.array[x];
                             assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
                             Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);

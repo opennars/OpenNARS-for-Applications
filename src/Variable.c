@@ -177,7 +177,7 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
             Atom atom = cur_inheritance->atoms[i];
-            if(Narsese_IsSimpleAtom(atom) || Variable_isVariable(atom))
+            if(Narsese_IsSimpleAtom(atom))
             {
                 Atom key = cur_inheritance->atoms[i];
                 void *value = HashTable_Get(appearing, (void*) (intptr_t) key);
@@ -224,6 +224,20 @@ static HASH_TYPE Atom_Hash(void *a)
     return (HASH_TYPE) a;
 }
 
+static int newVarID(Term *term, bool varIndep)
+{
+    for(int var_id=1; var_id<=9; var_id++)
+    {
+        char varname[3] = { varIndep ? '$' : '#', ('0' + var_id), 0 }; //$i #i
+        Atom varatom = Narsese_AtomicTermIndex(varname);
+        if(!Term_HasAtom(term, varatom))
+        {
+           return var_id;
+        }
+    }
+    return 0;
+}
+
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(implication.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], IMPLICATION) || Narsese_copulaEquals(implication.atoms[0], EQUIVALENCE), "An implication is expected here!");
@@ -246,8 +260,13 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     Term right_side = Term_ExtractSubterm(&implication, 2);
     countHigherOrderStatementAtoms(&left_side,  &HT_appearing_left,  extensionally);
     countHigherOrderStatementAtoms(&right_side, &HT_appearing_right, extensionally);
-    char depvar_i = 1;
-    char indepvar_i = 1;
+    char depvar_i = newVarID(&implication, false);
+    char indepvar_i = newVarID(&implication, true);
+    if(!depvar_i || !indepvar_i)
+    {
+        *success = false;
+        return implication;
+    }
     Term implication_copy = implication;
     *success = true;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -315,7 +334,12 @@ Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, boo
     HashTable_INIT(&HT_variable_id,  HT_variable_id_storage, HT_variable_id_storageptrs,  HT_variable_id_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
     Term left_side = conjunction;
     countHigherOrderStatementAtoms(&left_side, &HT_appearing_left, extensionally);
-    char depvar_i = 1;
+    char depvar_i = newVarID(&conjunction, false);
+    if(!depvar_i)
+    {
+        *success = false;
+        return conjunction;
+    }
     Term conjunction_copy = conjunction;
     *success = true;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)

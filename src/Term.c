@@ -104,3 +104,15 @@ HASH_TYPE Term_Hash(Term *term)
     term->hash = hash;
     return hash;
 }
+
+bool Term_HasAtom(Term *term, Atom atom)
+{
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(term->atoms[i] == atom)
+        {
+            return true;
+        }
+    }
+    return false;
+}
