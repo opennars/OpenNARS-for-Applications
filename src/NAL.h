@@ -37,9 +37,6 @@
 #include "Narsese.h"
 #include "Memory.h"
 
-#define xstr(a) str(a)
-#define str(a) #a
-
 //Methods//
 //-------//
 //Generates inference rule code
