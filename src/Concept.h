@@ -32,7 +32,6 @@
 
 //References//
 //-----------//
-#include "FIFO.h"
 #include "Table.h"
 #include "Usage.h"
 
@@ -50,6 +49,8 @@ typedef struct {
     Table implied_contingencies; //righthand of ==> includes =/> with op
     double priority;
     long processID; //avoids duplicate processing
+    long processID2; //avoids duplicate processing
+    long processID3; //avoids duplicate processing
     long lastSensorimotorActivation;
     bool isResultSequence; //whether the concept is a sequence of form ((A ^Op) Result)
 } Concept;

@@ -64,6 +64,7 @@ extern int beliefsSelectedCnt;
 extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 extern int goalsSelectedCnt;
+extern int concept_id;
 //Concepts in main memory:
 extern PriorityQueue concepts;
 //cycling events cycling in main memory:
@@ -71,8 +72,6 @@ extern PriorityQueue cycling_belief_events;
 extern PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 extern HashTable HTconcepts;
-//Input event buffers:
-extern FIFO belief_events;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
 //Priority threshold for printing derivations

@@ -69,5 +69,7 @@ int Term_Complexity(Term *term);
 HASH_TYPE Term_Hash(Term *term);
 //Whether the term has the atom
 bool Term_HasAtom(Term *term, Atom atom);
+//Flatten sequence
+void Term_FlattenSequence(Term *termArray, int *index, Term *term);
 
 #endif

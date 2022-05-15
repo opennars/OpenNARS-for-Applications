@@ -80,7 +80,22 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
         assert(OldImp.truth.confidence >= 0.0 && OldImp.truth.confidence <= 1.0, "(1) confidence out of bounds");
         assert(imp->truth.frequency >= 0.0 && imp->truth.frequency <= 1.0, "(2) frequency out of bounds");
         assert(imp->truth.confidence >= 0.0 && imp->truth.confidence <= 1.0, "(2) confidence out of bounds");
-        Implication revised = Inference_ImplicationRevision(&OldImp, imp);
+        Implication revised;
+        if(Stamp_checkOverlap(&OldImp.stamp, &imp->stamp))
+        {
+            if(imp->truth.confidence > OldImp.truth.confidence)
+            {
+                revised = *imp; //choice
+            }
+            else
+            {
+                return &table->array[same_i]; //old one as good
+            }
+        }
+        else
+        {
+            revised = Inference_ImplicationRevision(&OldImp, imp);
+        }
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
         revised.term = imp->term;

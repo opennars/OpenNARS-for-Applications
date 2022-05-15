@@ -31,8 +31,6 @@ PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
-//Input event fifo:
-FIFO belief_events;
 //Operations
 Operation operations[OPERATIONS_MAX];
 //Parameters
@@ -52,7 +50,6 @@ double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL
 
 static void Memory_ResetEvents()
 {
-    belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
@@ -106,20 +103,6 @@ Concept *Memory_FindConceptByTerm(Term *term)
 
 Concept* Memory_Conceptualize(Term *term, long currentTime, bool ignoreOp)
 {
-    if(!ignoreOp && Memory_getOperationID(term)) //don't conceptualize operations
-    {
-        return NULL;
-    }
-    if(!ignoreOp && Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
-    {
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-        {
-            if(Narsese_isOperator(term->atoms[i]))
-            {
-                return NULL;
-            }
-        }
-    }
     Concept *ret = Memory_FindConceptByTerm(term);
     if(ret == NULL)
     {
