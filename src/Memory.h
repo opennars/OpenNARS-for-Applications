@@ -46,7 +46,6 @@
 extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 extern bool PRINT_INPUT;
-extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
@@ -77,6 +76,10 @@ extern FIFO belief_events;
 extern Operation operations[OPERATIONS_MAX];
 //Priority threshold for printing derivations
 extern double PRINT_EVENTS_PRIORITY_THRESHOLD;
+//Dynamic concept priority threshold
+extern double conceptPriorityThreshold;
+//Concept running id
+extern int concept_id;
 
 //Methods//
 //-------//

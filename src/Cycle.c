@@ -25,6 +25,7 @@
 #include "Cycle.h"
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
+static long conceptProcessID2 = 0; //avoids duplicate concept processing
 #define RELATED_CONCEPTS_FOREACH(TERM, CONCEPT, BODY) \
     for(int _i_=0; _i_<UNIFICATION_DEPTH; _i_++) \
     { \
@@ -41,6 +42,11 @@ static long conceptProcessID = 0; //avoids duplicate concept processing
             } \
         } \
     }
+
+void Cycle_INIT()
+{
+    conceptProcessID = conceptProcessID2 = 0;
+}
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
 static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime, bool ignoreOp)
@@ -401,10 +407,16 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             if(Term_Equal(&imp.term, &toProcess->term))
                             {
                                 //build an implication between a result sequence and a contingency
+                                conceptProcessID2++;
+                                int concept_id_temp;
+                                RELOOP3:
+                                concept_id_temp = concept_id;
                                 for(int i=0; i<concepts.itemsAmount; i++)
                                 {
                                     Concept *c = concepts.items[i].address;
-                                    if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->lastSensorimotorActivation - toProcess->creationTime) < SEQUENCE_TO_CONTINGENCY_DISTANCE)
+                                    bool wasProcessed = c->processID2 == conceptProcessID2;
+                                    c->processID2 = conceptProcessID2;
+                                    if(!wasProcessed && c->belief_spike.creationTime < currentTime && c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->lastSensorimotorActivation - toProcess->creationTime) < SEQUENCE_TO_CONTINGENCY_DISTANCE)
                                     {
                                         if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp))
                                         {
@@ -417,6 +429,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                                 NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
                                             }
                                         }
+                                    }
+                                    if(concept_id != concept_id_temp)
+                                    {
+                                        goto RELOOP3;
                                     }
                                 }
                                 break; //no need to search further
@@ -438,10 +454,16 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 {
                     FIFO_Add(toProcess, &belief_events);
                 }
+                conceptProcessID2++;
+                int concept_id_temp;
+                RELOOP:
+                concept_id_temp = concept_id;
                 for(int i=0; !op_id && i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                    bool wasProcessed = c->processID2 == conceptProcessID2;
+                    c->processID2 = conceptProcessID2;
+                    if(!wasProcessed && c->belief_spike.creationTime < currentTime && c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
                     {
                         if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION) && !c->isResultSequence)
                         {
@@ -493,11 +515,20 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             }
                         }
                     }
+                    if(concept_id != concept_id_temp)
+                    {
+                        goto RELOOP;
+                    }
                 }
+                conceptProcessID2++;
+                RELOOP2:
+                concept_id_temp = concept_id;
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF)
+                    bool wasProcessed = c->processID2 == conceptProcessID2;
+                    c->processID2 = conceptProcessID2;
+                    if(!wasProcessed && c->belief_spike.creationTime < currentTime && c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF)
                     {
                         if(c->belief_spike.occurrenceTime < postcondition.occurrenceTime && !c->isResultSequence)
                         {
@@ -523,6 +554,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 }
                             }
                         }
+                    }
+                    if(concept_id != concept_id_temp)
+                    {
+                        goto RELOOP2;
                     }
                 }
                 if(selectedBeliefsPriority[i] >= 1.0) //only if input has been received
