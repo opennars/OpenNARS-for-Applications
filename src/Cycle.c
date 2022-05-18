@@ -84,6 +84,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
     //add a new concept for e if not yet existing
     Memory_Conceptualize(&e->term, currentTime, ignoreOp);
     e->processed = true;
+    e->creationTime = currentTime;
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     conceptProcessID++; //process the to e related concepts
@@ -534,9 +535,9 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
                             {
-                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
                                 bool success;
                                 Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
+                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
                                 if(success && seq.truth.confidence >= MIN_CONFIDENCE && !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
                                 {
                                     int sequence_len = 0;
