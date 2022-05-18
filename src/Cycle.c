@@ -26,6 +26,7 @@
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
 static long conceptProcessID2 = 0; //avoids duplicate concept processing
+
 #define RELATED_CONCEPTS_FOREACH(TERM, CONCEPT, BODY) \
     for(int _i_=0; _i_<UNIFICATION_DEPTH; _i_++) \
     { \
@@ -385,10 +386,10 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
 
 void Cycle_ProcessBeliefEvents(long currentTime)
 {
-    for(int i=0; i<beliefsSelectedCnt; i++)
+    for(int h=0; h<beliefsSelectedCnt; h++)
     {
-        Event *toProcess = &selectedBeliefs[i];
-        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (selectedBeliefsPriority[i] >= CORRELATE_OUTCOME_PRIORITY || Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION)))
+        Event *toProcess = &selectedBeliefs[h];
+        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (selectedBeliefsPriority[h] >= CORRELATE_OUTCOME_PRIORITY || Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION)))
         {
             if(Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
             {
@@ -561,7 +562,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         goto RELOOP2;
                     }
                 }
-                if(selectedBeliefsPriority[i] >= 1.0) //only if input has been received
+                if(selectedBeliefsPriority[h] >= 1.0) //only if input has been received
                 {
                     Decision_Anticipate(op_id, op_term, currentTime); //collection of negative evidence, new way
                 }
