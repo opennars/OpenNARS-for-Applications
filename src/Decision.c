@@ -310,15 +310,22 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
     for(int j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = concepts.items[j].address;
-        for(int  h=0; h<postc->precondition_beliefs[operationID].itemsAmount; h++)
+        Implication valid_implications[TABLE_SIZE] = {0};
+        int k;
+        for(k=0; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
         {
-            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[h]))
+            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[k]))
             {
-                Table_Remove(&postc->precondition_beliefs[operationID], h);
-                h--;
+                Table_Remove(&postc->precondition_beliefs[operationID], k);
+                k--;
                 continue;
             }
-            Implication imp = postc->precondition_beliefs[operationID].array[h]; //(&/,a,op) =/> b.
+            Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
+            valid_implications[k] = imp;
+        }
+        for(int h=0; h<k; h++)
+        {
+            Implication imp = valid_implications[h]; //(&/,a,op) =/> b.
             Concept *current_prec = imp.sourceConcept;
             Event *precondition = &current_prec->belief_spike;
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)

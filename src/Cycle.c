@@ -395,10 +395,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
         
         if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (selectedBeliefsPriority[h] >= CORRELATE_OUTCOME_PRIORITY || Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION)))
         {
-        
             if(Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
             {
-                /*
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
                 if(!Variable_hasVariable(&toProcess->term, true, true, false))
                 {
@@ -449,7 +447,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     }
                 }
 #endif
-*/
             }
             else
             {
@@ -502,8 +499,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                                 //fputs("success5 ", stdout); Narsese_PrintTerm(&prec->term); fputs("C ", stdout); Narsese_PrintTerm(&opc->term); puts("");
                                                 Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
                                                 //Also build a sequence ((A &/ op) &/ B):
-                                                /*
-    #if ALLOW_RESULT_SEQUENCES && SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+#if ALLOW_RESULT_SEQUENCES && SEMANTIC_INFERENCE_NAL_LEVEL >= 8
                                                 bool success3;
                                                 Event result_seq = Inference_BeliefIntersection(&seq_op_cur, &postcondition, &success3);
                                                 if(success3)
@@ -511,8 +507,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                                     IN_DEBUG( fputs("RESULT_SEQ ", stdout); Narsese_PrintTerm(&result_seq.term); puts(""); )
                                                     Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true);
                                                 }
-    #endif
-    */
+#endif
                                                 if(concept_id_temp3 != concept_id) //a new concept was created, reloop
                                                 {
                                                     goto RELOOP_INNER;
