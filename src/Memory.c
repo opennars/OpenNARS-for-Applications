@@ -420,7 +420,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         return;
     }
-    if(input && (Narsese_isOperation(&event->term) || event->type == EVENT_TYPE_GOAL))
+    if(input && event->type == EVENT_TYPE_GOAL)
     {
         Memory_printAddedEvent(event, priority, input, false, false, true);
     }
