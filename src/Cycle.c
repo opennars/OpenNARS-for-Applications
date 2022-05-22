@@ -491,7 +491,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                         if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
                                         {
                                             Term buildSeq = prec->belief_spike.term;
-                                            bool success5 = Narsese_SequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
+                                            bool success5 = Narsese_OperationSequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
                                             //seq_op_cur.term = buildSeq;
                                             //so now derive it
                                             if(success5)
@@ -566,6 +566,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             {
                                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime, false);
+                                                if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
+                                                {
+                                                    Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
+                                                }
                                             }
                                         }
                                         if(concept_id_temp2 != concept_id) //a new concept was created, reloop

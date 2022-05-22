@@ -118,6 +118,6 @@ HASH_TYPE Narsese_StringHash(char *name);
 //Whether the term has an operation
 bool Term_HasOperation(Term *term);
 //Append a sequence in left-nested way:
-bool Narsese_SequenceAppendLeftNested(Term *start, Term *sequence);
+bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence);
 
 #endif

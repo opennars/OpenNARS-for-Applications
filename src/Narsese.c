@@ -724,11 +724,12 @@ Term Narsese_getOperationTerm(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        Term potential_op_seq = {0};
+        if(!Narsese_isOperation(&potential_operator) || !Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, term)) //not an op, or in case there exists a, ^op such that a=(b &/ ^op) (which can happen recursively to b) extrract the op sequence
         {
             return (Term) {0};
         }
-        return Narsese_getOperationTerm(&potential_operator);
+        return potential_op_seq;
     }
     if(Narsese_isOperation(term)) //operator
     {
@@ -790,28 +791,31 @@ bool Narsese_HasOperation(Term *term)
     return false;
 }
 
-bool Narsese_SequenceAppendLeftNested(Term *start, Term *sequence)
+bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
 {
     if(Narsese_copulaEquals(sequence->atoms[0], SEQUENCE))
     {
         Term left = Term_ExtractSubterm(sequence, 1);
         Term right = Term_ExtractSubterm(sequence, 2);
-        bool success1 = Narsese_SequenceAppendLeftNested(start, &left);
+        bool success1 = Narsese_OperationSequenceAppendLeftNested(start, &left);
         if(!success1)
             return false;
-        bool success2 = Narsese_SequenceAppendLeftNested(start, &right);
+        bool success2 = Narsese_OperationSequenceAppendLeftNested(start, &right);
         if(!success2)
             return false;
         return true;
     }
     bool success = true;
-    if(!start->atoms[0])
+    if(Narsese_isOperation(sequence))
     {
-        *start = *sequence;
-    }
-    else
-    {
-        *start = Narsese_Sequence(start, sequence, &success);
+        if(!start->atoms[0])
+        {
+            *start = *sequence;
+        }
+        else
+        {
+            *start = Narsese_Sequence(start, sequence, &success);
+        }
     }
     return success;
 }
