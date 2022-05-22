@@ -35,6 +35,7 @@ void NAR_INIT()
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();
+    Cycle_INIT();
     currentTime = 1; //reset time
     initialized = true;
     op_k = 0;

@@ -724,11 +724,12 @@ Term Narsese_getOperationTerm(Term *term)
     if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //sequence
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
-        if(Narsese_copulaEquals(potential_operator.atoms[0], SEQUENCE))
+        Term potential_op_seq = {0};
+        if(!Narsese_isOperation(&potential_operator) || !Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, term)) //not an op, or in case there exists a, ^op such that a=(b &/ ^op) (which can happen recursively to b) extrract the op sequence
         {
             return (Term) {0};
         }
-        return Narsese_getOperationTerm(&potential_operator);
+        return potential_op_seq;
     }
     if(Narsese_isOperation(term)) //operator
     {
@@ -771,3 +772,50 @@ bool Narsese_HasSimpleAtom(Term *term)
     return false;
 }
 
+bool Narsese_HasOperation(Term *term)
+{
+    if(Narsese_getOperationAtom(term)) //don't conceptualize operations
+    {
+        return true;
+    }
+    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_isOperator(term->atoms[i]))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
+{
+    if(Narsese_copulaEquals(sequence->atoms[0], SEQUENCE))
+    {
+        Term left = Term_ExtractSubterm(sequence, 1);
+        Term right = Term_ExtractSubterm(sequence, 2);
+        bool success1 = Narsese_OperationSequenceAppendLeftNested(start, &left);
+        if(!success1)
+            return false;
+        bool success2 = Narsese_OperationSequenceAppendLeftNested(start, &right);
+        if(!success2)
+            return false;
+        return true;
+    }
+    bool success = true;
+    if(Narsese_isOperation(sequence))
+    {
+        if(!start->atoms[0])
+        {
+            *start = *sequence;
+        }
+        else
+        {
+            *start = Narsese_Sequence(start, sequence, &success);
+        }
+    }
+    return success;
+}
