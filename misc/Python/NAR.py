@@ -1,7 +1,7 @@
-import pexpect
 import sys
-import os.path
-NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
+import subprocess
+
+NAR = subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
@@ -39,9 +39,15 @@ def parseExecution(e):
     return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
 
 def GetRawOutput():
-    NAR.sendline("0")
-    NAR.expect("done with 0 additional inference steps.")
-    return [a.strip().decode("utf-8") for a in NAR.before.split(b'\n')][2:-3]
+    NAR.stdin.write("0\n")
+    NAR.stdin.flush()
+    ret = ""
+    before = []
+    while "done with 0 additional inference steps." != ret.strip():
+        if ret != "":
+            before.append(ret.strip())
+        ret = NAR.stdout.readline()
+    return before[:-1]
 
 def GetOutput():
     lines = GetRawOutput()
@@ -62,8 +68,9 @@ def GetStats():
 		    Stats[leftside] = rightside
 	return Stats
 
-def AddInput(narsese, Print=True, Flush=True):
-    NAR.sendline(narsese)
+def AddInput(narsese, Print=True):
+    NAR.stdin.write(narsese + '\n')
+    NAR.stdin.flush()
     ReturnStats = narsese == "*stats"
     if ReturnStats:
         return GetStats()
