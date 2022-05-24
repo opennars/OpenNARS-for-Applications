@@ -42,7 +42,7 @@ extern long currentTime;
 
 //Callback function types//
 //-----------------------//
-//typedef void (*Action)(void);     //already defined in Memory
+//typedef void (*Action)(Term);     //already defined in Memory
 
 //Methods//
 //-------//
