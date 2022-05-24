@@ -23,16 +23,18 @@
  */
 
 bool NAR_Lightswitch_GotoSwitch_executed = false;
-void NAR_Lightswitch_GotoSwitch()
+Feedback NAR_Lightswitch_GotoSwitch()
 {
     NAR_Lightswitch_GotoSwitch_executed = true;
     puts("NAR invoked goto switch");
+    return (Feedback) {0};
 }
 bool NAR_Lightswitch_ActivateSwitch_executed = false;
-void NAR_Lightswitch_ActivateSwitch()
+Feedback NAR_Lightswitch_ActivateSwitch()
 {
     NAR_Lightswitch_ActivateSwitch_executed = true;
     puts("NAR invoked activate switch");
+    return (Feedback) {0};
 }
 void NAR_Multistep_Test()
 {

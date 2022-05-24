@@ -24,8 +24,9 @@
 
 #include "Shell.h"
 
-static void Shell_op_nop(Term args)
+static Feedback Shell_op_nop(Term args)
 {
+    return (Feedback) {0};
 }
 void Shell_NARInit()
 {
@@ -261,6 +262,14 @@ int Shell_ProcessInput(char *line)
             assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             assert(opArgID >= 1 && opArgID <= OPERATIONS_BABBLE_ARGS_MAX, "Operator arg index out of bounds, it can only be between 1 and OPERATIONS_BABBLE_ARGS_MAX!");
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
+        }
+        else
+        if(!strncmp("*setopstdin ", line, strlen("*setopstdin ")))
+        {
+            int opID;
+            char opname[ATOMIC_TERM_LEN_MAX] = {0};
+            sscanf(&line[strlen("*setopstdin ")], "%d", &opID);
+            operations[opID - 1].stdinOutput = true;
         }
         else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))

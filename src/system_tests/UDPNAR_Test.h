@@ -25,9 +25,10 @@
 #include "./../NetworkNAR/UDPNAR.h"
 
 bool NAR_UDPNAR_Test_op_left_executed = false;
-void NAR_UDPNAR_Test_op_left()
+Feedback NAR_UDPNAR_Test_op_left()
 {
     NAR_UDPNAR_Test_op_left_executed = true;
+    return (Feedback) {0};
 }
 
 void NAR_UDPNAR_Test()

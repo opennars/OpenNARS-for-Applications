@@ -50,12 +50,18 @@ extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
-typedef void (*Action)(Term);
+typedef struct
+{
+    Substitution subs;
+    bool failed;
+}Feedback; //operation feedback
+typedef Feedback (*Action)(Term);
 typedef struct
 {
     Term term;
     Action action;
     Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
+    bool stdinOutput;
 }Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global

@@ -37,10 +37,10 @@ char direction = DIRECTION_RIGHT; //right, right down, down, left down, left, le
 bool allowAction = false;
 
 //Angle transition via ^left operator
-void NAR_Robot_Left()
+Feedback NAR_Robot_Left()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_UP;
     else
@@ -65,13 +65,14 @@ void NAR_Robot_Left()
     if(direction == DIRECTION_RIGHT_DOWN)
         direction = DIRECTION_RIGHT;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 //Angle transition via ^right operator
-void NAR_Robot_Right()
+Feedback NAR_Robot_Right()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_DOWN;
     else
@@ -96,6 +97,7 @@ void NAR_Robot_Right()
     if(direction == DIRECTION_RIGHT_UP)
         direction = DIRECTION_RIGHT;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 //The world is composed of worldsizeX * worldsizeY cells
@@ -411,10 +413,10 @@ int eaten = 0;
 int moves = 0;
 
 //Forward move
-void NAR_Robot_Forward()
+Feedback NAR_Robot_Forward()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     Perception percept = Agent_View();
     //progress movement
     if(pX != percept.forward_pX || pY != percept.forward_pY)
@@ -424,6 +426,7 @@ void NAR_Robot_Forward()
     pX = percept.forward_pX;
     pY = percept.forward_pY;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 void buildRooms()

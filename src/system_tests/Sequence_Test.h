@@ -23,19 +23,22 @@
  */
 
 bool op_1_executed = false;
-void op_1()
+Feedback op_1()
 {
     op_1_executed = true;
+    return (Feedback) {0};
 }
 bool op_2_executed = false;
-void op_2()
+Feedback op_2()
 {
     op_2_executed = true;
+    return (Feedback) {0};
 }
 bool op_3_executed = false;
-void op_3()
+Feedback op_3()
 {
     op_3_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Sequence_Test()
 {

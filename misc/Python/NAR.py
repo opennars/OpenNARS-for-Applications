@@ -43,24 +43,28 @@ def GetRawOutput():
     NAR.stdin.flush()
     ret = ""
     before = []
+    requestOutputArgs = False
     while "done with 0 additional inference steps." != ret.strip():
         if ret != "":
             before.append(ret.strip())
+        if ret.strip() == "//Operation result product expected:":
+            requestOutputArgs = True
+            break
         ret = NAR.stdout.readline()
-    return before[:-1]
+    return before[:-1], requestOutputArgs
 
 def GetOutput():
-    lines = GetRawOutput()
+    lines, requestOutputArgs = GetRawOutput()
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised:")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     reason = parseReason("\n".join(lines))
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines), "requestOutputArgs" : requestOutputArgs}
 
 def GetStats():
 	Stats = {}
-	lines = GetRawOutput()
+	lines, _ = GetRawOutput()
 	for l in lines:
 		if ":" in l:
 		    leftside = l.split(":")[0].replace(" ", "_").strip()

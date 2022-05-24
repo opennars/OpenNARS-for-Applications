@@ -70,8 +70,8 @@ void Decision_Execute(Decision *decision)
     {
         assert(decision->operationID[i], "Error");
         decision->op[i] = operations[decision->operationID[i]-1];
-        Term feedback = decision->op[i].term; //atomic operation / operator
-        //and add operator feedback
+        Term feedbackTerm = decision->op[i].term; //atomic operation / operator
+        //and add operator feedback event
         if(decision->arguments[i].atoms[0] > 0) //operation with args
         {
             Term operation = {0};
@@ -80,20 +80,68 @@ void Decision_Execute(Decision *decision)
             {
                 return;
             }
-            feedback = operation;
+            feedbackTerm = operation;
         }
         Narsese_PrintTerm(&decision->op[i].term); fputs(" executed with args ", stdout); Narsese_PrintTerm(&decision->arguments[i]); puts(""); fflush(stdout);
-        (*decision->op[i].action)(decision->arguments[i]);
-        NAR_AddInputBelief(feedback);
-        //assumption of failure extension to specific cases not experienced before:
-        if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
+        Feedback feedback = (*decision->op[i].action)(decision->arguments[i]);
+        if(feedback.failed) //TODO improve (leaves option for operation to fail, but we don't want each op having to set it to true...)
         {
-            Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
-            Concept *postc = Memory_Conceptualize(&postcondition, currentTime, false);
-            if(postc != NULL)
+            return;
+        }
+        feedback.subs.success = true; //the value assignment didn't came from substitution but from the op execution so we simply set it to true
+        if(decision->op[i].stdinOutput)
+        {
+            puts("//Operation result product expected: ");
+            fflush(stdout);
+            //Synch 0 input from Python interface
+            char line0[10] = {0};
+            if(fgets(line0, 10, stdin) == NULL)
             {
-                Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID[i], postc);
+                return;
             }
+            assert(line0[0] == '0' && line0[1] == '\n', "Synch 0 not sent");
+            //Now the actual argument product:
+            char line[1024] = {0};
+            if(fgets(line, 1024, stdin) == NULL)
+            {
+                return;
+            }
+            Term specific_args = Narsese_Term(line);
+            Term argpart = Term_ExtractSubterm(&decision->arguments[i], 2);
+            feedback.subs = Variable_Unify(&argpart, &specific_args);
+            if(!feedback.subs.success)
+            {
+                return;
+            }
+        }
+        for(int j=0; j<i; j++) //also apply the substitution to all following operations in the compound op
+        {
+            bool success;
+            decision->arguments[j] = Variable_ApplySubstitute(decision->arguments[j], feedback.subs, &success);
+            if(!success)
+            {
+                return;
+            }
+        }
+        bool success;
+        feedbackTerm = Variable_ApplySubstitute(feedbackTerm, feedback.subs, &success);
+        if(success)
+        {
+            NAR_AddInputBelief(feedbackTerm);
+            //assumption of failure extension to specific cases not experienced before:
+            if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
+            {
+                Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
+                Concept *postc = Memory_Conceptualize(&postcondition, currentTime, false);
+                if(postc != NULL)
+                {
+                    Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID[i], postc);
+                }
+            }
+        }
+        else
+        {
+            return;
         }
     }
 }
@@ -203,6 +251,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Decision decision = {0};
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
+    bool genericGoalgenericConcept = Variable_hasVariable(&goalconcept->term, true, true, true) && Variable_hasVariable(&goal->term, true, true, true);
     Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
     if(subs.success)
     {
@@ -235,7 +284,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                if(success && !Variable_hasVariable(&specific_imp.term, true, true, true))
+                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, true, true)))
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;

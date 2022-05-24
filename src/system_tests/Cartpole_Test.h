@@ -3,7 +3,7 @@ static double angle = -3.1415/2.0;
 static double angle_velocity = 0.0;
 static double position = 0.0;
 static double max_angle_velocity = 0.3;
-static void NAR_CP_Left()
+static Feedback NAR_CP_Left()
 {
     double reverse = angle > 0 ? 1 : -1;
     //if(position > 0.0 && position < 1.0)
@@ -11,8 +11,9 @@ static void NAR_CP_Left()
         angle_velocity -= reverse * 0.3;
     }
     velocity -= 0.1;
+    return (Feedback) {0};
 }
-static void NAR_CP_Right()
+static Feedback NAR_CP_Right()
 {
     double reverse = angle > 0 ? 1 : -1;
     //if(position > 0.0 && position < 1.0)
@@ -20,6 +21,7 @@ static void NAR_CP_Right()
         angle_velocity += reverse * 0.3;
     }
     velocity += 0.1;
+    return (Feedback) {0};
 }
 static double successes = 0;
 static double failures = 0;
