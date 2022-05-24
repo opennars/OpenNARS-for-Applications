@@ -540,6 +540,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     int child2 = index*2+1;
     bool hasLeftChild = child1 < COMPOUND_TERM_SIZE_MAX && term->atoms[child1-1];
     bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], SET_TERMINATOR);
+    bool isSingularProduct = Narsese_copulaEquals(atom, PRODUCT) && !hasRightChild;
     bool isNegation = Narsese_copulaEquals(atom, NEGATION);
     bool isExtSet = Narsese_copulaEquals(atom, EXT_SET);
     bool isIntSet = Narsese_copulaEquals(atom, INT_SET);
@@ -561,7 +562,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     else
     {
         fputs(hasLeftChild ? "(" : "", stdout);
-        if(isNegation)
+        if(isNegation || isSingularProduct)
         {
             Narsese_PrintAtom(atom);
             fputs(" ", stdout);
@@ -577,7 +578,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     }
     if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, SET_TERMINATOR))
     {
-        if(!isNegation)
+        if(!isNegation && !isSingularProduct)
         {
             Narsese_PrintAtom(atom);
             fputs(hasLeftChild ? " " : "", stdout);
