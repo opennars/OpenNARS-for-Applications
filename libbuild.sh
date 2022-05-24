@@ -1,16 +1,18 @@
 #!/bin/sh
-install_dir="/usr/local"
+lib_dir="/usr/local/lib"
+include_dir="/usr/local/include"
 
-if [ $# -eq 1 ]; then
-    echo "[ALERT] The defauld base_dir [$install_dir] is changed in $1."
-    install_dir=$1
+if [ $# -eq 2 ]; then
+    echo "[ALERT] The defauld base_dir [$lib_dir $include_dir] is changed in $1."
+    lib_dir=$1
+    include_dir=$2
 fi
 
 rm NAR_first_stage *.o
 rm src/RuleTable.c
 mv src/main_ src/main.c
-sudo rm -rf $install_dir/include/ona
-sudo rm $install_dir/lib/libONA.*
+sudo rm -rf $include_dir/ona
+sudo rm $lib_dir/libONA.*
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 
 echo "Compilation started:"
@@ -29,14 +31,14 @@ gcc -mfpmath=sse -msse2 -c -fPIC -DSTAGE=2 $NoWarn $BaseFlags $Str src/RuleTable
 gcc -shared -o libONA.so *.o
 rm -rf *.o
 
-echo "Installing libONA in [ $install_dir ]."
+echo "Installing libONA in [ $lib_dir $include_dir ]."
 
-sudo mkdir $install_dir/include/ona/
-sudo cp src/*.h $install_dir/include/ona/
-sudo mkdir $install_dir/include/ona/NetworkNAR/
-sudo cp src/NetworkNAR/*.h $install_dir/include/ona/NetworkNAR/
-sudo mv *.a $install_dir/lib/
-sudo mv *.so $install_dir/lib/
+sudo mkdir $include_dir/ona/
+sudo cp src/*.h $include_dir/ona/
+sudo mkdir $include_dir/ona/NetworkNAR/
+sudo cp src/NetworkNAR/*.h $include_dir/ona/NetworkNAR/
+sudo mv *.a $lib_dir/
+sudo mv *.so $lib_dir/
 mv src/main_ src/main.c
 
 echo "Done."
