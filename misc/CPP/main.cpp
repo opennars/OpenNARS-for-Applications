@@ -1,3 +1,4 @@
+//build with: g++ -lONA -lm main.cpp
 #include <iostream>
 //namespace ona { //if used with other namespaces
 extern "C" {
@@ -9,14 +10,16 @@ extern "C" {
 //using namespace ona;
 
 bool executed = false;
-void NAR_Op()
+Feedback NAR_Op()
 {
     std::cout << "Hello world" << std::endl;
     executed=true;
+    return (Feedback) {0};
 }
 int main()
 {
     NAR_INIT();
+    MOTOR_BABBLING_CHANCE = 0.0;
     NAR_AddOperation((char*) "^op", (Action) NAR_Op);
     NAR_AddInputNarsese((char*) "<(a &/ ^op) =/> g>.");
     NAR_AddInputNarsese((char*) "a. :|:");

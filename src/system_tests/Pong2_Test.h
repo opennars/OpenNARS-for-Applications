@@ -23,19 +23,22 @@
  */
 
 bool NAR_Pong_Left_executed = false;
-void NAR_Pong_Left()
+Feedback NAR_Pong_Left()
 {
     NAR_Pong_Left_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Pong_Right_executed = false;
-void NAR_Pong_Right()
+Feedback NAR_Pong_Right()
 {
     NAR_Pong_Right_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Pong_Stop_executed = false;
-void NAR_Pong_Stop()
+Feedback NAR_Pong_Stop()
 {
     NAR_Pong_Stop_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Pong2(long iterations)
 {

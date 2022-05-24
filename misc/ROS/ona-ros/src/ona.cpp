@@ -47,44 +47,54 @@ void narseseInputCallback(const std_msgs::String::ConstPtr& msg){
     NAR_AddInputNarsese((char*) msg->data.c_str());
 }
 
-static void ROSNAR_op1(Term args){
+static Feedback ROSNAR_op1(Term args){
     publish("^op1", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op2(Term args){
+static Feedback ROSNAR_op2(Term args){
     publish("^op2", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op3(Term args){
+static Feedback ROSNAR_op3(Term args){
     publish("^op3", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op4(Term args){
+static Feedback ROSNAR_op4(Term args){
     publish("^op4", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op5(Term args){
+static Feedback ROSNAR_op5(Term args){
     publish("^op5", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op6(Term args){
+static Feedback ROSNAR_op6(Term args){
     publish("^op6", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op7(Term args){
+static Feedback ROSNAR_op7(Term args){
     publish("^op7", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op8(Term args){
+static Feedback ROSNAR_op8(Term args){
     publish("^op8", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op9(Term args){
+static Feedback ROSNAR_op9(Term args){
     publish("^op9", args);
+    return (Feedback) {0};
 }
 
-static void ROSNAR_op10(Term args){
+static Feedback ROSNAR_op10(Term args){
     publish("^op10", args);
+    return (Feedback) {0};
 }
 
 void ROSNAR_INIT(){

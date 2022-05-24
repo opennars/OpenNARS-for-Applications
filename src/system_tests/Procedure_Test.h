@@ -23,10 +23,11 @@
  */
 
 bool NAR_Procedure_Test_Op_executed = false;
-void NAR_Procedure_Test_Op()
+Feedback NAR_Procedure_Test_Op()
 {
     puts("op executed by NAR");
     NAR_Procedure_Test_Op_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Procedure_Test()
 {

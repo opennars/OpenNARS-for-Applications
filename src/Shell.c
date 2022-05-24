@@ -24,8 +24,9 @@
 
 #include "Shell.h"
 
-static void Shell_op_nop(Term args)
+static Feedback Shell_op_nop(Term args)
 {
+    return (Feedback) {0};
 }
 void Shell_NARInit()
 {

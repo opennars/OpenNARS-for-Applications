@@ -44,15 +44,15 @@ void publish(const char* name, Term args);
 
 void narseseInputCallback(const std_msgs::String::ConstPtr& msg);
 
-static void ROSNAR_op_left(Term args);
-static void ROSNAR_op_right(Term args);
-static void ROSNAR_op_up(Term args);
-static void ROSNAR_op_down(Term args);
-static void ROSNAR_op_say(Term args);
-static void ROSNAR_op_pick(Term args);
-static void ROSNAR_op_drop(Term args);
-static void ROSNAR_op_go(Term args);
-static void ROSNAR_op_activate(Term args);
-static void ROSNAR_op_deactivate(Term args);
+static Feedback ROSNAR_op_left(Term args);
+static Feedback ROSNAR_op_right(Term args);
+static Feedback ROSNAR_op_up(Term args);
+static Feedback ROSNAR_op_down(Term args);
+static Feedback ROSNAR_op_say(Term args);
+static Feedback ROSNAR_op_pick(Term args);
+static Feedback ROSNAR_op_drop(Term args);
+static Feedback ROSNAR_op_go(Term args);
+static Feedback ROSNAR_op_activate(Term args);
+static Feedback ROSNAR_op_deactivate(Term args);
 
 #endif

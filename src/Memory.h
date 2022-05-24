@@ -50,7 +50,12 @@ extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//
-typedef void (*Action)(Term);
+typedef struct
+{
+    Substitution subs;
+    bool failed;
+}Feedback; //operation feedback
+typedef Feedback (*Action)(Term);
 typedef struct
 {
     Term term;

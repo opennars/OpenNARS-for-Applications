@@ -30,45 +30,53 @@ static bool goto_l0 = false;
 static bool goto_l1 = false;
 static bool activate = false;
 static bool deactivate = false;
-void NAR_TestChamber_goto_s0()
+Feedback NAR_TestChamber_goto_s0()
 {
     goto_s0 = true;
     puts("NAR goto s0");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_goto_s1()
+Feedback NAR_TestChamber_goto_s1()
 {
     goto_s1 = true;
     puts("NAR goto s1");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_goto_s2()
+Feedback NAR_TestChamber_goto_s2()
 {
     goto_s2 = true;
     puts("NAR goto s2");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_goto_s3()
+Feedback NAR_TestChamber_goto_s3()
 {
     goto_s3 = true;
     puts("NAR goto s3");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_goto_l0()
+Feedback NAR_TestChamber_goto_l0()
 {
     goto_l0 = true;
     puts("NAR goto l0");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_goto_l1()
+Feedback NAR_TestChamber_goto_l1()
 {
     goto_l1 = true;
     puts("NAR goto l1");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_activate()
+Feedback NAR_TestChamber_activate()
 {
     activate = true;
     puts("NAR activate");
+    return (Feedback) {0};
 }
-void NAR_TestChamber_deactivate()
+Feedback NAR_TestChamber_deactivate()
 {
     deactivate = true;
     puts("NAR deactivate");
+    return (Feedback) {0};
 }
 void NAR_TestChamber()
 {

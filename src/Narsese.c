@@ -731,7 +731,7 @@ Term Narsese_getOperationTerm(Term *term)
         }
         return potential_op_seq;
     }
-    if(Narsese_isOperation(term)) //operator
+    if(Narsese_isOperation(term)) //operation
     {
         return *term;
     }
@@ -774,11 +774,11 @@ bool Narsese_HasSimpleAtom(Term *term)
 
 bool Narsese_HasOperation(Term *term)
 {
-    if(Narsese_getOperationAtom(term)) //don't conceptualize operations
+    if(Narsese_getOperationAtom(term))
     {
         return true;
     }
-    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE)) //or any seq with an op for that matter
+    if(Narsese_copulaEquals(term->atoms[0], SEQUENCE))
     {
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
