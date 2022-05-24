@@ -264,6 +264,14 @@ int Shell_ProcessInput(char *line)
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
         }
         else
+        if(!strncmp("*setopstdin ", line, strlen("*setopstdin ")))
+        {
+            int opID;
+            char opname[ATOMIC_TERM_LEN_MAX] = {0};
+            sscanf(&line[strlen("*setopstdin ")], "%d", &opID);
+            operations[opID - 1].stdinOutput = true;
+        }
+        else
         if(strspn(line, "0123456789") && strlen(line) == strspn(line, "0123456789"))
         {
             unsigned int steps;

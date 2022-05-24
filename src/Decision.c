@@ -89,6 +89,31 @@ void Decision_Execute(Decision *decision)
             return;
         }
         feedback.subs.success = true; //the value assignment didn't came from substitution but from the op execution so we simply set it to true
+        if(decision->op[i].stdinOutput)
+        {
+            puts("//Operation result product expected: ");
+            fflush(stdout);
+            //Synch 0 input from Python interface
+            char line0[10] = {0};
+            if(fgets(line0, 10, stdin) == NULL)
+            {
+                return;
+            }
+            assert(line0[0] == '0' && line0[1] == '\n', "Synch 0 not sent");
+            //Now the actual argument product:
+            char line[1024] = {0};
+            if(fgets(line, 1024, stdin) == NULL)
+            {
+                return;
+            }
+            Term specific_args = Narsese_Term(line);
+            Term argpart = Term_ExtractSubterm(&decision->arguments[i], 2);
+            feedback.subs = Variable_Unify(&argpart, &specific_args);
+            if(!feedback.subs.success)
+            {
+                return;
+            }
+        }
         for(int j=0; j<i; j++) //also apply the substitution to all following operations in the compound op
         {
             bool success;
