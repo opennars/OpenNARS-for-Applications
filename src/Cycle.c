@@ -119,7 +119,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                             Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
                             bool success2;
                             deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
-                            if(success2)
+                            if(success2 && !Stamp_checkOverlap(&eternalized_seq.stamp, &imp->stamp))
                             {
                                 NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
                             }
@@ -424,13 +424,21 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     c->processID2 = conceptProcessID2;
                                     if(!wasProcessed && c->belief_spike.creationTime < currentTime && c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->lastSensorimotorActivation - toProcess->creationTime) < SEQUENCE_TO_CONTINGENCY_DISTANCE)
                                     {
-                                        if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp))
+                                        bool containsListStatement = false; //list should take part in this since it's a useful representation for language learning
+                                        for(int w=0; RESTRICT_MUTUAL_ENTAILMENT && w<COMPOUND_TERM_SIZE_MAX; w++)
+                                        {   // . with inheritance as parent
+                                            if(Narsese_copulaEquals(c->term.atoms[w], SET_ELEMT) && Narsese_copulaEquals(c->term.atoms[w/2], INHERITANCE))
+                                            {
+                                                containsListStatement = true;
+                                            }
+                                        }
+                                        if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp) && (!RESTRICT_MUTUAL_ENTAILMENT || c->isResultSequence || containsListStatement))
                                         {
                                             bool success4;
                                             Event eternalized = c->belief_spike;
                                             eternalized.truth = Truth_Eternalize(eternalized.truth);
                                             Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
-                                            if(success4)
+                                            if(success4 && !Narsese_isOperation(&c->belief_spike.term))
                                             {
                                                 NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
                                             }

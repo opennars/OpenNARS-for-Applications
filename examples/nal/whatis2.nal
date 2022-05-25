@@ -28,7 +28,7 @@ G. :|:
 <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ <({SELF} * $2) --> ^say>) =/> G>>?
 //expected: Answer: <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ <({SELF} * $2) --> ^say>) =/> G>>. Truth: frequency=0.489012, confidence=0.118309
 <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <((<WHAT --> [hear]> &/ <$1 --> [see]>) &/ <({SELF} * $2) --> ^say>) =/> G>>?
-//expected: Answer: <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <((<WHAT --> [hear]> &/ <$1 --> [see]>) &/ <({SELF} * $2) --> ^say>) =/> G>>. Truth: frequency=1.000000, confidence=0.126350
+//expected: Answer: <(<(THIS . $2) --> [hear]> &/ <$1 --> [see]>) ==> <((<WHAT --> [hear]> &/ <$1 --> [see]>) &/ <({SELF} * $2) --> ^say>) =/> G>>. Truth: frequency=1.000000, confidence=0.068226
 
 <(THIS . BANANA) --> [hear]>. :|:
 <banana --> [see]>. :|:

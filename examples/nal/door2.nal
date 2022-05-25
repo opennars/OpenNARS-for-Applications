@@ -3,19 +3,6 @@
 *motorbabbling=false
 *volume=0
 
-<door1 --> [unlocked]>.
-10
-<door1 --> [centered]>. :|:
-^go. :|:
-<door1 --> [open]>. :|:
-
-20
-<<$1 --> [unlocked]> <=> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>?
-//expected: Answer: <<$1 --> [unlocked]> <=> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>. Truth: frequency=1.000000, confidence=0.182063
-<<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>?
-//expected: Answer: <<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>. Truth: frequency=1.000000, confidence=0.182063
-
-*reset
 <<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>.
 <<$1 --> [locked]> ==> <(<$1 --> [centered]> &/ ^pick) =/> <$1 --> [open]>>>.
 <door2 --> [unlocked]>.

@@ -17,4 +17,4 @@ G. :|:
 G! :|:
 //expected: ^clap executed with args
 <(<C1 --> [hear]> &/ ^clap) =/> G>?
-//expected: Answer: <(<C1 --> [hear]> &/ ^clap) =/> G>. Truth: frequency=0.972948, confidence=0.209018
+//expected: Answer: <(<C1 --> [hear]> &/ ^clap) =/> G>. creationTime=242 Truth: frequency=0.967026, confidence=0.178165

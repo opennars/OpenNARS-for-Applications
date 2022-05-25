@@ -258,12 +258,12 @@ R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Ana
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
 //!Relating statements to contingencies
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) ==> (S --> P)), Truth_Abduction )
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) <=> (S --> P)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, (((A &/ Op) =/> C) && (S --> P)), Truth_Intersection )
-R2VarIntro( ((A &/ Op) =/> C), (S --> P), |-, ((S --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) ==> ((S * X) --> P)), Truth_Abduction )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) <=> ((S * X) --> P)), Truth_Comparison )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) && ((S * X) --> P)), Truth_Intersection )
+R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!

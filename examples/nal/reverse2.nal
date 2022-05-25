@@ -20,6 +20,6 @@
 //expected: ^left executed with args
 
 <(<y --> [see]> &/ ^left) =/> <x --> [see]>>?
-//expected: Answer: <(<y --> [see]> &/ ^left) =/> <x --> [see]>>. Truth: frequency=0.910221, confidence=0.059965
+//expected: Answer: <(<y --> [see]> &/ ^left) =/> <x --> [see]>>. Truth: frequency=0.825880, confidence=0.031844
 <((<$2 --> [see]> &/ ^right) &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ ^left) =/> <$2 --> [see]>>>?
 //expected: Answer: <((<$2 --> [see]> &/ ^right) &/ <$1 --> [see]>) ==> <(<$1 --> [see]> &/ ^left) =/> <$2 --> [see]>>>. Truth: frequency=1.000000, confidence=0.085386

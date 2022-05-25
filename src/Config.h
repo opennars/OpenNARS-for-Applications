@@ -178,5 +178,7 @@
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 //Allow sequences which contain preconditions, ops, and the reached consequence
 #define ALLOW_RESULT_SEQUENCES true
+//Restrict higher order implication statements to have a result seq (with op) or list inside
+#define RESTRICT_MUTUAL_ENTAILMENT true
 
 #endif
