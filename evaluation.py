@@ -171,7 +171,8 @@ print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
 print("\nSheep counting task:")
 print(subprocess.getoutput("cd ./misc/Python/ && python3 count_sheep.py").split("\n")[-1])
-print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent"))
+print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent seed=42"))
+print(subprocess.getoutput("cd ./misc/Python/ && python3 identitymatching.py silent seed=42"))
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")

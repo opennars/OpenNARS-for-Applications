@@ -28,7 +28,10 @@ import random
 import json
 import sys
 
-silent = "silent" in sys.argv
+loud = not "silent" in sys.argv
+def printloud(x=""):
+    if loud:
+        print(x)
 seed = "random"
 for x in sys.argv:
     if x.startswith("seed="):
@@ -36,10 +39,12 @@ for x in sys.argv:
 if seed != "random":
     random.seed(seed)
 
-NAR.AddInput("*babblingops=2")
-NAR.AddInput("*motorbabbling=0.2")
-NAR.AddInput("*setopname 1 ^left")
-NAR.AddInput("*setopname 2 ^right")
+if not loud:
+    NAR.AddInput("*volume=0", Print=loud)
+NAR.AddInput("*babblingops=2", Print=loud)
+NAR.AddInput("*motorbabbling=0.2", Print=loud)
+NAR.AddInput("*setopname 1 ^left", Print=loud)
+NAR.AddInput("*setopname 2 ^right", Print=loud)
 
 conditions = [["<A1 --> [sample]>. :|:", "<A1 --> [left]>. :|:", "<A2 --> [right]>. :|:", "^left"],
               ["<A1 --> [sample]>. :|:", "<A2 --> [left]>. :|:",
@@ -55,18 +60,14 @@ test_conditions = [["<A3 --> [sample]>. :|:", "<A3 --> [left]>. :|:", "<A4 --> [
                   "<A4 --> [right]>. :|:", "^right"],
               ["<A4 --> [sample]>. :|:", "<A4 --> [left]>. :|:", "<A3 --> [right]>. :|:", "^left"]]
 
-
-NAR.AddInput("*volume=0")
-
-
 seq = [0, 1, 2, 3]
-print("\x1b[35mBaseline\x1b[0m")
-print("\x1b[35m***************\x1b[0m")
-print()
+printloud("\x1b[35mBaseline\x1b[0m")
+printloud("\x1b[35m***************\x1b[0m")
+printloud()
 
 for b in range(10):
-    print("\x1b[35mStarting baseline block " + str(b) + ".\x1b[0m")
-    print()
+    printloud("\x1b[35mStarting baseline block " + str(b) + ".\x1b[0m")
+    printloud()
     s = random.sample(seq, 4)
     correct = 0
 
@@ -87,38 +88,37 @@ for b in range(10):
             op = executions[0]["operator"]
 
             if op == expected_op:
-                print("\x1B[32mCORRECT: " + op + "\x1B[0m")
+                printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
                 correct += 1
                 # NAR.AddInput("G. :|:", Print=False)
             elif op != expected_op:
-                print("\x1B[31mINCORRECT: " + op + "\x1B[0m")
+                printloud("\x1B[31mINCORRECT: " + op + "\x1B[0m")
                 # NAR.AddInput("G. :|: {0.0 0.9}", Print=True)      
 
         NAR.AddInput("100", Print=False)
     
-    print("\x1B[34mCorrect = " + str(correct/4) + "\x1B[0m")
+    printloud("\x1B[34mCorrect = " + str(correct/4) + "\x1B[0m")
 
-    print("End of block")
-    print()
+    printloud("End of block")
+    printloud()
 
-print("\x1b[33m")
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-print("\x1b[0m")
-
+printloud("\x1b[33m")
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+printloud("\x1b[0m")
 
 seq = [0, 1, 2, 3]
-print("\x1b[35mLearning A1->A1 and A2->A2\x1b[0m")
-print("\x1b[35m***************\x1b[0m")
-print()
+printloud("\x1b[35mLearning A1->A1 and A2->A2\x1b[0m")
+printloud("\x1b[35m***************\x1b[0m")
+printloud()
 
 for b in range(10):
-    print("\x1b[35mStarting block " + str(b) + ".\x1b[0m")
-    print()
+    printloud("\x1b[35mStarting block " + str(b) + ".\x1b[0m")
+    printloud()
     s = random.sample(seq, 4)
     correct = 0
 
@@ -133,22 +133,22 @@ for b in range(10):
         NAR.AddInput(left, Print=False)
         NAR.AddInput(right, Print=False)
 
-        response = NAR.AddInput("G! :|:", Print=True)
+        response = NAR.AddInput("G! :|:", Print=loud)
         executions = response["executions"]
         if executions:
             op = executions[0]["operator"]
 
             if op == expected_op:
-                print("\x1B[32mCORRECT: " + op + "\x1B[0m")
+                printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
                 NAR.AddInput("G. :|:", Print=False)
                 correct += 1
             elif op != expected_op:
-                print("\x1B[31mINCORRECT: " + op + "\x1B[0m")
+                printloud("\x1B[31mINCORRECT: " + op + "\x1B[0m")
                 NAR.AddInput("G. :|: {0.0 0.9}", Print=False)      
 
         NAR.AddInput("100", Print=False)
 
-    print("\x1b[33m")
+    printloud("\x1b[33m")
     response = NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=False)
     answers = response["answers"]
     if answers[0].get("truth"):
@@ -197,28 +197,32 @@ for b in range(10):
     else:
         g2 = 0
 
-    print("\x1b[0m")
+    printloud("\x1b[0m")
 
     specific = (s1 + s2 + s3 + s4)/4
     generic = (g1 + g2)/2
 
-    print("specific " + str(specific))
-    print("generic " + str(generic))
+    printloud("specific " + str(specific))
+    printloud("generic " + str(generic))
 
-    print("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
+    printloud("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
 
-    print("End of block")
-    print()
+    printloud("End of block")
+    printloud()
 
+
+specifics = []
+generics = []
+corrects = []
 
 seq = [0, 1, 2, 3]
-print("\x1b[35mTESTING A1->A1 and A2->A2\x1b[0m")
-print("\x1b[35m***************\x1b[0m")
-print()
+printloud("\x1b[35mTESTING A1->A1 and A2->A2\x1b[0m")
+printloud("\x1b[35m***************\x1b[0m")
+printloud()
 
 for b in range(4):
-    print("\x1b[35mStarting testing block " + str(b) + ".\x1b[0m")
-    print()
+    printloud("\x1b[35mStarting testing block " + str(b) + ".\x1b[0m")
+    printloud()
     s = random.sample(seq, 4)
     correct = 0
 
@@ -238,14 +242,14 @@ for b in range(4):
         op = response["executions"][0]["operator"]
 
         if op == expected_op:
-            print("\x1B[32mCORRECT: " + op + "\x1B[0m")
+            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
             correct += 1
         elif op != expected_op:
-            print("\x1b[31mINCORRECT: " + op +"\x1b[0m")
+            printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
 
         NAR.AddInput("100", Print=False)
 
-    print("\x1b[33m")
+    printloud("\x1b[33m")
     response = NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=False)
     answers = response["answers"]
     if answers[0].get("truth"):
@@ -294,37 +298,38 @@ for b in range(4):
     else:
         g2 = 0
 
-    print("\x1b[0m")
+    printloud("\x1b[0m")
 
     specific = (s1 + s2 + s3 + s4)/4
     generic = (g1 + g2)/2
 
-    print("specific " + str(specific))
-    print("generic " + str(generic))
+    printloud("specific " + str(specific))
+    printloud("generic " + str(generic))
+    printloud("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
+    specifics.append(specific)
+    generics.append(generic)
+    corrects.append(correct/4)
+    printloud("End of block")
+    printloud()
 
-    print("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
-
-    print("End of block")
-    print()
-
-print("\x1b[33m")
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-print("\x1b[0m")
+printloud("\x1b[33m")
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+printloud("\x1b[0m")
 
 
 seq = [0, 1, 2, 3]
-print("\x1b[35mTESTING A3->A3 and A4->A4\x1b[0m")
-print("\x1b[35m***************\x1b[0m")
-print()
+printloud("\x1b[35mTESTING A3->A3 and A4->A4\x1b[0m")
+printloud("\x1b[35m***************\x1b[0m")
+printloud()
 
 for b in range(4):
-    print("\x1b[35mStarting generalized testing block " + str(b) + ".\x1b[0m")
-    print()
+    printloud("\x1b[35mStarting generalized testing block " + str(b) + ".\x1b[0m")
+    printloud()
     s = random.sample(seq, 4)
     correct = 0
 
@@ -344,16 +349,16 @@ for b in range(4):
         op = response["executions"][0]["operator"]
 
         if op == expected_op:
-            print("\x1B[32mCORRECT: " + op + "\x1B[0m")
+            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
             correct += 1
         elif op != expected_op:
-            print("\x1b[31mINCORRECT: " + op + "\x1b[0m")
+            printloud("\x1b[31mINCORRECT: " + op + "\x1b[0m")
 
         NAR.AddInput("100", Print=False)
 
-    print("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
+    printloud("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
 
-    print("\x1b[33m")
+    printloud("\x1b[33m")
     response = NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=False)
     answers = response["answers"]
     if answers[0].get("truth"):
@@ -402,22 +407,27 @@ for b in range(4):
     else:
         g2 = 0
 
-    print("\x1b[0m")
+    printloud("\x1b[0m")
 
     specific = (s1 + s2 + s3 + s4)/4
     generic = (g1 + g2)/2
 
-    print("specific " + str(specific))
-    print("generic " + str(generic))
+    printloud("specific " + str(specific))
+    printloud("generic " + str(generic))
+    specifics.append(specific)
+    generics.append(generic)
+    corrects.append(correct/4)
+    printloud("End of block")
+    printloud()
 
-    print("End of block")
-    print()
+printloud("\x1b[33m")
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=loud)
+printloud("\x1b[0m")
 
-print("\x1b[33m")
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<A2 --> [sample]> &/ <A2 --> [right]>) &/ ^right) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-NAR.AddInput("<((<#1 --> [sample]> &/ <#1 --> [right]>) &/ ^right) =/> G>?", Print=True)
-print("\x1b[0m")
+print("Identity matching task results:")
+print("correctness ratio average\t%f\naverage specific confidence\t%f\naverage generics confidence\t%f" % (sum(corrects)/float(len(corrects)), sum(specifics)/float(len(specifics)), sum(generics)/float(len(generics))))
