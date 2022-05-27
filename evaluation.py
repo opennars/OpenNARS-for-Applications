@@ -171,6 +171,7 @@ print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
 print("\nSheep counting task:")
 print(subprocess.getoutput("cd ./misc/Python/ && python3 count_sheep.py").split("\n")[-1])
+print(subprocess.getoutput("cd ./misc/Python/ && python3 discriminativefunction.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 identitymatching.py silent seed=42"))
 

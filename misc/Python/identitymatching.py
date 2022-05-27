@@ -39,8 +39,7 @@ for x in sys.argv:
 if seed != "random":
     random.seed(seed)
 
-if not loud:
-    NAR.AddInput("*volume=0", Print=loud)
+NAR.AddInput("*volume=0", Print=loud)
 NAR.AddInput("*babblingops=2", Print=loud)
 NAR.AddInput("*motorbabbling=0.2", Print=loud)
 NAR.AddInput("*setopname 1 ^left", Print=loud)
