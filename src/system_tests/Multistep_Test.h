@@ -23,24 +23,26 @@
  */
 
 bool NAR_Lightswitch_GotoSwitch_executed = false;
-void NAR_Lightswitch_GotoSwitch()
+Feedback NAR_Lightswitch_GotoSwitch()
 {
     NAR_Lightswitch_GotoSwitch_executed = true;
     puts("NAR invoked goto switch");
+    return (Feedback) {0};
 }
 bool NAR_Lightswitch_ActivateSwitch_executed = false;
-void NAR_Lightswitch_ActivateSwitch()
+Feedback NAR_Lightswitch_ActivateSwitch()
 {
     NAR_Lightswitch_ActivateSwitch_executed = true;
     puts("NAR invoked activate switch");
+    return (Feedback) {0};
 }
 void NAR_Multistep_Test()
 {
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>NAR Multistep test start");
     NAR_INIT();
-    NAR_AddOperation(Narsese_AtomicTerm("^goto_switch"), NAR_Lightswitch_GotoSwitch); 
-    NAR_AddOperation(Narsese_AtomicTerm("^activate_switch"), NAR_Lightswitch_ActivateSwitch); 
+    NAR_AddOperation("^goto_switch", NAR_Lightswitch_GotoSwitch);
+    NAR_AddOperation("^activate_switch", NAR_Lightswitch_ActivateSwitch);
     for(int i=0; i<5; i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));

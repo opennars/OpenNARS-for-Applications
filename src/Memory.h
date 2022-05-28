@@ -52,11 +52,18 @@ extern Event Memory_belief;
 
 //Data structure//
 //--------------//
-typedef void (*Action)(Term);
+typedef struct
+{
+    Substitution subs;
+    bool failed;
+}Feedback; //operation feedback
+typedef Feedback (*Action)(Term);
 typedef struct
 {
     Term term;
     Action action;
+    Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
+    bool stdinOutput;
 }Operation;
 extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
@@ -65,18 +72,19 @@ extern int beliefsSelectedCnt;
 extern Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 extern double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 extern int goalsSelectedCnt;
+extern int concept_id;
 //Concepts in main memory:
 extern PriorityQueue concepts;
 //cycling events cycling in main memory:
 extern PriorityQueue cycling_belief_events;
-extern PriorityQueue cycling_external_goal_events;
-extern PriorityQueue cycling_mental_goal_events;
+extern PriorityQueue cycling_external_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
+extern PriorityQueue cycling_mental_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 extern HashTable HTconcepts;
-//Input event buffers:
-extern FIFO belief_events;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
+//Priority threshold for printing derivations
+extern double PRINT_EVENTS_PRIORITY_THRESHOLD;
 
 //Methods//
 //-------//
@@ -85,10 +93,10 @@ void Memory_INIT();
 //Find a concept
 Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
-Concept* Memory_Conceptualize(Term *term, long currentTime);
+Concept* Memory_Conceptualize(Term *term, long currentTime, bool ignoreOp);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, double occurrenceTimeOffset, bool input, bool derived, bool revised, bool mental);
-void Memory_AddInputEvent(Event *event, double occurrenceTimeOffset, long currentTime);
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer, bool mental);
+void Memory_AddInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
@@ -97,5 +105,7 @@ bool Memory_ImplicationValid(Implication *imp);
 void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo);
 //Print an implication in memory:
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
+//Get operation ID
+int Memory_getOperationID(Term *term);
 
 #endif

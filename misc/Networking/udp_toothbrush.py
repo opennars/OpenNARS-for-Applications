@@ -25,7 +25,6 @@
 import subprocess
 import socket
 import time
-from statistics import mean
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -46,9 +45,9 @@ for it in range(iterations):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     # Read in toothbrush file and extract expected statements
-    contents = []
+    contents = ["*volume=0\0", "*motorbabbling=false\0"]
     expected = set()
-    with open("./../examples/nal/toothbrush.nal") as input_file:
+    with open("./../../examples/nal/toothbrush.nal") as input_file:
         for line in input_file:
             if "//expected:" in line:
                 expected.add(line.split("//expected: ")[1].rstrip())
@@ -60,7 +59,6 @@ for it in range(iterations):
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
     out_file = process.stdout
-
     # Check that the startup statements are present
     out_file.readline()
     out_file.readline()
@@ -84,7 +82,7 @@ for it in range(iterations):
                     if debug: print("TARGET FOUND IN: " + next_line.rstrip())
                     if debug: print("RESUMING INPUTS...")
         # Dont specify number of cycles, change volume/settings, or include comments
-        if line[:-1].isnumeric() or line[0] == "*" or line[0] == "/":
+        if all(x.isdigit() for x in line[:-1]) or line[0] == "/":
             continue
         # If not waiting on expected, provide next input
         else:
@@ -97,4 +95,4 @@ for it in range(iterations):
     times.append(run_time)
     process.terminate()
 
-print("Average time: " + str(mean(times)))
+print("Average time: " + str(sum(times)/float(len(times))))

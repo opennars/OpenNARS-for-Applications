@@ -16,10 +16,10 @@ michael is eating popcorn
 
 a lion and the famous garfield are in the zoo watching crazy monkeys
 <(lion * zoo) --> in>? :|:
-//expected: Answer: <(lion * zoo) --> in>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(lion * zoo) --> in>. :|: occurrenceTime=5 Truth: frequency=1.000000, confidence=0.900000
 <(([famous] & garfield) * zoo) --> in>? :|:
-//expected: Answer: <(([famous] & garfield) * zoo) --> in>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(([famous] & garfield) * zoo) --> in>. :|: occurrenceTime=6 Truth: frequency=1.000000, confidence=0.900000
 <(lion * ([crazy] & monkey)) --> watch>? :|:
-//expected: Answer: <(lion * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=5 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(lion * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=7 Truth: frequency=1.000000, confidence=0.900000
 <(([famous] & garfield) * ([crazy] & monkey)) --> watch>? :|:
-//expected: Answer: <(([famous] & garfield) * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=6 Truth: frequency=1.000000, confidence=0.900000
+//expected: Answer: <(([famous] & garfield) * ([crazy] & monkey)) --> watch>. :|: occurrenceTime=8 Truth: frequency=1.000000, confidence=0.900000

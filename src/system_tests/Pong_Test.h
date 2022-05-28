@@ -25,8 +25,8 @@
 void NAR_Pong(long iterations)
 {
     puts(">>NAR Pong start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
+    NAR_AddOperation("^left", NAR_Pong_Left);
+    NAR_AddOperation("^right", NAR_Pong_Right);
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -148,6 +148,6 @@ void NAR_Pong(long iterations)
         {
             SLEEP;
         }
-        //NAR_Cycles(10);
+        NAR_Cycles(5);
     }
 }

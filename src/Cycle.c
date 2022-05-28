@@ -25,6 +25,9 @@
 #include "Cycle.h"
 
 static long conceptProcessID = 0; //avoids duplicate concept processing
+static long conceptProcessID2 = 0; //avoids duplicate concept processing
+static long conceptProcessID3 = 0; //avoids duplicate concept processing
+
 #define RELATED_CONCEPTS_FOREACH(TERM, CONCEPT, BODY) \
     for(int _i_=0; _i_<UNIFICATION_DEPTH; _i_++) \
     { \
@@ -42,17 +45,32 @@ static long conceptProcessID = 0; //avoids duplicate concept processing
         } \
     }
 
+void Cycle_INIT()
+{
+    conceptProcessID = 0;
+    conceptProcessID2 = 0;
+    conceptProcessID3 = 0;
+}
+
 //doing inference within the matched concept, returning whether decisionMaking should continue
-static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime, bool mental)
+static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime, bool ignoreOp, bool mental)
 {
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
+        c->lastSensorimotorActivation = currentTime;
+        if(ignoreOp)
+        {
+            c->isResultSequence = true;
+        }
         c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
         {
-            c->belief_spike = *e;
+            if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
+            {
+                c->belief_spike = *e;
+            }
         }
         else
         {
@@ -64,12 +82,13 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 }
 
 //Process an event, by creating a concept, or activating an existing
-static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool mental)
+static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool ignoreOp, bool mental)
 {
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
-    Memory_Conceptualize(&e->term, currentTime);
+    Memory_Conceptualize(&e->term, currentTime, ignoreOp);
     e->processed = true;
+    e->creationTime = currentTime;
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     conceptProcessID++; //process the to e related concepts
@@ -82,8 +101,28 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
             if(subs.success)
             {
                 ecp.term = e->term;
-                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, mental);
+                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp, mental);
                 best_decision = Decision_BetterDecision(best_decision, decision);
+                //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
+                if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && e->type == EVENT_TYPE_BELIEF)
+                {
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        for(int x=0; x<c->implied_contingencies.itemsAmount; x++)
+                        {
+                            Event eternalized_seq = Event_Eternalized(&c->belief_spike);
+                            Implication *imp = &c->implied_contingencies.array[x];
+                            assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
+                            Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
+                            bool success2;
+                            deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
+                            if(success2 && !Stamp_checkOverlap(&eternalized_seq.stamp, &imp->stamp))
+                            {
+                                NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                            }
+                        }
+                    }
+                }
             }
         }
         else
@@ -95,7 +134,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                 ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                 if(success)
                 {
-                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, mental);
+                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp, mental);
                     best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
@@ -127,17 +166,17 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 //{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 //if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
 //{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
-bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, bool mental)
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, int layer, bool mental)
 {
     //1. Extract potential subgoals
-    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], '+')) //left-nested sequence
+    if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
     {
         return false;
     }
     Term componentGoalsTerm[MAX_SEQUENCE_LEN+1] = {0};
     Term cur_seq = selectedGoal->term;
     int i=0;
-    for(; Narsese_copulaEquals(cur_seq.atoms[0], '+'); i++)
+    for(; Narsese_copulaEquals(cur_seq.atoms[0], SEQUENCE); i++)
     {
         assert(i<=MAX_SEQUENCE_LEN, "The sequence was longer than MAX_SEQUENCE_LEN, change your input or increase the parameter!");
         componentGoalsTerm[i] = Term_ExtractSubterm(&cur_seq, 2);
@@ -235,12 +274,12 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), 0, false, true, false, mental);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false, layer, mental);
     return true;
 }
 
 //Propagate subgoals, leading to decisions
-static void Cycle_ProcessInputGoalEvents(long currentTime, bool mental)
+static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer, bool mental)
 {
     Decision best_decision = {0};
     //process selected goals
@@ -249,24 +288,29 @@ static void Cycle_ProcessInputGoalEvents(long currentTime, bool mental)
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         //if goal is a sequence, overwrite with first deduced non-fulfilled element
-        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], mental)) //the goal was a sequence which leaded to a subgoal derivation
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], layer, mental)) //the goal was a sequence which leaded to a subgoal derivation
         {
             continue;
         }
-        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime, mental);
+        Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime, false, mental);
         best_decision = Decision_BetterDecision(best_decision, decision);
     }
-    if(best_decision.execute && best_decision.operationID > 0)
+    if(best_decision.execute && best_decision.operationID[0] > 0)
     {
         //reset cycling goal events after execution to avoid "residue actions"
-        if(mental)
+        for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
         {
-            PriorityQueue_INIT(&cycling_mental_goal_events, cycling_mental_goal_events.items, cycling_mental_goal_events.maxElements);
+            if(mental)
+            {
+                PriorityQueue_INIT(&cycling_mental_goal_events[layer], cycling_mental_goal_events[layer].items, cycling_mental_goal_events[layer].maxElements);
+            }
+            else
+            {
+                PriorityQueue_INIT(&cycling_external_goal_events[layer], cycling_external_goal_events[layer].items, cycling_external_goal_events[layer].maxElements);
+            }
         }
-        else
-        {
-            PriorityQueue_INIT(&cycling_external_goal_events, cycling_external_goal_events.items, cycling_external_goal_events.maxElements);
-        }
+        //also don't re-add the selected goal:
+        goalsSelectedCnt = 0;
         //execute decision
         Decision_Execute(&best_decision);
     }
@@ -310,10 +354,7 @@ static void Cycle_ProcessInputGoalEvents(long currentTime, bool mental)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            if(NAL_WithinAllowedComplexity(&newGoalUpdated.term))
-                            {
-                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), 0, false, true, false, mental);
-                            }
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false, layer);
                         }
                     }
                 }
@@ -322,12 +363,12 @@ static void Cycle_ProcessInputGoalEvents(long currentTime, bool mental)
     }
 }
 
-//Reinforce link between concept a and b (creating it if non-existent)
-static void Cycle_ReinforceLink(Event *a, Event *b)
+//Reinforce link between concept a and b
+static Implication Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
-        return;
+        return (Implication) {0};
     }
     Term a_term_nop = Narsese_GetPreconditionWithoutOp(&a->term);
     Concept *A = Memory_FindConceptByTerm(&a_term_nop);
@@ -341,88 +382,315 @@ static void Cycle_ReinforceLink(Event *a, Event *b)
             Implication precondition_implication = Inference_BeliefInduction(a, b, &success);
             if(success)
             {
-                precondition_implication.sourceConcept = A;
-                precondition_implication.sourceConceptId = A->id;
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    //extensional var intro:
-                    bool success;
-                    Term general_implication_term_ext = IntroduceImplicationVariables(precondition_implication.term, &success, true);
-                    if(success && Variable_hasVariable(&general_implication_term_ext, true, true, false))
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
+                    return precondition_implication;
+                }
+            }
+        }
+    }
+    return (Implication) {0};
+}
+
+void Cycle_ProcessBeliefEvents(long currentTime)
+{
+    for(int h=0; h<beliefsSelectedCnt; h++)
+    {
+        Event *toProcess = &selectedBeliefs[h];
+        
+        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (selectedBeliefsPriority[h] >= CORRELATE_OUTCOME_PRIORITY || Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION)))
+        {
+            if(Narsese_copulaEquals(toProcess->term.atoms[0], TEMPORAL_IMPLICATION))
+            {
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+                if(!Variable_hasVariable(&toProcess->term, true, true, false))
+                {
+                    //First retrieve the temporal implication in concept memory (it has the necessary truth value revisions which happened after it was induced)
+                    Term postcondition = Term_ExtractSubterm(&toProcess->term, 2);
+                    Term precondition = Term_ExtractSubterm(&toProcess->term, 1);
+                    Concept *cons = Memory_FindConceptByTerm(&postcondition);
+                    if(cons != NULL)
                     {
-                        NAL_DerivedEvent(general_implication_term_ext, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        int op_id = Memory_getOperationID(&precondition);
+                        for(int j=0; op_id && j<cons->precondition_beliefs[op_id].itemsAmount; j++)
+                        {
+                            Implication imp = cons->precondition_beliefs[op_id].array[j];
+                            if(Term_Equal(&imp.term, &toProcess->term))
+                            {
+                                //build an implication between a result sequence and a contingency
+                                conceptProcessID2++;
+                                int concept_id_temp;
+                                RELOOP3:
+                                concept_id_temp = concept_id;
+                                for(int i=0; i<concepts.itemsAmount; i++)
+                                {
+                                    Concept *c = concepts.items[i].address;
+                                    bool wasProcessed = c->processID2 == conceptProcessID2;
+                                    c->processID2 = conceptProcessID2;
+                                    if(!wasProcessed && c->belief_spike.creationTime < currentTime && c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->lastSensorimotorActivation - toProcess->creationTime) < SEQUENCE_TO_CONTINGENCY_DISTANCE)
+                                    {
+                                        bool containsListStatement = false; //list should take part in this since it's a useful representation for language learning
+                                        for(int w=0; RESTRICT_MUTUAL_ENTAILMENT && w<COMPOUND_TERM_SIZE_MAX; w++)
+                                        {   // . with inheritance as parent
+                                            if(Narsese_copulaEquals(c->term.atoms[w], SET_ELEMT) && Narsese_copulaEquals(c->term.atoms[w/2], INHERITANCE))
+                                            {
+                                                containsListStatement = true;
+                                            }
+                                        }
+                                        if(!Stamp_checkOverlap(&c->belief_spike.stamp, &toProcess->stamp) && (!RESTRICT_MUTUAL_ENTAILMENT || c->isResultSequence || containsListStatement))
+                                        {
+                                            bool success4;
+                                            Event eternalized = c->belief_spike;
+                                            eternalized.truth = Truth_Eternalize(eternalized.truth);
+                                            Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
+                                            if(success4 && !Narsese_isOperation(&c->belief_spike.term))
+                                            {
+                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
+                                            }
+                                        }
+                                    }
+                                    if(concept_id != concept_id_temp)
+                                    {
+                                        goto RELOOP3;
+                                    }
+                                }
+                                break; //no need to search further
+                            }
+                        }
                     }
-                    //intensional var intro:
-                    bool success2;
-                    Term general_implication_term_int = IntroduceImplicationVariables(precondition_implication.term, &success2, false);
-                    if(success2 && Variable_hasVariable(&general_implication_term_int, true, true, false))
+                }
+#endif
+            }
+            else
+            {
+                assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
+                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
+                Event postcondition = *toProcess;
+                //Mine for <(&/,precondition,operation) =/> postcondition> and <precondition =/> postcondition> patterns using FIFO and ConceptMemory:
+                int op_id = Memory_getOperationID(&postcondition.term);
+                Term op_term = Narsese_getOperationTerm(&postcondition.term);
+                conceptProcessID2++;
+                int concept_id_temp;
+                RELOOP:
+                concept_id_temp = concept_id;
+                for(int i=0; !op_id && i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+                {
+                    Concept *prec = concepts.items[i].address;
+                    long prec_id = prec->id;
+                    bool wasProcessed = prec->processID2 == conceptProcessID2;
+                    prec->processID2 = conceptProcessID2;
+                    if(!wasProcessed && prec->belief_spike.creationTime < currentTime && !Stamp_checkOverlap(&prec->belief_spike.stamp, &postcondition.stamp))
                     {
-                        NAL_DerivedEvent(general_implication_term_int, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                        //printf("OK i=%d term: ", i); Narsese_PrintTerm(&prec->term); puts("");
+                        if(prec->belief_spike.type != EVENT_TYPE_DELETED && labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(prec->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE)
+                        {
+                            if(!Memory_getOperationID(&prec->term) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) && !prec->isResultSequence)
+                            {
+                                conceptProcessID3++;
+                                int concept_id_temp3;
+                                RELOOP_INNER:
+                                concept_id_temp3 = concept_id;
+                                for(int j=0; prec_id == prec->id && j<concepts.itemsAmount; j++) //search for op
+                                {
+                                    Concept *opc = concepts.items[j].address;
+                                    bool wasProcessed3 = opc->processID3 == conceptProcessID3;
+                                    opc->processID3 = conceptProcessID3;
+                                    //printf("OK j=%d wasProcessed=%d, term: ", j, (int) wasProcessed3); Narsese_PrintTerm(&opc->term); puts("");
+                                    //fputs("POT OPC ", stdout); Narsese_PrintTerm(&opc->term); puts("");
+                                    if(!wasProcessed3 && opc->belief_spike.type != EVENT_TYPE_DELETED && opc->belief_spike.creationTime < currentTime && prec->belief_spike.occurrenceTime < opc->belief_spike.occurrenceTime && opc->belief_spike.occurrenceTime < toProcess->occurrenceTime && Memory_getOperationID(&opc->term))
+                                    {
+                                        bool success4;
+                                        Event seq_op_cur = Inference_BeliefIntersection(&prec->belief_spike, &opc->belief_spike, &success4);
+                                        if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
+                                        {
+                                            Term buildSeq = prec->belief_spike.term;
+                                            bool success5 = Narsese_OperationSequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
+                                            seq_op_cur.term = buildSeq;
+                                            //so now derive it
+                                            if(success5)
+                                            {
+                                                //fputs("success5 ", stdout); Narsese_PrintTerm(&prec->term); fputs("C ", stdout); Narsese_PrintTerm(&opc->term); puts("");
+                                                Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
+                                                //Also build a sequence ((A &/ op) &/ B):
+#if ALLOW_RESULT_SEQUENCES && SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+                                                bool success3;
+                                                Event result_seq = Inference_BeliefIntersection(&seq_op_cur, &postcondition, &success3);
+                                                if(success3)
+                                                {
+                                                    IN_DEBUG( fputs("RESULT_SEQ ", stdout); Narsese_PrintTerm(&result_seq.term); puts(""); )
+                                                    Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true);
+                                                }
+#endif
+                                                if(concept_id_temp3 != concept_id) //a new concept was created, reloop
+                                                {
+                                                    goto RELOOP_INNER;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(concept_id_temp != concept_id) //a new concept was created, reloop
+                                {
+                                    goto RELOOP;
+                                }
+                            }
+                        }
                     }
-                    //specific implication
-                    NAL_DerivedEvent(precondition_implication.term, OCCURRENCE_ETERNAL, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0);
+                }
+                conceptProcessID2++;
+                int concept_id_temp2;
+                RELOOP2:
+                concept_id_temp2 = concept_id;
+                for(int i=0; i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+                {
+                    Concept *c = concepts.items[i].address;
+                    bool wasProcessed = c->processID2 == conceptProcessID2;
+                    c->processID2 = conceptProcessID2;
+                    if(!wasProcessed && c->belief_spike.creationTime < currentTime)
+                    {
+                        if(c->belief_spike.type != EVENT_TYPE_DELETED && labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF)
+                        {
+                            if(c->belief_spike.occurrenceTime < postcondition.occurrenceTime && !c->isResultSequence)
+                            {
+                                if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
+                                {
+                                    int op_id2 = Memory_getOperationID(&c->belief_spike.term);
+                                    bool is_op_seq = op_id && op_id2;
+                                    bool is_cond_seq = !op_id && !op_id2;
+                                    if((is_cond_seq || is_op_seq) && !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
+                                    {
+                                        if(!op_id && !op_id2)
+                                        {
+                                            Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
+                                        }
+                                        bool success;
+                                        Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
+                                        if(success && seq.truth.confidence >= MIN_CONFIDENCE)
+                                        {
+                                            int sequence_len = 0;
+                                            for(int i=1; sequence_len<MAX_SEQUENCE_LEN && i<COMPOUND_TERM_SIZE_MAX; i*=2, sequence_len++)
+                                            {
+                                                if(!Narsese_copulaEquals(seq.term.atoms[i-1], SEQUENCE))
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            if((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN)) //only build seq if within len
+                                            {
+                                                IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
+                                                Cycle_ProcessSensorimotorEvent(&seq, currentTime, false);
+                                                if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
+                                                {
+                                                    Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
+                                                }
+                                            }
+                                        }
+                                        if(concept_id_temp2 != concept_id) //a new concept was created, reloop
+                                        {
+                                            goto RELOOP2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if(selectedBeliefsPriority[h] >= 1.0) //only if input has been received
+                {
+                    Decision_Anticipate(op_id, op_term, currentTime); //collection of negative evidence, new way
                 }
             }
         }
     }
 }
 
-void Cycle_ProcessInputBeliefEvents(long currentTime)
+//A, <A ==> B> |- B (Deduction)
+//A, <(A && B) ==> C> |- <B ==> C> (Deduction)
+//B, <A ==> B> |- A (Abduction')
+//A, (A && B) |- B  with dep var elim (Anonymous Analogy')
+void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
+                       long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
-    //1. process newest event
-    if(belief_events.itemsAmount > 0)
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
+    bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
+    if(IsImpl || Narsese_copulaEquals(term2.atoms[0], EQUIVALENCE))
     {
-        //form concepts for the sequences of different length
-        for(int state=(1 << MAX_SEQUENCE_LEN)-1; state>=1; state--)
+        Term impl_subject = Term_ExtractSubterm(&term2, 1);
+        Term impl_predicate = Term_ExtractSubterm(&term2, 2);
+        //Deduction and Analogy:
+        Substitution subject_subs = Variable_Unify(&impl_subject, &term1);
+        if(subject_subs.success)
         {
-            Event *toProcess = FIFO_GetNewestSequence(&belief_events, state);
-            if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED)
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(impl_predicate, subject_subs, &success);
+            Truth conclusionTruth = IsImpl ? Truth_Deduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
+            if(success)
             {
-                assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
-                Event postcondition = *toProcess;
-                //Mine for <(&/,precondition,operation) =/> postcondition> patterns in the FIFO:
-                if(state == 1) //postcondition always len1
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
+        }
+        //Deduction with remaining condition
+        if(IsImpl && Narsese_copulaEquals(impl_subject.atoms[0], CONJUNCTION)) //conj
+        {
+            Term unifying_term =       Term_ExtractSubterm(&impl_subject, 1);
+            Term remaining_condition = Term_ExtractSubterm(&impl_subject, 2);
+            Substitution cond_subs = Variable_Unify(&unifying_term, &term1);
+            if(!cond_subs.success)
+            {
+                Term temp = remaining_condition;
+                remaining_condition = unifying_term;
+                unifying_term = temp;
+                cond_subs = Variable_Unify(&unifying_term, &term1);
+            }
+            if(cond_subs.success)
+            {
+                Term conclusionTerm = {0};
+                conclusionTerm.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                if(Term_OverrideSubterm(&conclusionTerm, 1, &remaining_condition) &&
+                   Term_OverrideSubterm(&conclusionTerm, 2, &impl_predicate))
                 {
-                    int op_id = Narsese_getOperationID(&postcondition.term);
-                    Decision_Anticipate(op_id, currentTime); //collection of negative evidence, new way
-                    for(int k=1; k<belief_events.itemsAmount; k++)
+                    bool success;
+                    conclusionTerm = Variable_ApplySubstitute(conclusionTerm, cond_subs, &success);
+                    Truth conclusionTruth = Truth_Deduction(truth2, truth1);
+                    if(success)
                     {
-                        for(int state2=1; state2<(1 << MAX_SEQUENCE_LEN); state2++)
-                        {
-                            Event *precondition = FIFO_GetKthNewestSequence(&belief_events, k, state2);
-                            if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
-                            {
-                                if(state2 > 1)
-                                {
-                                    int substate = state2;
-                                    int shift = 0;
-                                    while(substate)
-                                    {
-                                        substate = (substate >> 1);
-                                        shift++;
-                                        if(substate & 1)
-                                        {
-                                            if(k+shift < FIFO_SIZE)
-                                            {
-                                                Event *potential_op = FIFO_GetKthNewestSequence(&belief_events, k+shift, 1);
-                                                if(potential_op != NULL && potential_op->type != EVENT_TYPE_DELETED && Narsese_isOperation(&potential_op->term))
-                                                {
-                                                    goto CONTINUE;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                Cycle_ReinforceLink(precondition, &postcondition);
-                                CONTINUE:;
-                            }
-                        }
+                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
                     }
                 }
             }
         }
+        //Abduction:
+        Substitution predicate_subs = Variable_Unify(&impl_predicate, &term1);
+        if(predicate_subs.success)
+        {
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(impl_subject, predicate_subs, &success);
+            Truth conclusionTruth = IsImpl ? Truth_Abduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
+            if(success)
+            {
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
+        }
     }
+    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION)) //conj
+    {
+        Term conj_subject = Term_ExtractSubterm(&term2, 1);
+        Term conj_predicate = Term_ExtractSubterm(&term2, 2);
+        //Anonymous Analogy:
+        Substitution subject_subs = Variable_Unify(&conj_subject, &term1);
+        if(subject_subs.success)
+        {
+            bool success;
+            Term conclusionTerm = Variable_ApplySubstitute(conj_predicate, subject_subs, &success);
+            Truth conclusionTruth = Truth_AnonymousAnalogy(truth2, truth1);
+            if(success)
+            {
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
+        }
+    }
+#endif
 }
 
 void Cycle_Inference(long currentTime)
@@ -498,12 +766,9 @@ void Cycle_Inference(long currentTime)
                             Narsese_PrintTerm(&c->term);
                             puts("");
                         }
-                        long occurrenceTimeDistance = 0;
-                        if(belief->occurrenceTime != OCCURRENCE_ETERNAL && e->occurrenceTime != OCCURRENCE_ETERNAL)
-                        {
-                            occurrenceTimeDistance = labs(belief->occurrenceTime - e->occurrenceTime);
-                        }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, occurrenceTimeDistance, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        Cycle_SpecialInferences(c->term, e->term, belief->truth, e->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
                     }
                 }
             })
@@ -527,13 +792,16 @@ void Cycle_RelativeForgetting(long currentTime)
     {
         cycling_belief_events.items[i].priority *= EVENT_DURABILITY;
     }
-    for(int i=0; i<cycling_external_goal_events.itemsAmount; i++)
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        cycling_external_goal_events.items[i].priority *= EVENT_DURABILITY;
-    }
-    for(int i=0; i<cycling_mental_goal_events.itemsAmount; i++)
-    {
-        cycling_mental_goal_events.items[i].priority *= EVENT_DURABILITY;
+        for(int i=0; i<cycling_external_goal_events[layer].itemsAmount; i++)
+        {
+            cycling_external_goal_events[layer].items[i].priority *= EVENT_DURABILITY;
+        }
+        for(int i=0; i<cycling_mental_goal_events[layer].itemsAmount; i++)
+        {
+            cycling_mental_goal_events[layer].items[i].priority *= EVENT_DURABILITY;
+        }
     }
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
@@ -545,22 +813,34 @@ void Cycle_RelativeForgetting(long currentTime)
     //Re-sort queues
     PriorityQueue_Rebuild(&concepts);
     PriorityQueue_Rebuild(&cycling_belief_events);
-    PriorityQueue_Rebuild(&cycling_external_goal_events);
-    PriorityQueue_Rebuild(&cycling_mental_goal_events);
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        PriorityQueue_Rebuild(&cycling_external_goal_events[layer]);
+        PriorityQueue_Rebuild(&cycling_mental_goal_events[layer]);
+    }
 }
 
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
-    //1. Retrieve BELIEF events from cyclings events priority queue (which includes both input and derivations)
+    //1a. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
-    //2. Process incoming belief events from FIFO, building implications utilizing input sequences
-    Cycle_ProcessInputBeliefEvents(currentTime);
-    //3. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
-    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_mental_goal_events, GOAL_EVENT_SELECTIONS);
-    Cycle_ProcessInputGoalEvents(currentTime, true);
-    Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_external_goal_events, GOAL_EVENT_SELECTIONS);
-    Cycle_ProcessInputGoalEvents(currentTime, false);
+    //2a. Process incoming belief events from FIFO, building implications utilizing input sequences
+    Cycle_ProcessBeliefEvents(currentTime);
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        //1b. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+        Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_mental_goal_events[layer], GOAL_EVENT_SELECTIONS);
+        //2b. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
+        Cycle_ProcessAndInferGoalEvents(currentTime, layer, true);
+    }
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        //1b. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
+        Cycle_PopEvents(selectedGoals, selectedGoalsPriority, &goalsSelectedCnt, &cycling_external_goal_events[layer], GOAL_EVENT_SELECTIONS);
+        //2b. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
+        Cycle_ProcessAndInferGoalEvents(currentTime, layer, false);
+    }
     //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY

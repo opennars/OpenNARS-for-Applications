@@ -67,5 +67,9 @@ Term Term_ExtractSubterm(Term *term, int j);
 int Term_Complexity(Term *term);
 //Hash of a term (needed by the term->concept HashTable)
 HASH_TYPE Term_Hash(Term *term);
+//Whether the term has the atom
+bool Term_HasAtom(Term *term, Atom atom);
+//Flatten sequence
+void Term_FlattenSequence(Term *termArray, int *index, Term *term);
 
 #endif

@@ -105,6 +105,7 @@ def Test(Example, outputString):
             if isExecutionCondition:
                 AnswerRatioTest = False
                 Message = line.split(expect_condition)[1]
+                HadAnswer = False
                 for j in reversed(range(i)):
                     line_before = lines[j].strip()
                     if line_before.startswith("^"):
@@ -112,9 +113,13 @@ def Test(Example, outputString):
                             print("Failure for " + line + " in "+ Example)
                             exit(0)
                         else:
+                            HadAnswer = True
                             QuestionsAnswered += 1.0
                             QuestionsAnsweredGlobal += 1.0
                             break
+                if not HadAnswer:
+                    print("Failure for " + line + " in "+ Example)
+                    exit(0)
     if AnswerRatioTest:
         if QuestionsTotal > 0:
             print("\nQ&A stress test results for test " + Example)
@@ -145,7 +150,7 @@ QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
 for filename in glob.glob('./examples/english/*.english'):
-    Test(filename, subprocess.getoutput("python3 english_to_narsese.py < " + filename + " | ./NAR shell"))
+    Test(filename, subprocess.getoutput("python3 english_to_narsese.py quiet < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
     print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
 else:
@@ -164,6 +169,12 @@ print("Total questions = " + str(QuestionsTotalGlobal))
 print("Correctly answered ones = " + str(QuestionsAnsweredGlobal))
 print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 
+print("\nSheep counting task:")
+print(subprocess.getoutput("cd ./misc/Python/ && python3 count_sheep.py").split("\n")[-1])
+print(subprocess.getoutput("cd ./misc/Python/ && python3 discriminativefunction.py silent seed=42"))
+print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent seed=42"))
+print(subprocess.getoutput("cd ./misc/Python/ && python3 identitymatching.py silent seed=42"))
+
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")
 ctests("Pong", "./NAR pong 10000", True)
@@ -171,4 +182,4 @@ ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 20000", True)
 ctests("Cartpole", "./NAR cartpole 10000", True)
 ctests("Robot", "./NAR robot 1200", True)
-print("\nProcedure learning metrics done");
+print("\nProcedure learning metrics done")

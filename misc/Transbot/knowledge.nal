@@ -1,0 +1,18 @@
+*motorbabbling=0.05
+*decisionthreshold=0.51
+*volume=0
+
+//Avoid faced obstacle (due to innate collision pain to avoid, this can also be learned):
+<(<obstacle --> [left]> &/ ^right) =/> <obstacle --> [free]>>.
+<(<obstacle --> [right]> &/ ^left) =/> <obstacle --> [free]>>.
+<(<obstacle --> [front]> &/ ^left) =/> <obstacle --> [free]>>.
+<((<gripper --> [open]> &/ <obstacle --> [free]>) &/ ^forward) =/> G>.
+
+//Go to the location in order to see the object:
+<(<gripper --> [holding]> &/ <({SELF} * $obj) --> ^goto>) =/> <$obj --> [left]>>.
+
+//If gripper is open and a bottle is seen, pick it up to hold it
+<((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
+//If the gripper is holding an object and a human is seen, drop it there
+<((<gripper --> [hold]> &/ <person --> [left]>) &/ ^drop) =/> G>.
+

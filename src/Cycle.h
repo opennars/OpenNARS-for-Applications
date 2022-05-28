@@ -45,5 +45,7 @@
 //-------//
 //Apply one operating cyle
 void Cycle_Perform(long currentTime);
+//Init cycle module
+void Cycle_INIT();
 
 #endif

@@ -1,0 +1,7 @@
+*volume=0
+*motorbabbling=false
+<(<{#1} --> [bright]> &/ <({SELF} * {#1}) --> ^pick>) =/> G>.
+<{a} --> [bright]>. :|: {0.6 0.9}
+<{b} --> [bright]>. :|: {0.5 0.9}
+G! :|:
+//expected: ^pick executed with args ({SELF} * {a})

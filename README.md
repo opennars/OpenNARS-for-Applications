@@ -11,7 +11,9 @@ Or click on the picture to watch the newest summary videos (summary and demo):
 
 [![Autonomy through real-time learning and OpenNARS for Applications](https://img.youtube.com/vi/B9SKu7u6G-I/0.jpg)](https://www.youtube.com/watch?v=B9SKu7u6G-I "Autonomy through real-time learning and OpenNARS for Applications")
 
-[![OpenNARS for Applications v0.8.8: Demos](https://img.youtube.com/vi/oyQ250H5owE/0.jpg)](https://www.youtube.com/watch?v=oyQ250H5owE "OpenNARS for Applications v0.8.8: Demos")
+[![OpenNARS for Applications v0.9.0: Transbot](https://img.youtube.com/vi/lp6rNO-nIms/0.jpg)](https://www.youtube.com/watch?v=lp6rNO-nIms "ONA v0.9.0: Playing Fetch with Henry the robot")
+
+Procedure learning demos (variants of Pong and Space Invaders, Test Chamber, Cartpole, food collecting agent, ...): https://www.youtube.com/watch?v=oyQ250H5owE
 
 ***How to clone and compile (tested with GCC and Clang for x64, x86 and ARM):***
 
@@ -25,6 +27,8 @@ cd OpenNARS-for-Applications
 ```
 export OMP_NUM_THREADS=4  // 4 threads seems to be the sweet spot. More threads leads to more contention and less speed currently
 ```
+
+If you have trouble building with OpenMP, then you probably need to specify library (and / or sources) directory alongside the `-fopenmp` option, like `-L<path to your openmp>` or `-I<path to your openmp>`.
 
 ***How to run the interactive Narsese shell:***
 
@@ -87,7 +91,7 @@ where the output can be logged simply by appending
 
 **How to reach us:**
 
-Real-time team chat: #nars IRC channel @ freenode.net, #nars:matrix.org (accessible via Riot.im)
+Real-time team chat: #nars IRC channel @ libera.chat, #nars:matrix.org (accessible via Riot.im)
 
 Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 

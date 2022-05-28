@@ -22,7 +22,6 @@
  * THE SOFTWARE.
  */
 
-#include "FIFO_Test.h"
 #include "Stamp_Test.h"
 #include "PriorityQueue_Test.h"
 #include "Memory_Test.h"
@@ -37,7 +36,6 @@
 void Run_Unit_Tests()
 {
     Stamp_Test();
-    FIFO_Test();
     PriorityQueue_Test();
     Table_Test();
     Memory_Test();

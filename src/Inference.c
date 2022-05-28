@@ -58,10 +58,10 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
     assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     Term term = {0};
-    term.atoms[0] = Narsese_AtomicTermIndex("$");
+    term.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
     *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
     return *success ? (Implication) { .term = term, 
-                                      .truth = Truth_Eternalize(Truth_Induction(truthB, truthA)),
+                                      .truth = Truth_Induction(truthB, truthA),
                                       .stamp = conclusionStamp,
                                       .occurrenceTimeOffset = b->occurrenceTime - a->occurrenceTime,
                                       .creationTime = creationTime }
@@ -98,7 +98,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
 {
-    assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0],TEMPORAL_IMPLICATION), "Not a valid temporal implication term!");
     DERIVATION_STAMP(component,compound)
     Term precondition = Term_ExtractSubterm(&compound->term, 1);
     //extract precondition: (plus unification once vars are there)
@@ -111,11 +111,11 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
 }
 
 //{Event a.} |- Event a. updated to currentTime
-Event Inference_EventUpdate(Event *ev, long currentTime)
+Event Inference_EventUpdate(Event *ev, long targetTime)
 {
     Event ret = *ev;
-    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, currentTime);
-    ret.occurrenceTime = currentTime;
+    ret.truth = Truth_Projection(ret.truth, ret.occurrenceTime, targetTime);
+    ret.occurrenceTime = targetTime;
     return ret;
 }
 
@@ -146,23 +146,25 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
     }
     else
     {
-        double confExisting = Inference_EventUpdate(existing_potential, currentTime).truth.confidence;
-        double confIncoming = Inference_EventUpdate(incoming_spike, currentTime).truth.confidence;
+        long laterOccurrence = existing_potential->occurrenceTime > incoming_spike->occurrenceTime ? existing_potential->occurrenceTime : incoming_spike->occurrenceTime;
+        Event existing_updated = Inference_EventUpdate(existing_potential, laterOccurrence);
+        Event incoming_updated = Inference_EventUpdate(incoming_spike, laterOccurrence);
         //check if there is evidental overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
+        bool isDepVarConj = (Narsese_copulaEquals(incoming_spike->term.atoms[0], CONJUNCTION) || Narsese_copulaEquals(incoming_spike->term.atoms[0], SEQUENCE)) && Variable_hasVariable(&incoming_spike->term, false, true, false);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:
-        if(overlap || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
+        if(overlap || isDepVarConj || (existing_potential->occurrenceTime != OCCURRENCE_ETERNAL && existing_potential->occurrenceTime != incoming_spike->occurrenceTime) || !Term_Equal(&existing_potential->term, &incoming_spike->term))
         {
-            if(confIncoming > confExisting)
+            if(incoming_updated.truth.confidence > existing_updated.truth.confidence)
             {
-                return *incoming_spike;
+                return *incoming_spike; //preserves timing of incoming
             }
         }
         else
         //and else revise, increasing the "activation potential"
         {
-            Event revised_spike = Inference_EventRevision(existing_potential, incoming_spike);
-            if(revised_spike.truth.confidence >= existing_potential->truth.confidence)
+            Event revised_spike = Inference_EventRevision(&existing_updated, &incoming_updated);
+            if(revised_spike.truth.confidence >= existing_updated.truth.confidence)
             {
                 if(revised != NULL)
                 {
@@ -170,11 +172,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
                 }
                 return revised_spike;
             }
-            //lower, also use choice
-            if(confIncoming > confExisting)
-            {
-                return *incoming_spike;
-            }
+            assert(false, "Revision outcome can't be lower in confidence than existing event");
         }
     }
     return *existing_potential;
@@ -183,7 +181,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
-    assert(Narsese_copulaEquals(compound->term.atoms[0],'$'), "Not a valid implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0], TEMPORAL_IMPLICATION), "Not a valid temporal implication term!");
     DERIVATION_STAMP(component,compound)
     Term postcondition = Term_ExtractSubterm(&compound->term, 2);
     return (Event) { .term = postcondition, 
@@ -192,5 +190,34 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
                                                                     OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset,
+                     .creationTime = creationTime };
+}
+
+//{Event a., Event <b =/> c>.} |- Implication <a ==> <b =/> c>>.
+Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success)
+{
+    DERIVATION_STAMP(a,b)
+    Term term = {0};
+    term.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+    *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
+    return *success ? (Implication) { .term = term, 
+                                      .truth = Truth_Induction(b->truth, a->truth),
+                                      .stamp = conclusionStamp,
+                                      .occurrenceTimeOffset = b->occurrenceTimeOffset,
+                                      .creationTime = creationTime }
+                    : (Implication) {0};
+}
+
+//{Event a., Implication <a ==> <b =/> c>>.} |- Event <b =/> c>.
+Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compound)
+{
+    assert(Narsese_copulaEquals(compound->term.atoms[0], IMPLICATION), "Not a valid implication term!");
+    DERIVATION_STAMP(component,compound)
+    Term postcondition = Term_ExtractSubterm(&compound->term, 2);
+    return (Event) { .term = postcondition, 
+                     .type = EVENT_TYPE_BELIEF, 
+                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .stamp = conclusionStamp, 
+                     .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL,
                      .creationTime = creationTime };
 }

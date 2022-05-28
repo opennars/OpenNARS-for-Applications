@@ -36,9 +36,17 @@ void Stats_Print(long currentTime)
     }
     Stats_averageBeliefEventPriority /= (double) CYCLING_BELIEF_EVENTS_MAX;
     double Stats_averageExternalGoalEventPriority = 0.0;
-    for(int i=0; i<cycling_external_goal_events.itemsAmount; i++)
+    double Stats_averageMentalGoalEventPriority = 0.0;
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        Stats_averageExternalGoalEventPriority += cycling_external_goal_events.items[i].priority;
+        for(int i=0; i<cycling_external_goal_events[layer].itemsAmount; i++)
+        {
+            Stats_averageExternalGoalEventPriority += cycling_external_goal_events[layer].items[i].priority;
+        }
+        for(int i=0; i<cycling_mental_goal_events[layer].itemsAmount; i++)
+        {
+            Stats_averageMentalGoalEventPriority += cycling_mental_goal_events[layer].items[i].priority;
+        }
     }
     Stats_averageExternalGoalEventPriority /= (double) CYCLING_EXTERNAL_GOAL_EVENTS_MAX;
     double Stats_averageMentalGoalEventPriority = 0.0;
@@ -70,8 +78,11 @@ void Stats_Print(long currentTime)
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
     printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
-    printf("curring external goal events cnt:\t\t%d\n", cycling_external_goal_events.itemsAmount);
-    printf("curring mental goal events cnt:\t\t%d\n", cycling_mental_goal_events.itemsAmount);
+    for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
+    {
+        printf("curring external goal events cnt:\t\t%d in layer %d\n", cycling_external_goal_events[layer].itemsAmount, layer);
+        printf("curring mental goal events cnt:\t\t%d in layer %d\n", cycling_mental_goal_events[layer].itemsAmount, layer);
+    }
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
     printf("current average external goal event priority:\t%f\n", Stats_averageExternalGoalEventPriority);
     printf("current average mental goal event priority:\t%f\n", Stats_averageMentalGoalEventPriority);

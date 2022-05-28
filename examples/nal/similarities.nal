@@ -1,0 +1,37 @@
+*motorbabbling=false
+*volume=0
+
+<{t1} --> [quacks]>. :|:
+<{t1} --> [yellow]>. :|:
+
+100
+
+<{t1} --> [quacks]>. :|:
+^pick. :|:
+G. :|:
+<(<{t1} --> [quacks]> &/ ^pick) =/> G>?
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=1.000000, confidence=0.241351
+
+100
+
+<{t1} --> [yellow]>. :|:
+5
+G! :|:
+//expected: ^pick executed with args
+G. :|:
+5
+<(<{t1} --> [quacks]> &/ ^pick) =/> G>?
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.987128, confidence=0.243731
+
+100
+
+<{t2} <-> {t1}>.
+<{t2} --> [quacks]>. :|:
+5
+G! :|:
+//expected: ^pick executed with args
+G. :|:
+5
+<(<{t1} --> [quacks]> &/ ^pick) =/> G>?
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.969682, confidence=0.247033
+

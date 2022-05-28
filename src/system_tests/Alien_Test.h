@@ -23,29 +23,32 @@
  */
 
 bool NAR_Alien_Left_executed = false;
-void NAR_Alien_Left()
+Feedback NAR_Alien_Left()
 {
     puts("NAR invoked left");
     NAR_Alien_Left_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Alien_Right_executed = false;
-void NAR_Alien_Right()
+Feedback NAR_Alien_Right()
 {
     puts("NAR invoked right");
     NAR_Alien_Right_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Alien_Shoot_executed = false;
-void NAR_Alien_Shoot()
+Feedback NAR_Alien_Shoot()
 {
     puts("NAR invoked shoot");
     NAR_Alien_Shoot_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Alien(long iterations)
 {
     puts(">>NAR Alien1 start");
-    NAR_AddOperation(Narsese_Term("^left"), NAR_Alien_Left); 
-    NAR_AddOperation(Narsese_Term("^right"), NAR_Alien_Right); 
-    NAR_AddOperation(Narsese_Term("^shoot"), NAR_Alien_Shoot); 
+    NAR_AddOperation("^left", NAR_Alien_Left);
+    NAR_AddOperation("^right", NAR_Alien_Right);
+    NAR_AddOperation("^shoot", NAR_Alien_Shoot);
     double alien0X = 0.5;
     double defenderX = 0.5;
     double alienWidth = 0.18;

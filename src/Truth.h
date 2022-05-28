@@ -74,7 +74,6 @@ Truth Truth_Analogy(Truth v1, Truth v2);
 Truth Truth_Resemblance(Truth v1, Truth v2);
 Truth Truth_StructuralDeduction(Truth v1, Truth v2);
 Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2);
-Truth Truth_StructuralAbduction(Truth v1, Truth v2);
 Truth Truth_Union(Truth v1, Truth v2);
 Truth Truth_Difference(Truth v1, Truth v2);
 Truth Truth_Conversion(Truth v1, Truth v2);
@@ -84,6 +83,7 @@ Truth Truth_DecomposeNPP(Truth v1, Truth v2);
 Truth Truth_DecomposePNP(Truth v1, Truth v2);
 Truth Truth_DecomposePPP(Truth v1, Truth v2);
 Truth Truth_DecomposeNNN(Truth v1, Truth v2);
+Truth Truth_AnonymousAnalogy(Truth v1, Truth v2);
 bool Truth_Equal(Truth *v1, Truth *v2);
 
 #endif

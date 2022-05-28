@@ -1,0 +1,20 @@
+*setopname 1 ^clap
+*motorbabbling=false
+*volume=0
+
+<((B1 . is) . A1) --> [hear]>. :|:
+30
+<B1 --> [hear]>. :|:
+^clap. :|:
+G. :|:
+
+200
+
+<((C1 . is) . A1) --> [hear]>. :|:
+30
+<C1 --> [hear]>. :|:
+5
+G! :|:
+//expected: ^clap executed with args
+<(<C1 --> [hear]> &/ ^clap) =/> G>?
+//expected: Answer: <(<C1 --> [hear]> &/ ^clap) =/> G>. creationTime=242 Truth: frequency=0.967026, confidence=0.178165

@@ -164,11 +164,6 @@ Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2)
     return Truth_Negation(Truth_Deduction(v1, STRUCTURAL_TRUTH), v2);
 }
 
-Truth Truth_StructuralAbduction(Truth v1, Truth v2)
-{
-    return Truth_Abduction(v1, STRUCTURAL_TRUTH);
-}
-
 bool Truth_Equal(Truth *v1, Truth *v2)
 {
     return v1->confidence == v2->confidence && v1->frequency == v2->frequency;
@@ -205,4 +200,11 @@ Truth Truth_DecomposeNNN(Truth v1, Truth v2)
     TruthValues(v1,v2, f1,c1, f2,c2);
     double fn = (1.0 - f1) * (1.0 - f2);
     return (Truth) { .frequency = 1.0 - fn, .confidence = fn * c1 * c2 };
+}
+
+Truth Truth_AnonymousAnalogy(Truth v1, Truth v2)
+{
+    TruthValues(v1,v2, f1,c1, f2,c2);
+    Truth v3 = { .frequency = 1.0, .confidence = Truth_w2c(f2 * c2) }; //page 125 in NAL book
+    return Truth_Analogy(v1, v3);
 }

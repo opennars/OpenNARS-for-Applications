@@ -1,0 +1,45 @@
+*motorbabbling=false
+*volume=0
+<(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>.
+<(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>. {1.0 0.6}
+
+<{room1} --> room>. :|:
+<{room1} --> [lit]>! :|:
+//expected: ^activate executed with args ({SELF} * light)
+<(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>?
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * torch) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=1.000000, confidence=0.600000
+<(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>?
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>. creationTime=1 Truth: frequency=0.000000, confidence=0.008841
+<(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>?
+//expected: Answer: <(<$1 --> room> &/ <({SELF} * light) --> ^activate>) =/> <$1 --> [lit]>>. Truth: frequency=0.999010, confidence=0.900089
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+
+20
+
+<{room1} --> room>. :|:
+<({SELF} * light) --> ^activate>. :|:
+<(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>?
+//expected: Answer: <(<{room1} --> room> &/ <({SELF} * light) --> ^activate>) =/> <{room1} --> [lit]>>. Truth: frequency=0.000000, confidence=0.050800
+
+20
+
+<{room1} --> room>. :|:
+<{room1} --> [lit]>! :|:
+//expected: ^activate executed with args ({SELF} * torch)
