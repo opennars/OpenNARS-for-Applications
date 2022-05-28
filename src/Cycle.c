@@ -354,7 +354,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer, bool me
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false, layer);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false, layer, mental);
                         }
                     }
                 }
@@ -465,7 +465,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             else
             {
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
+                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false, false);
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> and <precondition =/> postcondition> patterns using FIFO and ConceptMemory:
                 int op_id = Memory_getOperationID(&postcondition.term);
@@ -519,7 +519,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                                 if(success3)
                                                 {
                                                     IN_DEBUG( fputs("RESULT_SEQ ", stdout); Narsese_PrintTerm(&result_seq.term); puts(""); )
-                                                    Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true);
+                                                    Cycle_ProcessSensorimotorEvent(&result_seq, currentTime, true, false);
                                                 }
 #endif
                                                 if(concept_id_temp3 != concept_id) //a new concept was created, reloop
@@ -579,7 +579,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             if((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN)) //only build seq if within len
                                             {
                                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
-                                                Cycle_ProcessSensorimotorEvent(&seq, currentTime, false);
+                                                Cycle_ProcessSensorimotorEvent(&seq, currentTime, false, false);
                                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                                 {
                                                     Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way

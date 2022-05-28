@@ -59,7 +59,6 @@ static void Memory_ResetEvents()
     conceptPriorityThreshold = 0.0;
     Memory_task = (Event) {0};
     Memory_belief = (Event) {0};
-    belief_events = (FIFO) {0};
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
     for(int i=0; i<CYCLING_BELIEF_EVENTS_MAX; i++)
     {
@@ -68,14 +67,14 @@ static void Memory_ResetEvents()
     }
     for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        PriorityQueue_INIT(&cycling_external_goal_events[layer], cycling_external_goal_events[layer], CYCLING_GOAL_EVENTS_MAX);
-        for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+        PriorityQueue_INIT(&cycling_external_goal_events[layer], cycling_external_goal_event_items_storage[layer], CYCLING_EXTERNAL_GOAL_EVENTS_MAX);
+        for(int i=0; i<CYCLING_EXTERNAL_GOAL_EVENTS_MAX; i++)
         {
             cycling_external_goal_event_storage[layer][i] = (Event) {0};
             cycling_external_goal_events[layer].items[i] = (Item) { .address = &(cycling_external_goal_event_storage[layer][i]) };
         }
-        PriorityQueue_INIT(&cycling_mental_goal_events[layer], cycling_mental_goal_events[layer], CYCLING_GOAL_EVENTS_MAX);
-        for(int i=0; i<CYCLING_GOAL_EVENTS_MAX; i++)
+        PriorityQueue_INIT(&cycling_mental_goal_events[layer], cycling_mental_goal_event_items_storage[layer], CYCLING_MENTAL_GOAL_EVENTS_MAX);
+        for(int i=0; i<CYCLING_MENTAL_GOAL_EVENTS_MAX; i++)
         {
             cycling_mental_goal_event_storage[layer][i] = (Event) {0};
             cycling_mental_goal_events[layer].items[i] = (Item) { .address = &(cycling_mental_goal_event_storage[layer][i]) };
@@ -415,7 +414,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0, false);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
@@ -439,7 +438,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(!mental && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_AddEvent(event, currentTime, priority, occurrenceTimeOffset, input, derived, revised, true);
+        Memory_AddEvent(event, currentTime, priority, input, derived, revised, sequenced, layer, true);
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
     if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL && Memory_task.occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
@@ -468,7 +467,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
-            Memory_AddEvent(&ev, currentTime, 1.0, 0, false, true, false, false);
+            Memory_AddEvent(&ev, currentTime, 1.0, false, true, false, false, layer, false);
         }
     }
     if(input && event->type == EVENT_TYPE_GOAL)
@@ -498,7 +497,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

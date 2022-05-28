@@ -49,11 +49,6 @@ void Stats_Print(long currentTime)
         }
     }
     Stats_averageExternalGoalEventPriority /= (double) CYCLING_EXTERNAL_GOAL_EVENTS_MAX;
-    double Stats_averageMentalGoalEventPriority = 0.0;
-    for(int i=0; i<cycling_mental_goal_events.itemsAmount; i++)
-    {
-        Stats_averageMentalGoalEventPriority += cycling_mental_goal_events.items[i].priority;
-    }
     Stats_averageMentalGoalEventPriority /= (double) CYCLING_MENTAL_GOAL_EVENTS_MAX;
     double Stats_averageConceptPriority = 0.0;
     for(int i=0; i<concepts.itemsAmount; i++)

@@ -28,7 +28,7 @@ long currentTime = 1;
 static bool initialized = false;
 static int op_k = 0;
 
-static void NAR_op_consider(Term args)      //0 1 2 3
+static Feedback NAR_op_consider(Term args)      //0 1 2 3
 {                                           //1 2 3 4
     Event *e = &Decision_reason;            //* " S SELF
     Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
@@ -45,20 +45,22 @@ static void NAR_op_consider(Term args)      //0 1 2 3
 #endif
         }
     }
+    return (Feedback) {0};
 }
 
-static void NAR_op_remember(Term args)      //0 1 2 3
-{                                           //1 2 3 4
-    Event *e = &Decision_reason;            //* " S SELF
-    Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
-    Concept *c = Memory_FindConceptByTerm(&S);
-    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
-    if(c != NULL && e->type != EVENT_TYPE_DELETED)
-    {
-        c->usage = Usage_use(c->usage, currentTime, false);
-        c->belief_spike.occurrenceTime = currentTime;
-    }
-}
+//static Feedback NAR_op_remember(Term args)      //0 1 2 3
+//{                                           //1 2 3 4
+//    Event *e = &Decision_reason;            //* " S SELF
+//    Term S = Term_ExtractSubterm(&args, 2); //({SELF} * S) -> S
+//    Concept *c = Memory_FindConceptByTerm(&S);
+//    fputs(Narsese_operatorNames[0], stdout); fputs(" executed with args ", stdout); Narsese_PrintTerm(&args); puts(""); fflush(stdout);
+//    if(c != NULL && e->type != EVENT_TYPE_DELETED)
+//    {
+//      c->usage = Usage_use(c->usage, currentTime, false);
+//      c->belief_spike.occurrenceTime = currentTime;
+//  }
+//  return (Feedback) {0};
+//}
 
 void NAR_INIT()
 {
@@ -70,7 +72,7 @@ void NAR_INIT()
     Cycle_INIT();
     currentTime = 1; //reset time
     initialized = true;
-    NAR_AddOperation(Narsese_AtomicTerm("^remember"), NAR_op_remember);
+    NAR_AddOperation("^consider", NAR_op_consider);
     op_k = 1;
 }
 

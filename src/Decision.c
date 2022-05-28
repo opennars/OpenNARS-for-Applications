@@ -348,12 +348,6 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
             }
         }
     }
-    //use general solution only if the specific solution doesn't exceed the threshold
-    if(decisionGeneral.desire > decision.desire && decision.desire < (mental ? DECISION_THRESHOLD_MENTAL : DECISION_THRESHOLD))
-    {
-        decision = decisionGeneral;
-        bestImp = bestImpGeneral;
-    }
     if(decision.desire < (mental ? DECISION_THRESHOLD_MENTAL : DECISION_THRESHOLD))
     {
         return (Decision) {0}; 
@@ -463,7 +457,7 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime, bool me
 
 Decision Decision_BetterDecision(Decision best_decision, Decision decision)
 {
-    if(decision.execute && decision.desire >= best_decision.desire && (!best_decision.specialized || decision.specialized))
+    if(decision.execute && decision.desire >= best_decision.desire)
     {
         return decision;
     }
