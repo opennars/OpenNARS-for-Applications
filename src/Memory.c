@@ -312,7 +312,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime, false);
         if(target_concept != NULL)
         {
-			target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
+            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = event->occurrenceTimeOffset,
@@ -344,7 +344,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
             if(source_concept != NULL)
             {
-				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;

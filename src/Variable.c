@@ -82,7 +82,7 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
                 }
                 if(Narsese_copulaEquals(subtree.atoms[0], SET_TERMINATOR)) //not allowed to unify with set terminator
                 {
-                    return substitution;	
+                    return substitution;
                 }
                 substitution.map[(int) general_atom] = subtree;
             }
@@ -258,6 +258,16 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     HashTable_INIT(&HT_variable_id,  HT_variable_id_storage, HT_variable_id_storageptrs,  HT_variable_id_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
     Term left_side = Term_ExtractSubterm(&implication, 1);
     Term right_side = Term_ExtractSubterm(&implication, 2);
+    Term potential_op_seq = {0};
+    HashTable HT_appearing_opseq;
+    VMItem* HT_appearing_opseq_storageptrs[COMPOUND_TERM_SIZE_MAX];
+    VMItem HT_appearing_opseq_storage[COMPOUND_TERM_SIZE_MAX];
+    VMItem* HT_appearing_opseq_HT[VAR_INTRO_HASHTABLE_BUCKETS];
+    HashTable_INIT(&HT_appearing_opseq, HT_appearing_opseq_storage, HT_appearing_opseq_storageptrs, HT_appearing_opseq_HT, VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
+    if(extensionally && Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, &left_side))
+    {
+        countHigherOrderStatementAtoms(&left_side, &HT_appearing_opseq, extensionally);
+    }
     countHigherOrderStatementAtoms(&left_side,  &HT_appearing_left,  extensionally);
     countHigherOrderStatementAtoms(&right_side, &HT_appearing_right, extensionally);
     char depvar_i = newVarID(&implication, false);
@@ -274,6 +284,7 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
         Atom atom = implication_copy.atoms[i];
         void* valueL = HashTable_Get(&HT_appearing_left,  (void*) (intptr_t) atom);
         void* valueR = HashTable_Get(&HT_appearing_right, (void*) (intptr_t) atom);
+        void* valueOpSeq = HashTable_Get(&HT_appearing_opseq,  (void*) (intptr_t) atom);
         if((valueL != NULL && ((long) valueL >= 2)) || (valueR != NULL && ((long) valueR) >= 2) || (valueL != NULL && valueR != NULL))
         {
             if(valueL != NULL && valueR != NULL)
@@ -297,6 +308,10 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
             }
             else
             {
+                if(atom == SELF && potential_op_seq.atoms[0] && valueOpSeq != NULL && valueL == valueOpSeq)
+                {
+                    continue; //consider compound op <((a &/ <({SELF}) --> ^left>) &/ <({SELF}) --> ^pick>) =/> b>
+                }             //since {SELF} only appears in the operator args (valueL == valueOpSeq) we should not introduce a dependent var as it can't get contextually grounded
                 int var_id = (intptr_t) HashTable_Get(&HT_variable_id, (void*) (intptr_t) atom);
                 if(!var_id)
                 {
