@@ -162,7 +162,7 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
     return false;
 }
 
-bool Memory_containsBelief(Event *e)
+bool Memory_containsBeliefOrGoal(Event *e)
 {
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
@@ -196,7 +196,7 @@ bool Memory_containsBelief(Event *e)
 bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int layer)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
-    if(e->type == EVENT_TYPE_BELIEF && (Memory_containsEvent(&cycling_belief_events, e) || Memory_containsBelief(e))) //avoid duplicate derivations
+    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) || Memory_containsBeliefOrGoal(e)) //avoid duplicate derivations
     {
         return false;
     }
