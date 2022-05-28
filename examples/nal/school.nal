@@ -2,9 +2,9 @@
 *volume=0
 
 //to open the entry door you need to use a knob
-<(<{#1} --> knob> &/ <({SELF} * {#1}) --> ^pick>) =/> <maindoor --> [open]>>.
+<(<{#1} --> knob> &/ <({SELF} * {#1}) --> ^pick>) =/> <door --> [open]>>.
 //once door is open, you can go to the corridor
-<(<maindoor --> [open]> &/ <({SELF} * corridor) --> ^go>) =/> <clock --> [large]>>.
+<(<door --> [open]> &/ <({SELF} * corridor) --> ^go>) =/> <clock --> [large]>>.
 //from the corridor you can go into a classroom with either clean or dirty blackboard
 <(<clock --> [large]> &/ <({SELF} * classrom) --> ^go>) =/> <blackboard --> [clean]>>.
 <(<clock --> [large]> &/ <({SELF} * classrom) --> ^go>) =/> <blackboard --> [dirty]>>.
@@ -42,7 +42,7 @@
 
 //expected: ^pick executed with args ({SELF} * {obj1})
 //you are in a place with a large clock now (the corridor!)
-<maindoor --> [open]>. :|:
+<door --> [open]>. :|:
 <clock --> [large]>. :|:
 //with a red floor
 <floor --> [red]>. :|:
@@ -95,10 +95,7 @@
 <{drink2} --> [white]>. :|:
 //you are really tired, you want to be refreshed (go for coffee!!)
 <{SELF} --> [refreshed]>! :|:
-10
-<{SELF} --> [refreshed]>! :|:
 //expected: ^pick executed with args ({SELF} * {drink1})
-10
 
 //Q&A time
 //What color does the floor have where the large clock is?

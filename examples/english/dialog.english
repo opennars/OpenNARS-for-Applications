@@ -5,15 +5,15 @@
 <(<({I} * nars) --> greet> &/ <({SELF} * what_do_you_want_to_buy) --> ^say>) =/> <({I} * pizza) --> want>>.
 <(<({I} * drink) --> want> &/ <({SELF} * I_have_pizza_only) --> ^say>) =/> <({I} * pizza) --> want>>.
 <(<({I} * pizza) --> want> &/ <({SELF} * which_pizza_do_you_want) --> ^say>) =/> <{SELF} --> [useful]>>.
-<(<{#1} --> choice> &/ <({SELF} * (ok_have * #1)) --> ^say>) =/> <{SELF} --> [useful]>>.
+<(<#1 --> choice> &/ <({SELF} * (ok_have * #1)) --> ^say>) =/> <{SELF} --> [useful]>>.
 
 //Some background knowledge of the available types of pizza
-<{Salamipizza} --> ([fleshy] & pizza)>.
-<{Funghipizza} --> ([vegetarian] & pizza)>.
+<salamipizza --> ([fleshy] & pizza)>.
+<funghipizza --> ([vegetarian] & pizza)>.
 
 //Setup interaction with user:
 *motivation=<{SELF} --> [useful]>! :|:
-*thinkcycles=20
+*thinkcycles=10
 50
 
 //Interaction scenario:
@@ -28,10 +28,10 @@ I want a pizza
 //expected: ^say executed with args ({SELF} * which_pizza_do_you_want)
 
 any vegetarian pizza is the choice
-//expected: ^say executed with args ({SELF} * (ok_have * Funghipizza))
+//expected: ^say executed with args ({SELF} * (ok_have * funghipizza))
 
 I want another pizza
 //expected: ^say executed with args ({SELF} * which_pizza_do_you_want)
 
-the Salamipizza is the choice
-//expected: ^say executed with args ({SELF} * (ok_have * Salamipizza))
+the salamipizza is the choice
+//expected: ^say executed with args ({SELF} * (ok_have * salamipizza))
