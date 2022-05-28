@@ -70,5 +70,7 @@ void Decision_Execute(Decision *decision);
 void Decision_Anticipate(int operationID, Term op_term, long currentTime);
 //NAR decision making rule applying when goal is an operation
 Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+//Better decision pair:
+Decision Decision_BetterDecision(Decision best_decision, Decision decision);
 
 #endif

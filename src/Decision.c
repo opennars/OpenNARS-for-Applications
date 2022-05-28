@@ -446,3 +446,12 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
     }
     return babble_decision;
 }
+
+Decision Decision_BetterDecision(Decision best_decision, Decision decision)
+{
+    if(decision.execute && decision.desire >= best_decision.desire)
+    {
+        return decision;
+    }
+    return best_decision;
+}

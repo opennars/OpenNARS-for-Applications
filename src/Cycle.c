@@ -102,10 +102,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
             {
                 ecp.term = e->term;
                 Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp);
-                if(decision.execute && decision.desire >= best_decision.desire)
-                {
-                    best_decision = decision;
-                }
+                best_decision = Decision_BetterDecision(best_decision, decision);
                 //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
                 if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && e->type == EVENT_TYPE_BELIEF)
                 {
@@ -138,10 +135,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                 if(success)
                 {
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp);
-                    if(decision.execute && decision.desire >= best_decision.desire)
-                    {
-                        best_decision = decision;
-                    }
+                    best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
         }
@@ -299,10 +293,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
             continue;
         }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime, false);
-        if(decision.execute && decision.desire > best_decision.desire)
-        {
-            best_decision = decision;
-        }
+        best_decision = Decision_BetterDecision(best_decision, decision);
     }
     if(best_decision.execute && best_decision.operationID[0] > 0)
     {
