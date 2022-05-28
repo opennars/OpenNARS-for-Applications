@@ -53,6 +53,7 @@ typedef struct {
     long processID3; //avoids duplicate processing
     long lastSensorimotorActivation;
     bool isResultSequence; //whether the concept is a sequence of form ((A ^Op) Result)
+    long blockedtime;
 } Concept;
 
 //Methods//

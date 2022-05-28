@@ -312,7 +312,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *target_concept = Memory_Conceptualize(&predicate, currentTime, false);
         if(target_concept != NULL)
         {
-			target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
+            target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
             Implication imp = { .truth = eternal_event.truth,
                                 .stamp = eternal_event.stamp,
                                 .occurrenceTimeOffset = event->occurrenceTimeOffset,
@@ -344,7 +344,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
             if(source_concept != NULL)
             {
-				source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
+                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
@@ -374,15 +374,19 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 }
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
-                if(PRINT_SURPRISE && input)
+                //SURPRISE:
                 {
                     double surprise = 1.0;
-                    if(c->predicted_belief.type != EVENT_TYPE_DELETED)
+                    if(c->predicted_belief.type != EVENT_TYPE_DELETED && labs(c->predicted_belief.occurrenceTime - c->belief_spike.occurrenceTime) < EVENT_BELIEF_DISTANCE)
                     {
                         float expectation = Truth_Expectation(Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->belief_spike.occurrenceTime));
                         surprise = fabs(expectation - Truth_Expectation(c->belief_spike.truth));
+                        c->blockedtime = surprise < 1.0 ? currentTime + EVENT_BELIEF_DISTANCE : 0;
                     }
-                    printf("//SURPRISE %f\n", surprise);
+                    if(PRINT_SURPRISE)
+                    {
+                        printf("//SURPRISE %f blocked=%s\n", surprise, surprise < 1.0 ? "true" : "false");
+                    }
                 }
             }
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime > currentTime)

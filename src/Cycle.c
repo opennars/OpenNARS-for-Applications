@@ -547,7 +547,20 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             if(c->belief_spike.occurrenceTime < postcondition.occurrenceTime && !c->isResultSequence)
                             {
-                                if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
+                                Concept *post_c = Memory_FindConceptByTerm(&postcondition.term);
+                                bool blocked = post_c != NULL && currentTime - (post_c->blockedtime - EVENT_BELIEF_DISTANCE) < EVENT_BELIEF_DISTANCE;
+                                bool is_blocking_stimuli = false; //the blocking stimuli can still be used (e.g. reinforcing <A =/> B> if A predicted B most strongly)
+                                if(post_c != NULL)
+                                {
+                                    Implication *imp = &post_c->precondition_beliefs[0].array[0];
+                                    if(imp->term.atoms[0])
+                                    {
+                                        Term left_side = Term_ExtractSubterm(&imp->term, 1);
+                                        is_blocking_stimuli = Term_Equal(&left_side, &c->term); 
+                                    }
+                                }
+                                //printf("BLOCKED: %d >>> ", blocked); Narsese_PrintTerm(&postcondition.term); puts("");
+                                if(!Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION) && (!blocked || is_blocking_stimuli))
                                 {
                                     int op_id2 = Memory_getOperationID(&c->belief_spike.term);
                                     bool is_op_seq = op_id && op_id2;
