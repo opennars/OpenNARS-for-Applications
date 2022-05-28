@@ -414,7 +414,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0, false, false);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
@@ -424,7 +424,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer, bool mental)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer, bool mental, bool considerContingency)
 {
     double eventPriority = priority;
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
@@ -438,7 +438,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(!mental && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_AddEvent(event, currentTime, priority, input, derived, revised, sequenced, layer, true);
+        Memory_AddEvent(event, currentTime, priority, input, derived, revised, sequenced, layer, true, false);
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
     if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL && Memory_task.occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
@@ -467,7 +467,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
-            Memory_AddEvent(&ev, currentTime, 1.0, false, true, false, false, layer, false);
+            Memory_AddEvent(&ev, currentTime, 1.0, false, true, false, false, layer, false, true);
         }
     }
     if(input && event->type == EVENT_TYPE_GOAL)
@@ -475,7 +475,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         Memory_printAddedEvent(event, priority, input, false, false, true);
     }
     bool addedToCyclingEventsQueue = false;
-    if(event->type == EVENT_TYPE_BELIEF)
+    if(event->type == EVENT_TYPE_BELIEF && !considerContingency)
     {
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
@@ -488,7 +488,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
         }
     }
-    if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
+    if((addedToCyclingEventsQueue || !considerContingency) && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
         Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
     }
@@ -497,7 +497,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0, false, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

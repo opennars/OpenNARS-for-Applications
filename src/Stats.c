@@ -75,7 +75,7 @@ void Stats_Print(long currentTime)
     printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
     for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        printf("curring external goal events cnt:\t\t%d in layer %d\n", cycling_external_goal_events[layer].itemsAmount, layer);
+        printf("curring external goal events cnt:\t%d in layer %d\n", cycling_external_goal_events[layer].itemsAmount, layer);
         printf("curring mental goal events cnt:\t\t%d in layer %d\n", cycling_mental_goal_events[layer].itemsAmount, layer);
     }
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);

@@ -390,7 +390,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
         {
             if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false, 0, false);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false, 0, false, false);
             }
         }
     }
