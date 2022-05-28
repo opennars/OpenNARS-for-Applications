@@ -500,7 +500,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                         {
                                             Term buildSeq = prec->belief_spike.term;
                                             bool success5 = Narsese_OperationSequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
-                                            //seq_op_cur.term = buildSeq;
+                                            seq_op_cur.term = buildSeq;
                                             //so now derive it
                                             if(success5)
                                             {

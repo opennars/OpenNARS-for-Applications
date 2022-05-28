@@ -1,0 +1,9 @@
+*volume=0
+*motorbabbling=false
+
+a. :|:
+^left. :|:
+^pick. :|:
+b. :|:
+<((a &/ ^left) &/ ^pick) =/> b>?
+//expected: Answer: <((a &/ ^left) &/ ^pick) =/> b>. Truth: frequency=1.000000, confidence=0.174792
