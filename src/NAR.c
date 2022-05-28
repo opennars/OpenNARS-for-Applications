@@ -72,8 +72,8 @@ void NAR_INIT()
     Cycle_INIT();
     currentTime = 1; //reset time
     initialized = true;
+    op_k = 0;
     NAR_AddOperation("^consider", NAR_op_consider);
-    op_k = 1;
 }
 
 void NAR_Cycles(int cycles)
