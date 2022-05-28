@@ -488,7 +488,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
         }
     }
-    if(addedToCyclingEventsQueue && !(input && mental) && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
+    if(addedToCyclingEventsQueue && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
     {
         Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
     }
