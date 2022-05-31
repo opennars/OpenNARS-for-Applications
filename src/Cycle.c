@@ -113,12 +113,14 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                             Event eternalized_seq = Event_Eternalized(&c->belief_spike);
                             Implication *imp = &c->implied_contingencies.array[x];
                             assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
-                            Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
+                            //fputs("Input: //TEST ", stdout); Narsese_PrintTerm(&imp->term); puts("");
+                            Event deduced_contingency = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
                             bool success2;
-                            deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
+                            deduced_contingency.term = Variable_ApplySubstitute(deduced_contingency.term, subs, &success2);
                             if(success2 && !Stamp_checkOverlap(&eternalized_seq.stamp, &imp->stamp))
                             {
-                                NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+								//fputs("Input: //RESULT ", stdout); Narsese_PrintTerm(&deduced_contingency.term); puts("");
+                                NAL_DerivedEvent(deduced_contingency.term, currentTime, deduced_contingency.truth, deduced_contingency.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
                             }
                         }
                     }
@@ -428,10 +430,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             bool success4;
                                             Event eternalized = c->belief_spike;
                                             eternalized.truth = Truth_Eternalize(eternalized.truth);
-                                            Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
+                                            Implication declarative_implication = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
                                             if(success4 && !Narsese_isOperation(&c->belief_spike.term))
                                             {
-                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
+                                                NAL_DerivedEvent2(declarative_implication.term, currentTime, declarative_implication.truth, declarative_implication.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
                                             }
                                         }
                                     }
