@@ -73,8 +73,6 @@ def GetStats():
 	return Stats
 
 def AddInput(narsese, Print=True):
-    with f = open("NAR_output.txt", "a"):
-        f.write(narsese + '\n')
     NAR.stdin.write(narsese + '\n')
     NAR.stdin.flush()
     ReturnStats = narsese == "*stats"
