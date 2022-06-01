@@ -196,9 +196,20 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
 //{Event a., Event <b =/> c>.} |- Implication <a ==> <b =/> c>>.
 Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success)
 {
+    assert(Narsese_copulaEquals(b->term.atoms[0], TEMPORAL_IMPLICATION), "Inference_BeliefInductionDeclarative: b needs to be a temporal implication");
     DERIVATION_STAMP(a,b)
     Term term = {0};
     term.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+    if(Narsese_copulaEquals(a->term.atoms[0], SEQUENCE))
+    {
+        Term a_as_temporal_implication = a->term;
+        a_as_temporal_implication.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+        a_as_temporal_implication.hashed = false;
+        if(Term_Equal(&a_as_temporal_implication, &b->term))
+        {
+            return (Implication) {0};
+        }
+    }
     *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
     return *success ? (Implication) { .term = term, 
                                       .truth = Truth_Induction(b->truth, a->truth),

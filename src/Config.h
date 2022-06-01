@@ -111,7 +111,11 @@
 //Maximum event FIFO size
 #define FIFO_SIZE 20
 //Maximum Implication table size
+#define TABLE_SIZE 40
+#ifdef HARDENED
+#undef SEMANTIC_INFERENCE_NAL_LEVEL
 #define TABLE_SIZE 20
+#endif
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 128
 #ifdef HARDENED
@@ -180,5 +184,7 @@
 #define ALLOW_RESULT_SEQUENCES true
 //Restrict higher order implication statements to have a result seq (with op) or list inside
 #define RESTRICT_MUTUAL_ENTAILMENT true
+//Restrict var intro in lists
+#define RESTRICT_VAR_INTRO_IN_LISTS true
 
 #endif
