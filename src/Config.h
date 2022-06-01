@@ -113,7 +113,7 @@
 //Maximum Implication table size
 #define TABLE_SIZE 40
 #ifdef HARDENED
-#undef SEMANTIC_INFERENCE_NAL_LEVEL
+#undef TABLE_SIZE
 #define TABLE_SIZE 20
 #endif
 //Maximum compound term size
