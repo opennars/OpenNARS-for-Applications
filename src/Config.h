@@ -180,5 +180,7 @@
 #define ALLOW_RESULT_SEQUENCES true
 //Restrict higher order implication statements to have a result seq (with op) or list inside
 #define RESTRICT_MUTUAL_ENTAILMENT true
+//Restrict var intro in lists
+#define RESTRICT_VAR_INTRO_IN_LISTS true
 
 #endif

@@ -23,6 +23,8 @@ cd OpenNARS-for-Applications
 ./build.sh
 ```
 
+Additionally the parameter -DHARDENED can be passed to build.sh to end up with a slimmer system without language learning abilities.
+
 ***How to set the amount of threads the system should run with: (to be tested more, compile with ./build.sh -fopenmp)***
 ```
 export OMP_NUM_THREADS=4  // 4 threads seems to be the sweet spot. More threads leads to more contention and less speed currently

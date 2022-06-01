@@ -216,11 +216,6 @@ R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!and for lists:
-R1( ((A . B) --> X), |-, (A --> X), Truth_StructuralDeduction )
-R1( ((A . B) --> X), |-, (B --> X), Truth_StructuralDeduction )
-R1( (((A . B) . C) --> X), |-, ((A . B) --> X), Truth_StructuralDeduction )
-R1( (((A . B) . C) --> X), |-, ((B . C) --> X), Truth_StructuralDeduction )
-R1( (((A . B) . C) --> X), |-, ((A . C) --> X), Truth_StructuralDeduction )
 R2( (((A . R) . B) --> X), (((B . S) . A) --> X), |-, (((($2 . S) . $1) --> X) ==> ((($1 . R) . $2) --> X)), Truth_Induction ) //SVP
 R2( (((R . A) . B) --> X), (((S . B) . A) --> X), |-, ((((S . $2) . $1) --> X) ==> (((R . $1) . $2) --> X)), Truth_Induction ) //VSP
 R2( (((A . B) . R) --> X), (((B . A) . S) --> X), |-, (((($1 . $2) . S) --> X) ==> ((($2 . $1) . R) --> X)), Truth_Induction ) //SPV

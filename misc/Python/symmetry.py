@@ -70,7 +70,7 @@ printloud("\x1b[35m***************\x1b[0m")
 printloud()
 
 
-def AddExample(sample, left, right, expected_op, correct, Print=True):
+def AddExample(sample, left, right, expected_op, correct, Print=loud):
     NAR.AddInput(sample, Print=Print)
     NAR.AddInput(left, Print=Print)
     NAR.AddInput(right, Print=Print)
@@ -79,18 +79,18 @@ def AddExample(sample, left, right, expected_op, correct, Print=True):
     executions = response["executions"]
     if executions:
         op = executions[0]["operator"]
-        print("Input: " + str(op) + ". :|:")
-        NAR.AddInput("*volume=100")
+        printloud("Input: " + str(op) + ". :|:")
+        NAR.AddInput("*volume=0", Print=Print and loud)
         if op == expected_op:
-            print("\x1B[32mCORRECT: " + op + "\x1B[0m")
-            NAR.AddInput("G. :|:", Print=Print)
+            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
+            NAR.AddInput("G. :|:", Print=Print and loud)
             correct += 1
         elif op != expected_op:
-            print("\x1B[31mINCORRECT: " + op + "\x1B[0m")
-            NAR.AddInput("G. :|: {0.0 0.9}", Print=Print)      
+            printloud("\x1B[31mINCORRECT: " + op + "\x1B[0m")
+            NAR.AddInput("G. :|: {0.0 0.9}", Print=Print and loud)      
     else:
-        print("Input: NO EXECUTION")
-    NAR.AddInput("50", Print=Print)
+        printloud("Input: NO EXECUTION")
+    NAR.AddInput("50", Print=Print and loud)
     return correct
 
 
@@ -184,7 +184,7 @@ for b in range(10):
 
     printloud("End of block")
     printloud()
-    NAR.AddInput("200", Print=True)
+    NAR.AddInput("200", Print=loud)
 
 
 
@@ -203,11 +203,11 @@ Input: <A1 --> [right]>. :|: occurrenceTime=10685 Priority=1.000000 Truth: frequ
 Input: G! :|: occurrenceTime=10686 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
 ^left execute"""
 
-print("\x1b[33m")
-NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [left]>) &/ ^left) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [left]>) &/ ^left) =/> G>>?", Print=True)
-NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [right]>) &/ ^right) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [right]>) &/ ^right) =/> G>>?", Print=True)
+printloud("\x1b[33m")
+NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [left]>) &/ ^left) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [left]>) &/ ^left) =/> G>>?", Print=loud)
+NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [right]>) &/ ^right) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [right]>) &/ ^right) =/> G>>?", Print=loud)
 
-print("\x1b[0m")
+printloud("\x1b[0m")
 
 
 #################################################################################
@@ -362,23 +362,14 @@ for b in range(len(testsymmetry)):
     if True: #correct > correct_temp:
         #the choice was correct
         NAR.AddInput("100", Print=False)
-        NAR.AddInput("<((<Y1 --> [sample]> &/ <X1 --> [left]>) &/ ^left) =/> G>?", Print=True)
-        NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [left]>) &/ ^left) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [left]>) &/ ^left) =/> G>>?", Print=True)
-        NAR.AddInput("(((<X1 --> [sample]> &/ <Y1 --> [left]>) &/ ^left) &/ G)? :|:", Print=True)
+        NAR.AddInput("<((<Y1 --> [sample]> &/ <X1 --> [left]>) &/ ^left) =/> G>?", Print=loud)
+        NAR.AddInput("<(((<$1 --> [sample]> &/ <$2 --> [left]>) &/ ^left) &/ G) ==> <((<$2 --> [sample]> &/ <$1 --> [left]>) &/ ^left) =/> G>>?", Print=loud)
+        NAR.AddInput("(((<X1 --> [sample]> &/ <Y1 --> [left]>) &/ ^left) &/ G)? :|:", Print=loud)
         correct_temp = correct
         NAR.AddInput("*motorbabbling=false", Print=False)
         correct = AddExample(sample_reverse, left_reverse, right_reverse, expected_op_original, correct)
         if correct > correct_temp:
             correct_total += 1
-        #exit(0)
-    #correct_temp = correct
-    #correct = AddExample(sample_reverse, left_reverse, right_reverse, expected_op_reverse, correct)
-    #if correct > correct_temp:
-    #the choice was correct
-        
-#printloud("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
 
-print("Input: Correct total", correct_total)
-printloud("End testing")
-printloud()
-NAR.AddInput("200", Print=True)
+print("Symmetry task results:")
+print("Correctness ratio", correct_total/4)

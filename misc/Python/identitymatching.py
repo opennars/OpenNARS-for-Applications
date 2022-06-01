@@ -94,7 +94,7 @@ for b in range(10):
                 printloud("\x1B[31mINCORRECT: " + op + "\x1B[0m")
                 # NAR.AddInput("G. :|: {0.0 0.9}", Print=True)      
 
-        NAR.AddInput("100", Print=False)
+        NAR.AddInput("50", Print=False)
     
     printloud("\x1B[34mCorrect = " + str(correct/4) + "\x1B[0m")
 
@@ -145,7 +145,7 @@ for b in range(10):
                 printloud("\x1B[31mINCORRECT: " + op + "\x1B[0m")
                 NAR.AddInput("G. :|: {0.0 0.9}", Print=False)      
 
-        NAR.AddInput("100", Print=False)
+        NAR.AddInput("50", Print=False)
 
     printloud("\x1b[33m")
     response = NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=False)
@@ -246,7 +246,7 @@ for b in range(4):
         elif op != expected_op:
             printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
 
-        NAR.AddInput("100", Print=False)
+        NAR.AddInput("50", Print=False)
 
     printloud("\x1b[33m")
     response = NAR.AddInput("<((<A1 --> [sample]> &/ <A1 --> [left]>) &/ ^left) =/> G>?", Print=False)
@@ -353,7 +353,7 @@ for b in range(4):
         elif op != expected_op:
             printloud("\x1b[31mINCORRECT: " + op + "\x1b[0m")
 
-        NAR.AddInput("100", Print=False)
+        NAR.AddInput("50", Print=False)
 
     printloud("\x1B[34mCorrect " + str(correct/4) + "\x1B[0m")
 
