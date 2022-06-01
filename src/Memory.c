@@ -296,7 +296,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
                     Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
-                    //fputs("Input: ADDED IMPLICATION ", stdout); Narsese_PrintTerm(&revised->term); puts("");
                     if(wasRevised)
                         Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
@@ -353,20 +352,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
                     Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
-                    //fputs("Input: ADDED CONTINGENCY ", stdout); Narsese_PrintTerm(&revised->term); puts("");
                     if(wasRevised)
                         Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
-                else
-                {
-					//printf("Input: WANTED TO ADD, table items amount: %d ", target_concept->precondition_beliefs[opi].itemsAmount); Narsese_PrintTerm(&imp.term); puts("");
-					/*for(int o=0; o<target_concept->precondition_beliefs[opi].itemsAmount; o++)
-					{
-						//puts("WWW"); fflush(stdout);
-						Truth truth = target_concept->precondition_beliefs[opi].array[o].truth;
-						printf("Input: TABLE AT %d %f %f ", o, truth.frequency, truth.confidence); Narsese_PrintTerm(&target_concept->precondition_beliefs[opi].array[o].term); puts(" ");
-					}*/
-				}
             }
         }
     }

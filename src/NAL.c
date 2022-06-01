@@ -339,31 +339,31 @@ static bool NAL_DeclarativeImplicationWithoutIndependentVar(Term *conclusionTerm
 
 static bool DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(Term *conclusionTerm, bool recurse)
 {
-	//0    1     2    3
-	//1    2     3    4
-	//==>  &&         ^op
-	if(Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE))
-	{
-		if(Narsese_copulaEquals(conclusionTerm->atoms[1], CONJUNCTION))
-		{
-			Term sequence = Term_ExtractSubterm(conclusionTerm, 1);
-			return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&sequence, true);
-		}
-	}
-	if(recurse && Narsese_copulaEquals(conclusionTerm->atoms[0], CONJUNCTION))
-	{
-		Term op_or_sequence = Term_ExtractSubterm(conclusionTerm, 1);
-		if(Narsese_isOperation(&op_or_sequence))
-		{
-			return true;
-		}
-		else
-		if(Narsese_copulaEquals(op_or_sequence.atoms[0], CONJUNCTION))
-		{
-			return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&op_or_sequence, true);
-		}
-	}
-	return false;
+    //0    1     2    3
+    //1    2     3    4
+    //==>  &&         ^op
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE))
+    {
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], CONJUNCTION))
+        {
+            Term sequence = Term_ExtractSubterm(conclusionTerm, 1);
+            return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&sequence, true);
+        }
+    }
+    if(recurse && Narsese_copulaEquals(conclusionTerm->atoms[0], CONJUNCTION))
+    {
+        Term op_or_sequence = Term_ExtractSubterm(conclusionTerm, 1);
+        if(Narsese_isOperation(&op_or_sequence))
+        {
+            return true;
+        }
+        else
+        if(Narsese_copulaEquals(op_or_sequence.atoms[0], CONJUNCTION))
+        {
+            return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&op_or_sequence, true);
+        }
+    }
+    return false;
 }
 
 void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars)
@@ -374,20 +374,20 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
         Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
         if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true) && !NAL_DeclarativeImplicationWithoutIndependentVar(&conclusionTermWithVarExt))
         {
-			bool HasTwoIndependentVars = false;
-			Atom DepVar2 = Narsese_AtomicTermIndex("$2");
-			for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
-			{
-				if(conclusionTermWithVarExt.atoms[i] == DepVar2)
-				{
-					HasTwoIndependentVars = true;
-					break;
-				}
-			}
-			if(!allowOnlyExtVarIntroAndTwoIndependentVars || HasTwoIndependentVars)
-			{
-				NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
-			}
+            bool HasTwoIndependentVars = false;
+            Atom DepVar2 = Narsese_AtomicTermIndex("$2");
+            for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+            {
+                if(conclusionTermWithVarExt.atoms[i] == DepVar2)
+                {
+                    HasTwoIndependentVars = true;
+                    break;
+                }
+            }
+            if(!allowOnlyExtVarIntroAndTwoIndependentVars || HasTwoIndependentVars)
+            {
+                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
         }
         if(!allowOnlyExtVarIntroAndTwoIndependentVars) //todo rename var to something else
         {

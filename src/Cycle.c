@@ -113,13 +113,11 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                             Event eternalized_seq = Event_Eternalized(&c->belief_spike);
                             Implication *imp = &c->implied_contingencies.array[x];
                             assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
-                            //fputs("Input: //TEST ", stdout); Narsese_PrintTerm(&imp->term); puts("");
                             Event deduced_contingency = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
                             bool success2;
                             deduced_contingency.term = Variable_ApplySubstitute(deduced_contingency.term, subs, &success2);
                             if(success2 && !Stamp_checkOverlap(&eternalized_seq.stamp, &imp->stamp))
                             {
-								//fputs("Input: //RESULT ", stdout); Narsese_PrintTerm(&deduced_contingency.term); puts("");
                                 NAL_DerivedEvent(deduced_contingency.term, currentTime, deduced_contingency.truth, deduced_contingency.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
                             }
                         }
