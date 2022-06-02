@@ -117,7 +117,7 @@
 #define TABLE_SIZE 20
 #endif
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 128
+#define COMPOUND_TERM_SIZE_MAX 192
 #ifdef HARDENED
 #undef COMPOUND_TERM_SIZE_MAX
 #define COMPOUND_TERM_SIZE_MAX 64

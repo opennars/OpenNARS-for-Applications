@@ -66,5 +66,6 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound);
 Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success);
 //{Event a., Implication <a ==> <b =/> c>>.} |- Event <b =/> c>.
 Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compound);
+Event Inference_DeclarativeBeliefIntersection(Event *a, Event *b, bool *success);
 
 #endif

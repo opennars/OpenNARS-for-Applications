@@ -232,3 +232,18 @@ Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compou
                      .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL,
                      .creationTime = creationTime };
 }
+
+//{Event a., Event b.} |- Event (a && b).
+Event Inference_DeclarativeBeliefIntersection(Event *a, Event *b, bool *success)
+{
+    assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefIntersection");
+    DERIVATION_STAMP_AND_TIME(a,b)
+    Term conclusionTerm = Narsese_Conjunction(&a->term, &b->term, success);
+    return *success ? (Event) { .term = conclusionTerm,
+                                .type = EVENT_TYPE_BELIEF,
+                                .truth = Truth_Intersection(Truth_Eternalize(a->truth), Truth_Eternalize(b->truth)),
+                                .stamp = conclusionStamp, 
+                                .occurrenceTime = conclusionTime,
+                                .creationTime = creationTime }
+                    : (Event) {0};
+}

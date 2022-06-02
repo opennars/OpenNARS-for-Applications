@@ -119,5 +119,7 @@ HASH_TYPE Narsese_StringHash(char *name);
 bool Term_HasOperation(Term *term);
 //Append a sequence in left-nested way:
 bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence);
+//Conjunction
+Term Narsese_Conjunction(Term *a, Term *b, bool *success);
 
 #endif

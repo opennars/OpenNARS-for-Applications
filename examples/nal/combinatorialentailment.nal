@@ -1,0 +1,148 @@
+*volume=0
+*motorbabbling=false
+
+<obj1 --> [see]>. :|:
+<({SELF} * sound1) --> ^say>. :|:
+G1. :|:
+20
+<sound1 --> [hear]>. :|:
+<({SELF} * word1) --> ^pick>. :|:
+G2. :|:
+8
+<obj1 --> [see]>. :|:
+<({SELF} * word1) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj2 --> [see]>. :|:
+<({SELF} * sound2) --> ^say>. :|:
+G1. :|:
+20
+<sound2 --> [hear]>. :|:
+<({SELF} * word2) --> ^pick>. :|:
+G2. :|:
+8
+<obj2 --> [see]>. :|:
+<({SELF} * word2) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj3 --> [see]>. :|:
+<({SELF} * sound3) --> ^say>. :|:
+G1. :|:
+20
+<sound3 --> [hear]>. :|:
+<({SELF} * word3) --> ^pick>. :|:
+G2. :|:
+8
+<obj3 --> [see]>. :|:
+<({SELF} * word3) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj4 --> [see]>. :|:
+<({SELF} * sound4) --> ^say>. :|:
+G1. :|:
+20
+<sound4 --> [hear]>. :|:
+<({SELF} * word4) --> ^pick>. :|:
+G2. :|:
+8
+<obj4 --> [see]>. :|:
+<({SELF} * word4) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj5 --> [see]>. :|:
+<({SELF} * sound5) --> ^say>. :|:
+G1. :|:
+20
+<sound5 --> [hear]>. :|:
+<({SELF} * word5) --> ^pick>. :|:
+G2. :|:
+8
+<obj5 --> [see]>. :|:
+<({SELF} * word5) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj6 --> [see]>. :|:
+<({SELF} * sound6) --> ^say>. :|:
+G1. :|:
+20
+<sound6 --> [hear]>. :|:
+<({SELF} * word6) --> ^pick>. :|:
+G2. :|:
+8
+<obj6 --> [see]>. :|:
+<({SELF} * word6) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj7 --> [see]>. :|:
+<({SELF} * sound7) --> ^say>. :|:
+G1. :|:
+20
+<sound7 --> [hear]>. :|:
+<({SELF} * word7) --> ^pick>. :|:
+G2. :|:
+8
+<obj7 --> [see]>. :|:
+<({SELF} * word7) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj8 --> [see]>. :|:
+<({SELF} * sound8) --> ^say>. :|:
+G1. :|:
+20
+<sound8 --> [hear]>. :|:
+<({SELF} * word8) --> ^pick>. :|:
+G2. :|:
+8
+<obj8 --> [see]>. :|:
+<({SELF} * word8) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj9 --> [see]>. :|:
+<({SELF} * sound9) --> ^say>. :|:
+G1. :|:
+20
+<sound9 --> [hear]>. :|:
+<({SELF} * word9) --> ^pick>. :|:
+G2. :|:
+8
+<obj9 --> [see]>. :|:
+<({SELF} * word9) --> ^pick>. :|:
+G3. :|:
+
+1000
+
+<obj42 --> [see]>. :|:
+<({SELF} * sound42) --> ^say>. :|:
+G1. :|:
+100
+<sound42 --> [hear]>. :|:
+<({SELF} * word42) --> ^pick>. :|:
+G2. :|:
+
+1000
+
+<obj42 --> [see]>. :|:
+G3! :|:
+//expected: ^pick executed with args ({SELF} * word42)
+
+<(<obj42 --> [see]> &/ ?1) =/> G3>?
+//expected: Answer: <(<obj42 --> [see]> &/ <({SELF} * word42) --> ^pick>) =/> G3>. Truth: frequency=0.943423, confidence=0.136186
+
+<(((<$1 --> [see]> &/ <({$3} * #1) --> ^say>) &/ G1) && ((<#1 --> [hear]> &/ <({$3} * $2) --> ^pick>) &/ G2)) ==> <(<$1 --> [see]> &/ <({$3} * $2) --> ^pick>) =/> G3>>?
+//expected: Answer: <(((<$1 --> [see]> &/ <({$3} * #1) --> ^say>) &/ G1) && ((<#1 --> [hear]> &/ <({$3} * $2) --> ^pick>) &/ G2)) ==> <(<$1 --> [see]> &/ <({$3} * $2) --> ^pick>) =/> G3>>. Truth: frequency=1.000000, confidence=0.285112

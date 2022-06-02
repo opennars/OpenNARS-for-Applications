@@ -222,6 +222,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int lay
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
+		//fputs("ADDED RESULT_SEQ ", stdout); Narsese_PrintTerm(&e->term); puts("");
         Event *toRecyle = feedback.addedItem.address;
         *toRecyle = *e;
         return true;
