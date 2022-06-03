@@ -451,18 +451,11 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             }
             else
             {
-				
-				Concept *test = Memory_FindConceptByTerm(&toProcess->term);
-				//fputs("SELECTED EVENT ", stdout); Narsese_PrintTerm(&toProcess->term); puts("");
-                if(test != NULL && Narsese_copulaEquals(test->term.atoms[0], SEQUENCE))
-                {
-					 //fputs("SELECTED RESULT SEQUENCE ", stdout); Narsese_PrintTerm(&test->term); puts("");
-					 //exit(0);
-				}
-				
-				
                 assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
-                Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
+                if(!toProcess->processed)
+                {
+					Cycle_ProcessSensorimotorEvent(toProcess, currentTime, false);
+				}
                 Event postcondition = *toProcess;
                 //Mine for <(&/,precondition,operation) =/> postcondition> and <precondition =/> postcondition> patterns using FIFO and ConceptMemory:
                 int op_id = Memory_getOperationID(&postcondition.term);
