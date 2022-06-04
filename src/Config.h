@@ -111,11 +111,7 @@
 //Maximum event FIFO size
 #define FIFO_SIZE 20
 //Maximum Implication table size
-#define TABLE_SIZE 40
-#ifdef HARDENED
-#undef TABLE_SIZE
 #define TABLE_SIZE 20
-#endif
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 128
 #ifdef HARDENED

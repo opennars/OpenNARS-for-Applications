@@ -175,7 +175,7 @@ print(subprocess.getoutput("cd ./misc/Python/ && python3 discriminativefunction.
 print(subprocess.getoutput("cd ./misc/Python/ && python3 conditioning.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 identitymatching.py silent seed=42"))
-print(subprocess.getoutput("cd ./misc/Python/ && python3 symmetry.py silent seed=42"))
+#print(subprocess.getoutput("cd ./misc /Python/ && python3 symmetry.py silent seed=42"))
 
 #Print procedure learning metrics:
 print("\nNow running procedure learning examples for 10K iterations each:")
