@@ -23,10 +23,21 @@
  */
 
 #include "Event.h"
+#include "Narsese.h"
 
 long base = 1;
 Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime)
 {
+	
+	bool AUTO_UNNEGATE_TASKS = true; //TODO move to config
+	if (AUTO_UNNEGATE_TASKS) {
+		if (Narsese_copulaEquals(&term, NEGATION)) {
+			term = Term_ExtractSubterm(&term, 0);
+			//truth = truth.negate();
+			truth = (Truth) { .frequency = 1-truth.frequency, .confidence = truth.confidence };
+		}
+	}
+
     return (Event) { .term = term,
                      .type = type, 
                      .truth = truth, 

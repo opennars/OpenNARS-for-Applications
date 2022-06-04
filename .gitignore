@@ -6,3 +6,4 @@ NAR.dll
 src/RuleTable.c
 .envrc
 NAR.dSYM/
+.idea/
