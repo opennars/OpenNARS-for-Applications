@@ -1,3 +1,4 @@
+*volume=0
 <((garfield . is) . cat) --> [hear]>. :|:
 <((cat . is) . animal) --> [hear]>. :|:
 <((garfield . is) . animal) --> [hear]>. :|:
@@ -6,4 +7,5 @@
 <((tweety . is) . bird) --> [hear]>. :|:
 <((bird . is) . animal) --> [hear]>. :|:
 <((tweety . is) . animal) --> [hear]>? :|:
-//expected: Answer: <((tweety . is) . animal) --> [hear]>. :|: occurrenceTime=107 Truth: frequency=0.953622, confidence=0.139123
+//expected: Answer: <((tweety . is) . animal) --> [hear]>. :|: occurrenceTime=106 Truth: frequency=1.000000, confidence=0.156395
+

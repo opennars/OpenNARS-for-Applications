@@ -1,0 +1,21 @@
+*motorbabbling=false
+*volume=0
+*setopname 1 ^remember
+*setopstdin 1
+*setopname 3 ^goto
+
+//you need to ask the map in order to localize an object and then invoke the ^goto location to the location in order to see the object
+<((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>.
+
+
+tick. :|:
+<fridge --> [see]>! :|:
+0
+(fridge * 10_20)
+//--expected: ^remember executed with args ({SELF} * (fridge * #1))
+//expected: ^goto executed with args ({SELF} * 10_20)
+<fridge --> [see]>. :|:
+
+//show that the compound behavior has been rewarded:
+<((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>?
+//expected: Answer: <((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>. Truth: frequency=1.000000, confidence=0.901739

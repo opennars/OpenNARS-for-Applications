@@ -102,10 +102,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
             {
                 ecp.term = e->term;
                 Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp);
-                if(decision.execute && decision.desire >= best_decision.desire)
-                {
-                    best_decision = decision;
-                }
+                best_decision = Decision_BetterDecision(best_decision, decision);
                 //Deduce contingencies using <Seq ==> <(A &/ Op) =/> B>> representations stored in implied_contingencies of concept:
                 if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && e->type == EVENT_TYPE_BELIEF)
                 {
@@ -116,12 +113,12 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                             Event eternalized_seq = Event_Eternalized(&c->belief_spike);
                             Implication *imp = &c->implied_contingencies.array[x];
                             assert(imp->term.atoms[0] != 0, "Declarative contingency implication without term detected"); //sanity check
-                            Event deduced_impl = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
+                            Event deduced_contingency = Inference_BeliefDeductionDeclarative(&eternalized_seq, imp);
                             bool success2;
-                            deduced_impl.term = Variable_ApplySubstitute(deduced_impl.term, subs, &success2);
+                            deduced_contingency.term = Variable_ApplySubstitute(deduced_contingency.term, subs, &success2);
                             if(success2 && !Stamp_checkOverlap(&eternalized_seq.stamp, &imp->stamp))
                             {
-                                NAL_DerivedEvent(deduced_impl.term, currentTime, deduced_impl.truth, deduced_impl.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
+                                NAL_DerivedEvent(deduced_contingency.term, currentTime, deduced_contingency.truth, deduced_contingency.stamp, currentTime, 1, 1, imp->occurrenceTimeOffset, NULL, 0, true);
                             }
                         }
                     }
@@ -138,10 +135,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime, bool 
                 if(success)
                 {
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime, ignoreOp);
-                    if(decision.execute && decision.desire >= best_decision.desire)
-                    {
-                        best_decision = decision;
-                    }
+                    best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
         }
@@ -280,7 +274,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, false, layer);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, layer);
     return true;
 }
 
@@ -299,10 +293,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
             continue;
         }
         Decision decision = Cycle_ProcessSensorimotorEvent(goal, currentTime, false);
-        if(decision.execute && decision.desire > best_decision.desire)
-        {
-            best_decision = decision;
-        }
+        best_decision = Decision_BetterDecision(best_decision, decision);
     }
     if(best_decision.execute && best_decision.operationID[0] > 0)
     {
@@ -348,7 +339,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, false, layer);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
                         }
                     }
                 }
@@ -437,10 +428,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             bool success4;
                                             Event eternalized = c->belief_spike;
                                             eternalized.truth = Truth_Eternalize(eternalized.truth);
-                                            Implication implied_contingency = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
+                                            Implication declarative_implication = Inference_BeliefInductionDeclarative(&eternalized, &imp, &success4);
                                             if(success4 && !Narsese_isOperation(&c->belief_spike.term))
                                             {
-                                                NAL_DerivedEvent2(implied_contingency.term, currentTime, implied_contingency.truth, implied_contingency.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
+                                                NAL_DerivedEvent2(declarative_implication.term, currentTime, declarative_implication.truth, declarative_implication.stamp, currentTime, 1.0, 1.0, imp.occurrenceTimeOffset, NULL, 0, true, true);
                                             }
                                         }
                                     }
@@ -500,7 +491,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                         {
                                             Term buildSeq = prec->belief_spike.term;
                                             bool success5 = Narsese_OperationSequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
-                                            //seq_op_cur.term = buildSeq;
+                                            seq_op_cur.term = buildSeq;
                                             //so now derive it
                                             if(success5)
                                             {
