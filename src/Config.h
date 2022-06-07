@@ -111,7 +111,7 @@
 //Maximum event FIFO size
 #define FIFO_SIZE 20
 //Maximum Implication table size
-#define TABLE_SIZE 20
+#define TABLE_SIZE 40
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 128
 #ifdef HARDENED
@@ -123,7 +123,7 @@
 //Amount of buckets for atoms hashmap
 #define ATOMS_HASHTABLE_BUCKETS ATOMS_MAX
 //The type of an atom
-#define Atom unsigned short
+#define Atom unsigned char
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
