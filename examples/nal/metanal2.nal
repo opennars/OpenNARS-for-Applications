@@ -26,7 +26,7 @@
 G. :|:
 
 <(<((animal . is) . seen) --> [hear]> &/ ^clap) =/> G>?
-//expected: Answer: <(<((animal . is) . seen) --> [hear]> &/ ^clap) =/> G>. Truth: frequency=1.000000, confidence=0.241351
+//expected: Answer: <(<((animal . is) . seen) --> [hear]> &/ ^clap) =/> G>. Truth: frequency=1.000000, confidence=0.488333
 
 50
 

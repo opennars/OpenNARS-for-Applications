@@ -336,7 +336,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 if(ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING)
                 {
-                    c->lastSensorimotorActivation = currentTime;
+                    c->lastSelectionTime = currentTime;
                 }
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
