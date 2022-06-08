@@ -185,14 +185,17 @@ for b in range(4):
         NAR.AddInput(right, Print=False)
 
         response = NAR.AddInput("G! :|:", Print=False)
+        if response["executions"]:
+            op = response["executions"][0]["operator"]
 
-        op = response["executions"][0]["operator"]
-
-        if op == expected_op:
-            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
-            correct += 1
-            corrects += 1
-        elif op != expected_op:
+            if op == expected_op:
+                printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
+                correct += 1
+                corrects += 1
+            elif op != expected_op:
+                printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
+                incorrects += 1
+        else:
             printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
             incorrects += 1
         NAR.AddInput("100", Print=False)

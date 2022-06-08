@@ -230,37 +230,6 @@ R2( ((A . B) --> R), (C <-> B), |-, ((A . C) --> R), Truth_Analogy )
 //!Variable elimination in Cycle_SpecialInferences
 #endif
 
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7 //NAL7 substitution rules
-//!Consequent substitutions
-R2( (A =/> B), (S ==> B), |-, (A =/> S), Truth_Induction )
-R2( (A =/> B), (B ==> S), |-, (A =/> S), Truth_Deduction )
-R2( (A =/> B), (B <=> S), |-, (A =/> S), Truth_Analogy )
-R2( (A =/> (P --> B)), (P <-> S), |-, (A =/> (S --> B)), Truth_Analogy )
-R2( (A =/> (B --> P)), (P <-> S), |-, (A =/> (B --> S)), Truth_Analogy )
-//!First sequence element substitution (deeper isn't currently linked)
-R2( ((A &/ B) =/> C), (A ==> S), |-, ((S &/ B) =/> C), Truth_Induction )
-R2( ((A &/ B) =/> C), (S ==> A), |-, ((S &/ B) =/> C), Truth_Deduction )
-R2( ((A &/ B) =/> C), (S <=> A), |-, ((S &/ B) =/> C), Truth_Analogy )
-R2( (((P --> A) &/ B) =/> C), (A <-> S), |-, (((P --> S) &/ B) =/> C), Truth_Analogy )
-R2( (((A --> P) &/ B) =/> C), (A <-> S), |-, (((S --> P) &/ B) =/> C), Truth_Analogy )
-//!Second sequence element substitution (deeper isn't currently linked)
-R2( ((A &/ B) =/> C), (B ==> S), |-, ((A &/ S) =/> C), Truth_Induction )
-R2( ((A &/ B) =/> C), (S ==> B), |-, ((A &/ S) =/> C), Truth_Deduction )
-R2( ((A &/ B) =/> C), (S <=> B), |-, ((A &/ S) =/> C), Truth_Analogy )
-R2( ((A &/ (P --> B)) =/> C), (B <-> S), |-, ((A &/ (P --> S)) =/> C), Truth_Analogy )
-R2( ((A &/ (B --> P)) =/> C), (B <-> S), |-, ((A &/ (S --> P)) =/> C), Truth_Analogy )
-#endif
-
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8 //NAL8 substitution rules
-//!Relating statements to contingencies
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) ==> ((A &/ Op) =/> C)), Truth_Induction )
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) ==> ((S * X) --> P)), Truth_Abduction )
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) <=> ((S * X) --> P)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) <=> ((A &/ Op) =/> C)), Truth_Comparison )
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((A &/ Op) =/> C) && ((S * X) --> P)), Truth_Intersection )
-R2VarIntro( ((A &/ Op) =/> C), ((S * X) --> P), |-, (((S * X) --> P) && ((A &/ Op) =/> C)), Truth_Intersection )
-#endif
-
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
 
 #endif

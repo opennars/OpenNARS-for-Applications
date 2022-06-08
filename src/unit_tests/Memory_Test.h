@@ -31,7 +31,7 @@ void Memory_Test()
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                0, 0);
     Memory_AddInputEvent(&e, 0);
-    Memory_Conceptualize(&e.term, 1, false);
+    Memory_Conceptualize(&e.term, 1);
     Concept *c1 = Memory_FindConceptByTerm(&e.term);
     assert(c1 != NULL, "Concept should have been created!");
     Event e2 = Event_InputEvent(Narsese_AtomicTerm("b"), 
@@ -39,7 +39,7 @@ void Memory_Test()
                                (Truth) { .frequency = 1, .confidence = 0.9 }, 
                                0, 0);
     Memory_AddInputEvent(&e2, 0);
-    Memory_Conceptualize(&e2.term, 1, false);
+    Memory_Conceptualize(&e2.term, 1);
     Concept *c2 = Memory_FindConceptByTerm(&e2.term);
     assert(c2 != NULL, "Concept should have been created!");
     puts("<<Memory test successful");

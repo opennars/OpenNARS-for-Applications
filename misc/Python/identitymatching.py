@@ -238,12 +238,15 @@ for b in range(4):
 
         response = NAR.AddInput("G! :|:", Print=False)
 
-        op = response["executions"][0]["operator"]
+        if response["executions"]:
+            op = response["executions"][0]["operator"]
 
-        if op == expected_op:
-            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
-            correct += 1
-        elif op != expected_op:
+            if op == expected_op:
+                printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
+                correct += 1
+            elif op != expected_op:
+                printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
+        else:
             printloud("\x1b[31mINCORRECT: " + op +"\x1b[0m")
 
         NAR.AddInput("50", Print=False)
@@ -345,12 +348,15 @@ for b in range(4):
 
         response = NAR.AddInput("G! :|:", Print=False)
 
-        op = response["executions"][0]["operator"]
+        if response["executions"]:
+            op = response["executions"][0]["operator"]
 
-        if op == expected_op:
-            printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
-            correct += 1
-        elif op != expected_op:
+            if op == expected_op:
+                printloud("\x1B[32mCORRECT: " + op + "\x1B[0m")
+                correct += 1
+            elif op != expected_op:
+                printloud("\x1b[31mINCORRECT: " + op + "\x1b[0m")
+        else:
             printloud("\x1b[31mINCORRECT: " + op + "\x1b[0m")
 
         NAR.AddInput("50", Print=False)
