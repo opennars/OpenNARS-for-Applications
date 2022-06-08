@@ -393,15 +393,15 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-		if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
         {
-			addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
-		}
+            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+        }
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
-		addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
     }
     if(addedToCyclingEventsQueue && !input) //print new tasks

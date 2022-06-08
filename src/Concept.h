@@ -50,7 +50,7 @@ typedef struct {
     long processID;  //avoids duplicate processing
     long processID2; //avoids duplicate processing
     long processID3; //avoids duplicate processing
-    long lastSensorimotorActivation;
+    long lastSelectionTime;
 } Concept;
 
 //Methods//

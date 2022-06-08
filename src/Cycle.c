@@ -58,7 +58,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
-        c->lastSensorimotorActivation = currentTime;
+        c->lastSelectionTime = currentTime;
         c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
         if(e->type == EVENT_TYPE_BELIEF)
@@ -378,7 +378,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 bool wasProcessed2 = opc->processID2 == conceptProcessID2;
                 opc->processID2 = conceptProcessID2;
                 if(!wasProcessed2 && opc->belief_spike.type != EVENT_TYPE_DELETED && opc->belief_spike.creationTime < currentTime && opc->belief_spike.occurrenceTime < toProcess->occurrenceTime && 
-                   labs(opc->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(opc->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && Memory_getOperationID(&opc->term))
+                   labs(opc->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(opc->lastSelectionTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && Memory_getOperationID(&opc->term))
                 {
                     conceptProcessID3++;
                     int concept_id_temp3;
@@ -392,7 +392,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         //printf("OK j=%d wasProcessed=%d, term: ", j, (int) wasProcessed3); Narsese_PrintTerm(&opc->term); puts("");
                         //fputs("POT OPC ", stdout); Narsese_PrintTerm(&opc->term); puts("");
                         if(!wasProcessed3 && prec->belief_spike.type != EVENT_TYPE_DELETED && prec->belief_spike.creationTime < currentTime && prec->belief_spike.occurrenceTime < opc->belief_spike.occurrenceTime &&
-                           labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(prec->lastSensorimotorActivation - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE &&
+                           labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(prec->lastSelectionTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE &&
                            !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) &&
                            !Stamp_checkOverlap(&prec->belief_spike.stamp, &postcondition.stamp) && !Memory_getOperationID(&prec->term))
                         {
@@ -432,7 +432,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 bool wasProcessed = c->processID2 == conceptProcessID2;
                 c->processID2 = conceptProcessID2;
                 if(!wasProcessed && c->belief_spike.type != EVENT_TYPE_DELETED && c->belief_spike.creationTime < currentTime && 
-                   labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSensorimotorActivation - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF &&
+                   labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSelectionTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF &&
                    c->belief_spike.occurrenceTime < postcondition.occurrenceTime && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
                 {
                     int op_id2 = Memory_getOperationID(&c->belief_spike.term);
