@@ -132,7 +132,7 @@ void Decision_Execute(Decision *decision)
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
             {
                 Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
-                Concept *postc = Memory_Conceptualize(&postcondition, currentTime, false);
+                Concept *postc = Memory_Conceptualize(&postcondition, currentTime);
                 if(postc != NULL)
                 {
                     Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID[i], postc);
@@ -415,7 +415,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             result.term = Variable_ApplySubstitute(result.term, subs, &success2);
                             if(success2)
                             {
-                                Concept *c = Memory_Conceptualize(&result.term, currentTime, false);
+                                Concept *c = Memory_Conceptualize(&result.term, currentTime);
                                 if(c != NULL)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
