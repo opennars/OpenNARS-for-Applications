@@ -126,32 +126,28 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 
 //Search for variables which appear twice extensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure, bool VarIntroInList)
+static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure)
 {
     bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], SIMILARITY);
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
     {
         Term subject = Term_ExtractSubterm(cur_inheritance, 1);
         Term predicate = Term_ExtractSubterm(cur_inheritance, 2);
-        if(RESTRICT_VAR_INTRO_IN_LISTS && !VarIntroInList && (Narsese_copulaEquals(subject.atoms[0], SET_ELEMT) || Narsese_copulaEquals(predicate.atoms[0], SET_ELEMT)))
-        {
-            return;
-        }
         if(extensionally || similarity)
         {
             if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
                 Term relation = Term_ExtractSubterm(&subject, 1);
-                countStatementAtoms(&relation, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&relation, appearing, extensionally, true);
             }
             else
             {
-                countStatementAtoms(&subject, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&subject, appearing, extensionally, true);
             }
             if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
                 Term potential_image = Term_ExtractSubterm(&predicate, 2);
-                countStatementAtoms(&potential_image, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&potential_image, appearing, extensionally, true);
             }
         }
         if(!extensionally || similarity)
@@ -159,16 +155,16 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
             if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
                 Term relation = Term_ExtractSubterm(&predicate, 1);
-                countStatementAtoms(&relation, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&relation, appearing, extensionally, true);
             }
             else
             {
-                countStatementAtoms(&predicate, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&predicate, appearing, extensionally, true);
             }
             if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
                 Term argument = Term_ExtractSubterm(&subject, 2);
-                countStatementAtoms(&argument, appearing, extensionally, true, VarIntroInList);
+                countStatementAtoms(&argument, appearing, extensionally, true);
             }
         }
     }
@@ -198,12 +194,12 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
     }
 }
 
-static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, bool extensionally, bool VarIntroInList)
+static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, bool extensionally)
 {
     if(Narsese_copulaEquals(term->atoms[0], NEGATION))
     {
         Term substatement = Term_ExtractSubterm(term, 1);
-        countHigherOrderStatementAtoms(&substatement, appearing, extensionally, VarIntroInList);
+        countHigherOrderStatementAtoms(&substatement, appearing, extensionally);
         return;
     }
     else
@@ -212,11 +208,11 @@ static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, boo
     {
         Term subject = Term_ExtractSubterm(term, 1);
         Term predicate = Term_ExtractSubterm(term, 2);
-        countHigherOrderStatementAtoms(&subject, appearing, extensionally, VarIntroInList || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
-        countHigherOrderStatementAtoms(&predicate, appearing, extensionally, VarIntroInList || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
+        countHigherOrderStatementAtoms(&subject, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
+        countHigherOrderStatementAtoms(&predicate, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
         return;
     }
-    countStatementAtoms(term, appearing, extensionally, false, VarIntroInList);
+    countStatementAtoms(term, appearing, extensionally, false);
 }
 
 static bool Atom_Equal(void *a, void *b)
@@ -270,10 +266,10 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
     HashTable_INIT(&HT_appearing_opseq, HT_appearing_opseq_storage, HT_appearing_opseq_storageptrs, HT_appearing_opseq_HT, VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
     if(extensionally && Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, &left_side))
     {
-        countHigherOrderStatementAtoms(&left_side, &HT_appearing_opseq, extensionally, false);
+        countHigherOrderStatementAtoms(&left_side, &HT_appearing_opseq, extensionally);
     }
-    countHigherOrderStatementAtoms(&left_side,  &HT_appearing_left,  extensionally, false);
-    countHigherOrderStatementAtoms(&right_side, &HT_appearing_right, extensionally, false);
+    countHigherOrderStatementAtoms(&left_side,  &HT_appearing_left,  extensionally);
+    countHigherOrderStatementAtoms(&right_side, &HT_appearing_right, extensionally);
     char depvar_i = newVarID(&implication, false);
     char indepvar_i = newVarID(&implication, true);
     if(!depvar_i || !indepvar_i)
@@ -352,7 +348,7 @@ Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, boo
     HashTable_INIT(&HT_appearing_left, HT_appearing_left_storage, HT_appearing_left_storageptrs, HT_appearing_left_HT, VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
     HashTable_INIT(&HT_variable_id,  HT_variable_id_storage, HT_variable_id_storageptrs,  HT_variable_id_HT,  VAR_INTRO_HASHTABLE_BUCKETS, COMPOUND_TERM_SIZE_MAX, (Equal) Atom_Equal, (Hash) Atom_Hash);
     Term left_side = conjunction;
-    countHigherOrderStatementAtoms(&left_side, &HT_appearing_left, extensionally, false);
+    countHigherOrderStatementAtoms(&left_side, &HT_appearing_left, extensionally);
     char depvar_i = newVarID(&conjunction, false);
     if(!depvar_i)
     {
