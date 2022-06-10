@@ -112,6 +112,7 @@ void Process_Args(int argc, char *argv[])
     }
     if(inspectionOnExit)
     {
+        Shell_ProcessInput("*opconfig");
         Shell_ProcessInput("*concepts");
         Shell_ProcessInput("*cycling_belief_events");
         Shell_ProcessInput("*cycling_goal_events");

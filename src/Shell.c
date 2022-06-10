@@ -112,9 +112,11 @@ int Shell_ProcessInput(char *line)
             InvertedAtomIndex_Print();
         }
         else
-        if(!strcmp(line,"*concepts"))
+        if(!strcmp(line,"*opconfig"))
         {
-            puts("//*concepts");
+            puts("//*opconfig");
+            printf("*motorbabbling=%f\n", MOTOR_BABBLING_CHANCE);
+            printf("*babblingops=%d\n", BABBLING_OPS);
             for(int opi=0; opi<OPERATIONS_MAX; opi++)
             {
                 if(operations[opi].term.atoms[0])
@@ -123,7 +125,21 @@ int Shell_ProcessInput(char *line)
                     Narsese_PrintTerm(&operations[opi].term);
                     puts("");
                 }
+                for(int oparg=0; oparg<OPERATIONS_BABBLE_ARGS_MAX; oparg++)
+                {
+                    if(operations[opi].arguments[oparg].atoms[0])
+                    {
+                        printf("*setoparg %d %d ", opi+1, oparg+1);
+                        Narsese_PrintTerm(&operations[opi].arguments[oparg]);
+                        puts("");
+                    }
+                }
             }
+        }
+        else
+        if(!strcmp(line,"*concepts"))
+        {
+            puts("//*concepts");
             for(int i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
