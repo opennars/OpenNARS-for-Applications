@@ -36,7 +36,7 @@ static long conceptProcessID3 = 0; //avoids duplicate concept processing
         while(chain != NULL) \
         { \
             Concept *CONCEPT = chain->c; \
-            chain = chain->next; \
+            chain = (ConceptChainElement*) chain->next; \
             if(CONCEPT != NULL && CONCEPT->processID != conceptProcessID) \
             { \
                 CONCEPT->processID = conceptProcessID; \
@@ -373,7 +373,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             concept_id_temp = concept_id;
             for(int j=0; !op_id && j<concepts.itemsAmount; j++) //search for op
             {
-                Concept *opc = concepts.items[j].address;
+                Concept *opc = (Concept*) concepts.items[j].address;
                 long opc_id = opc->id;
                 bool wasProcessed2 = opc->processID2 == conceptProcessID2;
                 opc->processID2 = conceptProcessID2;
@@ -386,7 +386,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     concept_id_temp3 = concept_id;
                     for(int i=0; opc_id == opc->id  && i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
                     {
-                        Concept *prec = concepts.items[i].address;
+                        Concept *prec = (Concept*) concepts.items[i].address;
                         bool wasProcessed3 = prec->processID3 == conceptProcessID3;
                         prec->processID3 = conceptProcessID3;
                         //printf("OK j=%d wasProcessed=%d, term: ", j, (int) wasProcessed3); Narsese_PrintTerm(&opc->term); puts("");
@@ -428,7 +428,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             concept_id_temp2 = concept_id;
             for(int i=0; i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
             {
-                Concept *c = concepts.items[i].address;
+                Concept *c = (Concept*) concepts.items[i].address;
                 bool wasProcessed = c->processID2 == conceptProcessID2;
                 c->processID2 = conceptProcessID2;
                 if(!wasProcessed && c->belief_spike.type != EVENT_TYPE_DELETED && c->belief_spike.creationTime < currentTime && 
@@ -676,7 +676,7 @@ void Cycle_RelativeForgetting(long currentTime)
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }

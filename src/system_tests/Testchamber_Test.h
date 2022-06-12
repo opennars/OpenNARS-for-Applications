@@ -30,49 +30,49 @@ static bool goto_l0 = false;
 static bool goto_l1 = false;
 static bool activate = false;
 static bool deactivate = false;
-Feedback NAR_TestChamber_goto_s0()
+Feedback NAR_TestChamber_goto_s0(Term args)
 {
     goto_s0 = true;
     puts("NAR goto s0");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_goto_s1()
+Feedback NAR_TestChamber_goto_s1(Term args)
 {
     goto_s1 = true;
     puts("NAR goto s1");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_goto_s2()
+Feedback NAR_TestChamber_goto_s2(Term args)
 {
     goto_s2 = true;
     puts("NAR goto s2");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_goto_s3()
+Feedback NAR_TestChamber_goto_s3(Term args)
 {
     goto_s3 = true;
     puts("NAR goto s3");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_goto_l0()
+Feedback NAR_TestChamber_goto_l0(Term args)
 {
     goto_l0 = true;
     puts("NAR goto l0");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_goto_l1()
+Feedback NAR_TestChamber_goto_l1(Term args)
 {
     goto_l1 = true;
     puts("NAR goto l1");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_activate()
+Feedback NAR_TestChamber_activate(Term args)
 {
     activate = true;
     puts("NAR activate");
     return (Feedback) {0};
 }
-Feedback NAR_TestChamber_deactivate()
+Feedback NAR_TestChamber_deactivate(Term args)
 {
     deactivate = true;
     puts("NAR deactivate");
@@ -94,7 +94,7 @@ void NAR_TestChamber()
     int reached = 0;
     //world:
     int size = 7;
-    char world[7][13] = { "_________    ",
+    char world[7][14] = { "_________    ",
                           "| l0  s2| s1 ",
                           "| (0)-0 |-0  ",
                           "|_______|    ",

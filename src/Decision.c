@@ -194,7 +194,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
         puts("");
     )
     //now look at how much the precondition is fulfilled
-    Concept *prec = imp->sourceConcept;
+    Concept *prec = (Concept*) imp->sourceConcept;
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
@@ -275,7 +275,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
-                        Concept *cmatch = concepts.items[cmatch_k].address;
+                        Concept *cmatch = (Concept*) concepts.items[cmatch_k].address;
                         if(!Variable_hasVariable(&cmatch->term, true, true, true))
                         {
                             Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
@@ -358,7 +358,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
     {
-        Concept *postc = concepts.items[j].address;
+        Concept *postc = (Concept*) concepts.items[j].address;
         Implication valid_implications[TABLE_SIZE] = {0};
         int k;
         for(k=0; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
@@ -375,7 +375,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
         for(int h=0; h<k; h++)
         {
             Implication imp = valid_implications[h]; //(&/,a,op) =/> b.
-            Concept *current_prec = imp.sourceConcept;
+            Concept *current_prec = (Concept*) imp.sourceConcept;
             Event *precondition = &current_prec->belief_spike;
             if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
             {

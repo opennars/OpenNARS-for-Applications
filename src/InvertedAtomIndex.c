@@ -54,7 +54,7 @@ void InvertedAtomIndex_AddConcept(Term term, Concept *c)
             ConceptChainElement *elem = invertedAtomIndex[atom];
             if(elem == NULL)
             {
-                ConceptChainElement *newElem = Stack_Pop(&conceptChainElementStack); //new item
+                ConceptChainElement *newElem = (ConceptChainElement*) Stack_Pop(&conceptChainElementStack); //new item
                 newElem->c = c;
                 invertedAtomIndex[atom] = newElem;
             }
@@ -69,10 +69,10 @@ void InvertedAtomIndex_AddConcept(Term term, Concept *c)
                         goto NEXT_ATOM;
                     }
                     previous = elem;
-                    elem = elem->next;
+                    elem = (ConceptChainElement*) elem->next;
                 }
                 //ok, we can add it as previous->next
-                ConceptChainElement *newElem = Stack_Pop(&conceptChainElementStack); //new item
+                ConceptChainElement *newElem = (ConceptChainElement*) Stack_Pop(&conceptChainElementStack); //new item
                 newElem->c = c;
                 previous->next = newElem;
             }
@@ -96,7 +96,7 @@ void InvertedAtomIndex_RemoveConcept(Term term, Concept *c)
                 {
                     if(previous == NULL) //item was the initial chain element, let the next element be the initial now
                     {
-                        invertedAtomIndex[atom] = elem->next;
+                        invertedAtomIndex[atom] = (ConceptChainElement*) elem->next;
                     }
                     else //item was within the chain, relink the previous to the next of elem
                     {
@@ -110,7 +110,7 @@ void InvertedAtomIndex_RemoveConcept(Term term, Concept *c)
                     goto NEXT_ATOM;
                 }
                 previous = elem;
-                elem = elem->next;
+                elem = (ConceptChainElement*) elem->next;
             }
         }
         NEXT_ATOM:;
@@ -134,7 +134,7 @@ void InvertedAtomIndex_Print()
                 fputs(" -> ", stdout);
                 Narsese_PrintTerm(&c->term);
                 puts("");
-                elem = elem->next;
+                elem = (ConceptChainElement*) elem->next;
             }
         }
     }

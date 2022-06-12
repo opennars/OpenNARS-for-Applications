@@ -36,15 +36,15 @@ void Stack_Test()
     assert(stack.stackpointer == 1, "Stackpointer wasn't incremented");
     assert(((VMItem**)stack.items)[0]->value == &c1, "Item should point to c1");
     assert(!Stack_IsEmpty(&stack), "Stack should not be empty");
-    VMItem *item1_popped = Stack_Pop(&stack);
+    VMItem *item1_popped = (VMItem*) Stack_Pop(&stack);
     assert(stack.stackpointer == 0, "Stackpointer wasn't decremented");
     assert(item1_popped->value == &c1, "Popped item1 should point to c1 (1)");
     Stack_Push(&stack, &item1);
     Stack_Push(&stack, &item2);
     assert(stack.stackpointer == 2, "Stackpointer wrong");
-    VMItem *item2_popped = Stack_Pop(&stack);
+    VMItem *item2_popped = (VMItem*) Stack_Pop(&stack);
     assert(item2_popped->value == &c2, "Popped item2 should point to c2");
-    VMItem *item1_popped_again = Stack_Pop(&stack);
+    VMItem *item1_popped_again = (VMItem*) Stack_Pop(&stack);
     assert(item1_popped_again->value == &c1, "Popped item1 should point to c1 (2)");
     assert(Stack_IsEmpty(&stack), "Stack should be empty");
     puts(">>Stack test successul");

@@ -98,7 +98,7 @@ void Memory_INIT()
 
 Concept *Memory_FindConceptByTerm(Term *term)
 {
-    return HashTable_Get(&HTconcepts, term);
+    return (Concept*) HashTable_Get(&HTconcepts, term);
 }
 
 Concept* Memory_Conceptualize(Term *term, long currentTime)
@@ -111,7 +111,7 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
         PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(&concepts, 1);
         if(feedback.added)
         {
-            recycleConcept = feedback.addedItem.address;
+            recycleConcept = (Concept*) feedback.addedItem.address;
             //if something was evicted in the adding process delete from hashmap first
             if(feedback.evicted)
             {
@@ -154,7 +154,7 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 {
     for(int i=0; i<queue->itemsAmount; i++)
     {
-        if(Event_Equal(event, queue->items[i].address))
+        if(Event_Equal(event, (Event*) queue->items[i].address))
         {
             return true;
         }
@@ -222,7 +222,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int lay
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
-        Event *toRecyle = feedback.addedItem.address;
+        Event *toRecyle = (Event*) feedback.addedItem.address;
         *toRecyle = *e;
         return true;
     }

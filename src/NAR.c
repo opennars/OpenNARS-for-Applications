@@ -123,7 +123,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         fflush(stdout);
         for(int i=0; i<concepts.itemsAmount; i++)
         {
-            Concept *c = concepts.items[i].address;
+            Concept *c = (Concept*) concepts.items[i].address;
             //compare the predicate of implication, or if it's not an implication, the term
             Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
             if(!Variable_Unify2(&toCompare, &c->term, true).success)
