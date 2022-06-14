@@ -287,11 +287,6 @@ static bool InvalidSetOp(Term *conclusionTerm, Truth conclusionTruth) //to be re
 {
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE))
     {
-        //extensional or intensional difference with freq 0
-        if((Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE) || Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE)) && conclusionTruth.frequency == 0.0)
-        {
-            return true;
-        }
         //extensional intersection between extensional sets
         if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) && Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
         {
