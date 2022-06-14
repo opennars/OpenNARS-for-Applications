@@ -80,6 +80,8 @@ R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (S <-> M), |-, (S --> P), Truth_Analogy )
 R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
+R2( S, (S <-> P), |-, P, Truth_Analogy )
+R2( S, (P <-> S), |-, P, Truth_Analogy )
 //!Dealing with properties and instances:
 R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
 R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralDeduction )
