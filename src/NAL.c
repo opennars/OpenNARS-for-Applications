@@ -283,29 +283,24 @@ static bool NAL_JunctionNotRightNested(Term *conclusionTerm)
     return false;
 }
 
-static bool EmptySetOp(Term *conclusionTerm, Truth conclusionTruth) //to be refined, with atom appears twice restriction for now it's fine
+static bool InvalidSetOp(Term *conclusionTerm, Truth conclusionTruth) //to be refined, with atom appears twice restriction for now it's fine
 {
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE))
     {
-        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE))
+        //extensional or intensional difference with freq 0
+        if((Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE) || Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE)) && conclusionTruth.frequency == 0.0)
         {
-            if(Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
-            {
-                if(!Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE) || conclusionTruth.frequency == 0.0)
-                {
-                    return true;
-                }
-            }
+            return true;
         }
-        if(Narsese_copulaEquals(conclusionTerm->atoms[2], INT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE))
+        //extensional intersection between extensional sets
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) && Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
         {
-            if(Narsese_copulaEquals(conclusionTerm->atoms[5], INT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[6], INT_SET))
-            {
-                if(!Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE) || conclusionTruth.frequency == 0.0)
-                {
-                    return true;
-                }
-            }
+            return true;
+        }
+        //intensional intersection between intensional sets
+        if(Narsese_copulaEquals(conclusionTerm->atoms[2], INT_INTERSECTION) && Narsese_copulaEquals(conclusionTerm->atoms[5], INT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[6], INT_SET))
+        {
+            return true;
         }
     }
     return false;
@@ -436,7 +431,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm, conclusionTruth) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm) && !DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&conclusionTerm, false))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !InvalidSetOp(&conclusionTerm, conclusionTruth) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm) && !DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&conclusionTerm, false))
             {
                 Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, 0);
             }
