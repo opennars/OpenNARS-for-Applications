@@ -287,7 +287,7 @@ static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears 
 {
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE))
     {
-        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE))
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION))
         {
             if(Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
             {
