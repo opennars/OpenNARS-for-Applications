@@ -16,7 +16,7 @@
 <{ocean1} --> [green]>. %0.1%
 
 10
-//What is greener than ocean1?
-<(?1 ~ {ocean1}) --> [green]>?
-//Plants are greener than ocean1:
+//Plants are greener than what?
+<(plant ~ {?what}) --> [green]>?
+//Plants are greaner than ocean1
 //expected: Answer: <(plant ~ {ocean1}) --> [green]>. Truth: frequency=0.675000, confidence=0.556489
