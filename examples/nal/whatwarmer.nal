@@ -1,0 +1,13 @@
+*volume=0
+<a --> [warm]>. :|: %0.8%
+<b --> [warm]>. :|: %0.3%
+
+//What is warmer than what else?
+<(?1 ~ ?2) --> [warm]>? :|:
+//a is warmer than b:
+//expected: Answer: <(a ~ b) --> [warm]>. :|: occurrenceTime=2 Truth: frequency=0.560000, confidence=0.648000
+
+^pick. :|:
+G. :|:
+<(<(a ~ b) --> [warm]> &/ ^pick) =/> G>?
+//expected: Answer: <(<(a ~ b) --> [warm]> &/ ^pick) =/> G>. Truth: frequency=1.000000, confidence=0.097031
