@@ -370,7 +370,7 @@ void Narsese_Sentence(char *narsese, Term *destTerm, char *punctuation, int *ten
     assert(initialized, "Narsese not initialized, call Narsese_INIT first!");
     //Handle optional dt=num at beginning of line
     *occurrenceTimeOffset = 0.0;
-    char dt[10];
+    char dt[30];
     if(narsese[0] == 'd' && narsese[1] == 't'  && narsese[2] == '=') //dt=
     {
         for(unsigned int i=0; i<strlen(narsese); i++)
