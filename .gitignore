@@ -6,3 +6,7 @@ NAR.dll
 src/RuleTable.c
 .envrc
 NAR.dSYM/
+
+# For Clangd
+.cache/
+compile_commands.json
