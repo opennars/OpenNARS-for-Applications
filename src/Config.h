@@ -106,8 +106,6 @@
 #define OPERATIONS_BABBLE_ARGS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
-//Maximum event FIFO size
-#define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum compound term size
