@@ -58,7 +58,7 @@ while True:
                 break
     NAR.AddInput(state(position) + ". :|:")
     executions = NAR.AddInput(state(goal) + "! :|:")["executions"]
-    for i in range(5):
+    for i in range(10):
         executions += NAR.AddInput("1", Print=False)["executions"]
     oldPos = position
     op = execute(executions)
