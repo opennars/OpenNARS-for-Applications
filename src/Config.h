@@ -99,7 +99,7 @@
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
-#define CYCLING_GOAL_EVENTS_MAX 40
+#define CYCLING_GOAL_EVENTS_MAX 400
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum amount of arguments an operation can babble
@@ -121,7 +121,7 @@
 //Maximum size of Narsese input in terms of characters
 #define NARSESE_LEN_MAX 256
 //Goal events queue derivation depth layers
-#define CYCLING_GOAL_EVENTS_LAYERS 5
+#define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
 
