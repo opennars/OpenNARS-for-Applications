@@ -39,7 +39,7 @@ def execute(executions):
             position = lastposition
         return execution["operator"]
 
-field = [[' ' for x in range(SX)] for y in range(SY)]
+field = [['  ' for x in range(SX)] for y in range(SY)]
 k = 0
 
 def checkAnswer(answers, solution):
@@ -58,22 +58,32 @@ while True:
                 break
     NAR.AddInput(state(position) + ". :|:")
     executions = NAR.AddInput(state(goal) + "! :|:")["executions"]
-    for i in range(10):
+    for i in range(5):
         executions += NAR.AddInput("1", Print=False)["executions"]
     oldPos = position
     op = execute(executions)
     if op != None:
        contingency(oldPos, op, position)
-    #print("cur state " + str(position) + " goal " + str(goal))
-    print("\033[1;1H\033[2J")
+    print("\033[1;1H\033[2J") #clear screen
+    #prepare grid:
     curfield = copy.deepcopy(field)
-    curfield[position[0]][position[1]] = "X"
-    curfield[goal[0]][goal[1]] = "G"
+    curfield[position[0]][position[1]] = "X."
+    curfield[goal[0]][goal[1]] = "G!"
     for (x, y) in unreachables:
-        curfield[x][y] = "#"
-    for x in range(SY):
-        print(curfield[x])
+        curfield[x][y] = "##"
+    #draw grid:
+    for x in range(SX+2):
+        print("##", end="")
     print()
+    for x in range(SY):
+        print("##", end="")
+        for y in curfield[x]:
+            print(y, end="")
+        print("##")
+    for x in range(SX+2):
+        print("##", end="")
+    print()
+    #check knowledge:
     x = position[0]
     y = position[1]
     cur = (x, y)
@@ -85,13 +95,13 @@ while True:
     right_statement, right_answer = contingency(right, "^left", cur)
     up_statement, up_answer = contingency(up, "^down", cur)
     down_statement, down_answer = contingency(down, "^up", cur)
-    if x > 0:
+    if x > 0 and not (x-1, y) in unreachables:
         print("left: " + checkAnswer(NAR.AddInput(left_statement, Print=False)["answers"], left_answer))
-    if x < SX-1:
+    if x < SX-1 and not (x+1, y) in unreachables:
         print("right: " + checkAnswer(NAR.AddInput(right_statement, Print=False)["answers"], right_answer))
-    if y > 0:
+    if y > 0 and not (x, y-1) in unreachables:
         print("up: " + checkAnswer(NAR.AddInput(down_statement, Print=False)["answers"], down_answer))
-    if y < SY-1:
+    if y < SY-1 and not (x, y+1) in unreachables:
         print("down: " + checkAnswer(NAR.AddInput(up_statement, Print=False)["answers"], up_answer))
     sys.stdout.flush()
     time.sleep(0.05)

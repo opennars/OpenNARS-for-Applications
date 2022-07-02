@@ -59,24 +59,34 @@ def execute(executions):
     if position in unreachables:
         position = lastposition
 
-field = [[' ' for x in range(SX)] for y in range(SY)]
+field = [['  ' for x in range(SX)] for y in range(SY)]
 
 while True:
     if position == goal:
         break
     NAR.AddInput(state(position) + ". :|:")
     executions = NAR.AddInput(state(goal) + "! :|:")["executions"]
-    for i in range(10):
+    for i in range(5):
         executions += NAR.AddInput("1", Print=False)["executions"]
     execute(executions)
-    print("\033[1;1H\033[2J")
+    print("\033[1;1H\033[2J") #clear screen
+    #prepare grid:
     curfield = copy.deepcopy(field)
-    curfield[position[0]][position[1]] = "X"
-    curfield[goal[0]][goal[1]] = "G"
+    curfield[position[0]][position[1]] = "X "
+    curfield[goal[0]][goal[1]] = "G "
     for (x, y) in unreachables:
-        curfield[x][y] = "#"
+        curfield[x][y] = "##"
+    #draw grid:
+    for x in range(SX+2):
+        print("##", end="")
+    print()
     for x in range(SY):
-        print(curfield[x])
+        print("##", end="")
+        for y in curfield[x]:
+            print(y, end="")
+        print("##")
+    for x in range(SX+2):
+        print("##", end="")
     print()
     sys.stdout.flush()
     time.sleep(0.1)
