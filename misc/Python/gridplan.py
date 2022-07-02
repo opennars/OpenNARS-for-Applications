@@ -79,4 +79,4 @@ while True:
         print(curfield[x])
     print()
     sys.stdout.flush()
-    time.sleep(0.2)
+    time.sleep(0.1)

@@ -35,9 +35,9 @@ def execute(executions):
         if execution["operator"] == "^down":
             position = (position[0], max(0, position[1] - 1))
             print("^down")
+        if position in unreachables:
+            position = lastposition
         return execution["operator"]
-    if position in unreachables:
-        position = lastposition
 
 field = [[' ' for x in range(SX)] for y in range(SY)]
 k = 0
@@ -94,5 +94,5 @@ while True:
     if y < SY-1:
         print("down: " + checkAnswer(NAR.AddInput(up_statement, Print=False)["answers"], up_answer))
     sys.stdout.flush()
-    time.sleep(0.2)
+    time.sleep(0.05)
     
