@@ -220,6 +220,12 @@ R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B
 //!Variable elimination in Cycle_SpecialInferences
 #endif
 
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7
+R1( (A &| B), |-, A, Truth_StructuralDeduction )
+R1( (A &| B), |-, B, Truth_StructuralDeduction )
+R1( (A &| B), |-, (B &| A), Truth_StructuralDeduction )
+#endif
+
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
 
 #endif
@@ -231,6 +237,7 @@ R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
+ReduceStatement( (A &| A), A )
 //!Extensional set reductions:
 ReduceTerm( ({A} | {B}), {A B} )
 ReduceTerm( ({A B} | {C}), {(A . B) C} )

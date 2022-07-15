@@ -89,6 +89,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
+            if(narsese[i] == '&' && narsese[i+1] == '|') // &| becomes ,
+            {
+                narsese_replaced[j] = ',';
+                i+=2; j++;
+            }
+            else
             if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
             {
                 narsese_replaced[j] = ';';
@@ -482,6 +488,11 @@ void Narsese_PrintAtom(Atom atom)
         if(Narsese_copulaEquals(atom, SEQUENCE))
         {
             fputs("&/", stdout);
+        }
+        else
+        if(Narsese_copulaEquals(atom, PARALLEL_CONJUNCTION))
+        {
+            fputs("&|", stdout);
         }
         else
         if(Narsese_copulaEquals(atom, IMPLICATION))
