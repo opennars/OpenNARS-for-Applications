@@ -50,9 +50,9 @@ if not SkipFolderSetup:
         os.system("git checkout " + b)
         os.chdir(scriptroot)
 examples = ["pong", "pong2", "alien", "cartpole", "robot", "gym_minigrid_ona.py"]
-steps = [10000, 10000, 10000, 10000, 1500]
+steps = [10000, 10000, 10000, 10000, 1500, 100]
 successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten", "successes"]
-seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876] 
+seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876]
 #alternatively, but it won't produce reproducible plots:
 #seeds=[random.randint(0,100000) for i in range(10)]
 
@@ -82,10 +82,11 @@ def ctests(branch, example, steps, seed, successCriteria):
 def pytests(branch, example, steps, seed, successCriteria):
     folder = "./" + branch + "/OpenNARS-for-Applications/"
     print("sh " + folder + "build.sh -DSEED="+str(seed))
+    os.system("cd " + folder)
     basePath = Path.cwd()
     os.chdir(folder)
     os.system("sh ./build.sh -DSEED="+str(seed))
-    os.chdir(folder + "/misc/Python/")
+    os.chdir("./misc/Python/")
     binAndArgs = "python3 " + example + " " + str(steps)
     filename = example + "_" + branch + "_" + str(seed) + ".txt"
     result = run(binAndArgs.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)

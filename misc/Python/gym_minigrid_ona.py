@@ -1,6 +1,13 @@
 import gym
 import gym_minigrid
 import NAR
+import sys
+
+max_steps = 999999999999999
+try:
+    max_steps = int(sys.argv[1])
+except:
+    None
 
 #Configure NARS:
 NAR.AddInput("*volume=0")
@@ -28,6 +35,7 @@ def observationToEvent(cells, colorBlind=True):
 
 successes = 0
 timestep = 0
+cur_steps = 0
 
 #Similate for 100000 steps:
 k=1
@@ -46,6 +54,7 @@ for i in range(0, 100000):
     if action == 5 and obs["image"][3][5][2] == 0:
         action = default_action
     if action != default_action:
+        cur_steps += 1
         timestep += 1
     obs, reward, done, info = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
@@ -53,7 +62,9 @@ for i in range(0, 100000):
     if reward > 0:
         NAR.AddInput(goal + ". :|:")
         successes += 1
-    if done:
+    elif cur_steps > max_steps:
+        successes += 1 #lift to next level
+    if done or cur_steps > max_steps:
         NAR.AddInput("20") #don't temporally relate observations across reset
         k += 1
         if k == 2:
@@ -77,5 +88,6 @@ for i in range(0, 100000):
         else:
             env.seed(1337+i)
         env.reset()
+        cur_steps = 0
     env.render()
 env.close()
