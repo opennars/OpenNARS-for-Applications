@@ -62,9 +62,5 @@ Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long cu
 Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised);
 //{Event a., Implication <a =/> b>.} |- Event b.  Truth_Deduction
 Event Inference_BeliefDeduction(Event *component, Implication *compound);
-//{Event a., Event <b =/> c>.} |- Implication <a ==> <b =/> c>>.
-Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success);
-//{Event a., Implication <a ==> <b =/> c>>.} |- Event <b =/> c>.
-Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compound);
 
 #endif
