@@ -51,7 +51,7 @@ for i in range(0, 100000):
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
     if not chosenAction:
         action = default_action
-    if action == 5 and obs["image"][3][5][2] == 0:
+    if action == 5 and "obs" in globals() and obs["image"][3][5][2] == 0:
         action = default_action
     if action != default_action:
         cur_steps += 1
