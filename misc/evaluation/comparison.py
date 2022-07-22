@@ -49,15 +49,15 @@ if not SkipFolderSetup:
         os.chdir("./" + b + "/OpenNARS-for-Applications/")
         os.system("git checkout " + b)
         os.chdir(scriptroot)
-examples = ["pong", "pong2", "alien", "cartpole", "robot"]
+examples = ["pong", "pong2", "alien", "cartpole", "robot", "gym_minigrid_ona.py"]
 steps = [10000, 10000, 10000, 10000, 1500]
-successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten"]
+successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten", "successes"]
 seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876] 
 #alternatively, but it won't produce reproducible plots:
 #seeds=[random.randint(0,100000) for i in range(10)]
 
 #NAR C tests & metrics, only print fully output on failure, always print the metrics:
-def ctests(branch, example, steps, seed):
+def ctests(branch, example, steps, seed, successCriteria):
     folder = "./" + branch + "/OpenNARS-for-Applications/"
     print("sh " + folder + "build.sh -DSEED="+str(seed))
     os.system("cd " + folder)
@@ -73,10 +73,33 @@ def ctests(branch, example, steps, seed):
         exit(result.returncode)
     with open(filename, 'w') as f:
         for line in reversed(result.stdout.split("\n")):
-            if "ratio=" in line:
+            if successCriteria+"=" in line:
                 print(line)
                 f.write(line + "\n")
     print("\n" + example + " successful!")
+
+#NAR Py tests & metrics, only print fully output on failure, always print the metrics:
+def pytests(branch, example, steps, seed, successCriteria):
+    folder = "./" + branch + "/OpenNARS-for-Applications/"
+    print("sh " + folder + "build.sh -DSEED="+str(seed))
+    basePath = Path.cwd()
+    os.chdir(folder)
+    os.system("sh ./build.sh -DSEED="+str(seed))
+    os.chdir(folder + "/misc/Python/")
+    binAndArgs = "python3 " + example + " " + str(steps)
+    filename = example + "_" + branch + "_" + str(seed) + ".txt"
+    result = run(binAndArgs.split(" "), stdout=PIPE, stderr=PIPE, universal_newlines=True)
+    if result.returncode != 0:
+        print(result.stdout, result.stderr)
+        exit(result.returncode)
+    os.chdir(basePath)
+    with open(filename, 'w') as f:
+        for line in reversed(result.stdout.split("\n")):
+            if successCriteria+"=" in line:
+                print(line)
+                f.write(line + "\n")
+    print("\n" + example + " successful!")
+    
 
 with open('branches', 'wb') as fp:
     pickle.dump(branches, fp)
@@ -90,5 +113,8 @@ for i in range(len(examples)):
     example = examples[i]
     for seed in seeds:
         for branch in branches:
-            ctests(branch, example, steps[i], str(seed))
+            if example.endswith(".py"):
+                pytests(branch, example, steps[i], str(seed), successCriterias[i])
+            else:
+                ctests(branch, example, steps[i], str(seed), successCriterias[i])
 
