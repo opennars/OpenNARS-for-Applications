@@ -26,6 +26,9 @@ def observationToEvent(cells, colorBlind=True):
     right = stateconcat(cells[2][6])
     return "(( " + right + "r &| " + left + "l ) &| " + forward + "f ). :|:"
 
+successes = 0
+timestep = 0
+
 #Similate for 100000 steps:
 k=1
 for i in range(0, 100000):
@@ -34,6 +37,7 @@ for i in range(0, 100000):
     chosenAction = False
     executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
     executions += NAR.AddInput("5", Print=False)["executions"]
+    print("successes=" + str(successes) + " time="+str(timestep))
     if executions:
         chosenAction = True
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
@@ -41,11 +45,14 @@ for i in range(0, 100000):
         action = default_action
     if action == 5 and obs["image"][3][5][2] == 0:
         action = default_action
+    if action != default_action:
+        timestep += 1
     obs, reward, done, info = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
     if reward > 0:
         NAR.AddInput(goal + ". :|:")
+        successes += 1
     if done:
         NAR.AddInput("20") #don't temporally relate observations across reset
         k += 1
