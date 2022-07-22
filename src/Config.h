@@ -43,7 +43,7 @@
 //Desire expectation needed for executions
 #define DECISION_THRESHOLD_INITIAL 0.501
 //Motor babbling chance
-#define MOTOR_BABBLING_CHANCE_INITIAL 0.2
+#define MOTOR_BABBLING_CHANCE_INITIAL 1.0
 //Decisions above the following threshold will suppress babbling actions
 #define MOTOR_BABBLING_SUPPRESSION_THRESHOLD 0.55
 //Whether temporal non-procedural implications are allowed to derive subgoals
