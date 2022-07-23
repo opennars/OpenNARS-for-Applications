@@ -86,7 +86,7 @@ for i in range(0, 100000):
         env.reset()
     if max_steps == -1:
         env.render()
-while timestep < max_steps:
+while timestep <= max_steps:
     print("successes=" + str(successes) + " time="+str(timestep))
     timestep += 1
 print(timestep, max_steps)
