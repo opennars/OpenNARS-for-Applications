@@ -23,26 +23,29 @@
  */
 
 bool NAR_Pong_Left_executed = false;
-void NAR_Pong_Left()
+Feedback NAR_Pong_Left()
 {
     NAR_Pong_Left_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Pong_Right_executed = false;
-void NAR_Pong_Right()
+Feedback NAR_Pong_Right()
 {
     NAR_Pong_Right_executed = true;
+    return (Feedback) {0};
 }
 bool NAR_Pong_Stop_executed = false;
-void NAR_Pong_Stop()
+Feedback NAR_Pong_Stop()
 {
     NAR_Pong_Stop_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Pong2(long iterations)
 {
     puts(">>NAR Pong start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^stop"), NAR_Pong_Stop); 
+    NAR_AddOperation("^left", NAR_Pong_Left);
+    NAR_AddOperation("^right", NAR_Pong_Right);
+    NAR_AddOperation("^stop", NAR_Pong_Stop);
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -63,7 +66,7 @@ void NAR_Pong2(long iterations)
         }
         //if(t%10000 == 0)
         //    getchar();
-        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        CLEAR_SCREEN;
         for(int i=0; i<batX-batWidth+1; i++)
         {
             fputs(" ", stdout);
@@ -176,8 +179,8 @@ void NAR_Pong2(long iterations)
         printf("Hits=%d misses=%d ratio=%f time=%d\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), t);
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+            SLEEP;
         }
-        //NAR_Cycles(10);
+        NAR_Cycles(5);
     }
 }

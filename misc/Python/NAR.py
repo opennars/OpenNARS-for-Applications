@@ -1,6 +1,7 @@
-import pexpect
-import os.path
-NAR = pexpect.spawn(os.path.join(os.path.dirname(__file__), './../../NAR shell'))
+import sys
+import subprocess
+
+NAR = subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
@@ -35,25 +36,35 @@ def parseReason(sraw):
 def parseExecution(e):
     if "args " not in e:
         return {"operator" : e.split(" ")[0], "arguments" : []}
-    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1][1:-1].split(" * ")[1]}
+    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
 
 def GetRawOutput():
-    NAR.sendline("0")
-    NAR.expect("done with 0 additional inference steps.")
-    return [a.strip().decode("utf-8") for a in NAR.before.split(b'\n')][2:-3]
+    NAR.stdin.write("0\n")
+    NAR.stdin.flush()
+    ret = ""
+    before = []
+    requestOutputArgs = False
+    while "done with 0 additional inference steps." != ret.strip():
+        if ret != "":
+            before.append(ret.strip())
+        if ret.strip() == "//Operation result product expected:":
+            requestOutputArgs = True
+            break
+        ret = NAR.stdout.readline()
+    return before[:-1], requestOutputArgs
 
 def GetOutput():
-    lines = GetRawOutput()
+    lines, requestOutputArgs = GetRawOutput()
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
-    derivations = [parseTask(l.split("Derived: ")[1]) for l in lines if l.startswith('Derived:')]
+    derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised:")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     reason = parseReason("\n".join(lines))
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines)}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines), "requestOutputArgs" : requestOutputArgs}
 
 def GetStats():
 	Stats = {}
-	lines = GetRawOutput()
+	lines, _ = GetRawOutput()
 	for l in lines:
 		if ":" in l:
 		    leftside = l.split(":")[0].replace(" ", "_").strip()
@@ -62,13 +73,15 @@ def GetStats():
 	return Stats
 
 def AddInput(narsese, Print=True):
-    NAR.sendline(narsese)
+    NAR.stdin.write(narsese + '\n')
+    NAR.stdin.flush()
     ReturnStats = narsese == "*stats"
     if ReturnStats:
         return GetStats()
     ret = GetOutput()
     if Print:
         print(ret["raw"])
+        sys.stdout.flush()
     return ret
 
 def Exit():

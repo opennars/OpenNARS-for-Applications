@@ -53,20 +53,24 @@ typedef struct
 {
     double desire;
     bool execute;
-    int operationID;
-    Operation op;
-    Term arguments;
-    bool specialized;
+    int operationID[MAX_COMPOUND_OP_LEN];
+    Operation op[MAX_COMPOUND_OP_LEN];
+    Term arguments[MAX_COMPOUND_OP_LEN];
+    Implication missing_specific_implication;
     Event *reason;
 }Decision;
 
 //Methods//
 //-------//
+//Init module
+void Decision_INIT();
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
-void Decision_Anticipate(int operationID, long currentTime);
+void Decision_Anticipate(int operationID, Term op_term, long currentTime);
 //NAR decision making rule applying when goal is an operation
 Decision Decision_Suggest(Concept *goalconcept, Event *goal, long currentTime);
+//Better decision pair:
+Decision Decision_BetterDecision(Decision best_decision, Decision decision);
 
 #endif

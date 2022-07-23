@@ -23,16 +23,17 @@
  */
 
 bool NAR_Procedure_Test_Op_executed = false;
-void NAR_Procedure_Test_Op()
+Feedback NAR_Procedure_Test_Op()
 {
     puts("op executed by NAR");
     NAR_Procedure_Test_Op_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Procedure_Test()
 {
     NAR_INIT();
     puts(">>NAR Procedure test start");
-    NAR_AddOperation(Narsese_AtomicTerm("^op"), NAR_Procedure_Test_Op); 
+    NAR_AddOperation("^op", NAR_Procedure_Test_Op);
     NAR_AddInputBelief(Narsese_AtomicTerm("a"));
     NAR_Cycles(1);
     puts("---------------");

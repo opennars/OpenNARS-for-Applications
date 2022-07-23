@@ -32,7 +32,6 @@
 
 //References//
 //-----------//
-#include "FIFO.h"
 #include "Table.h"
 #include "Usage.h"
 
@@ -48,8 +47,10 @@ typedef struct {
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX+1];
     double priority;
-    bool hasUserKnowledge;
-    long processID; //avoids duplicate processing
+    long processID;  //avoids duplicate processing
+    long processID2; //avoids duplicate processing
+    long processID3; //avoids duplicate processing
+    long lastSelectionTime;
 } Concept;
 
 //Methods//

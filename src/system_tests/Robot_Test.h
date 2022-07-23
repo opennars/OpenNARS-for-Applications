@@ -37,10 +37,10 @@ char direction = DIRECTION_RIGHT; //right, right down, down, left down, left, le
 bool allowAction = false;
 
 //Angle transition via ^left operator
-void NAR_Robot_Left()
+Feedback NAR_Robot_Left()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_UP;
     else
@@ -65,13 +65,14 @@ void NAR_Robot_Left()
     if(direction == DIRECTION_RIGHT_DOWN)
         direction = DIRECTION_RIGHT;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 //Angle transition via ^right operator
-void NAR_Robot_Right()
+Feedback NAR_Robot_Right()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     if(direction == DIRECTION_RIGHT)
         direction = DIRECTION_RIGHT_DOWN;
     else
@@ -96,6 +97,7 @@ void NAR_Robot_Right()
     if(direction == DIRECTION_RIGHT_UP)
         direction = DIRECTION_RIGHT;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 //The world is composed of worldsizeX * worldsizeY cells
@@ -411,10 +413,10 @@ int eaten = 0;
 int moves = 0;
 
 //Forward move
-void NAR_Robot_Forward()
+Feedback NAR_Robot_Forward()
 {
     if(!allowAction)
-        return;
+        return (Feedback) {0};
     Perception percept = Agent_View();
     //progress movement
     if(pX != percept.forward_pX || pY != percept.forward_pY)
@@ -424,6 +426,7 @@ void NAR_Robot_Forward()
     pX = percept.forward_pX;
     pY = percept.forward_pY;
     allowAction = false;
+    return (Feedback) {0};
 }
 
 void buildRooms()
@@ -505,9 +508,9 @@ void NAR_Robot(long iterations)
 {
     MOTOR_BABBLING_CHANCE = 0.3;
     puts(">>NAR Robot start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Robot_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Robot_Right); 
-    NAR_AddOperation(Narsese_AtomicTerm("^forward"), NAR_Robot_Forward);
+    NAR_AddOperation("^left", NAR_Robot_Left);
+    NAR_AddOperation("^right", NAR_Robot_Right);
+    NAR_AddOperation("^forward", NAR_Robot_Forward);
     buildRooms();
     for(int i=0; i<23; i++) { spawnFood(true); }
     for(int i=0; i<23; i++) { spawnFood(false); }
@@ -525,7 +528,7 @@ void NAR_Robot(long iterations)
         Agent_Invoke();
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 10000000L}}, NULL); //POSIX sleep
+            SLEEP; SLEEP; //POSIX sleep
         }
     }
 }

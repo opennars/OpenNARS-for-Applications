@@ -1,0 +1,9 @@
+<key1 --> key>.
+<(key1 * door1) --> open>.
+2
+<door1 --> door>.
+2
+<<$1 --> door> ==> (<#1 --> key> && <#1 --> (open /1 $1)>)>?
+//expected: Answer: <<$1 --> door> ==> (<#1 --> key> && <#1 --> (open /1 $1)>)>. Truth: frequency=1.000000, confidence=0.396172
+<(<$2 --> door> && <$1 --> key>) ==> <$1 --> (open /1 $2)>>?
+//expected: Answer: <(<$2 --> door> && <$1 --> key>) ==> <$1 --> (open /1 $2)>>. Truth: frequency=1.000000, confidence=0.275083

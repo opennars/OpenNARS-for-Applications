@@ -45,8 +45,10 @@
 #define PRINT_DERIVATIONS_INITIAL false
 //Whether control information should be printed
 #define PRINT_CONTROL_INFO false
+//Whether surprisingness of events should be printed
+#define PRINT_SURPRISE false
 //Priority threshold for printing derivations
-#define PRINT_DERIVATIONS_PRIORITY_THRESHOLD 0.0
+#define PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL 0.0
 //Debug macros, debug printing, assert:
 #define IN_DEBUG(x) {if(DEBUG){ x } }
 //assert, printing message and exiting if b=false
@@ -63,5 +65,8 @@ HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
 int myrand(void);
 void mysrand(unsigned int seed);
 #define MY_RAND_MAX 32767
+//Stringification macro:
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 #endif

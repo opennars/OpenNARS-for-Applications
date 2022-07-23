@@ -1,0 +1,14 @@
+*setopname 1 ^go
+*setopname 2 ^pick
+*motorbabbling=false
+*volume=0
+
+<<$1 --> [unlocked]> ==> <(<$1 --> [centered]> &/ ^go) =/> <$1 --> [open]>>>.
+<<$1 --> [locked]> ==> <(<$1 --> [centered]> &/ ^pick) =/> <$1 --> [open]>>>.
+<door2 --> [unlocked]>.
+1000
+<?1 =/> <?door2 --> [open]>>?
+//expected: Answer: <(<door2 --> [centered]> &/ ^go) =/> <door2 --> [open]>>. Truth: frequency=1.000000, confidence=0.810000
+<door2 --> [centered]>. :|:
+<door2 --> [open]>! :|:
+//expected: ^go executed with args

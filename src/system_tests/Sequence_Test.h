@@ -23,28 +23,31 @@
  */
 
 bool op_1_executed = false;
-void op_1()
+Feedback op_1()
 {
     op_1_executed = true;
+    return (Feedback) {0};
 }
 bool op_2_executed = false;
-void op_2()
+Feedback op_2()
 {
     op_2_executed = true;
+    return (Feedback) {0};
 }
 bool op_3_executed = false;
-void op_3()
+Feedback op_3()
 {
     op_3_executed = true;
+    return (Feedback) {0};
 }
 void NAR_Sequence_Test()
 {
     NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");
-    NAR_AddOperation(Narsese_AtomicTerm("^1"), op_1); 
-    NAR_AddOperation(Narsese_AtomicTerm("^2"), op_2); 
-    NAR_AddOperation(Narsese_AtomicTerm("^3"), op_3); 
+    NAR_AddOperation("^1", op_1);
+    NAR_AddOperation("^2", op_2);
+    NAR_AddOperation("^3", op_3);
     for(int i=0;i<5;i++)
     {
         NAR_AddInputBelief(Narsese_AtomicTerm("a")); //0 2 4 5

@@ -1,7 +1,7 @@
-/* 
+"""
  * The MIT License
  *
- * Copyright 2020 The OpenNARS authors.
+ * Copyright 2022 The OpenNARS authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,45 +20,33 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
+ * """
 
-#ifndef H_FIFO
-#define H_FIFO
+import sys
 
-/////////////////////////////////////
-//  First in first out (forgotten) //
-/////////////////////////////////////
-//A FIFO-like structure for event sequencing, which overwrites
-//the oldest task when full on Add
+OpConfig = []
+Concepts = []
 
-//References//
-//----------//
-#include "Inference.h"
-#include "Globals.h"
-#include "Narsese.h"
-#include "Config.h"
+active = None
+while True:
+    try:
+        s = input().rstrip("\n")
+    except:
+        break
+    if s.strip() == "//*opconfig":
+        active = "//*opconfig"
+        OpConfig = []
+    if s.strip() == "//*concepts":
+        active = "//*concepts"
+        Concepts = []
+    if s.strip() == "//*done":
+        active = None
+    if active == "//*opconfig":
+        OpConfig.append(s)
+    if active == "//*concepts":
+        Concepts.append(s)
 
-//Data structure//
-//--------------//
-typedef struct
-{
-    int itemsAmount;
-    int currentIndex;
-    Event array[MAX_SEQUENCE_LEN][FIFO_SIZE];
-} FIFO;
-typedef struct
-{
-    Event *originalEvent;
-    Event projectedEvent;
-} FIFO_Query_Result;
-
-//Methods//
-//-------//
-//Add an event to the FIFO
-void FIFO_Add(Event *event, FIFO *fifo);
-//Get the newest element
-Event* FIFO_GetNewestSequence(FIFO *fifo, int len);
-//Get the k-th newest FIFO element
-Event* FIFO_GetKthNewestSequence(FIFO *fifo, int k, int len);
-
-#endif
+for s in OpConfig:
+    print(s)
+for s in Concepts:
+    print(s)

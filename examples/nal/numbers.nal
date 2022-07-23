@@ -1,0 +1,23 @@
+*volume=0
+*motorbabbling=false
+//go left if the sourcepos is smaller than the targetpos, else go right
+<(<(sourcepos * targetpos) --> smaller> &/ ^left) =/> G>.
+<(<(targetpos * sourcepos) --> smaller> &/ ^right) =/> G>.
+//introducing numbers as a transitive chain of smaller relations:
+<(<($1 * #1) --> smaller> && <(#1 * $2) --> smaller>) ==> <($1 * $2) --> smaller>>.
+<(1 * 2) --> smaller>.
+<(2 * 3) --> smaller>.
+<(3 * 4) --> smaller>.
+<(1 * 3) --> smaller>?
+//expected: Answer: <(1 * 3) --> smaller>. Truth: frequency=1.000000, confidence=0.729000
+<(2 * 4) --> smaller>?
+//expected: Answer: <(2 * 4) --> smaller>. Truth: frequency=1.000000, confidence=0.729000
+2
+<1 --> sourcepos>. :|:
+<3 --> targetpos>. :|:
+10
+<(sourcepos * targetpos) --> smaller>? :|:
+//expected: Answer: <(sourcepos * targetpos) --> smaller>. :|: occurrenceTime=10 Truth: frequency=1.000000, confidence=0.221937
+G! :|:
+//expected: ^left executed with args
+10

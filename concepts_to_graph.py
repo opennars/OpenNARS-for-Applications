@@ -187,9 +187,12 @@ for edge in G.edges(data=True):
     nx.draw_networkx_edges(G, pos, edgelist=[(edge[0],edge[1])], edge_color=[edge[2]["color"]], width=[edge[2].get("weight", 1.0)], connectionstyle=f'arc3, rad = {edge[2].get("rad", 0.0)}', arrowsize=edge[2].get("arrowsize", 10.0))
 nx.draw_networkx_edge_labels(G, pos, edge_labels = edgelabels, label_pos=0.8, bbox=dict(alpha=0))
 nx.write_graphml(G, "memory.graphml")
+plt.savefig("memory.png")
 plt.show()
+
 
 #Also plot degree distribution:
 degrees = [G.degree(n) for n in G.nodes()]
 plt.hist(degrees)
+plt.savefig("degrees.png")
 plt.show()

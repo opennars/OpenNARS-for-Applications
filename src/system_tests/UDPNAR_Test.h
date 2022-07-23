@@ -25,9 +25,10 @@
 #include "./../NetworkNAR/UDPNAR.h"
 
 bool NAR_UDPNAR_Test_op_left_executed = false;
-void NAR_UDPNAR_Test_op_left()
+Feedback NAR_UDPNAR_Test_op_left()
 {
     NAR_UDPNAR_Test_op_left_executed = true;
+    return (Feedback) {0};
 }
 
 void NAR_UDPNAR_Test()
@@ -37,7 +38,7 @@ void NAR_UDPNAR_Test()
     int port = 50001;
     long timestep = 10000000L; //10ms
     UDPNAR_Start(ip, port, timestep);
-    NAR_AddOperation(Narsese_Term("^left"), NAR_UDPNAR_Test_op_left);
+    NAR_AddOperation("^left", NAR_UDPNAR_Test_op_left);
     int sockfd_sender = UDP_INIT_Sender();
     char *send_data1 = "<(a &/ ^left) =/> g>.";
     UDP_SendData(sockfd_sender, ip, port, send_data1, strlen(send_data1)+1);

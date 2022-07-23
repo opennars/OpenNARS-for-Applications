@@ -43,7 +43,7 @@ extern long currentTime;
 
 //Callback function types//
 //-----------------------//
-//typedef void (*Action)(void);     //already defined in Memory
+//typedef Feedback (*Action)(Term);     //already defined in Memory
 
 //Methods//
 //-------//
@@ -52,11 +52,11 @@ void NAR_INIT();
 //Run the system for a certain amount of cycles
 void NAR_Cycles(int cycles);
 //Add input
-Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset, bool isUserKnowledge);
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset);
 Event NAR_AddInputBelief(Term term);
 Event NAR_AddInputGoal(Term term);
 //Add an operation
-void NAR_AddOperation(Term term, Action procedure);
+void NAR_AddOperation(char *atomname, Action procedure);
 //Add an Narsese sentence:
 void NAR_AddInputNarsese(char *narsese_sentence);
 

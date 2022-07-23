@@ -26,16 +26,20 @@
 
 long currentTime = 1;
 static bool initialized = false;
+static int op_k = 0;
 
 void NAR_INIT()
 {
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
+    Decision_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();
+    Cycle_INIT();
     currentTime = 1; //reset time
     initialized = true;
     QLearner_INIT();
+    op_k = 0;
 }
 
 void NAR_Cycles(int cycles)
@@ -51,7 +55,7 @@ void NAR_Cycles(int cycles)
 
 int state = 0;
 Truth goalTruth[ATOMS_MAX] = {0};
-Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset, bool isUserKnowledge)
+Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occurrenceTimeOffset)
 {
     int state_new = term.atoms[0];
     if(type == EVENT_TYPE_BELIEF)
@@ -96,11 +100,10 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occur
         goalTruth[state_new] = truth;
     }
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    Event ev = Event_InputEvent(term, type, truth, currentTime);
+    Event ev = Event_InputEvent(term, type, truth, occurrenceTimeOffset, currentTime);
     if(eternal)
     {
         ev.occurrenceTime = OCCURRENCE_ETERNAL;
-        ev.isUserKnowledge = isUserKnowledge;
     }
     NAR_Cycles(1);
     return ev;
@@ -108,22 +111,32 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occur
 
 Event NAR_AddInputBelief(Term term)
 {
-    Event ret = NAR_AddInput(term, EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0, false);
+    Event ret = NAR_AddInput(term, EVENT_TYPE_BELIEF, NAR_DEFAULT_TRUTH, false, 0);
     return ret;
 }
 
 Event NAR_AddInputGoal(Term term)
 {
-    return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false, 0, false);
+    return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false, 0);
 }
 
-void NAR_AddOperation(Term term, Action procedure)
+void NAR_AddOperation(char *term_name, Action procedure)
 {
+    assert(procedure != 0, "Cannot add an operation with null-procedure");
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    char* term_name = Narsese_atomNames[(int) term.atoms[0]-1];
+    Term term = Narsese_AtomicTerm(term_name);
     assert(term_name[0] == '^', "This atom does not belong to an operator!");
-    assert(Narsese_OperatorIndex(term_name) <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
-    operations[Narsese_OperatorIndex(term_name) - 1] = (Operation) { .term = term, .action = procedure };
+    //check if term already exists
+    int existing_k = Memory_getOperationID(&term);
+    //use the running k if not existing yet
+    int use_k = existing_k == 0 ? op_k+1 : existing_k;
+    //if it wasn't existing, also increase the running k and check if it's still in bounds
+    assert(use_k <= OPERATIONS_MAX, "Too many operators, increase OPERATIONS_MAX!");
+    if(existing_k == 0)
+    {
+        op_k++;
+    }
+    operations[use_k-1] = (Operation) { .term = term, .action = procedure };
 }
 
 void NAR_AddInputNarsese(char *narsese_sentence)
@@ -132,12 +145,11 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     Truth tv;
     char punctuation;
     int tense;
-    bool isUserKnowledge;
     double occurrenceTimeOffset;
-    Narsese_Sentence(narsese_sentence, &term, &punctuation, &tense, &isUserKnowledge, &tv, &occurrenceTimeOffset);
+    Narsese_Sentence(narsese_sentence, &term, &punctuation, &tense, &tv, &occurrenceTimeOffset);
 #if STAGE==2
     //apply reduction rules to term:
-    term = RuleTable_Reduce(term, false);
+    term = RuleTable_Reduce(term);
 #endif    
     if(punctuation == '?')
     {
@@ -147,7 +159,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         Term best_term = {0};
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
-        bool isImplication = Narsese_copulaEquals(term.atoms[0], '$');
+        bool isImplication = Narsese_copulaEquals(term.atoms[0], TEMPORAL_IMPLICATION);
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
@@ -188,7 +200,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->belief_spike.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 2))
                 {
                     Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
-                    if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->belief_spike.occurrenceTime > answerOccurrenceTime))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->belief_spike.truth;
@@ -200,7 +213,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 if(c->predicted_belief.type != EVENT_TYPE_DELETED && (tense == 1 || tense == 3))
                 {
                     Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
-                    if(Truth_Expectation(potential_best_truth) >= Truth_Expectation(best_truth_projected))
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                       (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->predicted_belief.occurrenceTime > answerOccurrenceTime))
                     {
                         best_truth_projected = potential_best_truth;
                         best_truth = c->predicted_belief.truth;
@@ -252,7 +266,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
         else
         {
             assert(punctuation != '.' || tense < 2, "Future and past belief events are not supported!\n");
-            NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !tense, occurrenceTimeOffset, isUserKnowledge);
+            NAR_AddInput(term, punctuation == '!' ? EVENT_TYPE_GOAL : EVENT_TYPE_BELIEF, tv, !tense, occurrenceTimeOffset);
         }
     }
 }

@@ -1,0 +1,7 @@
+<duck --> [yellow]>.
+10
+<seenThing --> [yellow]>. :|:
+^pick. :|:
+G. :|:
+<(<seenThing --> duck> &/ ^pick) =/> G>?
+//expected: Answer: <(<seenThing --> duck> &/ ^pick) =/> G>. Truth: frequency=1.000000, confidence=0.15846

@@ -46,12 +46,17 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value)
     bool empty = item == NULL;
     if(!empty)
     {
-        for(; item->next!=NULL; item=item->next)
+        for(; item!=NULL;)
         {
             if(hashtable->equal(item->key, key))
             {
+                item->value = value;
                 return;
             }
+            if(item->next == NULL)
+                break;
+            else
+                item=item->next;
         }
     }
     //Retrieve recycled VMItem from the stack and set its value to c

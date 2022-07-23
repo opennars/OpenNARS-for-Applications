@@ -25,8 +25,8 @@
 void NAR_Pong(long iterations)
 {
     puts(">>NAR Pong start");
-    NAR_AddOperation(Narsese_AtomicTerm("^left"), NAR_Pong_Left); 
-    NAR_AddOperation(Narsese_AtomicTerm("^right"), NAR_Pong_Right); 
+    NAR_AddOperation("^left", NAR_Pong_Left);
+    NAR_AddOperation("^right", NAR_Pong_Right);
     int szX = 50;
     int szY = 20;
     int ballX = szX/2;
@@ -47,7 +47,7 @@ void NAR_Pong(long iterations)
         }
         //if(t%10000 == 0)
         //    getchar();
-        fputs("\033[1;1H\033[2J", stdout); //POSIX clear screen
+        CLEAR_SCREEN;
         for(int i=0; i<batX-batWidth+1; i++)
         {
             fputs(" ", stdout);
@@ -146,8 +146,8 @@ void NAR_Pong(long iterations)
         printf("Hits=%d misses=%d ratio=%f time=%d\n", hits, misses, (float) (((float) hits) / ((float) hits + misses)), t);
         if(iterations == -1)
         {
-            nanosleep((struct timespec[]){{0, 20000000L}}, NULL); //POSIX sleep
+            SLEEP;
         }
-        //NAR_Cycles(10);
+        NAR_Cycles(5);
     }
 }

@@ -1,0 +1,10 @@
+*volume=0
+*setopname 1 ^inc
+*setopstdin 1
+*setopname 2 ^say
+*motorbabbling=false
+
+<((<#1 --> value> &/ <({SELF} * (#1 * #result)) --> ^inc>) &/ <({SELF} * #result) --> ^say>) =/> G>.
+
+<5 --> value>. :|:
+G! :|:
