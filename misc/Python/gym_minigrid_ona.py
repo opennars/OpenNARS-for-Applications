@@ -35,8 +35,6 @@ def observationToEvent(cells, colorBlind=True):
 
 successes = 0
 timestep = 0
-cur_steps = 0
-remaining_steps = 0
 
 #Similate for 100000 steps:
 k=1
@@ -53,19 +51,16 @@ for i in range(0, 100000):
         action = default_action
     if action == 5 and "obs" in globals() and obs["image"][3][5][2] == 0:
         action = default_action
-    if action != default_action:
-        print("successes=" + str(successes) + " time="+str(timestep))
-        timestep += 1
-        cur_steps += 1
     obs, reward, done, info = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
     if reward > 0:
         NAR.AddInput(goal + ". :|:")
         successes += 1
-    elif (cur_steps >= max_steps and max_steps != -1):
-        successes += 1 #lift to next level?
-    if done or (cur_steps >= max_steps and max_steps != -1):
+    if action != default_action:
+        print("successes=" + str(successes) + " time="+str(timestep))
+        timestep += 1
+    if done or (timestep+2 >= max_steps and max_steps != -1):
         NAR.AddInput("20") #don't temporally relate observations across reset
         k += 1
         if k == 2:
@@ -89,14 +84,11 @@ for i in range(0, 100000):
         else:
             env.seed(1337+i)
         env.reset()
-        remaining_steps += (max_steps-cur_steps)
-        print(max_steps, cur_steps, "LOOOOOL")
-        cur_steps = 0
     if max_steps == -1:
         env.render()
-print(timestep, remaining_steps, max_steps)
-for i in range(1, remaining_steps+1):
-    print("successes=" + str(successes) + " time="+str(timestep+i))
+while timestep < max_steps:
+    print("successes=" + str(successes) + " time="+str(timestep))
+    timestep += 1
+print(timestep, max_steps)
 env.close()
-
 
