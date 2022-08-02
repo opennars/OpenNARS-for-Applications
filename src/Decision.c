@@ -184,6 +184,44 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
+static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
+{
+    //1. discount decision based on negative outcomes via revision
+    for(int i=0; !decision.discounted && i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        int NEG_GOAL_AGE_MAX = 20;
+        if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX &&
+           c->goal_spike.truth.frequency < 0.5)
+        {
+            //fputs("FOUND NEG GOAL ", stdout); Narsese_PrintTerm(&c->term); puts("");
+            //would the decision cause a negative outcome to happen?
+            //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO!
+            //TODO make work for compound op by taking full opID array into account
+            //TODO consider evidental bases
+            for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
+            {
+                Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
+                Concept *prec = imp.sourceConcept;
+                Event updated = Inference_EventUpdate(&prec->belief_spike, currentTime);
+                if(Truth_Expectation(updated.truth) > CONDITION_THRESHOLD)
+                {
+                    //fputs("CONDITION SATISFIED IN PRECONDITION ", stdout); Narsese_PrintTerm(&prec->term); puts("");
+                    Truth cons = Truth_Negation(Truth_Deduction(updated.truth, imp.truth), /*unused param:*/ imp.truth);
+                    Truth Old = decision.desireValue;
+                    double old = decision.desire;
+                    decision.desireValue = Truth_Revision(decision.desireValue, cons);
+                    decision.desire = Truth_Expectation(decision.desireValue);
+                    //printf("REVISED DESIRE VALUE, BEFORE AFTER %f %f %f %f\n", Old.frequency, Old.confidence, decision.desireValue.frequency, decision.desireValue.confidence);
+                    printf("decision expectation=%f discounted\n", decision.desire);
+                }
+            }
+        }
+    }
+    decision.discounted = true;
+    return decision;
+}
+
 static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp)
 {
     Decision decision = {0};
@@ -199,7 +237,8 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
+        double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
@@ -214,6 +253,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             Narsese_PrintTerm(&precondition->term); puts("");
         )
         decision.reason = precondition;
+        decision.desireValue = desireValue;
         decision.desire = operationGoalTruthExpectation;
         Term seq = Term_ExtractSubterm(&imp->term, 1);
         int i=1;
@@ -243,7 +283,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             i++;
         }
     }
-    return decision;
+    return Decision_ConsiderNegativeOutcomes(decision);
 }
 
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
