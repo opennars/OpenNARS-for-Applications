@@ -1,0 +1,15 @@
+*volume=0
+*motorbabbling=false
+
+<(dog | [small]) --> [see]>. :|:
+^pick. :|:
+<{SELF} --> [cuddling]>. :|:
+<{SELF} --> [hurt]>. :|:
+
+100
+<(dog | [big]) --> [see]>. :|:
+^pick. :|:
+<{SELF} --> [hurt]>! :|: %0%
+<{SELF} --> [cuddling]>! :|:
+
+//expected: no execution

@@ -213,7 +213,8 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
                     decision.desireValue = Truth_Revision(decision.desireValue, cons);
                     decision.desire = Truth_Expectation(decision.desireValue);
                     //printf("REVISED DESIRE VALUE, BEFORE AFTER %f %f %f %f\n", Old.frequency, Old.confidence, decision.desireValue.frequency, decision.desireValue.confidence);
-                    printf("decision expectation=%f discounted\n", decision.desire);
+                    printf("decision expectation=%f discounted, bad implication ", decision.desire);
+                    Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset);
                 }
             }
         }
