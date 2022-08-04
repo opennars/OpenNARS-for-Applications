@@ -199,6 +199,9 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
             //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO!
             //TODO make work for compound op by taking full opID array into account
             //TODO consider evidental bases
+            //TODO make sure it works with vars
+            //TODO make sure proper truth func is used as in goal deduction (backward not forward)
+            //TODO consider separate pos/neg evaluation allowing ev. overlap between both via choice (pos. neg. eval might not be compatible!)
             for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
             {
                 Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
