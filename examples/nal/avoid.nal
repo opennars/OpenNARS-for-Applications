@@ -1,6 +1,9 @@
+*motorbabbling=false
 <(a &/ ^left) =/> T>.
 <(a &/ ^left) =/> G>.
 <(a &/ ^right) =/> G>. %0.7%
+G! :|:
+
 a. :|:
 T! :|: {0.0 0.99}
 G! :|:

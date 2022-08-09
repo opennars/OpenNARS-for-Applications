@@ -186,42 +186,58 @@ static Decision Decision_MotorBabbling()
 
 static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
 {
+    Event OpGoalNeg = {0};
+    Event OpGoalPos = {0};
     //1. discount decision based on negative outcomes via revision
-    for(int i=0; !decision.discounted && i<concepts.itemsAmount; i++)
+    for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
         int NEG_GOAL_AGE_MAX = 20;
-        if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX &&
-           c->goal_spike.truth.frequency < 0.5)
+        if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
         {
-            //fputs("FOUND NEG GOAL ", stdout); Narsese_PrintTerm(&c->term); puts("");
-            //would the decision cause a negative outcome to happen?
             //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO!
             //TODO make work for compound op by taking full opID array into account
-            //TODO consider evidental bases
-            //TODO make sure it works with vars
-            //TODO make sure proper truth func is used as in goal deduction (backward not forward)
-            //TODO consider separate pos/neg evaluation allowing ev. overlap between both via choice (pos. neg. eval might not be compatible!)
+            //TODO consider evidental bases <- DONE
+            //TODO make sure it works with vars <- done
+            //TODO make sure proper truth func is used as in goal deduction (backward not forward) <- DONE
+            //TODO consider separate pos/neg evaluation allowing ev. overlap between both via choice (pos. neg. eval might not be compatible!) <- DONE
             for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
             {
                 Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
                 Concept *prec = imp.sourceConcept;
-                Event updated = Inference_EventUpdate(&prec->belief_spike, currentTime);
-                if(Truth_Expectation(updated.truth) > CONDITION_THRESHOLD)
+                if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
                 {
-                    //fputs("CONDITION SATISFIED IN PRECONDITION ", stdout); Narsese_PrintTerm(&prec->term); puts("");
-                    Truth cons = Truth_Negation(Truth_Deduction(updated.truth, imp.truth), /*unused param:*/ imp.truth);
-                    Truth Old = decision.desireValue;
-                    double old = decision.desire;
-                    decision.desireValue = Truth_Revision(decision.desireValue, cons);
-                    decision.desire = Truth_Expectation(decision.desireValue);
-                    //printf("REVISED DESIRE VALUE, BEFORE AFTER %f %f %f %f\n", Old.frequency, Old.confidence, decision.desireValue.frequency, decision.desireValue.confidence);
-                    printf("decision expectation=%f discounted, bad implication ", decision.desire);
-                    Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset);
+                    if(c->goal_spike.truth.frequency < 0.5)
+                    {
+                        Event negated_goal = c->goal_spike;
+                        negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
+                        Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
+                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                        OpGoalNeg = Inference_RevisionAndChoice(&OpGoalNeg, &OpGoalLocal, currentTime, NULL);
+                    }
+                    else
+                    {
+                        Event goal = c->goal_spike;
+                        Event ContextualOperation = Inference_GoalDeduction(&goal, &imp, currentTime); //(&/,a,op())! :\:
+                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                        OpGoalPos = Inference_RevisionAndChoice(&OpGoalPos, &OpGoalLocal, currentTime, NULL);
+                    }
+                    IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
                 }
             }
         }
     }
+    IN_DEBUG ( printf("//Evaluation pos=%f neg=%f\n", Truth_Expectation(OpGoalPos.truth), Truth_Expectation(OpGoalNeg.truth)); )
+    //if(Truth_Expectation(OpGoalNeg.truth) >= Truth_Expectation(OpGoalPos.truth)) //weight pro/cons for decisions, don't consider decision for the goal at all if there are more cons
+    //{
+     //   IN_DEBUG ( puts("//decision blocked"); )
+      //  decision = (Decision) {0};
+    //}
+    //this would use the desire expectation of the global evaluation which won't ensure it is for the selected goal (so probably better not to use):
+    //abstract statements can't be 
+    printf("PREVIOUS DESIRE %f\n", decision.desire);
+    double desirePos = decision.desire; //MAX(decision.desire, Truth_Expectation(OpGoalPos.truth)); //the latter is not just accumulating pos evidence for the selected goal so probably overkill
+    decision.desire = 0.5 - (Truth_Expectation(OpGoalNeg.truth) - 0.5) + (desirePos - 0.5);
     decision.discounted = true;
     return decision;
 }
