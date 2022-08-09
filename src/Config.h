@@ -88,6 +88,8 @@
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
+//How long goal events describing bad outcomes are considered in decision making
+#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */

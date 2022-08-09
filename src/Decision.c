@@ -191,15 +191,8 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Concept *c = concepts.items[i].address;
-        int NEG_GOAL_AGE_MAX = 20;
         if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
         {
-            //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO! <- done
-            //TODO make work for compound op by taking full opID array into account <- done
-            //TODO consider evidental bases <- DONE
-            //TODO make sure it works with vars <- done
-            //TODO make sure proper truth func is used as in goal deduction (backward not forward) <- DONE
-            //TODO consider separate pos/neg evaluation allowing ev. overlap between both via choice (pos. neg. eval might not be compatible!) <- DONE
             for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
             {
                 Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
