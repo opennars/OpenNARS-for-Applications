@@ -187,7 +187,6 @@ static Decision Decision_MotorBabbling()
 static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
 {
     Event OpGoalNeg = {0};
-    Event OpGoalPos = {0};
     //1. discount decision based on negative outcomes via revision
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -215,30 +214,13 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
                         Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
                         OpGoalNeg = Inference_RevisionAndChoice(&OpGoalNeg, &OpGoalLocal, currentTime, NULL);
                     }
-                    else
-                    {
-                        Event goal = c->goal_spike;
-                        Event ContextualOperation = Inference_GoalDeduction(&goal, &imp, currentTime); //(&/,a,op())! :\:
-                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
-                        OpGoalPos = Inference_RevisionAndChoice(&OpGoalPos, &OpGoalLocal, currentTime, NULL);
-                    }
                     IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
                 }
             }
         }
     }
-    IN_DEBUG ( printf("//Evaluation pos=%f neg=%f\n", Truth_Expectation(OpGoalPos.truth), Truth_Expectation(OpGoalNeg.truth)); )
-    //if(Truth_Expectation(OpGoalNeg.truth) >= Truth_Expectation(OpGoalPos.truth)) //weight pro/cons for decisions, don't consider decision for the goal at all if there are more cons
-    //{
-     //   IN_DEBUG ( puts("//decision blocked"); )
-      //  decision = (Decision) {0};
-    //}
-    //this would use the desire expectation of the global evaluation which won't ensure it is for the selected goal (so probably better not to use):
-    //abstract statements can't be 
-    printf("PREVIOUS DESIRE %f\n", decision.desire);
-    double desirePos = decision.desire; //MAX(decision.desire, Truth_Expectation(OpGoalPos.truth)); //the latter is not just accumulating pos evidence for the selected goal so probably overkill
-    decision.desire = 0.5 - (Truth_Expectation(OpGoalNeg.truth) - 0.5) + (desirePos - 0.5);
-    decision.discounted = true;
+    IN_DEBUG ( printf("//Evaluation pos=%f neg=%f\n",decision.desire, Truth_Expectation(OpGoalNeg.truth)); )
+    decision.desire = 0.5 - (Truth_Expectation(OpGoalNeg.truth) - 0.5) + (decision.desire - 0.5);
     return decision;
 }
 
@@ -273,7 +255,6 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             Narsese_PrintTerm(&precondition->term); puts("");
         )
         decision.reason = precondition;
-        decision.desireValue = desireValue;
         decision.desire = operationGoalTruthExpectation;
         Term seq = Term_ExtractSubterm(&imp->term, 1);
         int i=1;
