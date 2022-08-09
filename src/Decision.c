@@ -194,8 +194,8 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
         int NEG_GOAL_AGE_MAX = 20;
         if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
         {
-            //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO!
-            //TODO make work for compound op by taking full opID array into account
+            //TODO MATCH ACTUAL OPERATION TERMS TO MAKE SURE ARGS MATCH TOO! <- done
+            //TODO make work for compound op by taking full opID array into account <- done
             //TODO consider evidental bases <- DONE
             //TODO make sure it works with vars <- done
             //TODO make sure proper truth func is used as in goal deduction (backward not forward) <- DONE
@@ -208,11 +208,17 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
                 {
                     if(c->goal_spike.truth.frequency < 0.5)
                     {
-                        Event negated_goal = c->goal_spike;
-                        negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
-                        Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
-                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
-                        OpGoalNeg = Inference_RevisionAndChoice(&OpGoalNeg, &OpGoalLocal, currentTime, NULL);
+                        Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                        Term opTerm2 = {0};
+                        assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
+                        if(Term_Equal(&decision.operationTerm, &opTerm2))
+                        {
+                            Event negated_goal = c->goal_spike;
+                            negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
+                            Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
+                            Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                            OpGoalNeg = Inference_RevisionAndChoice(&OpGoalNeg, &OpGoalLocal, currentTime, NULL);
+                        }
                     }
                     IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
                 }
@@ -239,6 +245,9 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
+        Term potential_operation = {0};
+        Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
+        assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
         Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
         double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG

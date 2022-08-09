@@ -53,6 +53,7 @@ typedef struct
 {
     double desire;
     bool execute;
+    Term operationTerm;
     int operationID[MAX_COMPOUND_OP_LEN];
     Operation op[MAX_COMPOUND_OP_LEN];
     Term arguments[MAX_COMPOUND_OP_LEN];

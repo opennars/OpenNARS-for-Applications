@@ -18,5 +18,4 @@
 ^pick. :|:
 <{SELF} --> [hurt]>! :|: {0.0 0.99}
 <{SELF} --> [cuddling]>! :|:
-
-//expected: no execution
+//--expected: no execution
