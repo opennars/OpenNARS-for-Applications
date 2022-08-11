@@ -208,3 +208,10 @@ Truth Truth_AnonymousAnalogy(Truth v1, Truth v2)
     Truth v3 = { .frequency = 1.0, .confidence = Truth_w2c(f2 * c2) }; //page 125 in NAL book
     return Truth_Analogy(v1, v3);
 }
+
+Truth Truth_GoalDeduction(Truth v1, Truth v2) //deduction with CWA for "desired state"
+{
+    Truth res1 = Truth_Deduction(v1, v2);
+    Truth res2 = Truth_Negation(Truth_Deduction(Truth_Negation(v1, v2), v2), v2);
+    return res1.confidence >= res2.confidence ? res1 : res2;
+}

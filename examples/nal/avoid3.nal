@@ -3,15 +3,13 @@
 
 <(dog | [small]) --> [see]>. :|:
 ^pick. :|:
-<{SELF} --> [cuddling]>. :|:
-<{SELF} --> [hurt]>. :|:
+<{SELF} --> [cuddling hurt]>. :|:
 
 100
 
 <(dog | [small]) --> [see]>. :|:
 ^pick. :|:
-<{SELF} --> [cuddling]>. :|:
-<{SELF} --> [hurt]>. :|:
+<{SELF} --> [cuddling hurt]>. :|:
 
 100
 <(dog | [big]) --> [see]>. :|:
