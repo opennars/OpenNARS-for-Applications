@@ -204,11 +204,8 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
                     assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
                     if(Term_Equal(&decision.operationTerm, &opTerm2))
                     {
-                        Event negated_goal = c->goal_spike;
-                        negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
-                        Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
+                        Event ContextualOperation = Inference_GoalDeduction(&c->goal_spike, &imp, currentTime); //(&/,a,op())! :\:
                         Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
-                        OpGoalLocal.truth = Truth_Negation(OpGoalLocal.truth, OpGoalLocal.truth);
                         OpGoalImmediateOutcomes = Inference_RevisionAndChoice(&OpGoalImmediateOutcomes, &OpGoalLocal, currentTime, NULL);
                     }
                     IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
