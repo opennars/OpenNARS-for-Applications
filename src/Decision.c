@@ -186,7 +186,7 @@ static Decision Decision_MotorBabbling()
 
 static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
 {
-    Event OpGoalNeg = {0};
+    Event OpGoalImmediateOutcomes = {0};
     //1. discount decision based on negative outcomes via revision
     for(int i=0; i<concepts.itemsAmount; i++)
     {
@@ -199,27 +199,28 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
                 Concept *prec = imp.sourceConcept;
                 if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
                 {
-                    if(c->goal_spike.truth.frequency < 0.5)
+                    Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                    Term opTerm2 = {0};
+                    assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
+                    if(Term_Equal(&decision.operationTerm, &opTerm2))
                     {
-                        Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
-                        Term opTerm2 = {0};
-                        assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
-                        if(Term_Equal(&decision.operationTerm, &opTerm2))
-                        {
-                            Event negated_goal = c->goal_spike;
-                            negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
-                            Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
-                            Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
-                            OpGoalNeg = Inference_RevisionAndChoice(&OpGoalNeg, &OpGoalLocal, currentTime, NULL);
-                        }
+                        Event negated_goal = c->goal_spike;
+                        negated_goal.truth = Truth_Negation(negated_goal.truth, negated_goal.truth);
+                        Event ContextualOperation = Inference_GoalDeduction(&negated_goal, &imp, currentTime); //(&/,a,op())! :\:
+                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                        OpGoalLocal.truth = Truth_Negation(OpGoalLocal.truth, OpGoalLocal.truth);
+                        OpGoalImmediateOutcomes = Inference_RevisionAndChoice(&OpGoalImmediateOutcomes, &OpGoalLocal, currentTime, NULL);
                     }
                     IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
                 }
             }
         }
     }
-    IN_DEBUG ( printf("//Evaluation pos=%f neg=%f\n",decision.desire, Truth_Expectation(OpGoalNeg.truth)); )
-    decision.desire = 0.5 - (Truth_Expectation(OpGoalNeg.truth) - 0.5) + (decision.desire - 0.5);
+    IN_DEBUG ( printf("//Evaluation local=%f global=%f\n",decision.desire, Truth_Expectation(OpGoalImmediateOutcomes.truth)); )
+    if(Truth_Expectation(OpGoalImmediateOutcomes.truth) < 0.5)
+    {
+        decision = (Decision) {0};
+    }
     return decision;
 }
 
