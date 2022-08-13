@@ -65,5 +65,8 @@ HASH_TYPE Globals_Hash(HASH_TYPE *data, int pieces);
 int myrand(void);
 void mysrand(unsigned int seed);
 #define MY_RAND_MAX 32767
+//Stringification macro:
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 #endif

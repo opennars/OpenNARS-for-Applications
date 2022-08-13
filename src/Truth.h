@@ -66,6 +66,7 @@ Truth Truth_Eternalize(Truth v);
 Truth Truth_Projection(Truth v, long originalTime, long targetTime);
 void Truth_Print(Truth *truth);
 void Truth_Print2(Truth *truth);
+Truth Truth_GoalDeduction(Truth v1, Truth v2);
 //not part of sensorimotor inference:
 Truth Truth_Abduction(Truth v1, Truth v2);
 Truth Truth_Exemplification(Truth v1, Truth v2);
@@ -85,5 +86,4 @@ Truth Truth_DecomposePPP(Truth v1, Truth v2);
 Truth Truth_DecomposeNNN(Truth v1, Truth v2);
 Truth Truth_AnonymousAnalogy(Truth v1, Truth v2);
 bool Truth_Equal(Truth *v1, Truth *v2);
-
 #endif

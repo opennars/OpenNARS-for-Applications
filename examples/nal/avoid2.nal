@@ -1,0 +1,26 @@
+a. :|:
+^left. :|:
+(T &| G). :|:
+
+100
+
+a. :|:
+^right. :|:
+G. :|:
+
+100
+
+a. :|:
+^right. :|:
+
+100
+
+<(a &/ ^left) =/> T>?
+<(a &/ ^left) =/> G>?
+<(a &/ ^right) =/> G>?
+
+a. :|:
+T! :|: {0.0 0.99}
+G! :|:
+//expected: ^right executed with args
+

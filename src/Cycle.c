@@ -70,6 +70,10 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         }
         else
         {
+            if(c->goal_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->goal_spike.occurrenceTime)
+            {
+                c->goal_spike = *e;
+            }
             //pass spike if the concept doesn't have a satisfying motor command
             decision = Decision_Suggest(c, e, currentTime);
         }

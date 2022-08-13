@@ -248,8 +248,9 @@ int Shell_ProcessInput(char *line)
         {
             assert(concepts.itemsAmount == 0, "Operators can only be registered right after initialization / reset!");
             int opID;
-            char opname[ATOMIC_TERM_LEN_MAX] = {0};
-            sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
+            char opname[ATOMIC_TERM_LEN_MAX+1] = {0};
+            opname[ATOMIC_TERM_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*setopname ")], "%d %" STR(ATOMIC_TERM_LEN_MAX) "s", &opID, (char*) &opname);
             assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             Term newTerm = Narsese_AtomicTerm(opname);
             for(int i=0; i<OPERATIONS_MAX; i++)
@@ -273,8 +274,9 @@ int Shell_ProcessInput(char *line)
         {
             int opID;
             int opArgID;
-            char argname[ATOMIC_TERM_LEN_MAX] = {0};
-            sscanf(&line[strlen("*setoparg ")], "%d %d %s", &opID, &opArgID, (char*) &argname);
+            char argname[NARSESE_LEN_MAX+1] = {0};
+            argname[NARSESE_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*setoparg ")], "%d %d %" STR(NARSESE_LEN_MAX) "[^\n]", &opID, &opArgID, (char*) &argname);
             assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             assert(opArgID >= 1 && opArgID <= OPERATIONS_BABBLE_ARGS_MAX, "Operator arg index out of bounds, it can only be between 1 and OPERATIONS_BABBLE_ARGS_MAX!");
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);

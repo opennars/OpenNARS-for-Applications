@@ -88,6 +88,8 @@
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
+//How long goal events describing bad outcomes are considered in decision making
+#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */
@@ -99,15 +101,13 @@
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
-#define CYCLING_GOAL_EVENTS_MAX 40
+#define CYCLING_GOAL_EVENTS_MAX 400
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 10
 //Maximum amount of arguments an operation can babble
 #define OPERATIONS_BABBLE_ARGS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
-//Maximum event FIFO size
-#define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum compound term size
@@ -121,9 +121,9 @@
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
-#define NARSESE_LEN_MAX 256
+#define NARSESE_LEN_MAX 2148 //ATOMIC_TERM_LEN_MAX * COMPOUND_TERM_SIZE_MAX + 100 for punctuation event marker and TV
 //Goal events queue derivation depth layers
-#define CYCLING_GOAL_EVENTS_LAYERS 5
+#define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
 
@@ -147,7 +147,7 @@
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 6
+#define SEMANTIC_INFERENCE_NAL_LEVEL 7
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
