@@ -190,13 +190,13 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
     //1. discount decision based on negative outcomes via revision
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
         {
             for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
             {
                 Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
-                Concept *prec = imp.sourceConcept;
+                Concept *prec = (Concept*) imp.sourceConcept;
                 if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
                 {
                     Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
