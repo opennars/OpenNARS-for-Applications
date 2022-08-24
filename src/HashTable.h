@@ -28,7 +28,11 @@
 /////////////////
 //  HashTable  //
 /////////////////
-//The hashtable HT[Term] -> Concept*
+//A generic bounded hashtable
+//Also used for other purposes, such as:
+//- The concept hashtable HT[Term] -> Concept*
+//- Mapping atoms to atom names
+//- Counting how often the atoms in a term occur in the same term
 
 //References//
 //----------//

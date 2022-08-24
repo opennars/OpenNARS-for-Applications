@@ -28,7 +28,23 @@
 ////////////////////
 //  NAR Decision  //
 ////////////////////
-//Realization of goals
+//Realization of goals.
+//When a goal is processed, the system will realize it with the
+//operation which most likely leads to it, whereby candidates
+//are taken from the incoming implication links.
+//To be above decision threshold, the source concepts
+//(the preconditions of the implications) need to have a
+//a quite true and recent event and the temporal implication
+//link that "fires" needs to have sufficient truth value.
+//However this isn't checked with individual thresholds
+//as this would be brittle and hard to tune,
+//instead deductive NAL inference is utilized to decide the desire
+//value of each operation goal (for eeach link) individually,
+//whereby the highest-truth expectation option above decison
+//threshold is chosen.
+//If none however is above decision threshold, the system
+//derived the preconditions of the links as subgoals,
+//again, as a form of deductive inference.
 
 //References//
 //----------//

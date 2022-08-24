@@ -28,7 +28,7 @@
 ///////////////////
 // NAL ecosystem //
 ///////////////////
-//Declarative reasoning abilities not covered by the sensorimotor component
+//Declarative NAL 1-6 reasoning abilities not covered by Inference.h
 
 //References//
 //----------//

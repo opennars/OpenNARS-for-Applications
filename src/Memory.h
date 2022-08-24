@@ -29,6 +29,9 @@
 //  NAR Memory //
 /////////////////
 //The concept-based memory of NAR
+//Concepts are created from events
+//and are linked to each other with temporal implications
+//and by their subterms via InvertedAtomIndex
 
 //References//
 //////////////

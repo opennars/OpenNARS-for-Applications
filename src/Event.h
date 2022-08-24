@@ -29,6 +29,12 @@
 //   Event       //
 ///////////////////
 //An event named by a term
+//It can be a belief event corresponding to a certain
+//invariance observed by the system
+//Input patterns usually directly come from sensory channels
+//while derived events can be compounds built by the system
+//Events can also be goals, which makes
+//the system want to observe a belief event with same term asap.
 
 //References//
 //----------//

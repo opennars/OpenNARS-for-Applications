@@ -28,7 +28,7 @@
 ///////////////////////////
 //  Inverted atom table  //
 ///////////////////////////
-//The inverted atom table for efficient query
+//The inverted atom table for efficient query of to an event related concepts
 
 //References//
 //////////////

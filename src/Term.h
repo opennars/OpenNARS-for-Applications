@@ -31,8 +31,11 @@
 
 //Description//
 //-----------//
-//An Term is an blocksay of a specific number of 128 bit blocks
-//(that way no Hash ops are necessary, it's faster for this Term size)
+//A term is a hashed array of atoms (which also includes atoms for copulas)
+//The encoding used is that of a binary heap.
+//Please note: this encoding is relative space-wasteful for terms of low complexity
+//Future versions of this module might utilize an index-sorted array of (index, atom) tuples
+//however this will be a major change.
 
 //References//
 //----------//
