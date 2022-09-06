@@ -116,20 +116,25 @@ def TransbotExecute(executions):
         ActionInvoked = True
         if op == "^forward":
             OpStop()
-            OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
-            sleep(motorsleep)
+            #OpGo(0.5, 0.0, 0.0, 1.0, frame_id = "base_link") #Lidar-safe
+            forward()
+            forward()
+            forward()
+            #sleep(motorsleep)
             OpStop()
         elif op == "^left":
             OpStop()
-            #left()
-            OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
-            sleep(motorsleep)
+            left()
+            left()
+            #OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
+            #sleep(motorsleep)
             OpStop()
         elif op == "^right":
             OpStop()
-            #right()
-            OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
-            sleep(motorsleep)
+            right()
+            right()
+            #OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
+            #sleep(motorsleep)
             OpStop()
         elif op == "^pick":
             OpStop()
