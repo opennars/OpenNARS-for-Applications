@@ -1,17 +1,17 @@
 #run in terminal: 
-#jupyter notebook stop
-#jupyter notebook
 #roslaunch transbot_nav laser_bringup.launch
 #roslaunch transbot_nav rrt_exploration.launch open_rviz:=true
+#roslaunch astra_camera astrapro.launch
 import sys
 import os
 os.system("pkill NAR")
 sys.path.append('/home/jetson/OpenNARS-for-Applications/misc/Python/')
 import NAR
+import cv2 as cv
 from time import sleep
 from transbot_nav import *
 from transbot_gripper import *
-#from transbot_vision import *
+from transbot_vision import *
 #from geometry_msgs.msg import Twist
 
 locationToTermOffset = 100.0
@@ -62,12 +62,13 @@ def TransbotExecute(executions):
 def TransbotPerceiveAt(obj, x, y):
     NAR.AddInput("<(%s * %f_%f) --> at>. :|:" % (obj, x+locationToTermOffset, y+locationToTermOffset))
 
-def TransbotPerceiveVisual(obj, screenX, screenY):
-    TransbotPerceiveAt(obj, location[0], location[1])
-    direction = "center"
-    if screenX < 500:
+def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
+    TransbotPerceiveAt(obj, trans[0], trans[1])
+    direction = "center" #640  -> 320 center
+    centerSize = 30
+    if screenX < 320-centerSize: 
         direction = "left"
-    elif screenX > 600:
+    elif screenX > 320+centerSize:
         direction = "right"
     NAR.AddInput("<%s --> [%s]>. :|:" % (obj, direction))
 
@@ -92,17 +93,46 @@ def reset_ona():
     NAR.AddInput("<((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [see]>>.")
     #NAR.AddInput("<(a &/ ^forward) =/> G>.")
     #NAR.AddInput("a. :|:")
-    for i in range(50):
-        TransbotExecute(NAR.AddInput("G! :|:")["executions"])
+    #for i in range(50):
+    #    TransbotExecute(NAR.AddInput("G! :|:")["executions"])
     #CELL2: tell NARS about locations of objects:
     #TransbotPerceiveAt("fridge", -0.25, 1.4)
 
 def process(line):
     if line != "":
+        if line.endswith("! :|:") or line == "v":
+            (trans, rot) = getLocation()
+            action = cv.waitKey(10) & 0xFF
+            detections, frame = detect_objects()
+            for detection in detections:
+                (obj, x, y, w, h) = detection
+                x_real = x+w/2
+                y_real = y+h/2
+                TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
+            print(detections)
+            cv.imshow('frame', frame)
         if line.endswith("! :|:"):
-            executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]
+            executions = NAR.AddInput(line)["executions"] #account for mental op
             executions += NAR.AddInput("10")["executions"]
             TransbotExecute(executions)
+            executions = NAR.AddInput(line)["executions"]
+            executions += NAR.AddInput("10")["executions"]
+            TransbotExecute(executions)
+        if line.endswith(".") or line.endswith(". :|:"):
+            NAR.AddInput(line)
+        if line == "*pick":
+            OpStop()
+            pick()
+        if line == "*drop":
+            OpStop()
+            drop()
+        if line == "*reset":
+            reset_ona()
+        if line == "*explore":
+            NAR.AddInput("<(a &/ ^forward) =/> G>.")
+            NAR.AddInput("a. :|:")
+            for i in range(50):
+                TransbotExecute(NAR.AddInput("G! :|:")["executions"])
 
 lastLine = ""
 def transbot_shell():
@@ -117,8 +147,11 @@ def transbot_shell():
             line = lastLine;
         else:
             lastLine = line
+        print("PROCESSED LINE: " + line)
         process(line)
 
+transbot_shell()
+        
 #CELL2:
 #NAR.AddInput("tick. :|:")
 #executions = NAR.AddInput("<fridge --> [see]>! :|:")["executions"]

@@ -14,7 +14,7 @@ sudo rm $install_dir/lib/libONA.*
 Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 
 echo "Compilation started:"
-BaseFlags="-D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -mfpmath=sse -msse2 -pthread -lpthread -lm"
+BaseFlags="-D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -pthread -lpthread -lm"
 gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $Str $BaseFlags -oNAR_first_stage
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 
