@@ -30,6 +30,7 @@
 /////////////////////
 //Supports converting Narsese strings to compound terms
 //and dictates the format of the internal compound term encoding
+//TODO add grammar
 
 //References//
 //----------//

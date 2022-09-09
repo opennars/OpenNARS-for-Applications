@@ -28,9 +28,7 @@
 ///////////////////
 //  INFERENCE    //
 ///////////////////
-//Support for NAL inference on Term's
-//But only a limited set:
-//the commented derivations are all that need to happen in NAR.
+//This module handles all temporal (NAL-7) and procedural (NAL-8) inference.
 
 //References//
 //----------//

@@ -4,7 +4,7 @@ import numpy as np
 from time import sleep
 from sensor_msgs.msg import LaserScan
 
-ResponseDist = 1.0
+ResponseDist = 2.0
 LaserAngle = 30 #30  # 10~180
 Right_warning = 0
 Left_warning = 0
@@ -45,7 +45,7 @@ def registerScan(scan_data):
                 if ranges[i] < ResponseDist: front_warning += 1
     # print (Left_warning,front_warning,Right_warning)
 
-sub_laser = rospy.Subscriber('/scan', LaserScan, registerScan)
+sub_laser = rospy.Subscriber('/scan', LaserScan, registerScan, queue_size=1)
 
 def getCollision():
     print("//lidar (front, left, right) =", front_warning, Left_warning, Right_warning)

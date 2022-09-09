@@ -28,6 +28,7 @@
 ///////////////////
 // Runtime stats //
 ///////////////////
+//The stats module serves to collect various random statistics of the reasoner
 
 //References//
 //----------//

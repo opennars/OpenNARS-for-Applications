@@ -28,6 +28,10 @@
 ////////////////////////////////
 //  concept usefulness value  //
 ////////////////////////////////
+//Usefulness value consists of both use count and last used
+//since new concepts need a grace period where they
+//can prove themselves to be useful
+//This is a solution of stability-plasticity dilemma.
 
 //References//
 //----------//

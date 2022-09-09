@@ -28,7 +28,12 @@
 /////////////
 //  Stamp  //
 /////////////
-//keeps track of evidental bases
+//Keeps track of evidental bases
+//This ensures that evidence is only counted once in the conclusions the system makes
+//Design decisions:
+//- Stamps are merged by zipping two existing stamps
+//- Stamps have a max. capacity which controls how far the zipping goes
+//- Since new inputs have a single stamp entry, new stamp entries will be in the beginning (1. or 2. element) of the stamp after revision
 
 //References//
 //----------//
