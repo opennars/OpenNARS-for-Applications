@@ -31,7 +31,6 @@
 #include "./unit_tests/unit_tests.h"
 #include "./system_tests/system_tests.h"
 #include "Shell.h"
-#include "./NetworkNAR/UDPNAR.h"
 
 void Process_Args(int argc, char *argv[])
 {
@@ -95,19 +94,6 @@ void Process_Args(int argc, char *argv[])
             {
                 NAR_Robot(iterations);
             }
-        }
-        if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
-        {
-            char *ip = argv[2];
-            int port = atoi(argv[3]);
-            long timestep = atol(argv[4]);
-            bool printDerivations = !strcmp("true", argv[5]);
-            PRINT_DERIVATIONS = printDerivations;
-            UDPNAR_Start(ip, port, timestep);
-            puts("//press any key and enter to quit!");
-            fflush(stdout);
-            getchar();
-            UDPNAR_Stop();
         }
     }
     if(inspectionOnExit)
