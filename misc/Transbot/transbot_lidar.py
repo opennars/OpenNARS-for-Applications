@@ -4,7 +4,7 @@ import numpy as np
 from time import sleep
 from sensor_msgs.msg import LaserScan
 
-ResponseDist = 2.0
+ResponseDist = 1.0
 LaserAngle = 30 #30  # 10~180
 Right_warning = 0
 Left_warning = 0
