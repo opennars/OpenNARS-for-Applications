@@ -76,6 +76,7 @@ Truth Truth_Analogy(Truth v1, Truth v2);
 Truth Truth_Resemblance(Truth v1, Truth v2);
 Truth Truth_StructuralDeduction(Truth v1, Truth v2);
 Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2);
+Truth Truth_StructuralIntersection(Truth v1, Truth v2);
 Truth Truth_Union(Truth v1, Truth v2);
 Truth Truth_Difference(Truth v1, Truth v2);
 Truth Truth_Conversion(Truth v1, Truth v2);
