@@ -195,6 +195,10 @@ bool Memory_containsBeliefOrGoal(Event *e)
 //called by addEvent for eternal knowledge
 bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int layer)
 {
+	//if(e->type == EVENT_TYPE_BELIEF && Narsese_copulaEquals(e->term.atoms[0], NEGATION))// && priority < NEGATION_EVENT_MINIMUM_PQ_PRIO)
+	{
+		//return false; //we don't add belief events with are negations if they have freq smaller than 0.5
+	}
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
     if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) || Memory_containsBeliefOrGoal(e)) //avoid duplicate derivations
     {

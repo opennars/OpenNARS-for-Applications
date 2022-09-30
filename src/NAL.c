@@ -364,6 +364,10 @@ static bool DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(T
 
 void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars)
 {
+	if(Narsese_copulaEquals(conclusionTerm.atoms[0], SET_TERMINATOR) || (Narsese_copulaEquals(conclusionTerm.atoms[0], NEGATION) && (Narsese_copulaEquals(conclusionTerm.atoms[2], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[2], EQUIVALENCE)))) //term reductions which terminate to nothing won't be derived
+	{ //as well as negation statements of an implication or equivalence
+		return;
+	}
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
         bool success;

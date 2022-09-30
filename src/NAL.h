@@ -160,6 +160,7 @@ R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 5
 //!Negation conjunction and disjunction decomposition:
 R1( (! A), |-, A, Truth_Negation )
+R1( A, |-, (! A), Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
 R1( (A && B), |-, (B && A), Truth_StructuralDeduction )
@@ -238,6 +239,7 @@ ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
 ReduceStatement( (A &| A), A )
+ReduceStatement( (! (! A)), @ ) //reduce to nothing to avoid negation derivation chain
 //!Extensional set reductions:
 ReduceTerm( ({A} | {B}), {A B} )
 ReduceTerm( ({A B} | {C}), {(A . B) C} )
