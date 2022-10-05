@@ -328,6 +328,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        if(input)
+        {
+            c->priorizedTemporalCompounding = true;
+        }
         if(c != NULL)
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
