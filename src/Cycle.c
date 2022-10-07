@@ -373,11 +373,17 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             Term op_term = Narsese_getOperationTerm(&postcondition.term);
             conceptProcessID2++;
             int concept_id_temp;
+            int concept_creations1 = 0;
+            int concept_creations2 = 0;
             RELOOP:
             concept_id_temp = concept_id;
             for(int j=0; !op_id && j<concepts.itemsAmount; j++) //search for op
             {
                 Concept *opc = concepts.items[j].address;
+                if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !opc->priorizedTemporalCompounding)
+                {
+                    continue;
+                }
                 long opc_id = opc->id;
                 bool wasProcessed2 = opc->processID2 == conceptProcessID2;
                 opc->processID2 = conceptProcessID2;
@@ -391,6 +397,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     for(int i=0; opc_id == opc->id  && i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
                     {
                         Concept *prec = concepts.items[i].address;
+                        if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !prec->priorizedTemporalCompounding)
+                        {
+                            continue;
+                        }
                         bool wasProcessed3 = prec->processID3 == conceptProcessID3;
                         prec->processID3 = conceptProcessID3;
                         //printf("OK j=%d wasProcessed=%d, term: ", j, (int) wasProcessed3); Narsese_PrintTerm(&opc->term); puts("");
@@ -414,6 +424,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
                                     if(concept_id_temp3 != concept_id) //a new concept was created, reloop
                                     {
+                                        concept_creations1++;
                                         goto RELOOP_INNER;
                                     }
                                 }
@@ -433,6 +444,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             for(int i=0; i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
             {
                 Concept *c = concepts.items[i].address;
+                if(concept_creations2 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !c->priorizedTemporalCompounding)
+                {
+                    continue;
+                }
                 bool wasProcessed = c->processID2 == conceptProcessID2;
                 c->processID2 = conceptProcessID2;
                 if(!wasProcessed && c->belief_spike.type != EVENT_TYPE_DELETED && c->belief_spike.creationTime < currentTime && 
@@ -444,14 +459,14 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     bool is_cond_seq = !op_id && !op_id2;
                     if((is_cond_seq || is_op_seq) && !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
                     {
-                        if(!op_id && !op_id2)
-                        {
-                            Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
-                        }
                         bool success;
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
                         if(success && seq.truth.confidence >= MIN_CONFIDENCE)
                         {
+                            if(!op_id && !op_id2)
+                            {
+                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
+                            }
                             int sequence_len = 0;
                             for(int i=1; sequence_len<MAX_SEQUENCE_LEN && i<COMPOUND_TERM_SIZE_MAX; i*=2, sequence_len++)
                             {
@@ -464,6 +479,14 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);
+                                if(c->priorizedTemporalCompounding && postcondition.input)
+                                {
+                                    Concept *seqc = Memory_FindConceptByTerm(&seq.term);
+                                    if(seqc != NULL)
+                                    {
+                                        seqc->priorizedTemporalCompounding = true;
+                                    }
+                                }
                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                 {
                                     Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
@@ -472,6 +495,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         }
                         if(concept_id_temp2 != concept_id) //a new concept was created, reloop
                         {
+                            concept_creations2++;
                             goto RELOOP2;
                         }
                     }

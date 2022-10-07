@@ -55,6 +55,7 @@ typedef struct {
     double occurrenceTimeOffset; //necessary if the event is an =/>
     bool processed;
     long creationTime;
+    bool input;
 } Event;
 
 //Methods//

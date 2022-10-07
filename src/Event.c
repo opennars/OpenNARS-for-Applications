@@ -33,7 +33,8 @@ Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeO
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
                      .occurrenceTime = currentTime,
                      .occurrenceTimeOffset = occurrenceTimeOffset,
-                     .creationTime = currentTime };
+                     .creationTime = currentTime,
+                     .input = true };
 }
 
 void Event_INIT()
