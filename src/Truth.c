@@ -220,3 +220,9 @@ Truth Truth_GoalDeduction(Truth v1, Truth v2) //deduction with CWA for "desired 
     Truth res2 = Truth_Negation(Truth_Deduction(Truth_Negation(v1, v2), v2), v2);
     return res1.confidence >= res2.confidence ? res1 : res2;
 }
+
+Truth Truth_PropertyComparison(Truth v1, Truth v2)
+{
+	TruthValues(v1,v2, f1,c1, f2,c2);
+	return (Truth) { .frequency = f1 > f2 ? 1.0 : 0.0, .confidence = c1 * c2 };
+}

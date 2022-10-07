@@ -87,5 +87,6 @@ Truth Truth_DecomposePNP(Truth v1, Truth v2);
 Truth Truth_DecomposePPP(Truth v1, Truth v2);
 Truth Truth_DecomposeNNN(Truth v1, Truth v2);
 Truth Truth_AnonymousAnalogy(Truth v1, Truth v2);
+Truth Truth_PropertyComparison(Truth v1, Truth v2);
 bool Truth_Equal(Truth *v1, Truth *v2);
 #endif
