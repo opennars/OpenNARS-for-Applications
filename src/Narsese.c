@@ -553,11 +553,11 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     bool hasRightChild = child2 < COMPOUND_TERM_SIZE_MAX && term->atoms[child2-1] && !Narsese_copulaEquals(term->atoms[child2-1], SET_TERMINATOR);
     bool isSingularProduct = Narsese_copulaEquals(atom, PRODUCT) && !hasRightChild;
     bool isNegation = Narsese_copulaEquals(atom, NEGATION);
-    bool isFrequencyDifference = Narsese_copulaEquals(atom, SEQUENCE) && !hasRightChild;
-    bool isFrequencySimilarity = Narsese_copulaEquals(atom, SIMILARITY) && !hasRightChild;
+    bool isFrequencyGreater = Narsese_copulaEquals(atom, SEQUENCE) && !hasRightChild;
+    bool isFrequencyEqual = Narsese_copulaEquals(atom, SIMILARITY) && !hasRightChild;
     bool isExtSet = Narsese_copulaEquals(atom, EXT_SET);
     bool isIntSet = Narsese_copulaEquals(atom, INT_SET);
-    bool isStatement = !isFrequencySimilarity && (Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION) || Narsese_copulaEquals(atom, INHERITANCE) || Narsese_copulaEquals(atom, SIMILARITY) || Narsese_copulaEquals(atom, IMPLICATION) || Narsese_copulaEquals(atom, EQUIVALENCE));
+    bool isStatement = !isFrequencyEqual && (Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION) || Narsese_copulaEquals(atom, INHERITANCE) || Narsese_copulaEquals(atom, SIMILARITY) || Narsese_copulaEquals(atom, IMPLICATION) || Narsese_copulaEquals(atom, EQUIVALENCE));
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);
@@ -575,14 +575,14 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     else
     {
         fputs(hasLeftChild ? "(" : "", stdout);
-        if(isNegation || isSingularProduct || isFrequencyDifference || isFrequencySimilarity)
+        if(isNegation || isSingularProduct || isFrequencyGreater || isFrequencyEqual)
         {
-            if(isFrequencyDifference)
+            if(isFrequencyGreater)
             {
                 fputs("+", stdout);
             }
             else
-            if(isFrequencySimilarity)
+            if(isFrequencyEqual)
             {
                 fputs("=", stdout);
             }
@@ -603,7 +603,7 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     }
     if(!isExtSet && !isIntSet && !Narsese_copulaEquals(atom, SET_TERMINATOR))
     {
-        if(!isNegation && !isSingularProduct && !isFrequencySimilarity && !isFrequencyDifference)
+        if(!isNegation && !isSingularProduct && !isFrequencyEqual && !isFrequencyGreater)
         {
             Narsese_PrintAtom(atom);
             fputs(hasLeftChild ? " " : "", stdout);
