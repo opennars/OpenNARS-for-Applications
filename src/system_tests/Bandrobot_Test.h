@@ -126,7 +126,7 @@ void NAR_Bandrobot(long iterations)
         DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
         //NAR_AddInputNarsese("<(<(position * targetposition) --> [left]> &/ ?1) =/> aligned>?");
         //NAR_AddInputNarsese("<(<(targetposition * position) --> [left]> &/ ?1) =/> aligned>?");
-        NAR_AddInputNarsese("<(?1 * ?2) --> [left]>? :\\:");
+        NAR_AddInputNarsese("<(?1 * ?2) --> (+ left)>? :\\:");
         puts(world);
         char positionStr[200];
         sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", ((position-minpos)/(maxpos-minpos))/3.0);
