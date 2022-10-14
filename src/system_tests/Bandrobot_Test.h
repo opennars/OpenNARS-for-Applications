@@ -65,11 +65,10 @@ void NAR_Bandrobot(long iterations)
     NAR_AddOperation("^drop", NAR_Bandrobot_Drop);
     Shell_ProcessInput("*motorbabbling=0.01");
     long t = 0;
-    double minpos = 0.0;
-    double maxpos = 20.0;
-    double position = 0;
-    double lastposition = 0;
-    double targetposition = 3; //maxpos; //maxpos/2;
+    int minpos = 0.0;
+    int maxpos = 20.0;
+    int position = 0;
+    int targetposition = 3; //maxpos; //maxpos/2;
     bool picked = false, lastpicked = false;
     int successes = 0;
     while(1)
@@ -97,10 +96,6 @@ void NAR_Bandrobot(long iterations)
             position += NAR_Bandrobot_amount;
         }
         position = MIN(maxpos, MAX(minpos, position));
-        if(fabs(position - targetposition) <= 3.0 && position != lastposition)
-        {
-            NAR_AddInputNarsese("aligned. :|:");
-        }
         if(picked)
         {
             targetposition = position;
@@ -108,7 +103,7 @@ void NAR_Bandrobot(long iterations)
         if(NAR_Bandrobot_Pick_executed)
         {
             NAR_Bandrobot_Pick_executed = false;
-            if(fabs(position - targetposition) < 1.0)
+            if(position == targetposition)
             {
                 picked = true;
             }
@@ -129,10 +124,10 @@ void NAR_Bandrobot(long iterations)
         NAR_AddInputNarsese("<(?1 * ?2) --> (+ left)>? :\\:");
         puts(world);
         char positionStr[200];
-        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", ((position-minpos)/(maxpos-minpos))/3.0);
+        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", (((float) (position-minpos))/((float) (maxpos-minpos)))/3.0);
         NAR_AddInputNarsese(positionStr);
         char targetpositionStr[200];
-        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", ((targetposition-minpos)/(maxpos-minpos))/3.0);
+        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", (((float) (targetposition-minpos))/((float) (maxpos-minpos)))/3.0);
         NAR_AddInputNarsese(targetpositionStr);
         //if(picked != lastpicked)
         {
@@ -150,7 +145,6 @@ void NAR_Bandrobot(long iterations)
             lastpicked = picked;
         }
         NAR_AddInputNarsese("dropped! :|:");
-        lastposition = position;
         printf("ratio=%d time=%ld\n", successes, t);
     }
 }

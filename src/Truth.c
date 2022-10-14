@@ -225,7 +225,7 @@ Truth Truth_FrequencyGreater(Truth v1, Truth v2)
 {
 	TruthValues(v1,v2, f1,c1, f2,c2);
 	bool condition =  f1 > f2;
-	return (Truth) { .frequency = condition ? 1.0 : 0.0, .confidence = c1 * c2 };
+	return (Truth) { .frequency = condition ? 1.0 : 0.0, .confidence = condition ? c1 * c2 : 0.0 };
 }
 
 Truth Truth_FrequencyEqual(Truth v1, Truth v2)
