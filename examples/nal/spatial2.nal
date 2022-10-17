@@ -4,6 +4,5 @@
 <a --> [locationY]>. :|: %0.3%
 <b --> [locationX]>. :|: %0.2%
 <(b * a) --> (= locationY)>. :|:
-5
 <a --> [locationY]>? :|:
 //expected: Answer: <a --> [locationY]>. :|: occurrenceTime=3 Truth: frequency=0.300000, confidence=0.900000
