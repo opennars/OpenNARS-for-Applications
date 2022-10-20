@@ -7,15 +7,15 @@
 <corridor --> location>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-120
+1200
 <corridor --> location>. :|:
 <({SELF} * livingroom) --> ^go>. :|:
 //no cat this time, it doesn't like the livingroom :)
-120
+1200
 <corridor --> location>. :|:
 <({SELF} * bedroom) --> ^go>. :|:
 <({cat} * bedroom) --> in>. :|:
-120
+1200
 //Ok you are in corridor now
 <corridor --> location>. :|:
 //NARS, where is the cat?
@@ -23,7 +23,7 @@
 //Active question however does:
 <(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
 G! :|:
-120
+1200
 //expected: ^go executed with args ({SELF} * bedroom)
 
 //ok, feedback of NARS going to the bedroom, the cat is there!

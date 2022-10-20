@@ -47,7 +47,7 @@ void NAR_Multistep2_Test()
         NAR_AddInputBelief(Narsese_AtomicTerm("light_active"));
         NAR_Cycles(10);
     }
-    NAR_Cycles(10);
+    NAR_Cycles(1000);
     NAR_AddInputBelief(Narsese_AtomicTerm("start_at"));
     NAR_AddInputGoal(Narsese_AtomicTerm("light_active"));
     NAR_Cycles(10);

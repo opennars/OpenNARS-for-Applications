@@ -10,6 +10,6 @@
 <{inst2} --> [white quacks]>. :|:
 30
 <{inst2} --> duck>? :|:
-//expected: Answer: <{inst2} --> duck>. :|: occurrenceTime=34 Truth: frequency=1.000000, confidence=0.396172
+//--expected: Answer: <{inst2} --> duck>. :|: occurrenceTime=34 Truth: frequency=1.000000, confidence=0.396172
 <{inst2} --> swan>? :|:
 //expected: Answer: <{inst2} --> swan>. :|: occurrenceTime=34 Truth: frequency=1.000000, confidence=0.447514

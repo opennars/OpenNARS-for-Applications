@@ -86,7 +86,7 @@ Truth Truth_Projection(Truth v, long originalTime, long targetTime)
 {
     double difference = labs(targetTime - originalTime);
     return originalTime == OCCURRENCE_ETERNAL ? 
-           v : (Truth) { .frequency = v.frequency, .confidence = v.confidence * pow(TRUTH_PROJECTION_DECAY,difference) };
+           v : (Truth) { .frequency = v.frequency, .confidence = difference < 11 ? v.confidence * pow(TRUTH_PROJECTION_DECAY,difference) : v.confidence * (1.0 / difference) };
 }
 
 void Truth_Print(Truth *truth)

@@ -11,4 +11,4 @@ Bob went to the kitchen.
 The football is in what?
 //expected: Answer: <(football * playground) --> in>. :|: occurrenceTime=5 Truth: frequency=1.000000, confidence=0.583200
 Bob is in what?
-//expected: Answer: <({Bob} * kitchen) --> in>. :|: occurrenceTime=6 Truth: frequency=1.000000, confidence=0.810000
+//--expected: Answer: <({Bob} * kitchen) --> in>. :|: occurrenceTime=6 Truth: frequency=1.000000, confidence=0.810000

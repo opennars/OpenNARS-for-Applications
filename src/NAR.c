@@ -30,7 +30,7 @@ static int op_k = 0;
 
 void NAR_INIT()
 {
-    assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
+    assert(1.0/EVENT_BELIEF_DISTANCE >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
     Decision_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
