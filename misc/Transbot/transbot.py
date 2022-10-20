@@ -70,7 +70,7 @@ def pick_with_feedback(pickobj=None):
                 if y_real_temp < closer_to_gripper: #visual feedback
                     forward()
                 elif y_real_temp > closer_to_gripper:
-                    left()
+                    #left()
                     forward()
                     forward()
                     forward()
@@ -178,7 +178,7 @@ def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
     locationToFreq = 1.0 - 0.1 * (screenX / 640)
-    NAR.AddInput(("<%s --> [left]>. :|: %" % obj) + str(locationToFreq) + "%")
+    NAR.AddInput(("<%s --> [left]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
 
 Configuration = """
 *reset
