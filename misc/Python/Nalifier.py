@@ -427,6 +427,12 @@ if __name__ == "__main__":
         if inp.startswith("*COMMON_PROPERTY_EXP="):
             nalifier.COMMON_PROPERTY_EXP = float(inp.split("*COMMON_PROPERTY_EXP=")[1])
             continue
+        if inp.startswith("*CONCEPT_CREATION="):
+            nalifier.ConceptCreation = True if inp.split("*CONCEPT_CREATION=")[1].lower() == "true" else False
+            continue
+        if inp.startswith("*INSTANCE_CREATION="):
+            nalifier.InstanceCreation = True if inp.split("*INSTANCE_CREATION=")[1].lower() == "true" else False
+            continue
         lhs = inp.split(". :|:")[0]
         if inp == "1":
             nalifier.AddInput(inp, Print=True)
