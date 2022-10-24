@@ -1,0 +1,23 @@
+*RESET_PROTOTYPES=2
+*SUFFICIENT_MATCH_EXP=1
+*CONCEPT_CREATION=true
+*SET_CONTINUOUS=brown
+*SET_CONTINUOUS=small
+*volume=0
+<{cat} --> [brown]>. :|: %0.8%
+<{cat} --> [small]>. :|: %1.0%
+<{cat} --> [meowing]>. :|: %1.0%
+1
+<{dog} --> [brown]>. :|: %0.9%
+<{dog} --> [small]>. :|: %1.0%
+<{dog} --> [barking]>. :|: %1.0%
+//expected: CONCEPT CREATION brown_small_1 {('brown', (0.8500000000000001, 0.9473684210526316)), ('small', (1.0, 0.9473684210526316))}
+1
+*SUFFICIENT_MATCH_EXP=0.8
+<{newpattern} --> [brown]>. :|: %1.0%
+<{newpattern} --> [small]>. :|: %1.0%
+1
+<{newpattern} --> ?what>? :|:
+//expected: Answer: <{newpattern} --> brown_small_1>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.810000
+<({newpattern} * brown_small_1) --> (+ ?1)>? :|:
+//expected: Answer: <({newpattern} * brown_small_1) --> (+ brown)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.810000

@@ -105,7 +105,7 @@ class Nalifier:
     #identify instance as existing instance if matching better than this value, else create new one:
     SUFFICIENT_MATCH_EXP = 0.8 # 0.5 #sys.argv[1] if len(sys.argv) > 1 else 0.5 #0.5 #0.5   #how good match to the best case in order to not use the new instance ID
     SUFFICIENT_DIFFERENCE_EXP = 0.0 #how much difference there needs to be to describe the case as different than to the best matched one
-    COMMON_PROPERTY_EXP = 0.9 #how similar properties need to be in order for them to be used for building new concepts
+    COMMON_PROPERTY_EXP = 0.5 #how similar properties need to be in order for them to be used for building new concepts
     InstanceCreation=True
     ConceptCreation=False
     usecounts = {}
@@ -288,15 +288,6 @@ class Nalifier:
                         self.Events.append(evP)
                       if Print:
                         print(ev1)
-                      #ADD NEW CONCEPT NODE IF THE MATCH WAS BASED ON INSTANCE (symmetric) COMPARISON
-                      names = sorted([k for (k,v) in self.last_winner_common_properties])
-                      conceptname = "_".join(names)
-                      if self.ConceptCreation and conceptname != "" and not winner_match_asymmetric:
-                        conceptname += "_" + str(self.concept_id)
-                        self.concept_id += 1
-                        self.conceptnames.add(conceptname)
-                        print("//CONCEPT CREATION", conceptname, self.last_winner_common_properties)
-                        self.prototypes[conceptname] = (set([]), self.last_winner_common_properties)
                     else:
                       if last_label is not None:
                         ev2 = f"<{{{k}}} --> {last_label}>. :|: %{self.last_label_frequency};{0.9}%"
@@ -306,6 +297,17 @@ class Nalifier:
                       if Print:
                         print(ev2)
                       break
+            if self.last_winner is not None:
+                #ADD NEW CONCEPT NODE IF THE MATCH WAS BASED ON INSTANCE (symmetric) COMPARISON
+                names = sorted([k for (k,v) in self.last_winner_common_properties])
+                conceptname = "_".join(names)
+                #print(conceptname); exit(0);
+                if self.ConceptCreation and conceptname != "" and not winner_match_asymmetric:
+                    conceptname += "_" + str(self.concept_id)
+                    self.concept_id += 1
+                    self.conceptnames.add(conceptname)
+                    print("//CONCEPT CREATION", conceptname, self.last_winner_common_properties)
+                    self.prototypes[conceptname] = (set([]), self.last_winner_common_properties)
             #else:
             if self.winner_match_asymmetric or not (self.last_winner is not None and self.last_winner_truth_exp > self.SUFFICIENT_MATCH_EXP):
               if self.last_label is not None:
@@ -414,6 +416,9 @@ if __name__ == "__main__":
             if propertyName not in nalifier.valueReporters:
               nalifier.valueReporters[propertyName] = ValueReporter()
             nalifier.continuous_comparison_properties.add(propertyName)
+            continue
+        if inp.startswith("*PROTOTYPES"):
+            print("//"+str(nalifier.prototypes))
             continue
         if inp.startswith("*RESET_PROTOTYPES="):
             nalifier = Nalifier(int(inp.split("*RESET_PROTOTYPES=")[1]))
