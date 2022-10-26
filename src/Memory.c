@@ -171,13 +171,13 @@ bool Memory_containsBeliefOrGoal(Event *e)
         {
             if(e->occurrenceTime == OCCURRENCE_ETERNAL)
             {
-                if(c->belief.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief, e))
+                if(c->belief.type != EVENT_TYPE_DELETED && Event_Equal(&c->belief, e))
                 {
                     return true;
                 }
             }
             else
-            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief_spike, e))
+            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_Equal(&c->belief_spike, e))
             {
                 return true;
             }
