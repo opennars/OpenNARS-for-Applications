@@ -49,7 +49,6 @@
 extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 extern bool PRINT_INPUT;
-extern double conceptPriorityThreshold;
 
 //Data structure//
 //--------------//

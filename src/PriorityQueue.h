@@ -67,6 +67,7 @@ typedef struct
 void PriorityQueue_INIT(PriorityQueue *queue, Item *items, int maxElements);
 //Push element of a certain priority into the queue.
 //If successful, addedItem will point to the item in the data structure, with address of the evicted item, if eviction happened
+PriorityQueue_Push_Feedback PriorityQueue_PushReference(PriorityQueue *queue, double priority, void *address);
 PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority);
 //use this function and add again if maybe lower!
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress);

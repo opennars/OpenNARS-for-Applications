@@ -207,7 +207,9 @@ bool PriorityQueue_PopMax(PriorityQueue *queue, void** returnItemAddress, double
     return true;
 }
 
-PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority)
+
+
+PriorityQueue_Push_Feedback PriorityQueue_PushReference(PriorityQueue *queue, double priority, void *address)
 {
     PriorityQueue_Push_Feedback feedback = (PriorityQueue_Push_Feedback) {0};
     //first evict if necessary
@@ -223,6 +225,10 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
         PriorityQueue_PopMin(queue, &feedback.evictedItem.address, NULL);
     }
     at(queue->itemsAmount).priority = priority;
+    if(address != NULL)
+    {
+		at(queue->itemsAmount).address = address;
+	}
     if(feedback.evicted)
     {
         at(queue->itemsAmount).address = feedback.evictedItem.address; 
@@ -232,6 +238,11 @@ PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double prio
     queue->itemsAmount++;
     bubbleUp(queue, queue->itemsAmount-1);
     return feedback;
+}
+
+PriorityQueue_Push_Feedback PriorityQueue_Push(PriorityQueue *queue, double priority)
+{
+	return PriorityQueue_PushReference(queue, priority, NULL);
 }
 
 bool PriorityQueue_PopAt(PriorityQueue *queue, int i, void** returnItemAddress)

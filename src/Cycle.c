@@ -604,86 +604,79 @@ void Cycle_Inference(long currentTime)
     for(int i=0; i<beliefsSelectedCnt; i++)
     {
         conceptProcessID++; //process the related belief concepts
-        long countConceptsMatched = 0;
-        for(;;)
-        {
-            long countConceptsMatchedNew = 0;
-            //Adjust dynamic firing threshold: (proportional "self"-control)
-            double conceptPriorityThresholdCurrent = conceptPriorityThreshold;
-            long countConceptsMatchedAverage = Stats_countConceptsMatchedTotal / currentTime;
-            double set_point = BELIEF_CONCEPT_MATCH_TARGET;
-            double process_value = countConceptsMatchedAverage; 
-            double error = process_value - set_point;
-            double increment = error*CONCEPT_THRESHOLD_ADAPTATION;
-            conceptPriorityThreshold = MIN(1.0, MAX(0.0, conceptPriorityThreshold + increment));
-            //IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
-            Event *e = &selectedBeliefs[i];
-            double priority = selectedBeliefsPriority[i];
-            Term dummy_term = {0};
-            Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
-            RELATED_CONCEPTS_FOREACH(&e->term, c,
-            {
-                long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
-                if(c->priority < conceptPriorityThresholdCurrent)
-                {
-                    continue;
-                }
-                countConceptsMatchedNew++;
-                countConceptsMatched++;
-                Stats_countConceptsMatchedTotal++;
-                if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
-                {
-                    //use eternal belief as belief
-                    Event* belief = &c->belief;
-                    Event future_belief = c->predicted_belief;
-                    //but if there is a predicted one in the event's window, use this one
-                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                    {
-                        future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
-                        future_belief.occurrenceTime = e->occurrenceTime;
-                        belief = &future_belief;
-                    }
-                    //unless there is an actual belief which falls into the event's window
-                    Event project_belief = c->belief_spike;
-                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
-                       labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
-                    {
-                        project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
-                        project_belief.occurrenceTime = e->occurrenceTime;
-                        belief = &project_belief;
-                    }
-                    //Check for overlap and apply inference rules
-                    if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
-                    {
-                        c->usage = Usage_use(c->usage, currentTime, false);
-                        Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
-                        if(PRINT_CONTROL_INFO)
-                        {
-                            fputs("Apply rule table on ", stdout);
-                            Narsese_PrintTerm(&e->term);
-                            printf(" Priority=%f\n", priority);
-                            fputs(" and ", stdout);
-                            Narsese_PrintTerm(&c->term);
-                            puts("");
-                        }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                        Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                        Cycle_SpecialInferences(c->term, e->term, belief->truth, e->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                    }
-                }
-            })
-            if(countConceptsMatched > Stats_countConceptsMatchedMax)
-            {
-                Stats_countConceptsMatchedMax = countConceptsMatched;
-            }
-            if(countConceptsMatched >= BELIEF_CONCEPT_MATCH_TARGET || countConceptsMatchedNew == 0)
-            {
-                break;
-            }
-        }
-    }
+		//IN_DEBUG( printf("conceptPriorityThreshold=%f\n", conceptPriorityThreshold); )
+		Event *e = &selectedBeliefs[i];
+		double priority = selectedBeliefsPriority[i];
+		Term dummy_term = {0};
+		Truth dummy_truth = {0};
+		RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
+		//1. put related concepts on a PQ of size BELIEF_CONCEPT_MATCH_TARGET ranked by their priority
+		PriorityQueue attentional_focus_concepts = {0}; //PQ for attentional focus (semantically related belief concepts)
+		Item attentional_focus_concept_items_storage[BELIEF_CONCEPT_MATCH_TARGET] = {0};
+		PriorityQueue_INIT(&attentional_focus_concepts, attentional_focus_concept_items_storage, BELIEF_CONCEPT_MATCH_TARGET);
+		RELATED_CONCEPTS_FOREACH(&e->term, c,
+		{
+			PriorityQueue_Push_Feedback feedback = PriorityQueue_PushReference(&attentional_focus_concepts, c->priority, c);
+			if(feedback.added)
+			{
+				//fputs("AF PUSH: ", stdout); Narsese_PrintTerm(&c->term); puts("");
+			}
+		})
+		//BELIEF_CONCEPT_MATCH_TARGET times take the topmost (as long as there is one):
+		//RELATED_CONCEPTS_FOREACH(&e->term, c,
+		printf("attentional focus items amount %d\n", attentional_focus_concepts.itemsAmount); 
+		while(attentional_focus_concepts.itemsAmount > 0)
+		{
+			Concept *c = NULL;
+			PriorityQueue_PopMax(&attentional_focus_concepts, (void**) &c, NULL);
+			//fputs("AFF POP: ", stdout); Narsese_PrintTerm(&c->term); puts("");
+			assert(c != NULL, "concept is null");
+			
+			long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
+			Stats_countConceptsMatchedTotal++;
+			if(c->belief.type != EVENT_TYPE_DELETED)
+			{
+				//use eternal belief as belief
+				Event* belief = &c->belief;
+				Event future_belief = c->predicted_belief;
+				//but if there is a predicted one in the event's window, use this one
+				if(e->occurrenceTime != OCCURRENCE_ETERNAL && future_belief.type != EVENT_TYPE_DELETED &&
+				   labs(e->occurrenceTime - future_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+				{
+					future_belief.truth = Truth_Projection(future_belief.truth, future_belief.occurrenceTime, e->occurrenceTime);
+					future_belief.occurrenceTime = e->occurrenceTime;
+					belief = &future_belief;
+				}
+				//unless there is an actual belief which falls into the event's window
+				Event project_belief = c->belief_spike;
+				if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+				   labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
+				{
+					project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
+					project_belief.occurrenceTime = e->occurrenceTime;
+					belief = &project_belief;
+				}
+				//Check for overlap and apply inference rules
+				if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+				{
+					c->usage = Usage_use(c->usage, currentTime, false);
+					Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+					if(PRINT_CONTROL_INFO)
+					{
+						fputs("Apply rule table on ", stdout);
+						Narsese_PrintTerm(&e->term);
+						printf(" Priority=%f\n", priority);
+						fputs(" and ", stdout);
+						Narsese_PrintTerm(&c->term);
+						puts("");
+					}
+					RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+					Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+					Cycle_SpecialInferences(c->term, e->term, belief->truth, e->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+				}
+			}
+		}
+	}
 #endif
 }
 
