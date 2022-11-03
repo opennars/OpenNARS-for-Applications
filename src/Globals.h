@@ -69,5 +69,9 @@ void mysrand(unsigned int seed);
 //Stringification macro:
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
+double mylog2(double n);
+#ifndef log2
+#define log2 mylog2
+#endif
 
 #endif
