@@ -1,0 +1,15 @@
+*RESET_PROTOTYPES=3
+*SET_CONTINUOUS=bright
+*SUFFICIENT_MATCH_EXP=1.0
+<{black} --> [bright]>. :|: %0.0%
+1
+<{gray} --> [bright]>. :|: %0.5%
+1
+<{white} --> [bright]>. :|: %1.0%
+1
+*SUFFICIENT_MATCH_EXP=0.0
+<{newcolor} --> [bright]>. :|: %0.7%
+1
+5
+<{newcolor} <-> {?what}>? :|:
+//expected: Answer: <{newcolor} <-> {gray}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000

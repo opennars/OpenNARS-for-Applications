@@ -72,6 +72,8 @@
 #define EVENT_BELIEF_DISTANCE 20
 //Time distance from now to still correlate an outcome
 #define CORRELATE_OUTCOME_RECENCY 5
+//How many new concepts to create at most for temporal compounding of temporal and procedural implications each
+#define DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX 20
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target

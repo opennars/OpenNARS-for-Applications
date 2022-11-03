@@ -65,6 +65,7 @@ void DRAW_LINE(double x, double y, double angle, int len, char *canvas, char sym
 #include "Sequence_Test.h"
 #include "Alien_Test.h"
 #include "UDPNAR_Test.h"
+#include "Bandrobot_Test.h"
 
 void Run_System_Tests()
 {

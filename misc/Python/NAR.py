@@ -77,6 +77,8 @@ def AddInput(narsese, Print=True):
     NAR.stdin.flush()
     ReturnStats = narsese == "*stats"
     if ReturnStats:
+        if Print:
+            print("\n".join(GetRawOutput()[0]))
         return GetStats()
     ret = GetOutput()
     if Print:

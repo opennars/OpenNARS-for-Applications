@@ -15,7 +15,7 @@ from transbot_lidar import *
 motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
 cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
-centerSize = 10
+centerSize = 30
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
 
@@ -70,7 +70,7 @@ def pick_with_feedback(pickobj=None):
                 if y_real_temp < closer_to_gripper: #visual feedback
                     forward()
                 elif y_real_temp > closer_to_gripper:
-                    left()
+                    #left()
                     forward()
                     forward()
                     forward()
@@ -177,11 +177,8 @@ def TransbotPerceiveAt(obj, trans, rot):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
-    if screenX < robotVisualMiddle-centerSize:
-        direction = "left"
-    elif screenX > robotVisualMiddle+centerSize:
-        direction = "right"
-    NAR.AddInput("<%s --> [%s]>. :|:" % (obj, direction))
+    locationToFreq = 1.0 - 0.1 * (screenX / 640)
+    NAR.AddInput(("<%s --> [Pleft]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
 
 Configuration = """
 *reset
@@ -227,10 +224,18 @@ def process(line):
                 y_real = y+h #down side of bb
                 if y_real > y_real_temp:
                     (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
+            if y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
+                count = 0
+                for detection in detections:
+                    count += 1
+                    if count >= 3:
+                        break
+                    (obj, x, y, w, h, c) = detection
+                    x_real = x+w/2
+                    y_real = y+h #down side of bb
+                    TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
             if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
                 NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
-            elif y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
-                TransbotPerceiveVisual(obj, x_real_temp, y_real_temp, trans, rot)
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
             executions = NAR.AddInput(line)["executions"] #account for mental op
@@ -277,7 +282,7 @@ def shell_step(lastLine = ""):
     global lastGoal
     #Get input line and forward potential command
     try:
-        line = input().rstrip("\n").replace("leave","left") #"the green cat quickly eats the yellow mouse in the old house"
+        line = input().rstrip("\n").replace("leave","Pleft") #"the green cat quickly eats the yellow mouse in the old house"
     except:
         exit(0)
     if len(line.strip()) == 0:

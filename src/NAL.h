@@ -74,7 +74,7 @@ R2( P, (S --> P), |-, S, Truth_Abduction )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
 //!Rules for Similarity:
-R1( (S <-> P), |-, (P <-> S), Truth_StructuralDeduction )
+R1( (S <-> P), |-, (P <-> S), Truth_StructuralIntersection )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
@@ -83,12 +83,12 @@ R2( (P --> M), (S <-> M), |-, (P --> S), Truth_Analogy )
 R2( S, (S <-> P), |-, P, Truth_Analogy )
 R2( S, (P <-> S), |-, P, Truth_Analogy )
 //!Dealing with properties and instances:
-R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralDeduction )
-R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralDeduction )
+R1( (S --> {P}), |-, (S <-> {P}), Truth_StructuralIntersection )
+R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralIntersection )
 R2( ({M} --> P), (S <-> M), |-, ({S} --> P), Truth_Analogy )
 R2( (P --> [M]), (S <-> M), |-, (P --> [S]), Truth_Analogy )
-R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralDeduction )
-R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralDeduction )
+R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralIntersection )
+R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralIntersection )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 3
@@ -130,10 +130,16 @@ R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 4
 //!Transformation rules between product and image:
-R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralDeduction )
-R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralDeduction )
-R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralDeduction )
-R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralDeduction )
+R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralIntersection )
+R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralIntersection )
+R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralIntersection )
+R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralIntersection )
+R2( (R --> [P]), (S --> [P]), |-, ((R * S) --> (+ P)), Truth_FrequencyGreater )
+R2( ((A * B) --> (+ P)), ((B * C) --> (+ P)), |-, ((A * C) --> (+ P)), Truth_Deduction )
+R2( (R --> [P]), (S --> [P]), |-, ((R * S) --> (= P)), Truth_FrequencyEqual )
+R2( ((A * B) --> (= P)), ((B * C) --> (= P)), |-, ((A * C) --> (= P)), Truth_Deduction )
+R1( ((A * B) --> (= P)), |-, ((B * A) --> (= P)), Truth_StructuralIntersection )
+R2( (A --> [P]), ((A * B) --> (= P)), |-, (B --> [P]), Truth_Intersection )
 //!Optional rules for more efficient reasoning about relation components:
 R2( ((A * B) --> R), ((C * B) --> R), |-, (C --> A), Truth_Abduction )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (C --> B), Truth_Abduction )
@@ -162,7 +168,7 @@ R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
 R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
-R1( (A && B), |-, (B && A), Truth_StructuralDeduction )
+R1( (A && B), |-, (B && A), Truth_StructuralIntersection )
 R2( S, (&& S A), |-, A, Truth_DecomposePNN ) //Truth_AnonymousAnalogy in Cycle_SpecialInferences for var elimination
 R2( S, (|| S A), |-, A, Truth_DecomposeNPP )
 R2( S, (&& (! S) A), |-, A, Truth_DecomposeNNN )
@@ -183,7 +189,7 @@ R2( ((C && M) ==> P), (S ==> M), |-, ((C && S) ==> P), Truth_Deduction )
 R2( ((C && P) ==> M), ((C && S) ==> M), |-, (S ==> P), Truth_Abduction )
 R2( ((C && M) ==> P), (M ==> S), |-, ((C && S) ==> P), Truth_Induction )
 //!Rules for equivalence:
-R1( (S <=> P), |-, (P <=> S), Truth_StructuralDeduction )
+R1( (S <=> P), |-, (P <=> S), Truth_StructuralIntersection )
 R2( (S ==> P), (P ==> S), |-, (S <=> P), Truth_Intersection )
 R2( (P ==> M), (S ==> M), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
@@ -223,7 +229,7 @@ R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 7
 R1( (A &| B), |-, A, Truth_StructuralDeduction )
 R1( (A &| B), |-, B, Truth_StructuralDeduction )
-R1( (A &| B), |-, (B &| A), Truth_StructuralDeduction )
+R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!

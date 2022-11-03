@@ -95,6 +95,11 @@ void Process_Args(int argc, char *argv[])
             {
                 NAR_Robot(iterations);
             }
+            else
+            if(!strcmp(argv[i],"bandrobot"))
+            {
+                NAR_Bandrobot(iterations);
+            }
         }
         if(!strcmp(argv[1],"UDPNAR")) // ./NAR UDPNAR IP PORT timestep(ns per cycle) printDerivations
         {
@@ -138,7 +143,8 @@ void Display_Help()
     puts("NAR testchamber (starts Test Chamber multistep procedure learning example)");
     puts("NAR alien (starts the alien example)");
     puts("NAR cartpole (starts the cartpole example)");
-    puts("NAR robot (starts the robot example)");
+    puts("NAR bandrobot (starts the band robot example)");
+    puts("NAR robot (starts the grid robot example)");
     puts("NAR shell (starts the interactive NAL shell)");
 }
 
