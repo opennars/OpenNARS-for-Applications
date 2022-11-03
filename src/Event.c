@@ -57,3 +57,8 @@ Event Event_Eternalized(Event *event)
     }
     return eternal_event;
 }
+
+bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
+{
+    return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
+}

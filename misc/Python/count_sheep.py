@@ -47,5 +47,5 @@ for t in range(sheeps):
         executions += NAR.AddInput("1")["executions"]
     NAR.AddInput("500")
     count(executions)
-
+NAR.AddInput("*stats", Print=True)
 print("sheep counted:", cnt, "of", str(sheeps))
