@@ -171,13 +171,13 @@ bool Memory_containsBeliefOrGoal(Event *e)
         {
             if(e->occurrenceTime == OCCURRENCE_ETERNAL)
             {
-                if(c->belief.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief, e))
+                if(c->belief.type != EVENT_TYPE_DELETED && Event_Equal(e, &c->belief))
                 {
                     return true;
                 }
             }
             else
-            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief_spike, e))
+            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(e, &c->belief_spike))
             {
                 return true;
             }
@@ -328,6 +328,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        if(input)
+        {
+            c->priorizedTemporalCompounding = true;
+        }
         if(c != NULL)
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);

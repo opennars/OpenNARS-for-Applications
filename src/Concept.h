@@ -60,6 +60,7 @@ typedef struct {
     long processID2; //avoids duplicate processing
     long processID3; //avoids duplicate processing
     long lastSelectionTime;
+    bool priorizedTemporalCompounding; //priorized compounding? inputs and seq of inputs
 } Concept;
 
 #endif

@@ -33,7 +33,8 @@ Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeO
                      .stamp = (Stamp) { .evidentalBase = { base++ } }, 
                      .occurrenceTime = currentTime,
                      .occurrenceTimeOffset = occurrenceTimeOffset,
-                     .creationTime = currentTime };
+                     .creationTime = currentTime,
+                     .input = true };
 }
 
 void Event_INIT()
@@ -46,10 +47,6 @@ bool Event_Equal(Event *event, Event *existing)
     return Truth_Equal(&event->truth, &existing->truth) && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
 }
 
-bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
-{
-    return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
-}
 Event Event_Eternalized(Event *event)
 {
     Event eternal_event = *event;
@@ -59,4 +56,9 @@ Event Event_Eternalized(Event *event)
         eternal_event.truth = Truth_Eternalize(event->truth);
     }
     return eternal_event;
+}
+
+bool Event_EqualTermEqualStampLessConfidentThan(Event *event, Event *existing)
+{
+    return event->truth.confidence <= existing->truth.confidence && event->occurrenceTime == existing->occurrenceTime && Term_Equal(&event->term, &existing->term) && Stamp_Equal(&event->stamp, &existing->stamp);
 }

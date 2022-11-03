@@ -1,4 +1,4 @@
-*motorbabbling=0.05
+*motorbabbling=false
 *decisionthreshold=0.51
 *volume=0
 
@@ -12,7 +12,7 @@
 <(<gripper --> [holding]> &/ <({SELF} * $obj) --> ^goto>) =/> <$obj --> [left]>>.
 
 //If gripper is open and a bottle is seen, pick it up to hold it
-<((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
+<((<gripper --> [open]> &/ <bottle --> [Pleft]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 //If the gripper is holding an object and a human is seen, drop it there
-<((<gripper --> [hold]> &/ <person --> [left]>) &/ ^drop) =/> G>.
+<((<gripper --> [hold]> &/ <person --> [Pleft]>) &/ ^drop) =/> G>.
 
