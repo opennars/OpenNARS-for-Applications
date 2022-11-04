@@ -5,5 +5,5 @@ set NoWarn=-Wno-unknown-pragmas -Wno-tautological-compare -Wno-dollar-in-identif
 C:/tcc/tcc -DSTAGE=1 -Wall -Wextra -Wformat-security %NoWarn% %Str% -oNAR.exe
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 NAR NAL_GenerateRuleTable > src/RuleTable.c
-C:/tcc/tcc -DSTAGE=2 %Str% src/RuleTable.c -oNAR.exe
+C:/tcc/tcc -Wl,--stack,4194304 -DSTAGE=2 %Str% src/RuleTable.c -oNAR.exe
 echo "Done."
