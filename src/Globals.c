@@ -25,7 +25,6 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 void Globals_assert(bool b, char* message)
 {
@@ -71,5 +70,5 @@ void mysrand(unsigned int seed)
 
 double mylog2(double n)
 {
-	return log2(n) / log2(2);
+    return log(n) / log(2);
 }

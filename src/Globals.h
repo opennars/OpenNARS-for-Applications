@@ -34,7 +34,8 @@
 //////////////
 #include <stdbool.h>
 #include <string.h>
-#include <ctype.h> 
+#include <ctype.h>
+#include <math.h>
 
 //Macros//
 //////////
