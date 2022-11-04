@@ -52,7 +52,7 @@ int Shell_ProcessInput(char *line)
     //trim string, for IRC etc. convenience
     for(int i=strlen(line)-1; i>=0; i--)
     {
-        if(!isspace(line[i]))
+        if(!isspace((int) line[i]))
         {
             break;
         }
