@@ -11,8 +11,8 @@
 //Go to the location in order to see the object:
 <(<gripper --> [holding]> &/ <({SELF} * $obj) --> ^goto>) =/> <$obj --> [left]>>.
 
-//If gripper is open and a bottle is seen, pick it up to hold it
-<((<gripper --> [open]> &/ <bottle --> [Pleft]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
+//If gripper is open and a green bottle is seen, pick it up to hold it
+<((<gripper --> [open]> &/ <bottle --> [green Pleft]>) &/ <({SELF} * (green * bottle)) --> ^pick>) =/> G>.
 //If the gripper is holding an object and a human is seen, drop it there
 <((<gripper --> [hold]> &/ <person --> [Pleft]>) &/ ^drop) =/> G>.
 

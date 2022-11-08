@@ -52,10 +52,10 @@ def pick_with_feedback(pickobj=None):
         y_real_temp = -1
         x_real_temp = -1
         for detection in detections:
-            (obj, x, y, w, h, c) = detection
+            (obj, x, y, w, h, c, color) = detection
             x_real = x+w/2
             y_real = y+h #down side of bb
-            if y_real > y_real_temp and (pickobj == None or pickobj == obj):
+            if y_real > y_real_temp and (pickobj == None or pickobj == ("(%s * %s)" % (color, obj))):
                 y_real_temp = y_real
                 x_real_temp = x_real
         if y_real_temp != -1:
@@ -174,11 +174,11 @@ def TransbotPerceiveAt(obj, trans, rot):
     transXYrotZW = "_".join([valueToTerm(x) for x in trans[:2]]) + "_" + "_".join([valueToTerm(x) for x in rot[2:]])
     NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
-def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
+def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot, color):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
     locationToFreq = 1.0 - 0.1 * (screenX / 640)
-    NAR.AddInput(("<%s --> [Pleft]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
+    NAR.AddInput(("<%s --> [%s Pleft]>. :|: " % (obj, color)) + "%" + str(locationToFreq) + "%")
 
 Configuration = """
 *reset
@@ -217,23 +217,23 @@ def process(line):
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
-            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = ("", -1, -1, -1, -1, 0)
+            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = ("", -1, -1, -1, -1, 0, "")
             for detection in detections:
-                (obj, x, y, w, h, c) = detection
+                (obj, x, y, w, h, c, color) = detection
                 x_real = x+w/2
                 y_real = y+h #down side of bb
                 if y_real > y_real_temp:
-                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
+                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = (obj, x_real, y_real, w, h, c, color)
             if y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
                 count = 0
                 for detection in detections:
                     count += 1
                     if count >= 3:
                         break
-                    (obj, x, y, w, h, c) = detection
+                    (obj, x, y, w, h, c, color) = detection
                     x_real = x+w/2
                     y_real = y+h #down side of bb
-                    TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
+                    TransbotPerceiveVisual(obj, x_real, y_real, trans, rot, color)
             if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
                 NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
             cv.imshow('frame', frame)
