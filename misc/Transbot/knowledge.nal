@@ -14,11 +14,14 @@
 //If gripper is open and a bottle is seen, pick it up to hold it
 <((<gripper --> [open]> &/ <bottle --> [see]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 
-//If gripper is open, and there is a bottle bluer than on the right, pick the left bottle
-<((<gripper --> [open]> &/ <(more_color1 /1 right) --> bottle>) &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
+//If gripper is open, and there is a larger bottle than on the right, pick the left bottle
+//<((<gripper --> [open]> &/ <(less_size0 /1 right) --> bottle>) &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
+//<((<gripper --> [open]> &/ <(less_size1 /1 right) --> bottle>) &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
 
-//If gripper is open, and there is a bottle bluer than on the left, pick the right bottle
-<((<gripper --> [open]> &/ <(more_color1 /1 left) --> bottle>) &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
+
+//If gripper is open, and there is a larger bottle than on the left, pick the right bottle
+//<((<gripper --> [open]> &/ <(less_size0 /1 left) --> bottle>) &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
+//<((<gripper --> [open]> &/ <(less_size1 /1 left) --> bottle>) &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
 
 //If the gripper is holding an object and a human is seen, drop it there
 <((<gripper --> [hold]> &/ <person --> [see]>) &/ ^drop) =/> G>.

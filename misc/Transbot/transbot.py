@@ -55,8 +55,10 @@ def pick_with_feedback(pickobj=None, location=None):
         action = cv.waitKey(10) & 0xFF
         detections, frame = detect_objects()
         y_real_temp = -1
-        x_real_temp = -1
-        for detection in detections:
+        x_real_temp = -1 if location != "left" else 9999999
+        for i, detection in enumerate(detections):
+            if i >= 2:
+                continue
             (obj, x, y, w, h, c, color) = detection
             x_real = x+w/2
             y_real = y+h #down side of bb
@@ -246,21 +248,19 @@ def process(line):
                     color_left, size_left = extractVectors(left)
                     color_right, size_right = extractVectors(right)
                     nalifier = Nalifier(1)
-                    nalifier.AddInputVector("left", color_left, dimname="color")
+                    #nalifier.AddInputVector("left", color_left, dimname="color")
                     nalifier.AddInputVector("left", size_left, dimname="size")
                     nalifier.AddInput("1", Print=False)
                     nalifier.InstanceCreation = False
-                    nalifier.AddInputVector("right", color_right, dimname="color")
+                    #nalifier.AddInputVector("right", color_right, dimname="color")
                     nalifier.AddInputVector("right", size_right, dimname="size")
                     nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
                     nalifier.AddInput("1", Print=True)
                     biggestDifference = nalifier.BiggestDifference
                     if biggestDifference[0] == "+":
-                        NAR.AddInput("<(more_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + ">. :|:")
-                        NAR.AddInput("<(less_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">. :|:")
+                        NAR.AddInput("(<(more_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(less_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
                     else:
-                        NAR.AddInput("<(less_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + ">. :|:")
-                        NAR.AddInput("<(more_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">. :|:")
+                        NAR.AddInput("(<(less_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(more_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
                 else:
                     for i, detection in enumerate(detections):
                         if i >= 2:
