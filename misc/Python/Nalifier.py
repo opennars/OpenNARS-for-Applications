@@ -370,17 +370,20 @@ class Nalifier:
           self.position1.pop(proto, None)
           self.conceptnames.discard(proto)
 
-    def AddInputVector(self, name, values, dimname=None, Print=False):
+    def AddInputVector(self, name, values, dimname=None, Print=False, UseHistogram=True, Sensation_Reliance = 0.9):
         global valueReporters
         if dimname is None:
           dimname = name
         for i, value in enumerate(values):
             propertyName = dimname + str(i)
-            if propertyName not in self.valueReporters:
-              self.valueReporters[propertyName] = ValueReporter()
-            #binary_extreme_comparison_properties.add(propertyName)
-            self.continuous_comparison_properties.add(propertyName)
-            (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation)
+            if UseHistogram:
+                if propertyName not in self.valueReporters:
+                  self.valueReporters[propertyName] = ValueReporter()
+                #binary_extreme_comparison_properties.add(propertyName)
+                self.continuous_comparison_properties.add(propertyName)
+                (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
+            else:
+                (f,c) = (value, Sensation_Reliance)
             self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print) # + str(c) + "%")
 
 if "test" in sys.argv:
