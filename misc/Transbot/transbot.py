@@ -191,7 +191,8 @@ def TransbotPerceiveAt(obj, trans, rot):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
-    NAR.AddInput(("<%s --> [see]>. :|:" % obj))
+    locationToFreq = 1.0 - 0.1 * (screenX / 640)
+    NAR.AddInput(("<%s --> [locationX]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
 
 Configuration = """
 *reset
