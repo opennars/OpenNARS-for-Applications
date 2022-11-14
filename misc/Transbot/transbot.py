@@ -10,6 +10,7 @@ from transbot_nav import *
 from transbot_gripper import *
 from transbot_vision import *
 from transbot_lidar import *
+from Nalifier import *
 
 #Parameters:
 motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
@@ -28,7 +29,11 @@ def pick_failed():
     right()
     open_gripper()
 
-def pick_with_feedback(pickobj=None):
+def pick_with_feedback(pickobj=None, location=None):
+    if " * " in pickobj:
+        pickobj = pickobj.replace("(","").replace(")","")
+        location = pickobj.split(" * ")[0]
+        pickobj = pickobj.split(" * ")[1]
     if getPicked():
         return
     arm_down()
@@ -50,14 +55,23 @@ def pick_with_feedback(pickobj=None):
         action = cv.waitKey(10) & 0xFF
         detections, frame = detect_objects()
         y_real_temp = -1
-        x_real_temp = -1
-        for detection in detections:
-            (obj, x, y, w, h, c) = detection
+        x_real_temp = -1 if location != "left" else 9999999
+        for i, detection in enumerate(detections):
+            if i >= 2:
+                continue
+            (obj, x, y, w, h, c, color) = detection
             x_real = x+w/2
             y_real = y+h #down side of bb
-            if y_real > y_real_temp and (pickobj == None or pickobj == obj):
-                y_real_temp = y_real
-                x_real_temp = x_real
+            if pickobj == None or pickobj == obj:
+                if location is None and y_real > y_real_temp:
+                    y_real_temp = y_real
+                    x_real_temp = x_real
+                if location == "left" and x_real < x_real_temp:
+                    y_real_temp = y_real
+                    x_real_temp = x_real
+                if location == "right" and x_real > x_real_temp:
+                    y_real_temp = y_real
+                    x_real_temp = x_real
         if y_real_temp != -1:
             if y_real_temp < y_too_far_to_grab:
                 print("//pick failed, too far away to grab")
@@ -178,7 +192,7 @@ def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
     locationToFreq = 1.0 - 0.1 * (screenX / 640)
-    NAR.AddInput(("<%s --> [Pleft]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
+    NAR.AddInput(("<%s --> [locationX]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
 
 Configuration = """
 *reset
@@ -217,23 +231,48 @@ def process(line):
             (trans, rot) = getLocation()
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
-            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = ("", -1, -1, -1, -1, 0)
+            (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = ("", -1, -1, -1, -1, 0, (0,0,0))
             for detection in detections:
-                (obj, x, y, w, h, c) = detection
+                (obj, x, y, w, h, c, color) = detection
                 x_real = x+w/2
                 y_real = y+h #down side of bb
                 if y_real > y_real_temp:
-                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp) = (obj, x_real, y_real, w, h, c)
+                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = (obj, x_real, y_real, w, h, c, color)
             if y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
-                count = 0
-                for detection in detections:
-                    count += 1
-                    if count >= 3:
-                        break
-                    (obj, x, y, w, h, c) = detection
-                    x_real = x+w/2
-                    y_real = y+h #down side of bb
-                    TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
+                if len(detections) >=2 and detections[0][0] == detections[1][0]: #same object, compare using Nalifier!
+                    detections_xsorted = detections.copy()
+                    detections_xsorted.sort(key=lambda x: x[1])
+                    color_sensitivity = 100.0
+                    maxSizeX = max(detections[0][3], detections[1][3])
+                    maxSizeY = max(detections[0][4], detections[1][4])
+                    extractVectors = lambda detection: ([detection[6][0]/(255.0 * color_sensitivity), detection[6][1]/(255.0 * color_sensitivity), detection[6][2]/(255.0 * color_sensitivity)],
+                                                        [detection[3]/maxSizeX, detection[4]/maxSizeY]) #color and size thus far
+                    left = detections_xsorted[0]
+                    right = detections_xsorted[1]
+                    color_left, size_left = extractVectors(left)
+                    color_right, size_right = extractVectors(right)
+                    nalifier = Nalifier(1)
+                    nalifier.AddInputVector("left", color_left, dimname="color")
+                    nalifier.AddInputVector("left", size_left, dimname="size")
+                    nalifier.AddInput("1", Print=False)
+                    nalifier.InstanceCreation = False
+                    nalifier.AddInputVector("right", color_right, dimname="color")
+                    nalifier.AddInputVector("right", size_right, dimname="size")
+                    nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
+                    nalifier.AddInput("1", Print=True)
+                    biggestDifference = nalifier.BiggestDifference
+                    if biggestDifference[0] == "+":
+                        NAR.AddInput("(<(more_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(less_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
+                    else:
+                        NAR.AddInput("(<(less_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(more_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
+                else:
+                    for i, detection in enumerate(detections):
+                        if i >= 2:
+                            break
+                        (obj, x, y, w, h, c, color) = detection
+                        x_real = x+w/2
+                        y_real = y+h #down side of bb
+                        TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
             if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
                 NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
             cv.imshow('frame', frame)
