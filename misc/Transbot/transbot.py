@@ -241,18 +241,21 @@ def process(line):
                 if len(detections) >=2 and detections[0][0] == detections[1][0]: #same object, compare using Nalifier!
                     detections_xsorted = detections.copy()
                     detections_xsorted.sort(key=lambda x: x[1])
-                    extractVectors = lambda detection: ([detection[6][0]/255.0, detection[6][1]/255.0, detection[6][2]/255.0],
-                                                        [detection[3]/transbot_vision_WIDTH, detection[4]/transbot_vision_HEIGHT]) #color and size thus far
+                    color_sensitivity = 100.0
+                    maxSizeX = max(detections[0][3], detections[1][3])
+                    maxSizeY = max(detections[0][4], detections[1][4])
+                    extractVectors = lambda detection: ([detection[6][0]/(255.0 * color_sensitivity), detection[6][1]/(255.0 * color_sensitivity), detection[6][2]/(255.0 * color_sensitivity)],
+                                                        [detection[3]/maxSizeX, detection[4]/maxSizeY]) #color and size thus far
                     left = detections_xsorted[0]
                     right = detections_xsorted[1]
                     color_left, size_left = extractVectors(left)
                     color_right, size_right = extractVectors(right)
                     nalifier = Nalifier(1)
-                    #nalifier.AddInputVector("left", color_left, dimname="color")
+                    nalifier.AddInputVector("left", color_left, dimname="color")
                     nalifier.AddInputVector("left", size_left, dimname="size")
                     nalifier.AddInput("1", Print=False)
                     nalifier.InstanceCreation = False
-                    #nalifier.AddInputVector("right", color_right, dimname="color")
+                    nalifier.AddInputVector("right", color_right, dimname="color")
                     nalifier.AddInputVector("right", size_right, dimname="size")
                     nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
                     nalifier.AddInput("1", Print=True)
