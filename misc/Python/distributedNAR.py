@@ -11,10 +11,6 @@ for x in nodes:
     if x != master:
         processes[x] = NAR.spawnNAR()
 
-#Filter for belief and goal selections:
-def selectOfPunctuation(selections, punctuation):
-    return [x for x in selections if x["punctuation"] == punctuation]
-
 #Build efficient graph structure with ingoing/outgoing nodes for each node
 incoming = {} #dict of node -> set associations
 outgoing = {} #dict of node -> set associations
@@ -27,10 +23,15 @@ for (From, To) in edges:
     #Add outgoing node To to From:
     outgoing[From].add(To)
 
+#Filter for belief and goal selections:
+def selectOfPunctuation(selections, punctuation):
+    return [x for x in selections if x["punctuation"] == punctuation]
+
 #Translate selection dict to input Narsese
 def selectionToNarsese(selection):
     return selection["term"] + selection["punctuation"] + " :|: {" + str(selection["truth"]["frequency"]) + " " + str(selection["truth"]["confidence"]) + "}"
 
+#Transport informations (beliefs up, goals down)
 def Trickle(node, selections, Down=True):
     for selection in selections:
         narsese = selectionToNarsese(selection)
@@ -45,6 +46,7 @@ def Trickle(node, selections, Down=True):
                 NAR.setNAR(processes[x])
                 Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True)["selections"], "."), Down=False)
 
+#Add input to the NARS graph
 def AddInput(narsese, node = None):
     if narsese.endswith("! :|:"): #is goal
         print("//Arriving in node:", master)
@@ -55,5 +57,7 @@ def AddInput(narsese, node = None):
         NAR.setNAR(processes[node])
         Trickle(node, selectOfPunctuation(NAR.AddInput(narsese)["selections"], "."), Down=False)
 
-AddInput("G! :|:")
-AddInput("b. :|:", "narSlave1")
+#Example:
+if __name__ == "__main__":
+    AddInput("G! :|:")
+    AddInput("b. :|:", "narSlave1")
