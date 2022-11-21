@@ -6,6 +6,8 @@ from joblib import Parallel, delayed
 master = "narMaster"
 nodes = [master, "narSlave1", "narSlave2"]
 edges = [("narSlave1", master), ("narSlave2", master)]
+priorityThresholdGoals = 0.1 #priority needed for communication of a task
+priorityThresholdBeliefs = 0.1 #priority needed for communication of a task
 num_cores = multiprocessing.cpu_count()
 
 #Spawn processes:
@@ -38,24 +40,33 @@ def selectionToNarsese(selection):
 def Trickle(node, selections, Down=True):
     print("//^ in node:", node)
     for selection in selections:
+        if Down and float(selection["Priority"]) < priorityThresholdGoals:
+            continue
+        if not Down and float(selection["Priority"]) < priorityThresholdBeliefs:
+            continue
         narsese = selectionToNarsese(selection)
-        if Down: #parallelelization only safe down so far assuming child has just one parent, else locking is necessary in addition
-            #Parallel(n_jobs=num_cores, require='sharedmem')(delayed(Trickle)(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR=processes[x])["selections"], "!"), Down=True) for x in incoming[node])
+        if Down:
             for x in incoming[node]:
-                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR=processes[x])["selections"], "!"), Down=True)
+                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR=processes[x])["selections"], "!"), Down=True)
         else:
             for x in outgoing[node]:
-                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR=processes[x])["selections"], "."), Down=False)
+                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR=processes[x])["selections"], "."), Down=False)
+
+def PerformIndependentSteps(ticks=1):
+    Parallel(n_jobs=num_cores, require='sharedmem')(delayed(NAR.AddInput)(str(ticks), Print=True, usedNAR=x) for x in processes.values())
 
 #Add input to the NARS graph
 def AddInput(narsese, node = None):
-    if narsese.endswith("! :|:"): #is goal
-        Trickle(master, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR = processes[master])["selections"], "!"), Down=True)
+    if narsese.isdigit():
+        PerformIndependentSteps(int(narsese))
+    elif narsese.endswith("! :|:"): #is goal
+        Trickle(master, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR = processes[master])["selections"], "!"), Down=True)
     else:
-        Trickle(node, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR = processes[node])["selections"], "."), Down=False)
+        Trickle(node, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR = processes[node])["selections"], "."), Down=False)
 
 #Example:
 if __name__ == "__main__":
     AddInput("G! :|:")
-    AddInput("b. :|:", "narSlave1")
-    AddInput("c. :|:", "narSlave2")
+    AddInput("a. :|:", node="narSlave1")
+    AddInput("b. :|:", node="narSlave1")
+    AddInput("50")

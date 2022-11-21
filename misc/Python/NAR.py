@@ -25,6 +25,8 @@ def parseTask(s):
     M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
+    if "Priority" in s:
+        M["Priority"] = s.split("Priority=")[1].split(" ")[0]
     return M
 
 def parseReason(sraw):
