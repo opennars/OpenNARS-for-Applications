@@ -1,9 +1,12 @@
 import NAR
+import multiprocessing
+from joblib import Parallel, delayed
 
 #Node graph:
 master = "narMaster"
 nodes = [master, "narSlave1", "narSlave2"]
 edges = [("narSlave1", master), ("narSlave2", master)]
+num_cores = multiprocessing.cpu_count()
 
 #Spawn processes:
 processes = {master: NAR.getNAR()}
@@ -33,31 +36,26 @@ def selectionToNarsese(selection):
 
 #Transport informations (beliefs up, goals down)
 def Trickle(node, selections, Down=True):
+    print("//^ in node:", node)
     for selection in selections:
         narsese = selectionToNarsese(selection)
-        if Down:
+        if Down: #parallelelization only safe down so far assuming child has just one parent, else locking is necessary in addition
+            #Parallel(n_jobs=num_cores, require='sharedmem')(delayed(Trickle)(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True, usedNAR=processes[x])["selections"], "!"), Down=True) for x in incoming[node])
             for x in incoming[node]:
-                print("//Arriving in node:", x)
-                NAR.setNAR(processes[x])
-                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese)["selections"], "!"), Down=True)
+                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR=processes[x])["selections"], "!"), Down=True)
         else:
             for x in outgoing[node]:
-                print("//Arriving in node:", x)
-                NAR.setNAR(processes[x])
-                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=True)["selections"], "."), Down=False)
+                Trickle(x, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR=processes[x])["selections"], "."), Down=False)
 
 #Add input to the NARS graph
 def AddInput(narsese, node = None):
     if narsese.endswith("! :|:"): #is goal
-        print("//Arriving in node:", master)
-        NAR.setNAR(processes[master])
-        Trickle(master, selectOfPunctuation(NAR.AddInput(narsese)["selections"], "!"), Down=True)
+        Trickle(master, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR = processes[master])["selections"], "!"), Down=True)
     else:
-        print("//Arriving in node:", node)
-        NAR.setNAR(processes[node])
-        Trickle(node, selectOfPunctuation(NAR.AddInput(narsese)["selections"], "."), Down=False)
+        Trickle(node, selectOfPunctuation(NAR.AddInput(narsese, Print=False, usedNAR = processes[node])["selections"], "."), Down=False)
 
 #Example:
 if __name__ == "__main__":
     AddInput("G! :|:")
     AddInput("b. :|:", "narSlave1")
+    AddInput("c. :|:", "narSlave2")
