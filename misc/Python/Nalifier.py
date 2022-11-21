@@ -108,6 +108,7 @@ class Nalifier:
     COMMON_PROPERTY_EXP = 0.5 #how similar properties need to be in order for them to be used for building new concepts
     InstanceCreation=True
     ConceptCreation=False
+    RelativeComparison=False #use prototype as reference class for comparison after match to decide biggest difference
     usecounts = {}
     prototypes = {}
     position0 = {}
@@ -127,7 +128,8 @@ class Nalifier:
     label_properties = set([])
     Events = []
     concept_id = 1
-    valueReporters = dict([])
+    sensorValueReporters = dict([]) #for sensors
+    conceptValueReporters = dict([]) #for nodes
     BestMatch = ""
     BiggestDifference = ""
     
@@ -177,6 +179,10 @@ class Nalifier:
                                 if Truth_Expectation(truthIntermediate) > self.COMMON_PROPERTY_EXP:
                                     commonProperties.add((prop2, Truth_Revision(T1, T2)))
                                 truth3 = Truth_Revision(truth3, truthIntermediate)
+                                print(self.conceptValueReporters)
+                                if term1 + "_" + prop1 in self.conceptValueReporters:
+                                    None
+                                    #TODO TAKE OUT COMPARISON TRUTH VALUE FROM ConceptValueReporters
                                 biggestDifferenceProp, biggestDifferenceTruth, rel = self.differenceEvaluate(T1, T2, prop1, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel)
                     for prop1, T1 in extension1:
                         for prop2, T2 in extension2:
@@ -221,6 +227,8 @@ class Nalifier:
 
     def AddInput(self, inp, inverted=False, Print=False): #<{instance} --> [property]>. :|: %frequency%
         global current_prototypes, prototypes, last_instance, last_winner, last_winner_truth_exp, last_winner_reldata, last_winner_common_properties, last_label, last_label_frequency, concept_id, conceptnames, winner_match_asymmetric
+        self.BestMatch = ""
+        self.BiggestDifference = ""
         if inp != "1":
             instance = inp.split("{")[1].split("}")[0]
             property = inp.split("[")[1].split("]")[0]
@@ -377,23 +385,29 @@ class Nalifier:
           self.prototypes.pop(proto, None)
           self.position0.pop(proto, None)
           self.position1.pop(proto, None)
+          #self.conceptValueReporters.prop(proto, None) TODO!
           self.conceptnames.discard(proto)
 
     def AddInputVector(self, name, values, dimname=None, Print=False, UseHistogram=True, Sensation_Reliance = 0.9):
-        global valueReporters
+        global sensorValueReporters
         if dimname is None:
           dimname = name
         for i, value in enumerate(values):
             propertyName = dimname + str(i)
             if UseHistogram:
-                if propertyName not in self.valueReporters:
-                  self.valueReporters[propertyName] = ValueReporter()
+                if propertyName not in self.sensorValueReporters:
+                  self.sensorValueReporters[propertyName] = ValueReporter()
                 #binary_extreme_comparison_properties.add(propertyName)
                 self.continuous_comparison_properties.add(propertyName)
-                (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
+                (f,c) = self.sensorValueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
             else:
                 (f,c) = (value, Sensation_Reliance)
             self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print) # + str(c) + "%")
+            print(self.BestMatch)
+            if self.BestMatch != "":
+                rel, match = self.BestMatch
+                concept_property = name + "_" + propertyName
+                self.conceptValueReporters[concept_property].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
 
 if "test" in sys.argv:
     nalifier = Nalifier(10)
@@ -425,8 +439,8 @@ if __name__ == "__main__":
             exit(0)
         if inp.startswith("*SET_CONTINUOUS="):
             propertyName = inp.split("*SET_CONTINUOUS=")[1]
-            if propertyName not in nalifier.valueReporters:
-              nalifier.valueReporters[propertyName] = ValueReporter()
+            if propertyName not in nalifier.sensorValueReporters:
+              nalifier.sensorValueReporters[propertyName] = ValueReporter()
             nalifier.continuous_comparison_properties.add(propertyName)
             continue
         if inp.startswith("*PROTOTYPES"):
@@ -449,6 +463,9 @@ if __name__ == "__main__":
             continue
         if inp.startswith("*INSTANCE_CREATION="):
             nalifier.InstanceCreation = True if inp.split("*INSTANCE_CREATION=")[1].lower() == "true" else False
+            continue
+        if inp.startswith("*RELATIVE_COMPARISON="):
+            nalifier.RelativeComparison = True if inp.split("*RELATIVE_COMPARISON=")[1].lower() == "true" else False
             continue
         lhs = inp.split(". :|:")[0]
         if inp == "1":
