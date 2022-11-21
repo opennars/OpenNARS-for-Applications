@@ -327,7 +327,16 @@ class Nalifier:
           print("//" + inp)
         if instance not in self.current_prototypes:
             self.current_prototypes[instance] = (set(),set())
-        self.current_prototypes[instance][1].add((property, (frequency, 0.9)))
+        #check if instance is in prototypes, in which case the truth value is the revised one:
+        RevisedInstanceProperty = False
+        if instance in self.prototypes:
+            for (prop, TV) in self.prototypes[instance][1]:
+                if prop == property:
+                    self.current_prototypes[instance][1].add((property, Truth_Revision((frequency, 0.9), TV)))
+                    RevisedInstanceProperty = True
+                    break
+        if not RevisedInstanceProperty:
+            self.current_prototypes[instance][1].add((property, (frequency, 0.9)))
         winner = None
         winner_truth_exp = 0.0
         for (key, value) in self.prototypes.items():
