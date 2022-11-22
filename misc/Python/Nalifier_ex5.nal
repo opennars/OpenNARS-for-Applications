@@ -1,0 +1,24 @@
+*RESET_PROTOTYPES=10
+*SET_CONTINUOUS=red
+*SET_CONTINUOUS=green
+*SET_CONTINUOUS=blue
+*RELATIVE_COMPARISON=true
+*SUFFICIENT_MATCH_EXP=1
+*INSTANCE_CREATION=true
+<{red} --> [red]>. :|: %1.0%
+<{red} --> [green]>. :|: %0.0%
+<{red} --> [blue]>. :|: %0.0%
+1
+*INSTANCE_CREATION=false
+*SUFFICIENT_MATCH_EXP=0
+<{red2} --> [red]>. :|: %0.9%
+<{red2} --> [green]>. :|: %0.1%
+<{red2} --> [blue]>. :|: %0.1%
+1
+<{newcolor} --> [red]>. :|: %0.95%
+<{newcolor} --> [green]>. :|: %0.05%
+<{newcolor} --> [blue]>. :|: %0.3%
+1
+5
+<{newcolor} <-> {?what}>? :|:
+//expected: Answer: <{newcolor} <-> {blue1}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.729000
