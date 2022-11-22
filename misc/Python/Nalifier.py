@@ -108,6 +108,7 @@ class Nalifier:
     COMMON_PROPERTY_EXP = 0.5 #how similar properties need to be in order for them to be used for building new concepts
     InstanceCreation=True
     ConceptCreation=False
+    RelativeComparison=False
     usecounts = {}
     prototypes = {}
     position0 = {}
@@ -127,7 +128,8 @@ class Nalifier:
     label_properties = set([])
     Events = []
     concept_id = 1
-    valueReporters = dict([])
+    sensorValueReporters = dict([])
+    conceptValueReporters = dict([])
     BestMatch = ""
     BiggestDifference = ""
     
@@ -177,6 +179,11 @@ class Nalifier:
                                 if Truth_Expectation(truthIntermediate) > self.COMMON_PROPERTY_EXP:
                                     commonProperties.add((prop2, Truth_Revision(T1, T2)))
                                 truth3 = Truth_Revision(truth3, truthIntermediate)
+                                instance_property = term2 + "_" + prop1
+                                if self.RelativeComparison and instance_property in self.conceptValueReporters:
+                                    #get the second truth value from the value reporter of term1_prop1
+                                    T2 = self.conceptValueReporters[instance_property].reportValue(T2[0], Sensation_Reliance=T2[1], RangeUpdate=False, Print=False)
+                                    #print("//RELATIVE VALUE GET", instance_property, T2)
                                 biggestDifferenceProp, biggestDifferenceTruth, rel = self.differenceEvaluate(T1, T2, prop1, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel)
                     for prop1, T1 in extension1:
                         for prop2, T2 in extension2:
@@ -219,7 +226,7 @@ class Nalifier:
             Inheritances.pop(bad_term, None)
         return Inheritances, (biggestDifferenceProp, biggestDifferenceTruth, rel), commonProperties
 
-    def AddInput(self, inp, inverted=False, Print=False): #<{instance} --> [property]>. :|: %frequency%
+    def AddInput(self, inp, inverted=False, Print=False, Sensation_Reliance=0.9): #<{instance} --> [property]>. :|: %frequency%
         global current_prototypes, prototypes, last_instance, last_winner, last_winner_truth_exp, last_winner_reldata, last_winner_common_properties, last_label, last_label_frequency, concept_id, conceptnames, winner_match_asymmetric
         if inp != "1":
             instance = inp.split("{")[1].split("}")[0]
@@ -263,6 +270,16 @@ class Nalifier:
                       self.BiggestDifference = (rel, biggestDifferenceProp)
                       rel = "--> " if winner_match_asymmetric else "<->"
                       self.BestMatch = (rel, k)
+                      #print("BEST MATCH!!", self.BestMatch, self.prototypes, "!!!!", self.current_prototypes)
+                      if self.RelativeComparison:
+                          for props in self.current_prototypes[list(self.current_prototypes.keys())[0]]:
+                              for prop in props:
+                                instance_property = k + "_" + prop[0]
+                                frequency = prop[1][0]
+                                if instance_property not in self.conceptValueReporters:
+                                    self.conceptValueReporters[instance_property] = ValueReporter()
+                                self.conceptValueReporters[instance_property].reportValue(frequency, Print=False, Sensation_Reliance=prop[1][1])
+                                #print("//RELATIVE VALUE SET", instance_property, self.conceptValueReporters[instance_property].reportValue(frequency, RangeUpdate=False, Print=False, Sensation_Reliance=prop[1][1]))
                       if self.last_label is not None: 
                         #ev1 = f"((<{{{inst2}}} <-> {inst1}> && <({{{inst1}}} * {{{inst2}}}) --> (+ {biggestDifferenceProp})>) &| <{{{inst2}}} --> {last_label}>). :|: %{last_label_frequency};{0.9}%"
                         ev1 = f"(<{inst1} {rel} {inst2}> &| <({inst1} * {inst2}) --> (+ {biggestDifferenceProp})>). :|: %{self.last_label_frequency};{0.9}%"
@@ -337,6 +354,12 @@ class Nalifier:
                     break
         if not RevisedInstanceProperty:
             self.current_prototypes[instance][1].add((property, (frequency, 0.9)))
+        if self.RelativeComparison:
+            instance_property = instance+"_"+property
+            if instance_property not in self.conceptValueReporters:
+                self.conceptValueReporters[instance_property] = ValueReporter()
+            self.conceptValueReporters[instance_property].reportValue(frequency, Print=False, Sensation_Reliance=Sensation_Reliance)
+            #print("//RELATIVE VALUE INIT", instance_property, self.conceptValueReporters[instance_property].reportValue(frequency, RangeUpdate=False, Print=False, Sensation_Reliance=Sensation_Reliance))
         winner = None
         winner_truth_exp = 0.0
         for (key, value) in self.prototypes.items():
@@ -374,26 +397,32 @@ class Nalifier:
               minuse = usecount
               worstproto = proto
           self.usecounts.pop(worstproto, None)
-          self.prototypes.pop(proto, None)
-          self.position0.pop(proto, None)
-          self.position1.pop(proto, None)
-          self.conceptnames.discard(proto)
+          self.prototypes.pop(worstproto, None)
+          self.position0.pop(worstproto, None)
+          self.position1.pop(worstproto, None)
+          self.conceptnames.discard(worstproto)
+          removals = []
+          for key in self.conceptValueReporters.keys():
+              if key.startswith(worstproto + "_"):
+                  removals.append(key)
+          for removal in removals:
+              del self.conceptValueReporters[removal]
 
     def AddInputVector(self, name, values, dimname=None, Print=False, UseHistogram=True, Sensation_Reliance = 0.9):
-        global valueReporters
+        global sensorValueReporters
         if dimname is None:
           dimname = name
         for i, value in enumerate(values):
             propertyName = dimname + str(i)
             if UseHistogram:
-                if propertyName not in self.valueReporters:
-                  self.valueReporters[propertyName] = ValueReporter()
+                if propertyName not in self.sensorValueReporters:
+                  self.sensorValueReporters[propertyName] = ValueReporter()
                 #binary_extreme_comparison_properties.add(propertyName)
                 self.continuous_comparison_properties.add(propertyName)
-                (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
+                (f,c) = self.sensorValueReporters[propertyName].reportValue(value, Print=False, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
             else:
                 (f,c) = (value, Sensation_Reliance)
-            self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print) # + str(c) + "%")
+            self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
 
 if "test" in sys.argv:
     nalifier = Nalifier(10)
@@ -425,8 +454,8 @@ if __name__ == "__main__":
             exit(0)
         if inp.startswith("*SET_CONTINUOUS="):
             propertyName = inp.split("*SET_CONTINUOUS=")[1]
-            if propertyName not in nalifier.valueReporters:
-              nalifier.valueReporters[propertyName] = ValueReporter()
+            if propertyName not in nalifier.sensorValueReporters:
+              nalifier.sensorValueReporters[propertyName] = ValueReporter()
             nalifier.continuous_comparison_properties.add(propertyName)
             continue
         if inp.startswith("*PROTOTYPES"):
@@ -449,6 +478,9 @@ if __name__ == "__main__":
             continue
         if inp.startswith("*INSTANCE_CREATION="):
             nalifier.InstanceCreation = True if inp.split("*INSTANCE_CREATION=")[1].lower() == "true" else False
+            continue
+        if inp.startswith("*RELATIVE_COMPARISON="):
+            nalifier.RelativeComparison = True if inp.split("*RELATIVE_COMPARISON=")[1].lower() == "true" else False
             continue
         lhs = inp.split(". :|:")[0]
         if inp == "1":
