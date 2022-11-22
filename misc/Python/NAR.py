@@ -88,7 +88,7 @@ def AddInput(narsese, Print=True, usedNAR=NARproc):
     ReturnStats = narsese == "*stats"
     if ReturnStats:
         if Print:
-            print("\n".join(GetRawOutput()[0]))
+            print("\n".join(GetRawOutput(usedNAR)[0]))
         return GetStats(usedNAR)
     ret = GetOutput(usedNAR)
     if Print:
