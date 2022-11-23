@@ -132,10 +132,11 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
         double priority = 0;
         if(!PriorityQueue_PopMax(queue, (void**) &e, &priority))
         {
-            assert(queue->itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
-            IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
-            break;
+           IN_DEBUG( puts("Selecting event failed, maybe there is no event left."); )
+           assert(queue->itemsAmount == 0, "No item was popped, only acceptable reason is when it's empty");
+           break;
         }
+        Memory_printAddedEvent(e, priority, false, false, false, true, true);
         selectionPriority[*selectedCnt] = priority;
         selectionArray[*selectedCnt] = *e; //needs to be copied because will be added in a batch
         (*selectedCnt)++; //that while processing, would make recycled pointers invalid to use

@@ -25,6 +25,7 @@
 import sys
 import re
 
+BLUE = "\x1B[34m"
 GREEN = "\x1B[32m"
 YELLOW = "\x1B[33m"
 CYAN = "\x1B[36m"
@@ -46,6 +47,8 @@ for line in sys.stdin:
         COLOR = MAGENTA
     elif line.startswith("Input:"):
         COLOR = GREEN
+    elif line.startswith("Selected:"):
+        COLOR = BLUE
     elif line.startswith("Derived:") or line.startswith("Revised:"):
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:

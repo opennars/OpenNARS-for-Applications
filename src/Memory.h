@@ -102,7 +102,7 @@ void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
 //Print an event in memory:
-void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo);
+void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected);
 //Print an implication in memory:
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
 //Get operation ID

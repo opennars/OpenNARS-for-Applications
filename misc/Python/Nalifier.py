@@ -327,7 +327,16 @@ class Nalifier:
           print("//" + inp)
         if instance not in self.current_prototypes:
             self.current_prototypes[instance] = (set(),set())
-        self.current_prototypes[instance][1].add((property, (frequency, 0.9)))
+        #check if instance is in prototypes, in which case the truth value is the revised one:
+        RevisedInstanceProperty = False
+        if instance in self.prototypes:
+            for (prop, TV) in self.prototypes[instance][1]:
+                if prop == property:
+                    self.current_prototypes[instance][1].add((property, Truth_Revision((frequency, 0.9), TV)))
+                    RevisedInstanceProperty = True
+                    break
+        if not RevisedInstanceProperty:
+            self.current_prototypes[instance][1].add((property, (frequency, 0.9)))
         winner = None
         winner_truth_exp = 0.0
         for (key, value) in self.prototypes.items():
@@ -370,17 +379,20 @@ class Nalifier:
           self.position1.pop(proto, None)
           self.conceptnames.discard(proto)
 
-    def AddInputVector(self, name, values, dimname=None, Print=False):
+    def AddInputVector(self, name, values, dimname=None, Print=False, UseHistogram=True, Sensation_Reliance = 0.9):
         global valueReporters
         if dimname is None:
           dimname = name
         for i, value in enumerate(values):
             propertyName = dimname + str(i)
-            if propertyName not in self.valueReporters:
-              self.valueReporters[propertyName] = ValueReporter()
-            #binary_extreme_comparison_properties.add(propertyName)
-            self.continuous_comparison_properties.add(propertyName)
-            (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation)
+            if UseHistogram:
+                if propertyName not in self.valueReporters:
+                  self.valueReporters[propertyName] = ValueReporter()
+                #binary_extreme_comparison_properties.add(propertyName)
+                self.continuous_comparison_properties.add(propertyName)
+                (f,c) = self.valueReporters[propertyName].reportValue(value, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
+            else:
+                (f,c) = (value, Sensation_Reliance)
             self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print) # + str(c) + "%")
 
 if "test" in sys.argv:
