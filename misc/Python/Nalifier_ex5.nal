@@ -5,9 +5,10 @@
 *RELATIVE_COMPARISON=false
 *SUFFICIENT_MATCH_EXP=1
 *INSTANCE_CREATION=true
-<{red} --> [red]>. :|: %0.9%
-<{red} --> [green]>. :|: %0.1%
-<{red} --> [blue]>. :|: %0.1%
+*volume=0
+<{red1} --> [red]>. :|: %0.9%
+<{red1} --> [green]>. :|: %0.1%
+<{red1} --> [blue]>. :|: %0.1%
 1
 *INSTANCE_CREATION=false
 *SUFFICIENT_MATCH_EXP=0
@@ -24,5 +25,7 @@
 <{newcolor} --> [blue]>. :|: %0.1%
 1
 5
-<{newcolor} <-> {?what}>? :|:
-//expected: Answer: <{newcolor} <-> {blue1}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.729000
+<{newcolor} <-> {red1}>? :|:
+//expected: Answer: <{red} <-> {newcolor}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
+<({red1} * {newcolor}) --> (+ red)>? :|:
+//expected: Answer: <({red1} * {newcolor}) --> (+ red)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000

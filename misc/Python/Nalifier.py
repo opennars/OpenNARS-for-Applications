@@ -268,12 +268,10 @@ class Nalifier:
                       reduced_instance_representation = self.last_instance
                       #USE VARIABLE INSTEAD OF 2 STATEMENTS!!!!
                       termname = lambda T: "{" + T + "}" if T not in self.conceptnames else T
-                      if rel == "+":
-                        inst1 = termname(reduced_instance_representation) #"#1"
-                        inst2 = termname(k)
-                      else:
-                        inst1 = termname(k)
-                        inst2 = termname(reduced_instance_representation) #"#1"
+                      inst1 = termname(reduced_instance_representation) #"#1"
+                      inst2 = termname(k)
+                      inst1forRel = inst1 if rel == "+" else inst2
+                      inst2forRel = inst2 if rel == "+" else inst1
                       evP = None
                       self.BiggestDifference = (rel, biggestDifferenceProp)
                       rel = "--> " if winner_match_asymmetric else "<->"
@@ -288,8 +286,6 @@ class Nalifier:
                                     self.conceptValueReporters[instance_property] = ValueReporter()
                                 self.conceptValueReporters[instance_property].reportValue(frequency, Print=False, Sensation_Reliance=prop[1][1])
                                 #print("//RELATIVE VALUE SET", instance_property, self.conceptValueReporters[instance_property].reportValue(frequency, RangeUpdate=False, Print=False, Sensation_Reliance=prop[1][1]))
-                      inst1forRel = inst2 if rel == "+" else inst1
-                      inst2forRel = inst1 if rel == "+" else inst2
                       relStatement = f"<({inst1forRel} * {inst2forRel}) --> (+ {biggestDifferenceProp})>"
                       if self.UseIntensionalDifference and biggestDifferenceProp not in self.continuous_comparison_properties:
                           relStatement = f"<({inst1forRel} ~ {inst2forRel}) --> [{biggestDifferenceProp}]>"
