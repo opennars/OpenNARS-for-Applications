@@ -138,6 +138,14 @@ class Nalifier:
     def __init__(self, AIKR_Limit = 10):
       self.AIKR_Limit = AIKR_Limit
 
+    def removeInstanceProperties(self, worstproto):
+      removals = []
+      for key in self.conceptValueReporters.keys():
+          if key.startswith(worstproto + "_"):
+              removals.append(key)
+      for removal in removals:
+          del self.conceptValueReporters[removal]
+
     def differenceEvaluate(self, T1, T2, property, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, relation, relativeDifference = None):
       continuous = property in self.continuous_comparison_properties
       truthDifference = Truth_Negation(Truth_FrequencyComparison(T1, T2)) if continuous else Truth_Difference(T1, T2)
@@ -286,7 +294,7 @@ class Nalifier:
                       if self.UseIntensionalDifference and biggestDifferenceProp not in self.continuous_comparison_properties:
                           relStatement = f"<({inst1forRel} ~ {inst2forRel}) --> [{biggestDifferenceProp}]>"
                       if self.last_label is not None: 
-                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && <({{{inst1}}} * {{{inst2}}}) --> (+ {biggestDifferenceProp})>) &| <{{{inst2}}} --> {last_label}>). :|: %{last_label_frequency};{0.9}%"
+                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && {relStatement}) &| <{{{inst2}}} --> {last_label}>). :|: %{last_label_frequency};{0.9}%"
                         ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
                       else:
                         ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|:"
@@ -343,6 +351,8 @@ class Nalifier:
                 self.prototypes.update(self.current_prototypes)
             self.current_prototypes = {}
         if inp == "1":
+            if self.last_instance not in self.prototypes:
+                self.removeInstanceProperties(self.last_instance)
             return
         self.last_instance = instance
         if Print:
@@ -404,12 +414,7 @@ class Nalifier:
           self.position0.pop(worstproto, None)
           self.position1.pop(worstproto, None)
           self.conceptnames.discard(worstproto)
-          removals = []
-          for key in self.conceptValueReporters.keys():
-              if key.startswith(worstproto + "_"):
-                  removals.append(key)
-          for removal in removals:
-              del self.conceptValueReporters[removal]
+          self.removeInstanceProperties(worstproto)
 
     def AddInputVector(self, name, values, dimname=None, Print=False, UseHistogram=True, Sensation_Reliance = 0.9):
         global sensorValueReporters
@@ -444,6 +449,8 @@ if "test" in sys.argv:
     nalifier.Events = [] #we aren't interested in previous events
     nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
     nalifier.AddInput("1", Print=True)
+    print(nalifier.prototypes)
+    print(nalifier.conceptValueReporters.keys())
     print(nalifier.BestMatch)
     print(nalifier.BiggestDifference)
     exit(0)
