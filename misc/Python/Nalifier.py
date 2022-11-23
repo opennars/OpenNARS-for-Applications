@@ -109,6 +109,8 @@ class Nalifier:
     InstanceCreation=True
     ConceptCreation=False
     RelativeComparison=False
+    ClosedWorldAssumption=False
+    UseIntensionalDifference=True
     usecounts = {}
     prototypes = {}
     position0 = {}
@@ -149,7 +151,7 @@ class Nalifier:
         biggestDifferenceTruth = truthDifference
       return biggestDifferenceProp, biggestDifferenceTruth, relation
 
-    def inheritances(self, term1, terms_term1, term2, terms_term2, requireSameProperties=False, applyCWA=True, asymmetricComparison=True):
+    def inheritances(self, term1, terms_term1, term2, terms_term2, requireSameProperties=False, asymmetricComparison=True):
         Inheritances = dict([])
         biggestDifferenceProp = None
         biggestDifferenceTruth = (0.0, 1.0)
@@ -199,7 +201,7 @@ class Nalifier:
                     AHasProperty = True
             if not AHasProperty and requireSameProperties:
                 hadMissingProp = True
-            if not AHasProperty and applyCWA and prop2 not in self.continuous_comparison_properties:
+            if not AHasProperty and self.ClosedWorldAssumption and prop2 not in self.continuous_comparison_properties:
                 w_minus+=1
                 truthMinus = (0.0, 0.5)
                 truth2 = Truth_Revision(truth2, truthMinus)
@@ -227,6 +229,9 @@ class Nalifier:
 
     def AddInput(self, inp, inverted=False, Print=False, Sensation_Reliance=0.9): #<{instance} --> [property]>. :|: %frequency%
         global current_prototypes, prototypes, last_instance, last_winner, last_winner_truth_exp, last_winner_reldata, last_winner_common_properties, last_label, last_label_frequency, concept_id, conceptnames, winner_match_asymmetric
+        if inp.startswith("//"):
+            print(inp)
+            return
         if inp != "1":
             instance = inp.split("{")[1].split("}")[0]
             property = inp.split("[")[1].split("]")[0]
@@ -253,10 +258,6 @@ class Nalifier:
                     (biggestDifferenceProp, biggestDifferenceTruth, rel) = self.last_winner_reldata
                     if Truth_Expectation(biggestDifferenceTruth) > self.SUFFICIENT_DIFFERENCE_EXP:
                       reduced_instance_representation = self.last_instance
-                      if rel == "has_more":
-                        ev1 = f"<({{{reduced_instance_representation}}} * {{{k}}}) --> (+ {biggestDifferenceProp})>. :|:"
-                      else:
-                        ev1 = f"<({{{k}}} * {{{reduced_instance_representation}}}) --> (+ {biggestDifferenceProp})>. :|:"
                       #USE VARIABLE INSTEAD OF 2 STATEMENTS!!!!
                       termname = lambda T: "{" + T + "}" if T not in self.conceptnames else T
                       if rel == "+":
@@ -281,11 +282,14 @@ class Nalifier:
                                 #print("//RELATIVE VALUE SET", instance_property, self.conceptValueReporters[instance_property].reportValue(frequency, RangeUpdate=False, Print=False, Sensation_Reliance=prop[1][1]))
                       inst1forRel = inst2 if rel == "+" else inst1
                       inst2forRel = inst1 if rel == "+" else inst2
+                      relStatement = f"<({inst1forRel} * {inst2forRel}) --> (+ {biggestDifferenceProp})>"
+                      if self.UseIntensionalDifference and biggestDifferenceProp not in self.continuous_comparison_properties:
+                          relStatement = f"<({inst1forRel} ~ {inst2forRel}) --> [{biggestDifferenceProp}]>"
                       if self.last_label is not None: 
                         #ev1 = f"((<{{{inst2}}} <-> {inst1}> && <({{{inst1}}} * {{{inst2}}}) --> (+ {biggestDifferenceProp})>) &| <{{{inst2}}} --> {last_label}>). :|: %{last_label_frequency};{0.9}%"
-                        ev1 = f"(<{inst1} {rel} {inst2}> &| <({inst1forRel} * {inst2forRel}) --> (+ {biggestDifferenceProp})>). :|: %{self.last_label_frequency};{0.9}%"
+                        ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
                       else:
-                        ev1 = f"(<{inst1} {rel} {inst2}> &| <({inst1forRel} * {inst2forRel}) --> (+ {biggestDifferenceProp})>). :|:"
+                        ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|:"
                       inst1 = inst1.replace("{","").replace("}","") #not elegant
                       inst2 = inst2.replace("{","").replace("}","") #todo improve
                       if inst1 in self.position0 and inst2 in self.position0 and inst1 in self.position1 and inst2 in self.position1 and not winner_match_asymmetric:
@@ -480,6 +484,12 @@ if __name__ == "__main__":
             continue
         if inp.startswith("*RELATIVE_COMPARISON="):
             nalifier.RelativeComparison = True if inp.split("*RELATIVE_COMPARISON=")[1].lower() == "true" else False
+            continue
+        if inp.startswith("*CLOSED_WORLD_ASSUMPTION="):
+            nalifier.ClosedWorldAssumption = True if inp.split("*CLOSED_WORLD_ASSUMPTION=")[1].lower() == "true" else False
+            continue
+        if inp.startswith("*USE_INTENSIONAL_DIFFERENCE="): #will be used for non-continuous properties only even when true
+            nalifier.UseIntensionalDifference = True if inp.split("*USE_INTENSIONAL_DIFFERENCE=")[1].lower() == "true" else False
             continue
         lhs = inp.split(". :|:")[0]
         if inp == "1":
