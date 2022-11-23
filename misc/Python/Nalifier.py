@@ -450,7 +450,6 @@ if "test" in sys.argv:
     nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
     nalifier.AddInput("1", Print=True)
     print(nalifier.prototypes)
-    print(nalifier.conceptValueReporters.keys())
     print(nalifier.BestMatch)
     print(nalifier.BiggestDifference)
     exit(0)
