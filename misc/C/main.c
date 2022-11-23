@@ -4,11 +4,11 @@
 //#include <ona/NAR.h>
 
 bool executed = false;
-Substitution NAR_Op()
+Feedback NAR_Op()
 {
     puts("Hello world");
     executed=true;
-    return (Substitution) {0};
+    return (Feedback) {0};
 }
 int main()
 {
