@@ -461,6 +461,18 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
+                                    //revise with existing belief:
+                                    if(PREDICTION_RELIANCE > 0.0)
+                                    {
+                                        Event prediction = Inference_EventUpdate(&c->predicted_belief, currentTime);
+                                        if(prediction.truth.confidence > PREDICTION_CONFIDENCE_MIN)
+                                        {
+                                            prediction.truth.confidence *= PREDICTION_RELIANCE;
+                                            Stamp temp = c->belief_spike.stamp;
+                                            c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &prediction, currentTime, NULL);
+                                            c->belief_spike.stamp = temp; //don't include prediction evidence in stamp, it's only a minor contribution anyway and Stamp size is limited
+                                        }
+                                    }
                                 }
                             }
                         }

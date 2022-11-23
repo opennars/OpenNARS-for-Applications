@@ -144,6 +144,10 @@
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
+//Prediction reliance (how much to trust own predictions at most in terms of confidence)
+#define PREDICTION_RELIANCE 0.01
+//How confident a prediction needs to be to contribute to observed evidence
+#define PREDICTION_CONFIDENCE_MIN 0.3
 
 /*-----------------------*/
 /* Derivation parameters */
