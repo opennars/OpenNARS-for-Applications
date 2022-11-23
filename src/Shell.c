@@ -174,7 +174,7 @@ int Shell_ProcessInput(char *line)
                 puts("]}");
                 if(c->belief.type != EVENT_TYPE_DELETED)
                 {
-                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false);
+                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false, false);
                 }
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
