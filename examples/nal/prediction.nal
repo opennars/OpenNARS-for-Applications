@@ -1,0 +1,7 @@
+*motorbabbling=false
+*volume=0
+<(b &/ ^left) =/> G>.
+<a =/> b>.
+a. :|:
+G! :|:
+//expected: ^left executed with args

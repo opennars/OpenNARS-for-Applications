@@ -145,9 +145,11 @@
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
 //Prediction reliance (how much to trust own predictions at most in terms of confidence)
-#define PREDICTION_RELIANCE 0.01
+#define PREDICTION_RELIANCE 0.005
 //How confident a prediction needs to be to contribute to observed evidence
 #define PREDICTION_CONFIDENCE_MIN 0.3
+//Max observation confidence to be combined with predicted evidence
+#define OBSERVATION_CONFIDENCE_MAX MIN_CONFIDENCE
 
 /*-----------------------*/
 /* Derivation parameters */

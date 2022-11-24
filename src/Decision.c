@@ -232,27 +232,39 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     )
     //now look at how much the precondition is fulfilled
     Concept *prec = imp->sourceConcept;
-    Event *precondition = &prec->belief_spike; //a. :|:
-    if(precondition != NULL)
+    if(prec != NULL)
     {
+        Event *precondition = &prec->belief_spike; //a. :|:
+        Event accumulated = Inference_EventUpdate(precondition, currentTime);
+        Event prediction = Inference_EventUpdate(&prec->predicted_belief, currentTime);
+        if(accumulated.truth.confidence < OBSERVATION_CONFIDENCE_MAX && prediction.type != EVENT_TYPE_DELETED && prec->predicted_belief.truth.confidence >= PREDICTION_CONFIDENCE_MIN)
+        {
+            prediction.truth.confidence *= PREDICTION_RELIANCE;
+            accumulated = Inference_RevisionAndChoice(precondition, &prediction, currentTime, NULL);
+            accumulated.stamp = prec->belief_spike.stamp;
+        }
+        if(accumulated.type == EVENT_TYPE_DELETED)
+        {
+            return (Decision) {0};
+        }
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
         Term potential_operation = {0};
         Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
         assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
-        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
+        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, &accumulated, currentTime).truth;
         double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
             Narsese_PrintTerm(&prec->term);
             fputs("\nCONSIDERED PRECON truth ", stdout);
-            Truth_Print(&precondition->truth);
+            Truth_Print(&accumulated.truth);
             fputs("CONSIDERED goal truth ", stdout);
             Truth_Print(&goal->truth);
             fputs("CONSIDERED imp truth ", stdout);
             Truth_Print(&imp->truth);
-            printf("CONSIDERED time %ld\n", precondition->occurrenceTime);
-            Narsese_PrintTerm(&precondition->term); puts("");
+            printf("CONSIDERED time %ld\n", accumulated.occurrenceTime);
+            Narsese_PrintTerm(&accumulated.term); puts("");
         )
         decision.reason = precondition;
         decision.desire = operationGoalTruthExpectation;
@@ -461,18 +473,6 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
-                                    //revise with existing belief:
-                                    if(PREDICTION_RELIANCE > 0.0)
-                                    {
-                                        Event prediction = Inference_EventUpdate(&c->predicted_belief, currentTime);
-                                        if(prediction.truth.confidence > PREDICTION_CONFIDENCE_MIN)
-                                        {
-                                            prediction.truth.confidence *= PREDICTION_RELIANCE;
-                                            Stamp temp = c->belief_spike.stamp;
-                                            c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &prediction, currentTime, NULL);
-                                            c->belief_spike.stamp = temp; //don't include prediction evidence in stamp, it's only a minor contribution anyway and Stamp size is limited
-                                        }
-                                    }
                                 }
                             }
                         }
