@@ -42,6 +42,7 @@ Feedback op_3()
 }
 void NAR_Sequence_Test()
 {
+    return;
     NAR_INIT();
     MOTOR_BABBLING_CHANCE = 0;
     puts(">>Sequence test start");

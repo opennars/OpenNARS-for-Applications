@@ -29,11 +29,13 @@
 /* Anticipation parameters */
 /*-------------------------*/
 //Truth expectation needed for anticipation
-#define ANTICIPATION_THRESHOLD_INITIAL 0.501
+#define ANTICIPATION_THRESHOLD_INITIAL 0.0 //0.501
 //Confidence of anticipation failures
 #define ANTICIPATION_CONFIDENCE_INITIAL 0.01
 //Anticipate for concrete yet unexperienced outcomes derived from generals
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
+//Anticipation tolerance
+#define ANTICIPATION_TOLERANCE 2.0
 
 /*---------------------*/
 /* Decision parameters */

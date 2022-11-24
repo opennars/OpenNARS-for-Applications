@@ -448,7 +448,6 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                     if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
                     {
-                        Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
                         Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
                         if(subs.success)
                         {
@@ -461,6 +460,16 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
+                                }
+                                //don't add negative confirmation if postcondition concept has a corresponding input event close
+                                if(!(c->belief_spike.type != EVENT_TYPE_DELETED && c->predicted_belief.type != EVENT_TYPE_DELETED &&
+                                   labs(c->belief_spike.occurrenceTime - c->predicted_belief.occurrenceTime) < imp.occurrenceTimeOffset))
+                                {
+                                    if(precondition->occurrenceTime < currentTime - imp.occurrenceTimeOffset*ANTICIPATION_TOLERANCE)
+                                    {
+                                        IN_DEBUG( fputs("//Expected event did not occur: ", stdout); Narsese_PrintTerm(&c->belief_spike.term); puts(""); )
+                                        Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
+                                    }
                                 }
                             }
                         }
