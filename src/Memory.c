@@ -478,6 +478,9 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     if(event->type == EVENT_TYPE_BELIEF && !considerContingency)
     {
         addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
+    }
+    if(event->type == EVENT_TYPE_BELIEF)
+    {
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
     if(event->type == EVENT_TYPE_GOAL)
