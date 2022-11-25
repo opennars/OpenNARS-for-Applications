@@ -138,17 +138,23 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
         return false;
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], SIMILARITY)) //similarity or inheritance
     {
-        atomsCounter++;
-        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        //<((A * B) * (C * D)) --> r>.
+        //0   1  2 3 4
+        //--> *    * *
+        if(!(Narsese_copulaEquals(conclusionTerm->atoms[1], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[3], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[4], PRODUCT))) //relational statements with products as arguments can have atoms mentioned more than once
         {
-            Atom atom = conclusionTerm->atoms[i];
-            if(atomsAppeared[conclusionTerm->atoms[i]] == atomsCounter) //atom already appeared
+            atomsCounter++;
+            for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
             {
-                return true;
-            }
-            if(Narsese_IsSimpleAtom(atom))
-            {
-                atomsAppeared[atom] = atomsCounter;
+                Atom atom = conclusionTerm->atoms[i];
+                if(atomsAppeared[conclusionTerm->atoms[i]] == atomsCounter) //atom already appeared
+                {
+                    return true;
+                }
+                if(Narsese_IsSimpleAtom(atom))
+                {
+                    atomsAppeared[atom] = atomsCounter;
+                }
             }
         }
     }
@@ -283,23 +289,19 @@ static bool NAL_JunctionNotRightNested(Term *conclusionTerm)
     return false;
 }
 
-static bool EmptySetOp(Term *conclusionTerm) //to be refined, with atom appears twice restriction for now it's fine
+static bool InvalidSetOp(Term *conclusionTerm, Truth conclusionTruth) //to be refined, with atom appears twice restriction for now it's fine
 {
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE))
     {
-        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[1], INT_DIFFERENCE))
+        //extensional intersection between extensional sets
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], EXT_INTERSECTION) && Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
         {
-            if(Narsese_copulaEquals(conclusionTerm->atoms[3], EXT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[4], EXT_SET))
-            {
-                return true;
-            }
+            return true;
         }
-        if(Narsese_copulaEquals(conclusionTerm->atoms[2], INT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm->atoms[2], EXT_DIFFERENCE))
+        //intensional intersection between intensional sets
+        if(Narsese_copulaEquals(conclusionTerm->atoms[2], INT_INTERSECTION) && Narsese_copulaEquals(conclusionTerm->atoms[5], INT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[6], INT_SET))
         {
-            if(Narsese_copulaEquals(conclusionTerm->atoms[5], INT_SET) && Narsese_copulaEquals(conclusionTerm->atoms[6], INT_SET))
-            {
-                return true;
-            }
+            return true;
         }
     }
     return false;
@@ -337,7 +339,36 @@ static bool NAL_DeclarativeImplicationWithoutIndependentVar(Term *conclusionTerm
     return false;
 }
 
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntro)
+static bool DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(Term *conclusionTerm, bool recurse)
+{
+    //0    1     2    3
+    //1    2     3    4
+    //==>  &&         ^op
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE))
+    {
+        if(Narsese_copulaEquals(conclusionTerm->atoms[1], CONJUNCTION))
+        {
+            Term sequence = Term_ExtractSubterm(conclusionTerm, 1);
+            return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&sequence, true);
+        }
+    }
+    if(recurse && Narsese_copulaEquals(conclusionTerm->atoms[0], CONJUNCTION))
+    {
+        Term op_or_sequence = Term_ExtractSubterm(conclusionTerm, 1);
+        if(Narsese_isOperation(&op_or_sequence))
+        {
+            return true;
+        }
+        else
+        if(Narsese_copulaEquals(op_or_sequence.atoms[0], CONJUNCTION))
+        {
+            return DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&op_or_sequence, true);
+        }
+    }
+    return false;
+}
+
+void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars)
 {
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
@@ -345,9 +376,22 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
         Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
         if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true) && !NAL_DeclarativeImplicationWithoutIndependentVar(&conclusionTermWithVarExt))
         {
-            NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            bool HasTwoIndependentVars = false;
+            Atom DepVar2 = Narsese_AtomicTermIndex("$2");
+            for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+            {
+                if(conclusionTermWithVarExt.atoms[i] == DepVar2)
+                {
+                    HasTwoIndependentVars = true;
+                    break;
+                }
+            }
+            if(!allowOnlyExtVarIntroAndTwoIndependentVars || HasTwoIndependentVars)
+            {
+                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            }
         }
-        if(!allowOnlyExtVarIntro) //todo rename var to something else
+        if(!allowOnlyExtVarIntroAndTwoIndependentVars) //todo rename var to something else
         {
             bool success2;
             Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
@@ -356,7 +400,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
                 NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
             }
         }
-        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || allowOnlyExtVarIntro)
+        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || allowOnlyExtVarIntroAndTwoIndependentVars)
         {
             return;
         }
@@ -388,9 +432,9 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
     {
         if(validation_concept == NULL || validation_concept->id == validation_cid) //concept recycling would invalidate the derivation (allows to lock only adding results to memory)
         {
-            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !EmptySetOp(&conclusionTerm) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm))
+            if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !InvalidSetOp(&conclusionTerm, conclusionTruth) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm) && !DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&conclusionTerm, false))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, false, 0, false, false);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, 0, false, false);
             }
         }
     }

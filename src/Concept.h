@@ -28,7 +28,16 @@
 ///////////////////
 //   Concept     //
 ///////////////////
-//A concept named by a term
+//A concept represents a container which allows the reasoner
+//1. To remember events that already happened
+//2. Learn under what circumstances they do occur.
+//3. To revise the statements encoded in them
+//Various design decisions:
+//- Differently than in OpenNARS, only statements can form concepts.
+//- Concepts store a belief event, predicted event, and eternal version
+//- Concepts store a goal event but no eternal goal
+//- Concepts hold a priority value to encode their attention
+//- Concepts hold a usefulness value to encode their forgetting
 
 //References//
 //-----------//
@@ -46,17 +55,12 @@ typedef struct {
     Event predicted_belief;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX+1];
-    Table implied_contingencies; //righthand of ==> includes =/> with op
     double priority;
-    long processID; //avoids duplicate processing
+    long processID;  //avoids duplicate processing
     long processID2; //avoids duplicate processing
     long processID3; //avoids duplicate processing
-    long lastSensorimotorActivation;
-    bool isResultSequence; //whether the concept is a sequence of form ((A ^Op) Result)
+    long lastSelectionTime;
+    bool priorizedTemporalCompounding; //priorized compounding? inputs and seq of inputs
 } Concept;
-
-//Methods//
-//-------//
-//todo
 
 #endif

@@ -28,8 +28,10 @@
 ///////////////////////////////////
 //  NAR Control Cycle            //
 ///////////////////////////////////
-//A FIFO-like structure, that only supports put in and overwrites
-//the oldest task when full
+//The overall inference control cycle of ONA
+//Special properties:
+//- Needs a constant upper bound of time to complete
+//- Handles temporal, procedural, and declarative reasoning
 
 //References//
 //----------//

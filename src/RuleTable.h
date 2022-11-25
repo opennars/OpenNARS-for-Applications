@@ -30,6 +30,9 @@
 /////////////////
 //The rule table which .c is generated at compile time
 //by NAL_GenerateRuleTable
+//The C code in RuleTable.c which implements the methods of this header
+//is generated from the inference rules specified in
+//NAL.h using the code generation code in NAL.c
 
 //References//
 //----------//

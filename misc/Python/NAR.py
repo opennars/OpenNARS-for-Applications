@@ -1,10 +1,17 @@
 import sys
 import subprocess
 
-NAR = subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+def spawnNAR():
+    return subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+NARproc = spawnNAR()
+def getNAR():
+    return NARproc
+def setNAR(proc):
+    global NARproc
+    NARproc = proc
 
 def parseTruth(T):
-    return {"frequency": T.split("frequency=")[1].split(" confidence")[0], "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
+    return {"frequency": T.split("frequency=")[1].split(" confidence")[0].replace(",",""), "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
 
 def parseTask(s):
     M = {"occurrenceTime" : "eternal"}
@@ -18,6 +25,8 @@ def parseTask(s):
     M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
+    if "Priority" in s:
+        M["Priority"] = s.split("Priority=")[1].split(" ")[0]
     return M
 
 def parseReason(sraw):
@@ -38,9 +47,9 @@ def parseExecution(e):
         return {"operator" : e.split(" ")[0], "arguments" : []}
     return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
 
-def GetRawOutput():
-    NAR.stdin.write("0\n")
-    NAR.stdin.flush()
+def GetRawOutput(usedNAR):
+    usedNAR.stdin.write("0\n")
+    usedNAR.stdin.flush()
     ret = ""
     before = []
     requestOutputArgs = False
@@ -50,44 +59,47 @@ def GetRawOutput():
         if ret.strip() == "//Operation result product expected:":
             requestOutputArgs = True
             break
-        ret = NAR.stdout.readline()
+        ret = usedNAR.stdout.readline()
     return before[:-1], requestOutputArgs
 
-def GetOutput():
-    lines, requestOutputArgs = GetRawOutput()
+def GetOutput(usedNAR):
+    lines, requestOutputArgs = GetRawOutput(usedNAR)
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
     derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised:")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
+    selections = [parseTask(l.split("Selected: ")[1]) for l in lines if l.startswith('Selected:')]
     reason = parseReason("\n".join(lines))
-    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "raw": "\n".join(lines), "requestOutputArgs" : requestOutputArgs}
+    return {"input": inputs, "derivations": derivations, "answers": answers, "executions": executions, "reason": reason, "selections": selections, "raw": "\n".join(lines), "requestOutputArgs" : requestOutputArgs}
 
-def GetStats():
-	Stats = {}
-	lines, _ = GetRawOutput()
-	for l in lines:
-		if ":" in l:
-		    leftside = l.split(":")[0].replace(" ", "_").strip()
-		    rightside = float(l.split(":")[1].strip())
-		    Stats[leftside] = rightside
-	return Stats
+def GetStats(usedNAR):
+    Stats = {}
+    lines, _ = GetRawOutput(usedNAR)
+    for l in lines:
+        if ":" in l:
+            leftside = l.split(":")[0].replace(" ", "_").strip()
+            rightside = float(l.split(":")[1].strip())
+            Stats[leftside] = rightside
+    return Stats
 
-def AddInput(narsese, Print=True):
-    NAR.stdin.write(narsese + '\n')
-    NAR.stdin.flush()
+def AddInput(narsese, Print=True, usedNAR=NARproc):
+    usedNAR.stdin.write(narsese + '\n')
+    usedNAR.stdin.flush()
     ReturnStats = narsese == "*stats"
     if ReturnStats:
-        return GetStats()
-    ret = GetOutput()
+        if Print:
+            print("\n".join(GetRawOutput(usedNAR)[0]))
+        return GetStats(usedNAR)
+    ret = GetOutput(usedNAR)
     if Print:
         print(ret["raw"])
         sys.stdout.flush()
     return ret
 
-def Exit():
-    NAR.sendline("quit")
+def Exit(usedNAR=NARproc):
+    usedNAR.sendline("quit")
 
-def Reset():
-    AddInput("*reset")
+def Reset(usedNAR=NARproc):
+    AddInput("*reset", usedNAR=usedNAR)
 
 AddInput("*volume=100")

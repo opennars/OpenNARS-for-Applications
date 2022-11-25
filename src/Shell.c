@@ -53,7 +53,7 @@ int Shell_ProcessInput(char *line)
     //trim string, for IRC etc. convenience
     for(int i=strlen(line)-1; i>=0; i--)
     {
-        if(!isspace(line[i]))
+        if(!isspace((int) line[i]))
         {
             break;
         }
@@ -113,9 +113,11 @@ int Shell_ProcessInput(char *line)
             InvertedAtomIndex_Print();
         }
         else
-        if(!strcmp(line,"*concepts"))
+        if(!strcmp(line,"*opconfig"))
         {
-            puts("//*concepts");
+            puts("//*opconfig");
+            printf("*motorbabbling=%f\n", MOTOR_BABBLING_CHANCE);
+            printf("*babblingops=%d\n", BABBLING_OPS);
             for(int opi=0; opi<OPERATIONS_MAX; opi++)
             {
                 if(operations[opi].term.atoms[0])
@@ -124,7 +126,21 @@ int Shell_ProcessInput(char *line)
                     Narsese_PrintTerm(&operations[opi].term);
                     puts("");
                 }
+                for(int oparg=0; oparg<OPERATIONS_BABBLE_ARGS_MAX; oparg++)
+                {
+                    if(operations[opi].arguments[oparg].atoms[0])
+                    {
+                        printf("*setoparg %d %d ", opi+1, oparg+1);
+                        Narsese_PrintTerm(&operations[opi].arguments[oparg]);
+                        puts("");
+                    }
+                }
             }
+        }
+        else
+        if(!strcmp(line,"*concepts"))
+        {
+            puts("//*concepts");
             for(int i=0; i<concepts.itemsAmount; i++)
             {
                 Concept *c = concepts.items[i].address;
@@ -159,7 +175,7 @@ int Shell_ProcessInput(char *line)
                 puts("]}");
                 if(c->belief.type != EVENT_TYPE_DELETED)
                 {
-                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false);
+                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false, false);
                 }
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
@@ -250,8 +266,9 @@ int Shell_ProcessInput(char *line)
         {
             assert(concepts.itemsAmount == 0, "Operators can only be registered right after initialization / reset!");
             int opID;
-            char opname[ATOMIC_TERM_LEN_MAX] = {0};
-            sscanf(&line[strlen("*setopname ")], "%d %s", &opID, (char*) &opname);
+            char opname[ATOMIC_TERM_LEN_MAX+1] = {0};
+            opname[ATOMIC_TERM_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*setopname ")], "%d %" STR(ATOMIC_TERM_LEN_MAX) "s", &opID, (char*) &opname);
             assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             Term newTerm = Narsese_AtomicTerm(opname);
             for(int i=0; i<OPERATIONS_MAX; i++)
@@ -275,8 +292,9 @@ int Shell_ProcessInput(char *line)
         {
             int opID;
             int opArgID;
-            char argname[ATOMIC_TERM_LEN_MAX] = {0};
-            sscanf(&line[strlen("*setoparg ")], "%d %d %s", &opID, &opArgID, (char*) &argname);
+            char argname[NARSESE_LEN_MAX+1] = {0};
+            argname[NARSESE_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*setoparg ")], "%d %d %" STR(NARSESE_LEN_MAX) "[^\n]", &opID, &opArgID, (char*) &argname);
             assert(opID >= 1 && opID <= OPERATIONS_MAX, "Operator index out of bounds, it can only be between 1 and OPERATIONS_MAX!");
             assert(opArgID >= 1 && opArgID <= OPERATIONS_BABBLE_ARGS_MAX, "Operator arg index out of bounds, it can only be between 1 and OPERATIONS_BABBLE_ARGS_MAX!");
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);

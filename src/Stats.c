@@ -72,12 +72,15 @@ void Stats_Print(long currentTime)
     printf("total concepts:\t\t\t%d\n", concepts.itemsAmount);
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
-    printf("curring belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
+    printf("current belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
+    int external_goal_events_cnt = 0, mental_goal_events_cnt = 0;
     for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
-        printf("curring external goal events cnt:\t%d in layer %d\n", cycling_external_goal_events[layer].itemsAmount, layer);
-        printf("curring mental goal events cnt:\t\t%d in layer %d\n", cycling_mental_goal_events[layer].itemsAmount, layer);
+        external_goal_events_cnt += cycling_external_goal_events[layer].itemsAmount;
+        mental_goal_events_cnt += cycling_mental_goal_events[layer].itemsAmount;
     }
+    printf("current external goal events cnt:\t\t%d\n", external_goal_events_cnt);
+    printf("current mental goal events cnt:\t\t%d\n", mental_goal_events_cnt);
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
     printf("current average external goal event priority:\t%f\n", Stats_averageExternalGoalEventPriority);
     printf("current average mental goal event priority:\t%f\n", Stats_averageMentalGoalEventPriority);

@@ -70,7 +70,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
 
 //{Event a., Event a.} |- Event a.
 //{Event a!, Event a!} |- Event a!
-static Event Inference_EventRevision(Event *a, Event *b)
+Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .term = a->term, 
@@ -104,7 +104,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
     //extract precondition: (plus unification once vars are there)
     return (Event) { .term = Narsese_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .truth = Truth_GoalDeduction(component->truth, compound->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = currentTime,
                      .creationTime = creationTime };
@@ -127,7 +127,7 @@ Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long cu
     Event componentUpdated = Inference_EventUpdate(component, currentTime);
     return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
+                     .truth = Truth_GoalDeduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = currentTime,
                      .creationTime = creationTime };
@@ -190,34 +190,5 @@ Event Inference_BeliefDeduction(Event *component, Implication *compound)
                      .stamp = conclusionStamp, 
                      .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL ? 
                                                                     OCCURRENCE_ETERNAL : component->occurrenceTime + compound->occurrenceTimeOffset,
-                     .creationTime = creationTime };
-}
-
-//{Event a., Event <b =/> c>.} |- Implication <a ==> <b =/> c>>.
-Implication Inference_BeliefInductionDeclarative(Event *a, Implication *b, bool *success)
-{
-    DERIVATION_STAMP(a,b)
-    Term term = {0};
-    term.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
-    *success = Term_OverrideSubterm(&term, 1, &a->term) && Term_OverrideSubterm(&term, 2, &b->term);
-    return *success ? (Implication) { .term = term, 
-                                      .truth = Truth_Induction(b->truth, a->truth),
-                                      .stamp = conclusionStamp,
-                                      .occurrenceTimeOffset = b->occurrenceTimeOffset,
-                                      .creationTime = creationTime }
-                    : (Implication) {0};
-}
-
-//{Event a., Implication <a ==> <b =/> c>>.} |- Event <b =/> c>.
-Event Inference_BeliefDeductionDeclarative(Event *component, Implication *compound)
-{
-    assert(Narsese_copulaEquals(compound->term.atoms[0], IMPLICATION), "Not a valid implication term!");
-    DERIVATION_STAMP(component,compound)
-    Term postcondition = Term_ExtractSubterm(&compound->term, 2);
-    return (Event) { .term = postcondition, 
-                     .type = EVENT_TYPE_BELIEF, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
-                     .stamp = conclusionStamp, 
-                     .occurrenceTime = component->occurrenceTime == OCCURRENCE_ETERNAL,
                      .creationTime = creationTime };
 }

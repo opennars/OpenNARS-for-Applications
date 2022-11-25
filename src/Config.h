@@ -71,8 +71,10 @@
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
-//Creation time distance to allow sequence to imply a new contingency which has been formed
-#define SEQUENCE_TO_CONTINGENCY_DISTANCE 200
+//Time distance from now to still correlate an outcome
+#define CORRELATE_OUTCOME_RECENCY 5
+//How many new concepts to create at most for temporal compounding of temporal and procedural implications each
+#define DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX 20
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
@@ -81,8 +83,6 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
-//Priority to correlate an outcome
-#define CORRELATE_OUTCOME_PRIORITY 0.3
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 2
 //Maximum compound op length
@@ -91,6 +91,8 @@
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
+//How long goal events describing bad outcomes are considered in decision making
+#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
 
 /*------------------*/
 /* Space parameters */
@@ -102,24 +104,18 @@
 //Maximum amount of belief events attention buffer holds
 #define CYCLING_BELIEF_EVENTS_MAX 40
 //Maximum amount of goal events attention buffer holds
-#define CYCLING_EXTERNAL_GOAL_EVENTS_MAX 40
-#define CYCLING_MENTAL_GOAL_EVENTS_MAX 40
+#define CYCLING_EXTERNAL_GOAL_EVENTS_MAX 400
+#define CYCLING_MENTAL_GOAL_EVENTS_MAX 400
 //Maximum amount of operations which can be registered
 #define OPERATIONS_MAX 11
 //Maximum amount of arguments an operation can babble
 #define OPERATIONS_BABBLE_ARGS_MAX 10
 //Maximum size of the stamp in terms of evidental base id's
 #define STAMP_SIZE 10
-//Maximum event FIFO size
-#define FIFO_SIZE 20
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 128
-#ifdef HARDENED
-#undef COMPOUND_TERM_SIZE_MAX
 #define COMPOUND_TERM_SIZE_MAX 64
-#endif
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap
@@ -129,9 +125,9 @@
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
-#define NARSESE_LEN_MAX 256
+#define NARSESE_LEN_MAX 2148 //ATOMIC_TERM_LEN_MAX * COMPOUND_TERM_SIZE_MAX + 100 for punctuation event marker and TV
 //Goal events queue derivation depth layers
-#define CYCLING_GOAL_EVENTS_LAYERS 5
+#define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
 
@@ -155,11 +151,7 @@
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 8
-#ifdef HARDENED
-#undef SEMANTIC_INFERENCE_NAL_LEVEL
-#define SEMANTIC_INFERENCE_NAL_LEVEL 6
-#endif
+#define SEMANTIC_INFERENCE_NAL_LEVEL 7
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
@@ -178,9 +170,5 @@
 #define VARS_IN_MULTI_ELEMENT_SETS_FILTER true
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
-//Allow sequences which contain preconditions, ops, and the reached consequence
-#define ALLOW_RESULT_SEQUENCES true
-//Restrict higher order implication statements to have a result seq (with op) or list inside
-#define RESTRICT_MUTUAL_ENTAILMENT true
 
 #endif

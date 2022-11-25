@@ -116,7 +116,7 @@ Concept *Memory_FindConceptByTerm(Term *term)
     return HashTable_Get(&HTconcepts, term);
 }
 
-Concept* Memory_Conceptualize(Term *term, long currentTime, bool ignoreOp)
+Concept* Memory_Conceptualize(Term *term, long currentTime)
 {
     Concept *ret = Memory_FindConceptByTerm(term);
     if(ret == NULL)
@@ -177,7 +177,7 @@ static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
     return false;
 }
 
-bool Memory_containsBelief(Event *e)
+bool Memory_containsBeliefOrGoal(Event *e)
 {
     Concept *c = Memory_FindConceptByTerm(&e->term);
     if(c != NULL)
@@ -186,13 +186,13 @@ bool Memory_containsBelief(Event *e)
         {
             if(e->occurrenceTime == OCCURRENCE_ETERNAL)
             {
-                if(c->belief.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief, e))
+                if(c->belief.type != EVENT_TYPE_DELETED && Event_Equal(e, &c->belief))
                 {
                     return true;
                 }
             }
             else
-            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(&c->belief_spike, e))
+            if(c->belief_spike.type != EVENT_TYPE_DELETED && Event_EqualTermEqualStampLessConfidentThan(e, &c->belief_spike))
             {
                 return true;
             }
@@ -208,11 +208,10 @@ bool Memory_containsBelief(Event *e)
 
 //Add event for cycling through the system (inference and context)
 //called by addEvent for eternal knowledge
-bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long currentTime, int layer, bool mental)
+bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int layer, bool mental)
 {
     assert(e->type == EVENT_TYPE_BELIEF || e->type == EVENT_TYPE_GOAL, "Only belief and goals events can be added to cycling events queue!");
-    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) ||
-       (!sequenced && Memory_containsBelief(e))) //avoid duplicate derivations
+    if((e->type == EVENT_TYPE_BELIEF && Memory_containsEvent(&cycling_belief_events, e)) || Memory_containsBeliefOrGoal(e)) //avoid duplicate derivations
     {
         return false;
     }
@@ -245,12 +244,12 @@ bool Memory_addCyclingEvent(Event *e, double priority, bool sequenced, long curr
     return false;
 }
 
-static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo)
+static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
 {
-    if(((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS)) && (input || priority > PRINT_EVENTS_PRIORITY_THRESHOLD))
+    if(selected || (((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS)) && (input || priority > PRINT_EVENTS_PRIORITY_THRESHOLD)))
     {
         if(controlInfo)
-            fputs(revised ? "Revised: " : (input ? "Input: " : "Derived: "), stdout);
+            fputs(selected ? "Selected: " : (revised ? "Revised: " : (input ? "Input: " : "Derived: ")), stdout);
         if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION))
             printf("dt=%f ", occurrenceTimeOffset);
         Narsese_PrintTerm(term);
@@ -272,59 +271,26 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     }
 }
 
-void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo)
+void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
 {
-    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, event->occurrenceTimeOffset, priority, input, derived, revised, controlInfo);
+    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, event->occurrenceTimeOffset, priority, input, derived, revised, controlInfo, selected);
 }
 
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo)
 {
-    Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo);
+    Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
-    if(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && Narsese_copulaEquals(event->term.atoms[2], TEMPORAL_IMPLICATION) && Narsese_copulaEquals(event->term.atoms[5], SEQUENCE)) //only <S ==> <(A &/ Op) =/> B>>
-    {
-        Term potential_op = Term_ExtractSubterm(&event->term, 12);
-        if(Narsese_isOperation(&potential_op) && Variable_hasVariable(&event->term, true, true, false))
-        {
-            //get predicate and add the subject to precondition table as an implication
-            Term subject = Term_ExtractSubterm(&event->term, 1);
-            Term predicate = Term_ExtractSubterm(&event->term, 2);
-            Concept *source_concept = Memory_Conceptualize(&subject, currentTime, true);
-            if(source_concept != NULL)
-            {
-                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-                Implication imp = { .truth = eternal_event.truth,
-                                    .stamp = eternal_event.stamp,
-                                    .occurrenceTimeOffset = event->occurrenceTimeOffset,
-                                    .creationTime = currentTime };
-                source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
-                imp.sourceConceptId = source_concept->id;
-                imp.sourceConcept = source_concept;
-                imp.term = event->term;
-                Implication *revised = Table_AddAndRevise(&source_concept->implied_contingencies, &imp);
-                if(revised != NULL)
-                {
-                    bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
-                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
-                    if(wasRevised)
-                        Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
-                }
-            }
-        }
-    }
-#endif
     if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
     {
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime, false);
+        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
         if(target_concept != NULL)
         {
             target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
@@ -356,7 +322,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 sourceConceptTerm = subject;
             }
-            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime, false);
+            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
             if(source_concept != NULL)
             {
                 source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
@@ -376,7 +342,11 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
     else
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime, false);
+        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        if(input)
+        {
+            c->priorizedTemporalCompounding = true;
+        }
         if(c != NULL)
         {
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
@@ -385,7 +355,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 if(ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING)
                 {
-                    c->lastSensorimotorActivation = currentTime;
+                    c->lastSelectionTime = currentTime;
                 }
                 c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, event, currentTime, NULL);
                 c->belief_spike.creationTime = currentTime; //for metrics
@@ -410,35 +380,34 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(input)
             {
-                Memory_printAddedEvent(event, priority, input, false, false, true);
+                Memory_printAddedEvent(event, priority, input, false, false, true, false);
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, false, 0, false, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0, false, false);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
-                    Memory_printAddedEvent(&c->belief, priority, false, false, true, true);
+                    Memory_printAddedEvent(&c->belief, priority, false, false, true, true, false);
                 }
             }
         }
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, bool sequenced, int layer, bool mental, bool considerContingency)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool mental, bool considerContingency)
 {
-    double eventPriority = priority;
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
-        eventPriority *= 1.0 / log2(1.0 + complexity);
+        priority *= 1.0 / log2(1.0 + complexity);
     }
-    if(event->truth.confidence < MIN_CONFIDENCE || eventPriority <= MIN_PRIORITY || eventPriority == 0.0)
+    if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
         return;
     }
     if(!mental && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_AddEvent(event, currentTime, priority, input, derived, revised, sequenced, layer, true, false);
+        Memory_AddEvent(event, currentTime, priority, input, derived, revised, layer, true, false);
     }
     bool isImplication = Narsese_copulaEquals(event->term.atoms[0], '$');
     if(derived && !isImplication && event->type == EVENT_TYPE_BELIEF && event->occurrenceTime != OCCURRENCE_ETERNAL && Memory_task.occurrenceTime != OCCURRENCE_ETERNAL) //learning the preconditions and consequences of consider operation by nodeling its own inference process
@@ -467,17 +436,20 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                          .stamp = Stamp_make(&Memory_task.stamp, &Memory_belief.stamp), 
                          .occurrenceTime = currentTime,
                          .creationTime = currentTime };
-            Memory_AddEvent(&ev, currentTime, 1.0, false, true, false, false, layer, false, true);
+            Memory_AddEvent(&ev, currentTime, 1.0, false, true, false, layer, false, true);
         }
     }
     if(input && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_printAddedEvent(event, priority, input, false, false, true);
+        Memory_printAddedEvent(event, priority, input, false, false, true, false);
     }
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF && !considerContingency)
     {
-        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        {
+            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer, mental);
+        }
     }
     if(event->type == EVENT_TYPE_BELIEF)
     {
@@ -485,22 +457,19 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
+        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer, mental);
         assert(event->occurrenceTime != OCCURRENCE_ETERNAL, "Eternal goals are not supported");
-        if(SEMANTIC_INFERENCE_NAL_LEVEL >= 7 || !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
-        {
-            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, sequenced, currentTime, layer, mental);
-        }
     }
-    if((addedToCyclingEventsQueue || !considerContingency) && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION)) //print new tasks
+    if((addedToCyclingEventsQueue || !considerContingency) && !input) //print new tasks
     {
-        Memory_printAddedEvent(event, eventPriority, input, derived, revised, true);
+        Memory_printAddedEvent(event, priority, input, derived, revised, true, false);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, false, 0, false, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, false, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

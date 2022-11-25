@@ -30,6 +30,7 @@
 /////////////////////
 //Supports converting Narsese strings to compound terms
 //and dictates the format of the internal compound term encoding
+//TODO add grammar
 
 //References//
 //----------//
@@ -46,7 +47,7 @@ extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
-#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?^_"
+#define Naresese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?^_,"
 #define PRODUCT '*'
 #define EXT_INTERSECTION '&'
 #define INT_INTERSECTION '|'
@@ -68,6 +69,7 @@ extern Atom SELF;
 #define IMPLICATION '?'
 #define EQUIVALENCE '^'
 #define DISJUNCTION '_'
+#define PARALLEL_CONJUNCTION ','
 #define SET_TERMINATOR '@'
 
 //Methods//

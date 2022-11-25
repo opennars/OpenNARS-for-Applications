@@ -2,12 +2,14 @@
 
 Implementation of a Non-Axiomatic Reasoning System [6], a general-purpose reasoner that adapts under the Assumption of Insufficient Knowledge and Resources [7].
 
-This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations in terms of reasoning performance, and has also been experimentally compared with Reinforcement Learning [5, 6] and means-end reasoning approaches such as BDI models [6]. Additionally, it has become the core reasoning component of a system assisting first responders (Trusted and explainable Artificial Intelligence for Saving Lives, [6]) while driving and completing their mission. This was done in cooperation with NASA Jet Propulsion Laboratory. Also it has been tried for real-time traffic surveillance in cooperation with Cisco Systems [7]. Last, initial experiments for using the system for autonomous robots have been carried out [6], and more is yet to come.
+This is a completely new platform and not branched from the existing OpenNARS codebase. The ONA (OpenNARS for Applications) system [1] takes the logic and conceptual ideas of OpenNARS, the event handling and procedure learning capabilities of ANSNA [2, 3] and 20NAR1 [11], and the control model from ALANN [4]. The system is written in C, is more capable than our previous implementations in terms of reasoning performance, and has also been experimentally compared with Reinforcement Learning [5, 6] and means-end reasoning approaches such as BDI models [6]. Additionally, it has become the core reasoning component of a system assisting first responders (Trusted and explainable Artificial Intelligence for Saving Lives, [6]) while driving and completing their mission. This was done in cooperation with NASA Jet Propulsion Laboratory. Also it has been tried for real-time traffic surveillance in cooperation with Cisco Systems [7]. Last, initial experiments for using the system for autonomous robots have been carried out [6], and more is yet to come.
 
 The ONA implementation has been developed with a pragmatic mindset. The focus on the design has been to implement the 'existing' theory [8, 9] as effectively as possible and make firm decisions rather than keep as many options open as possible. This has led to some small conceptual differences to OpenNARS [10] which was developed for research purposes. 
 
 Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 Or click on the picture to watch the newest summary videos (summary and demo):
+
+[![Reasoning-learning systems based on Non Axiomatic Reasoning Theory](https://img.youtube.com/vi/pEiJ8V17RGk/0.jpg)](https://www.youtube.com/watch?v=pEiJ8V17RGk "Reasoning-learning systems based on Non Axiomatic Reasoning Theory")
 
 [![Autonomy through real-time learning and OpenNARS for Applications](https://img.youtube.com/vi/B9SKu7u6G-I/0.jpg)](https://www.youtube.com/watch?v=B9SKu7u6G-I "Autonomy through real-time learning and OpenNARS for Applications")
 
@@ -22,6 +24,8 @@ git clone https://github.com/opennars/OpenNARS-for-Applications
 cd OpenNARS-for-Applications
 ./build.sh
 ```
+
+Additionally the parameter -DHARDENED can be passed to build.sh to end up with a slimmer system without language learning abilities.
 
 ***How to set the amount of threads the system should run with: (to be tested more, compile with ./build.sh -fopenmp)***
 ```
@@ -117,4 +121,5 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 [10] Hammer, P., Lofthouse, T., & Wang, P. (2016, July). [The OpenNARS implementation of the non-axiomatic reasoning system](https://cis.temple.edu/~pwang/Publication/OpenNARS.pdf). In International conference on artificial general intelligence (pp. 160-170). Springer, Cham.
 
+[11] Wünsche, R. (2021, October). 20NAR1-An Alternative NARS Implementation Design. In International Conference on Artificial General Intelligence (pp. 283-291). Springer, Cham.
 

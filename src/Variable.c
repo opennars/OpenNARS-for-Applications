@@ -208,8 +208,8 @@ static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, boo
     {
         Term subject = Term_ExtractSubterm(term, 1);
         Term predicate = Term_ExtractSubterm(term, 2);
-        countHigherOrderStatementAtoms(&subject, appearing, extensionally);
-        countHigherOrderStatementAtoms(&predicate, appearing, extensionally);
+        countHigherOrderStatementAtoms(&subject, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
+        countHigherOrderStatementAtoms(&predicate, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
         return;
     }
     countStatementAtoms(term, appearing, extensionally, false);

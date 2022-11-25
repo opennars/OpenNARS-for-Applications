@@ -8,7 +8,7 @@ static Feedback NAR_CP_Left()
     double reverse = angle > 0 ? 1 : -1;
     //if(position > 0.0 && position < 1.0)
     {
-        angle_velocity -= reverse * 0.3;
+        angle_velocity -= reverse * 0.2;
     }
     velocity -= 0.1;
     return (Feedback) {0};
@@ -18,7 +18,7 @@ static Feedback NAR_CP_Right()
     double reverse = angle > 0 ? 1 : -1;
     //if(position > 0.0 && position < 1.0)
     {
-        angle_velocity += reverse * 0.3;
+        angle_velocity += reverse * 0.2;
     }
     velocity += 0.1;
     return (Feedback) {0};

@@ -1,0 +1,24 @@
+*volume=0
+
+<{inst1} --> plant>.
+<{inst1} --> [green]>. %0.7%
+
+10
+
+<{inst2} --> plant>.
+<{inst2} --> [green]>. %0.8%
+
+10
+
+//How green are plants?
+<plant --> [green]>?
+//expected: Answer: <plant --> [green]>. Truth: frequency=0.750000, confidence=0.618321
+
+<{ocean1} --> ocean>.
+<{ocean1} --> [green]>. %0.1%
+
+10
+
+//Plants are greener than the ocean?
+<(plant ~ ocean) --> [green]>?
+//expected: Answer: <(plant ~ ocean) --> [green]>. Truth: frequency=0.675000, confidence=0.276707

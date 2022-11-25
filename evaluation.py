@@ -143,13 +143,13 @@ def Test(Example, outputString):
 
 #Evaluate tests & performance on all Narsese examples:
 print("\nNow running Q&A experiments:")
-for filename in glob.glob("./examples/nal/*.nal"):
+for filename in sorted(glob.glob("./examples/nal/*.nal")):
     Test(filename, subprocess.getoutput("./NAR shell < " + filename))
 print("\nNarsese integration tests successful!")
 QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
-for filename in glob.glob('./examples/english/*.english'):
+for filename in sorted(glob.glob('./examples/english/*.english')):
     Test(filename, subprocess.getoutput("python3 english_to_narsese.py quiet < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
     print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
@@ -172,6 +172,7 @@ print("Answer ratio = " + str(QuestionsAnsweredGlobal / QuestionsTotalGlobal))
 print("\nSheep counting task:")
 print(subprocess.getoutput("cd ./misc/Python/ && python3 count_sheep.py").split("\n")[-1])
 print(subprocess.getoutput("cd ./misc/Python/ && python3 discriminativefunction.py silent seed=42"))
+print(subprocess.getoutput("cd ./misc/Python/ && python3 conditioning.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 sortingtask.py silent seed=42"))
 print(subprocess.getoutput("cd ./misc/Python/ && python3 identitymatching.py silent seed=42"))
 
@@ -182,4 +183,5 @@ ctests("Pong2", "./NAR pong2 10000", True)
 ctests("Alien", "./NAR alien 20000", True)
 ctests("Cartpole", "./NAR cartpole 10000", True)
 ctests("Robot", "./NAR robot 1200", True)
+ctests("Bandrobot", "./NAR bandrobot 10000", True)
 print("\nProcedure learning metrics done")

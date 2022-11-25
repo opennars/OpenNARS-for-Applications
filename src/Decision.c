@@ -136,7 +136,7 @@ void Decision_Execute(Decision *decision)
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
             {
                 Term postcondition = Term_ExtractSubterm(&decision->missing_specific_implication.term, 2);
-                Concept *postc = Memory_Conceptualize(&postcondition, currentTime, false);
+                Concept *postc = Memory_Conceptualize(&postcondition, currentTime);
                 if(postc != NULL)
                 {
                     Decision_AddNegativeConfirmation(decision->reason, decision->missing_specific_implication, decision->operationID[i], postc);
@@ -188,6 +188,43 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
+static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
+{
+    Event OpGoalImmediateOutcomes = {0};
+    //1. discount decision based on negative outcomes via revision
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
+        {
+            for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
+            {
+                Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
+                Concept *prec = imp.sourceConcept;
+                if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
+                {
+                    Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                    Term opTerm2 = {0};
+                    assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
+                    if(Term_Equal(&decision.operationTerm, &opTerm2))
+                    {
+                        Event ContextualOperation = Inference_GoalDeduction(&c->goal_spike, &imp, currentTime); //(&/,a,op())! :\:
+                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                        OpGoalImmediateOutcomes = Inference_RevisionAndChoice(&OpGoalImmediateOutcomes, &OpGoalLocal, currentTime, NULL);
+                    }
+                    IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
+                }
+            }
+        }
+    }
+    IN_DEBUG ( printf("//Evaluation local=%f global=%f\n",decision.desire, Truth_Expectation(OpGoalImmediateOutcomes.truth)); )
+    if(Truth_Expectation(OpGoalImmediateOutcomes.truth) < 0.5)
+    {
+        decision = (Decision) {0};
+    }
+    return decision;
+}
+
 static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp)
 {
     Decision decision = {0};
@@ -203,7 +240,11 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        Term potential_operation = {0};
+        Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
+        assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
+        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
+        double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
@@ -247,7 +288,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             i++;
         }
     }
-    return decision;
+    return Decision_ConsiderNegativeOutcomes(decision);
 }
 
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime, bool mental)
@@ -423,7 +464,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             result.term = Variable_ApplySubstitute(result.term, subs, &success2);
                             if(success2)
                             {
-                                Concept *c = Memory_Conceptualize(&result.term, currentTime, false);
+                                Concept *c = Memory_Conceptualize(&result.term, currentTime);
                                 if(c != NULL)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
