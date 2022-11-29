@@ -33,7 +33,7 @@ Q: The cat is in the garden
 A: < ( cat * garden ) --> in > .
 
 Q: cats are furry animals
-A: < cat * ( [ furry ] & animal ) > .
+A: < cat --> ( [ furry ] & animal ) > .
 
 Q: what is a cat?
 A: < ?1 --> cat > ?
