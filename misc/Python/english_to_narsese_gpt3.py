@@ -1,4 +1,5 @@
 import openai
+import sys
 
 openai.api_key = "PUT_YOUR_API_KEY"
 gpt_prompt = """
@@ -43,6 +44,7 @@ A: < ( ?1 * animal ) --> like > ?
 
 """
 
+extendingPrompt = "NoExtendingPrompt" not in sys.argv
 while True:
     inp = input().rstrip("\n")
     if len(inp) == 0:
@@ -54,10 +56,13 @@ while True:
         response = openai.Completion.create(
           engine="text-davinci-002",
           prompt=gpt_prompt_with_input,
-          temperature=0.5,
+          temperature=0.0,
           max_tokens=100, #256
           top_p=1.0,
           frequency_penalty=0.0,
           presence_penalty=0.0
         )
-        print(response['choices'][0]['text'].split("A: ")[1])
+        resp = response['choices'][0]['text']
+        print(resp.split("A: ")[1])
+        if extendingPrompt:
+            gpt_prompt = gpt_prompt_with_input + "\n" + resp + "\n\n"
