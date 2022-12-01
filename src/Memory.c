@@ -47,6 +47,8 @@ Item cycling_goal_event_items_storage[CYCLING_GOAL_EVENTS_LAYERS][CYCLING_GOAL_E
 double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
+//Subterm priming strength
+double SUBTERM_PRIMING_STRENGTH = SUBTERM_PRIMING_STRENGTH_INITIAL;
 
 static void Memory_ResetEvents()
 {
@@ -149,7 +151,7 @@ int beliefsSelectedCnt = 0;
 Event selectedGoals[GOAL_EVENT_SELECTIONS]; //better to be global
 double selectedGoalsPriority[GOAL_EVENT_SELECTIONS]; //better to be global
 int goalsSelectedCnt = 0;
-
+Memory_printAddedKnowledge
 static bool Memory_containsEvent(PriorityQueue *queue, Event *event)
 {
     for(int i=0; i<queue->itemsAmount; i++)
@@ -231,7 +233,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int lay
 
 static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
 {
-    if(selected || (((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS)) && (input || priority > PRINT_EVENTS_PRIORITY_THRESHOLD)))
+    if((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS && priority > PRINT_EVENTS_PRIORITY_THRESHOLD))
     {
         if(controlInfo)
             fputs(selected ? "Selected: " : (revised ? "Revised: " : (input ? "Input: " : "Derived: ")), stdout);

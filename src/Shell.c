@@ -100,6 +100,11 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*decisionthreshold=")], "%lf", &DECISION_THRESHOLD);
         }
         else
+        if(!strncmp("*subtermprimingstrength=", line, strlen("*subtermprimingstrength=")))
+        {
+            sscanf(&line[strlen("*subtermprimingstrength=")], "%lf", &SUBTERM_PRIMING_STRENGTH);
+        }
+        else
         if(!strcmp(line,"*stats"))
         {
             puts("//*stats");

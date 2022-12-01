@@ -658,6 +658,12 @@ void Cycle_Inference(long currentTime)
                     //Check for overlap and apply inference rules
                     if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                     {
+                        if(SUBTERM_PRIMING_STRENGTH > 0.0 && (c->belief_spike.type == EVENT_TYPE_DELETED || currentTime - c->belief_spike.occurrenceTime > SUBTERM_PRIMING_ALLOW_DISTANCE))
+                        {
+                            double diff = fabs(c->priority - MAX(c->priority, priority));
+                            c->priority = c->priority + diff * SUBTERM_PRIMING_STRENGTH; //
+                            //c->priority = 1.0 - (1.0 - c->priority) * (1.0 - priority * SUBTERM_PRIMING_STRENGTH);
+                        }
                         c->usage = Usage_use(c->usage, currentTime, false);
                         Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
                         if(PRINT_CONTROL_INFO)
