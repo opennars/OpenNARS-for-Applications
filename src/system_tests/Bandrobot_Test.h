@@ -68,19 +68,11 @@ void NAR_Bandrobot(long iterations)
     int minpos = 0.0;
     int maxpos = 20.0;
     int position = 0;
-    int targetposition = 3; //maxpos; //maxpos/2;
+    int targetposition = 1; //maxpos; //maxpos/2;
     bool picked = false, lastpicked = false;
     int successes = 0;
     while(1)
     {
-        if(myrand()%10000 > 9000)
-        {
-            //position = (((double)myrand()/(double)(MY_RAND_MAX)) * maxpos); 
-        }
-        if(t > 10000)
-        {
-            Shell_ProcessInput("*motorbabbling=false");
-        }
         if(t++ > iterations && iterations != -1)
         {
             break;
@@ -123,27 +115,24 @@ void NAR_Bandrobot(long iterations)
         //NAR_AddInputNarsese("<(<(targetposition * position) --> [left]> &/ ?1) =/> aligned>?");
         NAR_AddInputNarsese("<(?1 * ?2) --> (+ left)>? :\\:");
         puts(world);
-        char positionStr[200];
-        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", (((float) (position-minpos))/((float) (maxpos-minpos)))/3.0);
+        char positionStr[NARSESE_LEN_MAX];
+        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", (((float) (position-minpos))/((float) (maxpos-minpos)))/10.0);
         NAR_AddInputNarsese(positionStr);
-        char targetpositionStr[200];
-        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", (((float) (targetposition-minpos))/((float) (maxpos-minpos)))/3.0);
+        char targetpositionStr[NARSESE_LEN_MAX];
+        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", (((float) (targetposition-minpos))/((float) (maxpos-minpos)))/10.0);
         NAR_AddInputNarsese(targetpositionStr);
-        //if(picked != lastpicked)
+        if(picked && !lastpicked)
         {
-            if(picked && !lastpicked)
-            {
-                NAR_AddInputNarsese("picked. :|:");
-            }
-            else
-            if(!picked && lastpicked)
-            {
-                NAR_AddInputNarsese("dropped. :|:");
-                targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
-                successes++;
-            }
-            lastpicked = picked;
+            NAR_AddInputNarsese("picked. :|:");
         }
+        else
+        if(!picked && lastpicked)
+        {
+            NAR_AddInputNarsese("dropped. :|:");
+            targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
+            successes++;
+        }
+        lastpicked = picked;
         NAR_AddInputNarsese("dropped! :|:");
         printf("ratio=%d time=%ld\n", successes, t);
     }
