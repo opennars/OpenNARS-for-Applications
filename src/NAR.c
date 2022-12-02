@@ -109,7 +109,14 @@ void NAR_AddInputNarsese(char *narsese_sentence)
 #endif    
     if(punctuation == '?')
     {
-        Memory_Conceptualize(&term, currentTime); //triggers concept RESTORE
+        if(!Variable_hasVariable(&term, false, false, true))
+        {
+            Concept *c = Memory_Conceptualize(&term, currentTime); //triggers concept RESTORE
+            if(c != NULL)
+            {
+                c->priority = 1.0;
+            }
+        }
         //answer questions:
         Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
         Truth best_truth_projected = { .frequency = 0.0, .confidence = 1.0 };
