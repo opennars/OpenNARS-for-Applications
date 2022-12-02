@@ -244,6 +244,11 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*motorbabbling=")], "%lf", &MOTOR_BABBLING_CHANCE);
         }
         else
+        if(!strncmp("*questionpriming=", line, strlen("*questionpriming=")))
+        {
+            sscanf(&line[strlen("*questionpriming=")], "%lf", &QUESTION_PRIMING);
+        }
+        else
         if(!strncmp("*setopname ", line, strlen("*setopname ")))
         {
             assert(concepts.itemsAmount == 0, "Operators can only be registered right after initialization / reset!");

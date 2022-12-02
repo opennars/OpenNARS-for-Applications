@@ -27,6 +27,7 @@
 long currentTime = 1;
 static bool initialized = false;
 static int op_k = 0;
+double QUESTION_PRIMING = QUESTION_PRIMING_INITIAL;
 
 void NAR_INIT()
 {
@@ -109,12 +110,13 @@ void NAR_AddInputNarsese(char *narsese_sentence)
 #endif    
     if(punctuation == '?')
     {
+        //simplistic priming for Q&A:
         if(!Variable_hasVariable(&term, false, false, true))
         {
-            Concept *c = Memory_Conceptualize(&term, currentTime); //triggers concept RESTORE
+            Concept *c = Memory_FindConceptByTerm(&term); //triggers concept RESTORE
             if(c != NULL)
             {
-                c->priority = 1.0;
+                c->priority = MAX(c->priority, QUESTION_PRIMING);
             }
         }
         //answer questions:
