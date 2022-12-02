@@ -92,6 +92,10 @@
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
 //How long goal events describing bad outcomes are considered in decision making
 #define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
+//Questions concept activation priority
+#define QUESTION_CONCEPT_ACTIVATION_PRIORITY 0.1
+//Questions shared subterm concept activation priority
+#define QUESTION_SHARED_SUBTERM_CONCEPT_ACTIVATION_PRIORITY 0.1
 
 /*------------------*/
 /* Space parameters */

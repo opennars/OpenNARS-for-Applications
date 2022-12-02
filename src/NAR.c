@@ -109,6 +109,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
 #endif    
     if(punctuation == '?')
     {
+        Cycle_SubtermPrime(term);
         //answer questions:
         Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
         Truth best_truth_projected = { .frequency = 0.0, .confidence = 1.0 };

@@ -49,5 +49,7 @@
 void Cycle_Perform(long currentTime);
 //Init cycle module
 void Cycle_INIT();
+//Subterm priming: (for Q&A)
+void Cycle_SubtermPrime(Term term);
 
 #endif

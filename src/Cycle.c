@@ -728,3 +728,19 @@ void Cycle_Perform(long currentTime)
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }
+
+void Cycle_SubtermPrime(Term term)
+{
+    if(!Variable_hasVariable(&term, false, false, true))
+    {
+        Concept *c = Memory_Conceptualize(&term, currentTime); //triggers concept RESTORE
+        if(c != NULL)
+        {
+            c->priority = MAX(c->priority, QUESTION_CONCEPT_ACTIVATION_PRIORITY);
+        }
+        RELATED_CONCEPTS_FOREACH(&term, c, //subterm concept priming
+        {
+            c->priority = MAX(c->priority, QUESTION_SHARED_SUBTERM_CONCEPT_ACTIVATION_PRIORITY);
+        })
+    }
+}
