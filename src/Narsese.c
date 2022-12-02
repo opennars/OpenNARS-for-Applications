@@ -845,3 +845,24 @@ bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
     }
     return success;
 }
+
+void Narsese_TermKey(Term *term, char *key)
+{
+    int running_index = 0;
+    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        for(int j=0; j<ATOMIC_TERM_LEN_MAX; j++)
+        {
+            if(term->atoms[i])
+            {
+                char stored = Narsese_atomNames[term->atoms[i]-1][j];
+                if(stored == '\"') { stored = '('; } //avoids issue when passing as arg
+                if(stored) //key[i*ATOMIC_TERM_LEN_MAX + j] //--
+                    key[running_index++] = stored;
+            }
+        }
+        key[running_index++] = ','; //++
+    }
+    key[running_index] = 0;
+}
+

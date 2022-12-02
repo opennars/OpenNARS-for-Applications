@@ -23,6 +23,7 @@
  */
 
 #include "Memory.h"
+#include <sys/wait.h>
 
 //Concepts in main memory:
 PriorityQueue concepts;
@@ -133,6 +134,31 @@ Concept* Memory_Conceptualize(Term *term, long currentTime)
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) == NULL, "VMItem to add already exists!"); )
             HashTable_Set(&HTconcepts, &recycleConcept->term, recycleConcept);
             IN_DEBUG( assert(HashTable_Get(&HTconcepts, &recycleConcept->term) != NULL, "VMItem to add was not added!"); )
+            //RESTORE CONCEPT IF EXISTED
+            char key[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX] = {0};
+            Narsese_TermKey(&recycleConcept->term, (char*) &key);
+            char command[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX+500] = {0};
+            sprintf((char*) &command, "python3 restoreConcept.py \"%s\" exists", key);
+            if(!system(command))
+            {
+                char command1[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX+500] = {0};
+                sprintf((char*) &command1, "python3 restoreConcept.py \"%s\" 0", key);
+                long ret1 =  WEXITSTATUS(system(command1));
+                float frequency = ((float) ret1)/(float) MAX_SYS_INT_SIZE;
+                char command2[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX+500] = {0};
+                sprintf((char*) &command2, "python3 restoreConcept.py \"%s\" 1", key);
+                long ret2 = WEXITSTATUS(system(command2));
+                float confidence = ((float) ret2)/(float) MAX_SYS_INT_SIZE;
+                Truth truth = { .frequency = frequency, .confidence = confidence };
+                Event reconstructed = Event_InputEvent(recycleConcept->term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
+                reconstructed.occurrenceTime = OCCURRENCE_ETERNAL;
+                recycleConcept->belief = reconstructed;
+                char command3[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX+500] = {0};
+                sprintf((char*) &command3, "python3 restoreConcept.py \"%s\" 2", key);
+                long useCount = WEXITSTATUS(system(command3));
+                recycleConcept->usage.useCount = (useCount == MAX_SYS_INT_SIZE) ? ETERNAL_INPUT_USAGE_BOOST : useCount;
+            }
+            //RESTORE END
             return recycleConcept;
         }
     }
@@ -367,6 +393,15 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 Memory_printAddedEvent(event, priority, input, false, false, true, false);
             }
+            //STORE BELIEF IN FILE
+            char key[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX] = {0};
+            Narsese_TermKey(&c->term, (char*) &key);
+            char command[COMPOUND_TERM_SIZE_MAX*ATOMIC_TERM_LEN_MAX+500] = {0};
+            int fInt = (int) (c->belief.truth.frequency * MAX_SYS_INT_SIZE);
+            int cInt = (int) (c->belief.truth.confidence * MAX_SYS_INT_SIZE);
+            sprintf((char*) &command, "python3 storeConcept.py \"%s\" %d %d %d", key, fInt, cInt, (int) MIN(MAX_SYS_INT_SIZE, c->usage.useCount));
+            system(command);
+            //STORE END
             if(revision_happened)
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0);

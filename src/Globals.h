@@ -69,5 +69,6 @@ void mysrand(unsigned int seed);
 //Stringification macro:
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
-
+//Max system integer positive value
+#define MAX_SYS_INT_SIZE 255
 #endif
