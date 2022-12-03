@@ -61,8 +61,8 @@ SyntacticalTransformations = [
 
 TermRepresentRelations = [
     #subject, predicate, object encoding
-    (r"ADJ_NOUN_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99)),
-    (r"ADV_VERB_([0-9]*)", "([ %s ] & %s )", (1.0, 0.99))
+    (r"ADJ_NOUN_([0-9]*)", "( [ %s ] & %s )", (1.0, 0.99)),
+    (r"ADV_VERB_([0-9]*)", "( [ %s ] & %s )", (1.0, 0.99))
 ]
 
 AcquiredGrammar = []
