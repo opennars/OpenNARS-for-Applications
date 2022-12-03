@@ -20,7 +20,7 @@ def parseTask(s):
         s = s.replace(" :|:","")
         if "occurrenceTime" in s:
             M["occurrenceTime"] = s.split("occurrenceTime=")[1].split(" ")[0]
-    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0]
+    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0].split(" creationTime=")[0]
     M["punctuation"] = sentence[-4] if ":|:" in sentence else sentence[-1]
     M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0][:-1]
     if "Truth" in s:
@@ -66,7 +66,7 @@ def GetOutput(usedNAR):
     lines, requestOutputArgs = GetRawOutput(usedNAR)
     executions = [parseExecution(l) for l in lines if l.startswith('^')]
     inputs = [parseTask(l.split("Input: ")[1]) for l in lines if l.startswith('Input:')]
-    derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised:")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
+    derivations = [parseTask(l.split("Derived: " if l.startswith('Derived:') else "Revised: ")[1]) for l in lines if l.startswith('Derived:') or l.startswith('Revised:')]
     answers = [parseTask(l.split("Answer: ")[1]) for l in lines if l.startswith('Answer:')]
     selections = [parseTask(l.split("Selected: ")[1]) for l in lines if l.startswith('Selected:')]
     reason = parseReason("\n".join(lines))
