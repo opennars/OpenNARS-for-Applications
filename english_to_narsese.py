@@ -208,7 +208,14 @@ def GrammarLearning(y = "", forced = False):
 
 motivation = None
 thinkcycles = None
-eternal = True if "EternalOutput" in sys.argv else False
+eternal = False
+tenseFromSentence = True
+if "EternalOutput" in sys.argv:
+    eternal = True
+    tenseFromSentence = False
+if "EventOutput" in sys.argv:
+    eternal = False
+    tenseFromSentence = False
 while True:
     currentTime += 1
     #Get input line and forward potential command
@@ -221,7 +228,8 @@ while True:
     isQuestion = line.endswith("?")
     isGoal = line.endswith("!")
     isCommand = line.startswith("*") or line.startswith("//") or line.isdigit() or line.startswith('(') or line.startswith('<') or line.endswith(":|:")
-    isNegated = " not " in (" " + line.lower() + " ") or " no " in (" " + line.lower() + " ")
+    spaced_line = (" " + line.lower() + " ")
+    isNegated = " not " in spaced_line or " no " in spaced_line
     if isCommand:
         if line.startswith("*eternal=false"):
             eternal = False
@@ -243,6 +251,16 @@ while True:
             sys.stdout.flush()
             continue
     if line.strip() != "": print("//Input sentence: " + line)
+    #determine tense from sentence
+    punctuations = [" ", "!","?"]
+    tensesPresent = ["now", "currently"]
+    tenseNow = True in [" "+w+p in spaced_line for p in punctuations for w in tensesPresent]
+    if tenseFromSentence:
+        eternal = not tenseNow
+        for punc in punctuations:
+            for tenseWord in tensesPresent:
+                if " "+tenseWord+punc in spaced_line:
+                    line = ((spaced_line + " ").replace(" "+tenseWord+punc, "")).lstrip().rstrip()
     #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
     sentence = " " + line.replace("!", "").replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
     s_and_T = sentence_and_types(sentence)
