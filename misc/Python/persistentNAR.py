@@ -4,7 +4,7 @@ from os.path import exists
 import sys
 
 fname = "mem.json"
-derivationTrigger = "selections" if "selections" in sys.argv else "derivations"
+derivationTrigger = "derivations" if "derivations" in sys.argv else "selections"
 memory = {}
 if exists(fname):
     with open(fname) as json_file:
@@ -16,8 +16,21 @@ def query(term):
         retrieved.add(term)
         (f, c, _) = memory[term]
         ProcessNAROutput(NAR.AddInput(f"{term}. {{{f} {c}}}"))
+    if "?1" in term: #simple query matching
+        parts = term.split("?1")
+        truth_expectation = lambda f,c: (c * (f - 0.5) + 0.5)
+        bestTerm, bestTruth = (None, (0.0, 0.5))
+        for term2 in memory:
+            (f2, c2, _) = memory[term2]
+            if term2.startswith(parts[0]) and term2.endswith(parts[1]):
+                if truth_expectation(f2, c2) > truth_expectation(bestTruth[0], bestTruth[1]):
+                    bestTerm = term2
+                    bestTruth = (f2, c2)
+        if bestTerm is not None:
+            retrieved.add(bestTerm)
+            ProcessNAROutput(NAR.AddInput(f"{bestTerm}. {{{bestTruth[0]} {bestTruth[1]}}}"))
 
-def ProcessNAROutput(ret, backups = ["input", "answers", derivationTrigger])
+def ProcessNAROutput(ret, backups = ["input", "answers", derivationTrigger]):
     for backup in backups:
         for derivation in ret[backup]:
             if derivation["punctuation"] == "." and derivation["occurrenceTime"] == "eternal" and derivation["term"] != "None":
@@ -25,8 +38,8 @@ def ProcessNAROutput(ret, backups = ["input", "answers", derivationTrigger])
                 if term.startswith("dt="): #we don't need to store time deltas
                     term = term.split(" ")[1]
                 query(term)
-                f2 = derivation["truth"]["frequency"]
-                c2 = derivation["truth"]["confidence"]
+                f2 = float(derivation["truth"]["frequency"])
+                c2 = float(derivation["truth"]["confidence"])
                 usefulnessAddition = 1000000 if "Priority" not in derivation or derivation["Priority"] == 1.0 else 1
                 if term in memory:
                     (f, c, usefulness) = memory[term]
@@ -36,11 +49,10 @@ def ProcessNAROutput(ret, backups = ["input", "answers", derivationTrigger])
                     memory[term] = (f2, c2, usefulnessAddition)
 
 def SimplisticTermNormalizer(inp): #at least handle space variations in involved parenthesis in input
-    for x in ["(", ")", "<", ">"]: #Term reductions more tricky here
-        inp = inp.replace(" " + x, x).replace(x + " ",x)
-    inp=inp.replace("-->","--> ").replace("<->"," <-> ").replace(
-                    "==>","==> ").replace("<=>"," <=> ").replace(
-                    "=/>","=/> ").strip().replace("[ ","[").replace(" ]","]").replace("{ ","{").replace(" }","}")
+    inp=inp.replace("-->","--> ").replace("<->"," <-> ").replace("  "," ").replace(
+                    "==>","==> ").replace("<=>"," <=> ").replace("  "," ").replace(
+                    "=/>","=/> ").strip().replace("[ ","[").replace(" ]","]").replace("{ ","{").replace(" }","}").replace(
+                                                  "< ","<").replace(" >",">").replace(" )",")").replace(" )",")").strip()
     return inp
 
 if __name__ == "__main__":
@@ -49,7 +61,7 @@ if __name__ == "__main__":
         if inp.startswith("//"):
             continue
         if inp.endswith("?"): #query first
-            query(inp.split("?")[0].strip())
+            query(inp[:-1])
         ProcessNAROutput(NAR.AddInput(inp))
         with open(fname, 'w') as f:
             json.dump(memory, f)
