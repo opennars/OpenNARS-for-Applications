@@ -4,7 +4,7 @@ from os.path import exists
 import sys
 
 fname = "mem.json"
-derivationTrigger = "derivations" if "derivations" in sys.argv else "selections"
+Print = "Print" in sys.argv
 memory = {}
 if exists(fname):
     with open(fname) as json_file:
@@ -12,10 +12,10 @@ if exists(fname):
 retrieved = set([])
 
 def query(term):
-    if not term in retrieved and term in memory:
+    if term not in retrieved and term in memory:
         retrieved.add(term)
         (f, c, _) = memory[term]
-        ProcessNAROutput(NAR.AddInput(f"{term}. {{{f} {c}}}"))
+        ProcessNAROutput(NAR.AddInput(f"{term}. {{{f} {c}}}", Print=Print))
     if "?1" in term: #simple query matching
         parts = term.split("?1")
         truth_expectation = lambda f,c: (c * (f - 0.5) + 0.5)
@@ -28,9 +28,10 @@ def query(term):
                     bestTruth = (f2, c2)
         if bestTerm is not None:
             retrieved.add(bestTerm)
-            ProcessNAROutput(NAR.AddInput(f"{bestTerm}. {{{bestTruth[0]} {bestTruth[1]}}}"))
+            ProcessNAROutput(NAR.AddInput(f"{bestTerm}. {{{bestTruth[0]} {bestTruth[1]}}}", Print=Print))
+    retrieved.add(term)
 
-def ProcessNAROutput(ret, backups = ["input", "answers", derivationTrigger]):
+def ProcessNAROutput(ret, backups = ["input", "answers", "derivations"]):
     for backup in backups:
         for derivation in ret[backup]:
             if derivation["punctuation"] == "." and derivation["occurrenceTime"] == "eternal" and derivation["term"] != "None":
@@ -52,17 +53,27 @@ def SimplisticTermNormalizer(inp): #at least handle space variations in involved
     inp=inp.replace("-->","--> ").replace("<->"," <-> ").replace("  "," ").replace(
                     "==>","==> ").replace("<=>"," <=> ").replace("  "," ").replace(
                     "=/>","=/> ").strip().replace("[ ","[").replace(" ]","]").replace("{ ","{").replace(" }","}").replace(
-                                                  "< ","<").replace(" >",">").replace(" )",")").replace(" )",")").strip()
+                                                  "< ","<").replace(" >",">").replace(" )",")").replace("( ","(").strip()
     return inp
 
 if __name__ == "__main__":
     while True:
         inp = SimplisticTermNormalizer(input().rstrip("\n"))
-        if inp.startswith("//"):
+        if inp.startswith("//") and not Print:
+            print(inp)
             continue
+        if not Print:
+            print("Input: " + inp)
         if inp.endswith("?"): #query first
             query(inp[:-1])
-        ProcessNAROutput(NAR.AddInput(inp))
+        ret = NAR.AddInput(inp, Print=Print)
+        if not Print and "answers" in ret and ret["answers"]:
+            answer = ret["answers"][0]
+            if "truth" not in answer:
+                print("Answer: None.")
+            else:
+                print("Answer: " + answer["term"] + answer["punctuation"] + " {" + str(answer["truth"]["frequency"]) + " " + str(answer["truth"]["confidence"]) + "}")
+        ProcessNAROutput(ret)
         with open(fname, 'w') as f:
             json.dump(memory, f)
         
