@@ -253,14 +253,24 @@ while True:
     if line.strip() != "": print("//Input sentence: " + line)
     #determine tense from sentence
     punctuations = [" ", "!","?"]
-    tensesPresent = ["now", "currently"]
-    tenseNow = True in [" "+w+p in spaced_line for p in punctuations for w in tensesPresent]
+    tensesPast = ["previously", "before"]
+    tensesPresent = ["now", "currently", "afterwards"]
+    tensesFuture = ["afterwards", "later"]
+    eventTenses = tensesPast + tensesPresent + tensesFuture
+    isPastEvent = True in [" "+w+p in spaced_line for p in punctuations for w in tensesPast]
+    isFutureEvent = True in [" "+w+p in spaced_line for p in punctuations for w in tensesFuture]
+    isEvent = True in [" "+w+p in spaced_line for p in punctuations for w in eventTenses]
+    if " will be " in line: #A COMMON FUTURE EXPRESSION NOT COVERED BY ABOVE
+        line = line.replace(" will be ", " is ")
+        isFutureEvent = True
+        isEvent = True
+    nonEternalMarker = ":/:" if isFutureEvent else (":\\:" if isPastEvent else ":|:")
     if tenseFromSentence:
-        eternal = not tenseNow
+        eternal = not isEvent
         for punc in punctuations:
-            for tenseWord in tensesPresent:
+            for tenseWord in eventTenses:
                 if " "+tenseWord+punc in spaced_line:
-                    line = ((spaced_line + " ").replace(" "+tenseWord+punc, "")).lstrip().rstrip()
+                    line = ((line + " ").replace(" "+tenseWord+punc, "")).lstrip().rstrip()
     #it's a sentence, postag and bring it into canonical representation using Wordnet lemmatizer:
     sentence = " " + line.replace("!", "").replace("?", "").replace(".", "").replace(",", "").replace(" not ", " ") + " "
     s_and_T = sentence_and_types(sentence)
@@ -287,7 +297,7 @@ while True:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
-            print(statement.replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " :|:")) + TruthString)
+            print(statement.replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " " + nonEternalMarker)) + TruthString)
             sys.stdout.flush()
         if len(typetextSplit) > 0 and thinkcycles != None:
             print(thinkcycles, flush=True)
