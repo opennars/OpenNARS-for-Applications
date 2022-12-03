@@ -197,7 +197,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             Continue:;
         }
         //simplistic priming for Q&A:
-        if(best_belief_concept != NULL)
+        if(best_belief_concept != NULL && QUESTION_PRIMING > 0.0)
         {
             best_belief_concept->priority = MAX(best_belief_concept->priority, QUESTION_PRIMING);
             best_belief_concept->usage = Usage_use(best_belief_concept->usage, currentTime, tense == 0 ? true : false);

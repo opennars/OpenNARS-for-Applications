@@ -64,6 +64,7 @@ void NAR_Bandrobot(long iterations)
     NAR_AddOperation("^pick", NAR_Bandrobot_Pick); 
     NAR_AddOperation("^drop", NAR_Bandrobot_Drop);
     Shell_ProcessInput("*motorbabbling=0.01");
+    Shell_ProcessInput("*questionpriming=0.0"); //questions are only used for debug here, not to influence attention
     long t = 0;
     int minpos = 0.0;
     int maxpos = 20.0;
