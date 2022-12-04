@@ -37,7 +37,7 @@ def ProcessNAROutput(ret, backups = ["input", "answers", "derivations"]):
             if derivation["punctuation"] == "." and derivation["occurrenceTime"] == "eternal" and derivation["term"] != "None":
                 term = derivation["term"]
                 if term.startswith("dt="): #we don't need to store time deltas
-                    term = term.split(" ")[1]
+                    term = " ".join(term.split(" ")[1:])
                 query(term)
                 f2 = float(derivation["truth"]["frequency"])
                 c2 = float(derivation["truth"]["confidence"])
@@ -53,7 +53,7 @@ def SimplisticTermNormalizer(inp): #at least handle space variations in involved
     inp=inp.replace("-->","--> ").replace("<->"," <-> ").replace("  "," ").replace(
                     "==>","==> ").replace("<=>"," <=> ").replace("  "," ").replace(
                     "=/>","=/> ").strip().replace("[ ","[").replace(" ]","]").replace("{ ","{").replace(" }","}").replace(
-                                                  "< ","<").replace(" >",">").replace(" )",")").replace("( ","(").strip()
+                                                  "< ","<").replace(" >",">").replace(" )",")").replace("( ","(").replace("  "," ").strip()
     return inp
 
 if __name__ == "__main__":
