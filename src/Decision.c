@@ -461,6 +461,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     c->predicted_belief = result;
+                                    c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
                                 }
                             }
                         }
