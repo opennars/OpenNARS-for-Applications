@@ -138,7 +138,10 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
         return false;
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], SIMILARITY)) //similarity or inheritance
     {
-        if(!(Narsese_copulaEquals(conclusionTerm->atoms[1], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[3], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[5], PRODUCT))) //relational statements with products as arguments can have atoms mentioned more than once
+        //<((A * B) * (C * D)) --> r>.
+        //0   1  2 3 4
+        //--> *    * *
+        if(!(Narsese_copulaEquals(conclusionTerm->atoms[1], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[3], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[4], PRODUCT))) //relational statements with products as arguments can have atoms mentioned more than once
         {
             atomsCounter++;
             for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)

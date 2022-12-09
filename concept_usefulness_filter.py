@@ -30,6 +30,7 @@ started = False
 for line in sys.stdin:
     if "//*concepts" in line:
         started = True
+        lines = []
     if not started:
         continue
     if line.startswith("*"):
@@ -40,8 +41,8 @@ for line in sys.stdin:
             lines.append(curline)
         curline = ""
         if line.startswith("//*done"):
-            break
-    if curline != None:
+            started = False
+    if curline != None and started:
         curline += line.replace("//", "")
 #exit(0)
 lines = [line for line in lines if line.strip() != "" and ": { \"priority\":" in line]

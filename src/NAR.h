@@ -42,6 +42,7 @@
 //----------//
 #define NAR_DEFAULT_TRUTH ((Truth) { .frequency = NAR_DEFAULT_FREQUENCY, .confidence = NAR_DEFAULT_CONFIDENCE })
 extern long currentTime;
+extern double QUESTION_PRIMING;
 
 //Callback function types//
 //-----------------------//
