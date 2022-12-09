@@ -86,3 +86,4 @@ if __name__ == "__main__":
         line = narseseToEnglish(line)
         if line != "":
             print(line)
+            sys.stdout.flush()
