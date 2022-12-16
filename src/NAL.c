@@ -95,7 +95,7 @@ static void NAL_GenerateConclusionTerm(char *premise1, char *premise2, char* con
     }
 }
 
-static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise, bool switchTruthArgs, bool VarIntro)
+static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, char* truthFunction, bool doublePremise, bool switchTruthArgs, bool VarIntro, bool VarIntroIsExtensional)
 {
     NAL_GenerateConclusionTerm(premise1, premise2, conclusion, doublePremise);
     if(switchTruthArgs)
@@ -106,7 +106,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     }
-    printf("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, %d);}\n", VarIntro);
+    printf("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, %d, %d);}\n", VarIntro, VarIntroIsExtensional);
 }
 
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
@@ -368,56 +368,65 @@ static bool DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(T
     return false;
 }
 
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars)
+void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool VarIntroIsExtensional, bool allowOnlyExtVarIntroAndTwoIndependentVars)
 {
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
-        bool success;
-        Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
-        if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true) && !NAL_DeclarativeImplicationWithoutIndependentVar(&conclusionTermWithVarExt))
+        if(VarIntroIsExtensional)
         {
-            bool HasTwoIndependentVars = false;
-            Atom DepVar2 = Narsese_AtomicTermIndex("$2");
-            for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+            bool success;
+            Term conclusionTermWithVarExt = Variable_IntroduceImplicationVariables(conclusionTerm, &success, true);
+            if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true) && !NAL_DeclarativeImplicationWithoutIndependentVar(&conclusionTermWithVarExt))
             {
-                if(conclusionTermWithVarExt.atoms[i] == DepVar2)
+                bool HasTwoIndependentVars = false;
+                Atom DepVar2 = Narsese_AtomicTermIndex("$2");
+                for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
                 {
-                    HasTwoIndependentVars = true;
-                    break;
+                    if(conclusionTermWithVarExt.atoms[i] == DepVar2)
+                    {
+                        HasTwoIndependentVars = true;
+                        break;
+                    }
+                }
+                if(!allowOnlyExtVarIntroAndTwoIndependentVars || HasTwoIndependentVars)
+                {
+                    NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
                 }
             }
-            if(!allowOnlyExtVarIntroAndTwoIndependentVars || HasTwoIndependentVars)
-            {
-                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
-            }
         }
-        if(!allowOnlyExtVarIntroAndTwoIndependentVars) //todo rename var to something else
+        if(!allowOnlyExtVarIntroAndTwoIndependentVars && !VarIntroIsExtensional) //todo rename var to something else
         {
             bool success2;
             Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);
             if(success2 && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarInt, true)&& !NAL_DeclarativeImplicationWithoutIndependentVar(&conclusionTermWithVarInt))
             {
-                NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
             }
         }
-        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || allowOnlyExtVarIntroAndTwoIndependentVars)
+        if(Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE) || allowOnlyExtVarIntroAndTwoIndependentVars || VarIntroIsExtensional)
         {
             return;
         }
     }
     if(varIntro && Narsese_copulaEquals(conclusionTerm.atoms[0], CONJUNCTION))
     {
-        bool success;
-        Term conclusionTermWithVarExt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success, true);
-        if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true))
+        if(VarIntroIsExtensional)
         {
-            NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            bool success;
+            Term conclusionTermWithVarExt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success, true);
+            if(success && !Term_Equal(&conclusionTermWithVarExt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarExt, true))
+            {
+                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+            }
         }
-        bool success2;
-        Term conclusionTermWithVarInt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success2, false);
-        if(success2 && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarInt, true))
+        if(!VarIntroIsExtensional)
         {
-            NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+            bool success2;
+            Term conclusionTermWithVarInt = Variable_IntroduceConjunctionVariables(conclusionTerm, &success2, false);
+            if(success2 && !Term_Equal(&conclusionTermWithVarInt, &conclusionTerm) && !NAL_HOLStatementComponentHasInvalidInhOrSim(&conclusionTermWithVarInt, true))
+            {
+                NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+            }
         }
         return;
     }
@@ -440,7 +449,7 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
     }
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool VarIntroIsExtensional)
 {
-    NAL_DerivedEvent2(conclusionTerm, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, false);
+    NAL_DerivedEvent2(conclusionTerm, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, VarIntroIsExtensional, false);
 }

@@ -350,7 +350,8 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false);
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, true);
                     return precondition_implication;
                 }
             }
@@ -532,7 +533,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Deduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
             }
         }
         //Deduction with remaining condition
@@ -560,7 +561,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
                     Truth conclusionTruth = Truth_Deduction(truth2, truth1);
                     if(success)
                     {
-                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
                     }
                 }
             }
@@ -574,7 +575,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Abduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
             }
         }
     }
@@ -591,7 +592,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = Truth_AnonymousAnalogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
             }
         }
     }

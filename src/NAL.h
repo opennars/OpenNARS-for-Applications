@@ -42,15 +42,16 @@
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars);
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool VarIntroIsExtensional);
+void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool VarIntroIsExtensional, bool allowOnlyExtVarIntroAndTwoIndependentVars);
 //macro for syntactic representation, increases readability, double premise inference
-#define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
-#define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
+#define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false, false);
+#define R2VarIntroExt(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true, true); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true, true);
+#define R2VarIntroInt(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true, false);
 //macro for syntactic representation, increases readability, single premise inference
-#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false, false);
+#define R1(premise1, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, NULL, #conclusion, #truthFunction, false, false, false, false);
 //macro for bidirectional transformation rules
-#define R1Bidirectional(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false, false);
+#define R1Bidirectional(rep1, _, rep2, truthFunction) NAL_GenerateRule(#rep1, NULL, #rep2, #truthFunction, false, false, false, false); NAL_GenerateRule(#rep2, NULL, #rep1, #truthFunction, false, false, false, false);
 //macro for term reductions
 #define ReduceTerm(pattern, replacement) NAL_GenerateReduction("(" #pattern " --> M) ", "(" #replacement " --> M)"); NAL_GenerateReduction("(M --> " #pattern ")", "(M --> " #replacement ")");
 //macro for statement reductions
@@ -208,34 +209,37 @@ R2( A, (A <=> B), |-, B, Truth_Analogy )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
 //!First var intro step:
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
-R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
-R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison )
-R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) ==> (! (C --> A))), Truth_Induction )
-R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) ==> (! (A --> C))), Truth_Induction )
-R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) <=> (! (C --> A))), Truth_Comparison )
-R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) <=> (! (A --> C))), Truth_Comparison )
-R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) ==> (C --> A)), Truth_Induction )
-R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) ==> (A --> C)), Truth_Induction )
-R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) <=> (C --> A)), Truth_Comparison )
-R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) <=> (A --> C)), Truth_Comparison )
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
-R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) && (A --> C)), Truth_Intersection )
-R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) && (! (C --> A))), Truth_Intersection )
-R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) && (! (A --> C))), Truth_Intersection )
-R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) && (C --> A)), Truth_Intersection )
-R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) && (A --> C)), Truth_Intersection )
+R2VarIntroExt( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
+R2VarIntroInt( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
+R2VarIntroExt( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
+R2VarIntroInt( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison )
+R2VarIntroExt( (! (C --> A)), (C --> B), |-, ((C --> B) ==> (! (C --> A))), Truth_Induction )
+R2VarIntroInt( (! (A --> C)), (B --> C), |-, ((B --> C) ==> (! (A --> C))), Truth_Induction )
+R2VarIntroExt( (! (C --> A)), (C --> B), |-, ((C --> B) <=> (! (C --> A))), Truth_Comparison )
+R2VarIntroInt( (! (A --> C)), (B --> C), |-, ((B --> C) <=> (! (A --> C))), Truth_Comparison )
+R2VarIntroExt( (C --> A), (! (C --> B)), |-, ((! (C --> B)) ==> (C --> A)), Truth_Induction )
+R2VarIntroInt( (A --> C), (! (B --> C)), |-, ((! (B --> C)) ==> (A --> C)), Truth_Induction )
+R2VarIntroExt( (C --> A), (! (C --> B)), |-, ((! (C --> B)) <=> (C --> A)), Truth_Comparison )
+R2VarIntroInt( (A --> C), (! (B --> C)), |-, ((! (B --> C)) <=> (A --> C)), Truth_Comparison )
+R2VarIntroExt( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
+R2VarIntroInt( (A --> C), (B --> C), |-, ((B --> C) && (A --> C)), Truth_Intersection )
+R2VarIntroExt( (! (C --> A)), (C --> B), |-, ((C --> B) && (! (C --> A))), Truth_Intersection )
+R2VarIntroInt( (! (A --> C)), (B --> C), |-, ((B --> C) && (! (A --> C))), Truth_Intersection )
+R2VarIntroExt( (C --> A), (! (C --> B)), |-, ((! (C --> B)) && (C --> A)), Truth_Intersection )
+R2VarIntroInt( (A --> C), (! (B --> C)), |-, ((! (B --> C)) && (A --> C)), Truth_Intersection )
 //!Second var intro step:
-R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
-R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+R2VarIntroExt( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
+R2VarIntroExt( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
+R2VarIntroInt( (<B --> $1> ==> <C --> $1>), A, |-, (A && (<B --> $1> ==> <C --> $1>)), Truth_Intersection )
+R2VarIntroInt( (<B --> #1> && <C --> #1>), A, |-, (A ==> (<B --> #1> && <C --> #1>)), Truth_Induction )
+R2VarIntroInt( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+R2VarIntroExt( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
 //!Relation symmetry, asymmetry, and transitivity:
-R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
-R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
-R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
+R2VarIntroExt( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2VarIntroExt( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
+R2VarIntroExt( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
-R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
+R2VarIntroExt( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!Variable elimination in Cycle_SpecialInferences
 #endif
 
