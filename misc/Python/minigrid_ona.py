@@ -170,7 +170,6 @@ def nearestObject(cells):
         return encode("right", stateconcat(right)), right
 
 #Local grid vector to Narsese event:
-global collided
 def observationToEvent(cells):
     global collided
     forward = encode("forward", stateconcat(scan(coneForward,cells)[1]))
