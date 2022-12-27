@@ -134,12 +134,15 @@ def scan(cone, cells, colorBlind=True):
     L = cone()
     k = 0
     for (x,y,distance) in L:
+        cellState2 = cells[x][y][2]
         if colorBlind:
             cells[x][y][1] = 0
             cells[x][y][2] = 0
         if cells[x][y][0] != 1 and (k==0 or cells[x][y][0] != 2): #a seen object or physical contact with a wall
             if cells[x][y][0] == 0:
-                cells[x][y][0] = 1 #not sure what 0 means, looks like a bug and it should be 1
+                cells[x][y][0] = 1 #behind wall indicator, so we see a wall
+            if cells[x][y][0] == 4 and cellState2 == 0:
+                cells[x][y][0] = 1 #open door as free place
             return distance, cells[x][y] #return first non-empty cell
         k += 1
     return 9999, np.array([1,0,0])
@@ -160,20 +163,24 @@ def nearestObject(cells):
     dist_l, left = scan(coneLeft, cells)
     dist_r, right = scan(coneRight, cells)
     if dist_f <= dist_l and dist_f <= dist_r:
-        return encode("forward", stateconcat(forward))
+        return encode("forward", stateconcat(forward)), forward
     if dist_l <= dist_f and dist_l <= dist_r:
-        return encode("left", stateconcat(left))
+        return encode("left", stateconcat(left)), left
     if dist_r <= dist_l and dist_r <= dist_f:
-        return encode("right", stateconcat(right))
+        return encode("right", stateconcat(right)), right
 
 #Local grid vector to Narsese event:
+global collided
 def observationToEvent(cells):
+    global collided
     forward = encode("forward", stateconcat(scan(coneForward,cells)[1]))
     left = encode("left", stateconcat(scan(coneLeft,cells)[1]))
     right = encode("right", stateconcat(scan(coneRight,cells)[1]))
     inventory = encode("holding", stateconcat(cells[3][6]))
     narsese = "(( " + right + " &| " + left + " ) &| (" + forward + " &| " + inventory + ") ). :|:"
-    obj = nearestObject(cells)
+    obj, cell = nearestObject(cells)
+    if cell[0] != 2:
+        collided = False
     narsese = "( " + obj + " &| " + inventory + " ). :|:"
     return narsese
 
@@ -183,12 +190,13 @@ timestep = 0
 #Similate for 100000 steps:
 k=1
 h=0
+collided = False
 DisableToggle=False #strangely locked state isn't returned anymore so this is now necessary
 for i in range(0, 100000):
     default_action = 6 #nop action
     action = default_action
     chosenAction = False
-    executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
+    executions = NAR.AddInput(("(! collision)" if collided else goal) + "! :|:", Print=True)["executions"]
     #executions += NAR.AddInput("2", Print=False)["executions"]
     if executions:
         chosenAction = True
@@ -200,7 +208,12 @@ for i in range(0, 100000):
     elif action == 5 and DisableToggle:
         action = default_action
     obs, reward, done, info, _ = env.step(action)
+    if obs["image"][3][5][0] == 2:
+        collided=True
     NAR.AddInput(observationToEvent(obs["image"]))
+    if obs["image"][3][5][0] != 2 and collided:
+        collided=False
+        NAR.AddInput("(! collision). :|:")
     env.step_count = 0 #avoids episode max_time reset cheat
     if done: #reward > 0:
         input()
