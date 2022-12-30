@@ -58,6 +58,11 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     Decision decision = {0};
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
+        if(Narsese_copulaEquals(c->term.atoms[0], SEQUENCE) || Variable_hasVariable(&c->term, true, true, false))
+        { //sequences since they don't go through Memory_ProcessNewBeliefEvent, and "binding concepts" with independent vars events can't have
+            OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);
+            assert(e->occurrenceTime != OCCURRENCE_ETERNAL, "Cycle_ActivateSensorimotorConcept triggered by eternal event");
+        }
         c->lastSelectionTime = currentTime;
         c->usage = Usage_use(c->usage, currentTime, false);
         //add event as spike to the concept:
@@ -359,6 +364,20 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     return (Implication) {0};
 }
 
+bool Concept_in_FIFO_temporary_assertion(Concept *c)
+{
+    for(int i=0; i<OCCURRENCE_TIME_INDEX_SIZE; i++)
+    {
+        if(occurrenceTimeIndex.array[i] == c)
+        {
+            return true;
+        }
+    }
+    fputs("//ISSUE!!!!!!", stdout); Narsese_PrintTerm(&c->term); fputs(" ::: ", stdout); Narsese_PrintTerm(&c->belief_spike.term); puts("");
+    fflush(stdout);
+    return false;
+}
+
 void Cycle_ProcessBeliefEvents(long currentTime)
 {
     for(int h=0; h<beliefsSelectedCnt; h++)
@@ -411,6 +430,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                            !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) &&
                            !Stamp_checkOverlap(&prec->belief_spike.stamp, &postcondition.stamp) && !Memory_getOperationID(&prec->term))
                         {
+                            assert(Concept_in_FIFO_temporary_assertion(opc), "opc not in FIFO!!!");
+                            assert(Concept_in_FIFO_temporary_assertion(prec), "prec not in FIFO!!!");
                             bool success4;
                             Event seq_op_cur = Inference_BeliefIntersection(&prec->belief_spike, &opc->belief_spike, &success4);
                             if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
@@ -464,6 +485,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
                         if(success && seq.truth.confidence >= MIN_CONFIDENCE)
                         {
+                            assert(Concept_in_FIFO_temporary_assertion(c), "c not in FIFO!!!");
                             if(!op_id && !op_id2)
                             {
                                 Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
