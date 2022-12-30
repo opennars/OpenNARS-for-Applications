@@ -364,10 +364,10 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     return (Implication) {0};
 }
 
-OccurrenceTimeIndex occurrenceTimeIndexCopied;
+//OccurrenceTimeIndex occurrenceTimeIndexCopied;
 void Cycle_ProcessBeliefEvents(long currentTime)
 {
-    memcpy(&occurrenceTimeIndexCopied, &occurrenceTimeIndex, sizeof(OccurrenceTimeIndex));
+    //memcpy(&occurrenceTimeIndexCopied, &occurrenceTimeIndex, sizeof(OccurrenceTimeIndex));
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *toProcess = &selectedBeliefs[h];
@@ -380,17 +380,14 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             int op_id = Memory_getOperationID(&postcondition.term);
             Term op_term = Narsese_getOperationTerm(&postcondition.term);
             conceptProcessID2++;
-            int concept_id_temp;
             int concept_creations1 = 0;
             int concept_creations2 = 0;
-            //RELOOP:
-            concept_id_temp = concept_id;
-            for(int j=0; !op_id && j<occurrenceTimeIndexCopied.itemsAmount; j++) //search for op
+            for(int j=0; !op_id && j<occurrenceTimeIndex.itemsAmount; j++) //search for op
             {
-                Concept *opc = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, j);
+                Concept *opc = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, j);
                 if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !opc->priorizedTemporalCompounding)
                 {
-                    continue;
+                    //continue;
                 }
                 long opc_id = opc->id;
                 bool wasProcessed2 = opc->processID2 == conceptProcessID2;
@@ -400,14 +397,13 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 {
                     conceptProcessID3++;
                     int concept_id_temp3;
-                    //RELOOP_INNER:
                     concept_id_temp3 = concept_id;
-                    for(int i=0; opc_id == opc->id && i<occurrenceTimeIndexCopied.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+                    for(int i=0; opc_id == opc->id && i<occurrenceTimeIndex.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
                     {
-                        Concept *prec = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, i);
+                        Concept *prec = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, i);
                         if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !prec->priorizedTemporalCompounding)
                         {
-                            continue;
+                            //continue;
                         }
                         bool wasProcessed3 = prec->processID3 == conceptProcessID3;
                         prec->processID3 = conceptProcessID3;
@@ -433,15 +429,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     if(concept_id_temp3 != concept_id) //a new concept was created, reloop
                                     {
                                         concept_creations1++;
-                                        //goto RELOOP_INNER;
                                     }
                                 }
                             }
                         }
-                    }
-                    if(concept_id_temp != concept_id) //a new concept was created, reloop
-                    {
-                        //goto RELOOP;
                     }
                 }
             }
@@ -449,12 +440,12 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             int concept_id_temp2;
             //RELOOP2:
             concept_id_temp2 = concept_id;
-            for(int i=0; i<occurrenceTimeIndexCopied.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+            for(int i=0; i<occurrenceTimeIndex.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
             {
-                Concept *c = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, i);
+                Concept *c = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, i);
                 if(concept_creations2 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !c->priorizedTemporalCompounding)
                 {
-                    continue;
+                    //continue;
                 }
                 bool wasProcessed = c->processID2 == conceptProcessID2;
                 c->processID2 = conceptProcessID2;
@@ -504,7 +495,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         if(concept_id_temp2 != concept_id) //a new concept was created, reloop
                         {
                             concept_creations2++;
-                            //goto RELOOP2;
                         }
                     }
                 }
