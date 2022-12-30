@@ -59,7 +59,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
     if(e->truth.confidence > MIN_CONFIDENCE)
     {
         if(Narsese_copulaEquals(c->term.atoms[0], SEQUENCE) || Variable_hasVariable(&c->term, true, true, false))
-        { //sequences since they don't go through Memory_ProcessNewBeliefEvent, and "binding concepts" with independent vars events can't have
+        { //sequences since they don't go through Memory_ProcessNewBeliefEvent, and "binding concepts" with vars
             OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);
             assert(e->occurrenceTime != OCCURRENCE_ETERNAL, "Cycle_ActivateSensorimotorConcept triggered by eternal event");
         }
