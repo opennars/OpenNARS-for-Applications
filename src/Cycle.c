@@ -369,7 +369,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *toProcess = &selectedBeliefs[h];
-        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (currentTime - toProcess->occurrenceTime) < EVENT_BELIEF_DISTANCE)
+        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (currentTime - toProcess->occurrenceTime) < CORRELATE_OUTCOME_RECENCY)
         {
             assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
             Cycle_ProcessSensorimotorEvent(toProcess, currentTime);
@@ -385,7 +385,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 bool wasProcessed2 = opc->processID2 == conceptProcessID2;
                 opc->processID2 = conceptProcessID2;
                 if(!wasProcessed2 && opc->belief_spike.type != EVENT_TYPE_DELETED && opc->belief_spike.creationTime < currentTime && opc->belief_spike.occurrenceTime < toProcess->occurrenceTime && 
-                   labs(opc->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(opc->lastSelectionTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && Memory_getOperationID(&opc->term))
+                   labs(opc->belief_spike.occurrenceTime - postcondition.occurrenceTime) < PRECONDITION_CONSEQUENCE_DISTANCE && labs(opc->lastSelectionTime - postcondition.occurrenceTime) < PRECONDITION_CONSEQUENCE_DISTANCE && Memory_getOperationID(&opc->term))
                 {
                     conceptProcessID3++;
                     for(int i=0; opc_id == opc->id && i<occurrenceTimeIndex.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
@@ -394,7 +394,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         bool wasProcessed3 = prec->processID3 == conceptProcessID3;
                         prec->processID3 = conceptProcessID3;
                         if(!wasProcessed3 && prec->belief_spike.type != EVENT_TYPE_DELETED && prec->belief_spike.creationTime < currentTime && prec->belief_spike.occurrenceTime < opc->belief_spike.occurrenceTime &&
-                           labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(prec->lastSelectionTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE &&
+                           labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < PRECONDITION_CONSEQUENCE_DISTANCE && labs(prec->lastSelectionTime - postcondition.occurrenceTime) < PRECONDITION_CONSEQUENCE_DISTANCE &&
                            !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) &&
                            !Stamp_checkOverlap(&prec->belief_spike.stamp, &postcondition.stamp) && !Memory_getOperationID(&prec->term))
                         {
