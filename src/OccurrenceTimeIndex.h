@@ -45,14 +45,13 @@ typedef struct
     int currentIndex;
     Concept* array[OCCURRENCE_TIME_INDEX_SIZE];
 } OccurrenceTimeIndex;
-
 //Methods//
 //-------//
 //Add an event to the OccurrenceTimeIndex
 void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo);
 //Get the newest element
-Concept* OccurrenceTimeIndex_GetNewestSequence(OccurrenceTimeIndex *fifo);
+Concept* OccurrenceTimeIndex_GetNewestElement(OccurrenceTimeIndex *fifo);
 //Get the k-th newest OccurrenceTimeIndex element
-Concept* OccurrenceTimeIndex_GetKthNewestSequence(OccurrenceTimeIndex *fifo, int k);
+Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int k);
 
 #endif

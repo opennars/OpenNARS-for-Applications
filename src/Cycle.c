@@ -364,22 +364,10 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     return (Implication) {0};
 }
 
-bool Concept_in_FIFO_temporary_assertion(Concept *c)
-{
-    for(int i=0; i<OCCURRENCE_TIME_INDEX_SIZE; i++)
-    {
-        if(occurrenceTimeIndex.array[i] == c)
-        {
-            return true;
-        }
-    }
-    fputs("//ISSUE!!!!!!", stdout); Narsese_PrintTerm(&c->term); fputs(" ::: ", stdout); Narsese_PrintTerm(&c->belief_spike.term); puts("");
-    fflush(stdout);
-    return false;
-}
-
+OccurrenceTimeIndex occurrenceTimeIndexCopied;
 void Cycle_ProcessBeliefEvents(long currentTime)
 {
+    memcpy(&occurrenceTimeIndexCopied, &occurrenceTimeIndex, sizeof(OccurrenceTimeIndex));
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *toProcess = &selectedBeliefs[h];
@@ -395,11 +383,11 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             int concept_id_temp;
             int concept_creations1 = 0;
             int concept_creations2 = 0;
-            RELOOP:
+            //RELOOP:
             concept_id_temp = concept_id;
-            for(int j=0; !op_id && j<concepts.itemsAmount; j++) //search for op
+            for(int j=0; !op_id && j<occurrenceTimeIndexCopied.itemsAmount; j++) //search for op
             {
-                Concept *opc = concepts.items[j].address;
+                Concept *opc = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, j);
                 if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !opc->priorizedTemporalCompounding)
                 {
                     continue;
@@ -412,11 +400,11 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 {
                     conceptProcessID3++;
                     int concept_id_temp3;
-                    RELOOP_INNER:
+                    //RELOOP_INNER:
                     concept_id_temp3 = concept_id;
-                    for(int i=0; opc_id == opc->id  && i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+                    for(int i=0; opc_id == opc->id && i<occurrenceTimeIndexCopied.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
                     {
-                        Concept *prec = concepts.items[i].address;
+                        Concept *prec = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, i);
                         if(concept_creations1 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !prec->priorizedTemporalCompounding)
                         {
                             continue;
@@ -430,8 +418,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                            !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) &&
                            !Stamp_checkOverlap(&prec->belief_spike.stamp, &postcondition.stamp) && !Memory_getOperationID(&prec->term))
                         {
-                            assert(Concept_in_FIFO_temporary_assertion(opc), "opc not in FIFO!!!");
-                            assert(Concept_in_FIFO_temporary_assertion(prec), "prec not in FIFO!!!");
                             bool success4;
                             Event seq_op_cur = Inference_BeliefIntersection(&prec->belief_spike, &opc->belief_spike, &success4);
                             if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
@@ -447,7 +433,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     if(concept_id_temp3 != concept_id) //a new concept was created, reloop
                                     {
                                         concept_creations1++;
-                                        goto RELOOP_INNER;
+                                        //goto RELOOP_INNER;
                                     }
                                 }
                             }
@@ -455,17 +441,17 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     }
                     if(concept_id_temp != concept_id) //a new concept was created, reloop
                     {
-                        goto RELOOP;
+                        //goto RELOOP;
                     }
                 }
             }
             conceptProcessID2++;
             int concept_id_temp2;
-            RELOOP2:
+            //RELOOP2:
             concept_id_temp2 = concept_id;
-            for(int i=0; i<concepts.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
+            for(int i=0; i<occurrenceTimeIndexCopied.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
             {
-                Concept *c = concepts.items[i].address;
+                Concept *c = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndexCopied, i);
                 if(concept_creations2 > DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX && !c->priorizedTemporalCompounding)
                 {
                     continue;
@@ -485,7 +471,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
                         if(success && seq.truth.confidence >= MIN_CONFIDENCE)
                         {
-                            assert(Concept_in_FIFO_temporary_assertion(c), "c not in FIFO!!!");
                             if(!op_id && !op_id2)
                             {
                                 Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
@@ -519,7 +504,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         if(concept_id_temp2 != concept_id) //a new concept was created, reloop
                         {
                             concept_creations2++;
-                            goto RELOOP2;
+                            //goto RELOOP2;
                         }
                     }
                 }

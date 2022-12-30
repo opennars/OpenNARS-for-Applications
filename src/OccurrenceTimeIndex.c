@@ -43,7 +43,7 @@ void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo)
     fifo->itemsAmount = MIN(fifo->itemsAmount + 1, OCCURRENCE_TIME_INDEX_SIZE);
 }
 
-Concept* OccurrenceTimeIndex_GetKthNewestSequence(OccurrenceTimeIndex *fifo, int k)
+Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int k)
 {
     //an element must exist
     if(fifo->itemsAmount == 0)
@@ -54,7 +54,7 @@ Concept* OccurrenceTimeIndex_GetKthNewestSequence(OccurrenceTimeIndex *fifo, int
     return fifo->array[OccurrenceTimeIndex_Index(fifo, k)];
 }
 
-Concept* OccurrenceTimeIndex_GetNewestSequence(OccurrenceTimeIndex *fifo)
+Concept* OccurrenceTimeIndex_GetNewestElement(OccurrenceTimeIndex *fifo)
 {
-    return OccurrenceTimeIndex_GetKthNewestSequence(fifo, 0);
+    return OccurrenceTimeIndex_GetKthNewestElement(fifo, 0);
 }
