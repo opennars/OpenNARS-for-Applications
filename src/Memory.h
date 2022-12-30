@@ -37,6 +37,7 @@
 //////////////
 #include <math.h>
 #include "Concept.h"
+#include "OccurrenceTimeIndex.h"
 #include "InvertedAtomIndex.h"
 #include "PriorityQueue.h"
 #include "Config.h"

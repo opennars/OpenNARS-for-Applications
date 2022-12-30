@@ -130,6 +130,8 @@
 #define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
+//OccurrenceTimeIndex size (large enough to cover all events input and derived within EVENT_BELIEF_DISTANCE from currentTime)
+#define OCCURRENCE_TIME_INDEX_SIZE 1000
 
 /*------------------*/
 /* Truth parameters */

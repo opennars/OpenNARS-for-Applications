@@ -22,29 +22,39 @@
  * THE SOFTWARE.
  */
 
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "OccurrenceTimeIndex_Test.h"
-#include "InvertedAtomIndex_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashTable_Test.h"
-#include "UDP_Test.h"
+#include "OccurrenceTimeIndex.h"
 
-void Run_Unit_Tests()
+static int OccurrenceTimeIndex_Index(OccurrenceTimeIndex *fifo, int k)
 {
-    Stamp_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    OccurrenceTimeIndex_Test();
-    InvertedAtomIndex_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    assert(k >= 0 && k < OCCURRENCE_TIME_INDEX_SIZE, "OccurrenceTimeIndex shift out of bounds!");
+    int index = fifo->currentIndex - 1 - k;
+    if(index < 0)
+    {
+        index = OCCURRENCE_TIME_INDEX_SIZE+index;
+    }
+    return index;
+}
+
+void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo)
+{
+    //build sequence elements:
+    fifo->array[fifo->currentIndex] = concept;
+    fifo->currentIndex = (fifo->currentIndex + 1) % OCCURRENCE_TIME_INDEX_SIZE;
+    fifo->itemsAmount = MIN(fifo->itemsAmount + 1, OCCURRENCE_TIME_INDEX_SIZE);
+}
+
+Concept* OccurrenceTimeIndex_GetKthNewestSequence(OccurrenceTimeIndex *fifo, int k)
+{
+    //an element must exist
+    if(fifo->itemsAmount == 0)
+    {
+        return NULL;
+    }
+    //try to return cached sequence if existing
+    return fifo->array[OccurrenceTimeIndex_Index(fifo, k)];
+}
+
+Concept* OccurrenceTimeIndex_GetNewestSequence(OccurrenceTimeIndex *fifo)
+{
+    return OccurrenceTimeIndex_GetKthNewestSequence(fifo, 0);
 }

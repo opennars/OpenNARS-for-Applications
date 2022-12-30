@@ -22,29 +22,21 @@
  * THE SOFTWARE.
  */
 
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "OccurrenceTimeIndex_Test.h"
-#include "InvertedAtomIndex_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashTable_Test.h"
-#include "UDP_Test.h"
-
-void Run_Unit_Tests()
+void OccurrenceTimeIndex_Test()
 {
-    Stamp_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    OccurrenceTimeIndex_Test();
-    InvertedAtomIndex_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
+    puts(">>OccurrenceTimeIndex test start");
+    OccurrenceTimeIndex fifo = {0};
+    //First, evaluate whether the fifo works, not leading to overflow
+    int occurrence = 0;
+    for(int i=OCCURRENCE_TIME_INDEX_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
+    {
+        Concept *c1 = (Concept*) (long) i;
+        OccurrenceTimeIndex_Add(c1, &fifo);
+    }
+    for(int i=0; i<OCCURRENCE_TIME_INDEX_SIZE; i++)
+    {
+        assert(OCCURRENCE_TIME_INDEX_SIZE-i == (long) fifo.array[i], "Item at OccurrenceTimeIndex position has to be right");
+    }
+    assert(fifo.itemsAmount == OCCURRENCE_TIME_INDEX_SIZE, "OccurrenceTimeIndex size differs");
+    puts("<<OccurrenceTimeIndex Test successful");
 }

@@ -22,29 +22,37 @@
  * THE SOFTWARE.
  */
 
-#include "Stamp_Test.h"
-#include "PriorityQueue_Test.h"
-#include "Memory_Test.h"
-#include "OccurrenceTimeIndex_Test.h"
-#include "InvertedAtomIndex_Test.h"
-#include "Narsese_Test.h"
-#include "RuleTable_Test.h"
-#include "Stack_Test.h"
-#include "Table_Test.h"
-#include "HashTable_Test.h"
-#include "UDP_Test.h"
+#ifndef H_OCCURRENCETIMEINDEX
+#define H_OCCURRENCETIMEINDEX
 
-void Run_Unit_Tests()
+/////////////////////////////
+//  Occurrence time index  //
+/////////////////////////////
+//The occurrence time OccurrenceTimeIndex for efficient query of to an event temporally related concepts
+//used for event sequencing, and overrides the oldest concept reference when full on Add
+
+//References//
+//----------//
+#include "Concept.h"
+#include "Globals.h"
+#include "Config.h"
+
+//Data structure//
+//--------------//
+typedef struct
 {
-    Stamp_Test();
-    PriorityQueue_Test();
-    Table_Test();
-    Memory_Test();
-    OccurrenceTimeIndex_Test();
-    InvertedAtomIndex_Test();
-    Narsese_Test();
-    RuleTable_Test();
-    Stack_Test();
-    HashTable_Test();
-    UDP_Test();
-}
+    int itemsAmount;
+    int currentIndex;
+    Concept* array[OCCURRENCE_TIME_INDEX_SIZE];
+} OccurrenceTimeIndex;
+
+//Methods//
+//-------//
+//Add an event to the OccurrenceTimeIndex
+void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo);
+//Get the newest element
+Concept* OccurrenceTimeIndex_GetNewestSequence(OccurrenceTimeIndex *fifo);
+//Get the k-th newest OccurrenceTimeIndex element
+Concept* OccurrenceTimeIndex_GetKthNewestSequence(OccurrenceTimeIndex *fifo, int k);
+
+#endif
