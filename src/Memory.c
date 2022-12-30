@@ -333,10 +333,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
         {
-            if(input)
-            {
-                c->priorizedTemporalCompounding = true;
-            }
             if(event->occurrenceTime != OCCURRENCE_ETERNAL)
             {
                 OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);

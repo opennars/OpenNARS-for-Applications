@@ -364,10 +364,8 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     return (Implication) {0};
 }
 
-//OccurrenceTimeIndex occurrenceTimeIndexCopied;
 void Cycle_ProcessBeliefEvents(long currentTime)
 {
-    //memcpy(&occurrenceTimeIndexCopied, &occurrenceTimeIndex, sizeof(OccurrenceTimeIndex));
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *toProcess = &selectedBeliefs[h];
@@ -395,8 +393,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         Concept *prec = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, i);
                         bool wasProcessed3 = prec->processID3 == conceptProcessID3;
                         prec->processID3 = conceptProcessID3;
-                        //printf("OK j=%d wasProcessed=%d, term: ", j, (int) wasProcessed3); Narsese_PrintTerm(&opc->term); puts("");
-                        //fputs("POT OPC ", stdout); Narsese_PrintTerm(&opc->term); puts("");
                         if(!wasProcessed3 && prec->belief_spike.type != EVENT_TYPE_DELETED && prec->belief_spike.creationTime < currentTime && prec->belief_spike.occurrenceTime < opc->belief_spike.occurrenceTime &&
                            labs(prec->belief_spike.occurrenceTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE && labs(prec->lastSelectionTime - postcondition.occurrenceTime) < EVENT_BELIEF_DISTANCE &&
                            !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(prec->belief_spike.term.atoms[0], IMPLICATION) &&
@@ -412,7 +408,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 //so now derive it
                                 if(success5)
                                 {
-                                    //fputs("success5 ", stdout); Narsese_PrintTerm(&prec->term); fputs("C ", stdout); Narsese_PrintTerm(&opc->term); puts("");
                                     Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
                                 }
                             }
@@ -421,7 +416,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 }
             }
             conceptProcessID2++;
-            //RELOOP2:
             for(int i=0; i<occurrenceTimeIndex.itemsAmount; i++) //only loop through previously existing concepts (except ones kicked out during this process), and not the ones already iterated over
             {
                 Concept *c = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, i);
@@ -456,14 +450,6 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);
-                                if(c->priorizedTemporalCompounding && postcondition.input)
-                                {
-                                    Concept *seqc = Memory_FindConceptByTerm(&seq.term);
-                                    if(seqc != NULL)
-                                    {
-                                        seqc->priorizedTemporalCompounding = true;
-                                    }
-                                }
                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                 {
                                     Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
