@@ -49,8 +49,6 @@ typedef struct
 //-------//
 //Add an event to the OccurrenceTimeIndex
 void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo);
-//Get the newest element
-Concept* OccurrenceTimeIndex_GetNewestElement(OccurrenceTimeIndex *fifo);
 //Get the k-th newest OccurrenceTimeIndex element
 Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int k);
 

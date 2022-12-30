@@ -54,7 +54,3 @@ Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int 
     return fifo->array[OccurrenceTimeIndex_Index(fifo, k)];
 }
 
-Concept* OccurrenceTimeIndex_GetNewestElement(OccurrenceTimeIndex *fifo)
-{
-    return OccurrenceTimeIndex_GetKthNewestElement(fifo, 0);
-}
