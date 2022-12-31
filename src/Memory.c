@@ -31,6 +31,8 @@ PriorityQueue cycling_belief_events;
 PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 HashTable HTconcepts;
+//OccurrenceTimeIndex for accelerating temporal induction
+OccurrenceTimeIndex occurrenceTimeIndex;
 //Operations
 Operation operations[OPERATIONS_MAX];
 //Parameters
@@ -89,6 +91,7 @@ void Memory_INIT()
     Memory_ResetConcepts();
     Memory_ResetEvents();
     InvertedAtomIndex_INIT();
+    occurrenceTimeIndex = (OccurrenceTimeIndex) {0};
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
         operations[i] = (Operation) {0};
@@ -328,12 +331,12 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
-        if(input)
-        {
-            c->priorizedTemporalCompounding = true;
-        }
         if(c != NULL)
         {
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+            {
+                OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);
+            }
             c->usage = Usage_use(c->usage, currentTime, eternalInput);
             c->priority = MAX(c->priority, priority);
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && event->occurrenceTime <= currentTime)

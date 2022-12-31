@@ -1,7 +1,7 @@
-"""
+/* 
  * The MIT License
  *
- * Copyright 2022 The OpenNARS authors.
+ * Copyright 2020 The OpenNARS authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,36 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * """
+ */
 
-import NAR
+#ifndef H_OCCURRENCETIMEINDEX
+#define H_OCCURRENCETIMEINDEX
 
-NAR.AddInput("*setopname 1 ^count")
-NAR.AddInput("*motorbabbling=false")
-NAR.AddInput("*volume=0")
-NAR.AddInput("10")
-NAR.AddInput("<(<(sheep * fence) --> jump> &/ ^count) =/> G>.")
+/////////////////////////////
+//  Occurrence time index  //
+/////////////////////////////
+//The occurrence time OccurrenceTimeIndex for efficient query of to an event temporally related concepts
+//used for event sequencing, and overrides the oldest concept reference when full on Add
 
-cnt = 0
-def count(executions):
-    global cnt
-    if len(executions) > 0:
-        cnt += 1
+//References//
+//----------//
+#include "Concept.h"
+#include "Globals.h"
+#include "Config.h"
 
-sheeps = 20
-for t in range(sheeps):
-    NAR.AddInput("<sheep --> [white]>. :|:")
-    NAR.AddInput("<{ex%d} --> [white]>. :|:" % t)
-    NAR.AddInput("<({ex%d} * fence) --> jump>. :|:" % t)
-    NAR.AddInput("6")
-    executions = NAR.AddInput("G! :|:")["executions"]
-    for i in range(5):
-        executions += NAR.AddInput("1")["executions"]
-    NAR.AddInput("500")
-    count(executions)
-NAR.AddInput("*stats", Print=True)
-print("sheep counted:", cnt, "of", str(sheeps))
+//Data structure//
+//--------------//
+typedef struct
+{
+    int itemsAmount;
+    int currentIndex;
+    Concept* array[OCCURRENCE_TIME_INDEX_SIZE];
+} OccurrenceTimeIndex;
+//Methods//
+//-------//
+//Add an event to the OccurrenceTimeIndex
+void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo);
+//Get the k-th newest OccurrenceTimeIndex element
+Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int k);
+
+#endif

@@ -52,6 +52,8 @@
 #define SUBSUMPTION_CONFIDENCE_THRESHOLD 0.05
 //Subsumption confidence threshold below which a specific hypothesis inhibits more generals
 #define SUBSUMPTION_FREQUENCY_THRESHOLD 0.5
+//How long goal events describing bad outcomes are considered in decision making
+#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
 
 /*----------------------*/
 /* Attention parameters */
@@ -64,16 +66,10 @@
 #define EVENT_DURABILITY 0.9999
 //Concept priority decay of events per cycle
 #define CONCEPT_DURABILITY 0.9
-//Minimum confidence to accept events
-#define MIN_CONFIDENCE 0.01
 //Minimum priority to accept events
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
-//Time distance from now to still correlate an outcome
-#define CORRELATE_OUTCOME_RECENCY 5
-//How many new concepts to create at most for temporal compounding of temporal and procedural implications each
-#define DERIVED_COMPONENT_COMPOUNDING_CONCEPT_CREATIONS_MAX 20
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
@@ -82,18 +78,24 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
+//Questions concept activation priority
+#define QUESTION_PRIMING_INITIAL 0.1
+
+/*---------------------------------*/
+/* Temporal compounding parameters */
+/*---------------------------------*/
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 2
 //Maximum compound op length
 #define MAX_COMPOUND_OP_LEN 2
+//Max. occurrence time distance between precondition and consequence
+#define PRECONDITION_CONSEQUENCE_DISTANCE EVENT_BELIEF_DISTANCE
+//Occurrence time distance to now to still correlate an outcome
+#define CORRELATE_OUTCOME_RECENCY 15
 //Maximum time difference to form sequence between events
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
-//How long goal events describing bad outcomes are considered in decision making
-#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
-//Questions concept activation priority
-#define QUESTION_PRIMING_INITIAL 0.1
 
 /*------------------*/
 /* Space parameters */
@@ -130,6 +132,8 @@
 #define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
+//OccurrenceTimeIndex size (large enough to cover all events input and derived within EVENT_BELIEF_DISTANCE from currentTime)
+#define OCCURRENCE_TIME_INDEX_SIZE 512
 
 /*------------------*/
 /* Truth parameters */
@@ -146,6 +150,8 @@
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
+//Minimum confidence to accept events
+#define MIN_CONFIDENCE 0.01
 
 /*-----------------------*/
 /* Derivation parameters */

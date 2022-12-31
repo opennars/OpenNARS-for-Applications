@@ -1,7 +1,7 @@
-"""
+/* 
  * The MIT License
  *
- * Copyright 2022 The OpenNARS authors.
+ * Copyright 2020 The OpenNARS authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,23 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * """
+ */
 
-import NAR
-
-NAR.AddInput("*setopname 1 ^count")
-NAR.AddInput("*motorbabbling=false")
-NAR.AddInput("*volume=0")
-NAR.AddInput("10")
-NAR.AddInput("<(<(sheep * fence) --> jump> &/ ^count) =/> G>.")
-
-cnt = 0
-def count(executions):
-    global cnt
-    if len(executions) > 0:
-        cnt += 1
-
-sheeps = 20
-for t in range(sheeps):
-    NAR.AddInput("<sheep --> [white]>. :|:")
-    NAR.AddInput("<{ex%d} --> [white]>. :|:" % t)
-    NAR.AddInput("<({ex%d} * fence) --> jump>. :|:" % t)
-    NAR.AddInput("6")
-    executions = NAR.AddInput("G! :|:")["executions"]
-    for i in range(5):
-        executions += NAR.AddInput("1")["executions"]
-    NAR.AddInput("500")
-    count(executions)
-NAR.AddInput("*stats", Print=True)
-print("sheep counted:", cnt, "of", str(sheeps))
+void OccurrenceTimeIndex_Test()
+{
+    puts(">>OccurrenceTimeIndex test start");
+    OccurrenceTimeIndex fifo = {0};
+    //First, evaluate whether the fifo works, not leading to overflow
+    int occurrence = 0;
+    for(int i=OCCURRENCE_TIME_INDEX_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
+    {
+        Concept *c1 = (Concept*) (long) i;
+        OccurrenceTimeIndex_Add(c1, &fifo);
+    }
+    for(int i=0; i<OCCURRENCE_TIME_INDEX_SIZE; i++)
+    {
+        assert(OCCURRENCE_TIME_INDEX_SIZE-i == (long) fifo.array[i], "Item at OccurrenceTimeIndex position has to be right");
+    }
+    assert(fifo.itemsAmount == OCCURRENCE_TIME_INDEX_SIZE, "OccurrenceTimeIndex size differs");
+    puts("<<OccurrenceTimeIndex Test successful");
+}

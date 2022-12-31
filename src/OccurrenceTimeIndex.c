@@ -1,7 +1,7 @@
-"""
+/* 
  * The MIT License
  *
- * Copyright 2022 The OpenNARS authors.
+ * Copyright 2020 The OpenNARS authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +20,37 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- * """
+ */
 
-import NAR
+#include "OccurrenceTimeIndex.h"
 
-NAR.AddInput("*setopname 1 ^count")
-NAR.AddInput("*motorbabbling=false")
-NAR.AddInput("*volume=0")
-NAR.AddInput("10")
-NAR.AddInput("<(<(sheep * fence) --> jump> &/ ^count) =/> G>.")
+static int OccurrenceTimeIndex_Index(OccurrenceTimeIndex *fifo, int k)
+{
+    assert(k >= 0 && k < OCCURRENCE_TIME_INDEX_SIZE, "OccurrenceTimeIndex shift out of bounds!");
+    int index = fifo->currentIndex - 1 - k;
+    if(index < 0)
+    {
+        index = OCCURRENCE_TIME_INDEX_SIZE+index;
+    }
+    return index;
+}
 
-cnt = 0
-def count(executions):
-    global cnt
-    if len(executions) > 0:
-        cnt += 1
+void OccurrenceTimeIndex_Add(Concept *concept, OccurrenceTimeIndex *fifo)
+{
+    //build sequence elements:
+    fifo->array[fifo->currentIndex] = concept;
+    fifo->currentIndex = (fifo->currentIndex + 1) % OCCURRENCE_TIME_INDEX_SIZE;
+    fifo->itemsAmount = MIN(fifo->itemsAmount + 1, OCCURRENCE_TIME_INDEX_SIZE);
+}
 
-sheeps = 20
-for t in range(sheeps):
-    NAR.AddInput("<sheep --> [white]>. :|:")
-    NAR.AddInput("<{ex%d} --> [white]>. :|:" % t)
-    NAR.AddInput("<({ex%d} * fence) --> jump>. :|:" % t)
-    NAR.AddInput("6")
-    executions = NAR.AddInput("G! :|:")["executions"]
-    for i in range(5):
-        executions += NAR.AddInput("1")["executions"]
-    NAR.AddInput("500")
-    count(executions)
-NAR.AddInput("*stats", Print=True)
-print("sheep counted:", cnt, "of", str(sheeps))
+Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int k)
+{
+    //an element must exist
+    if(fifo->itemsAmount == 0)
+    {
+        return NULL;
+    }
+    //try to return cached sequence if existing
+    return fifo->array[OccurrenceTimeIndex_Index(fifo, k)];
+}
+
