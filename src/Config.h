@@ -91,7 +91,7 @@
 //Max. occurrence time distance between precondition and consequence
 #define PRECONDITION_CONSEQUENCE_DISTANCE EVENT_BELIEF_DISTANCE
 //Occurrence time distance to now to still correlate an outcome
-#define CORRELATE_OUTCOME_RECENCY 15
+#define CORRELATE_OUTCOME_RECENCY EVENT_BELIEF_DISTANCE
 //Maximum time difference to form sequence between events
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions

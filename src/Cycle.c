@@ -56,32 +56,24 @@ void Cycle_INIT()
 static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
-    if(e->truth.confidence > MIN_CONFIDENCE)
+    c->lastSelectionTime = currentTime;
+    c->usage = Usage_use(c->usage, currentTime, false);
+    //add event as spike to the concept:
+    if(e->type == EVENT_TYPE_BELIEF)
     {
-        if(Narsese_copulaEquals(c->term.atoms[0], SEQUENCE) || Variable_hasVariable(&c->term, true, true, false))
-        { //sequences since they don't go through Memory_ProcessNewBeliefEvent, and "binding concepts" with vars
-            OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);
-            assert(e->occurrenceTime != OCCURRENCE_ETERNAL, "Cycle_ActivateSensorimotorConcept triggered by eternal event");
-        }
-        c->lastSelectionTime = currentTime;
-        c->usage = Usage_use(c->usage, currentTime, false);
-        //add event as spike to the concept:
-        if(e->type == EVENT_TYPE_BELIEF)
+        if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
         {
-            if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
-            {
-                c->belief_spike = *e;
-            }
+            c->belief_spike = *e;
         }
-        else
+    }
+    else
+    {
+        if(c->goal_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->goal_spike.occurrenceTime)
         {
-            if(c->goal_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->goal_spike.occurrenceTime)
-            {
-                c->goal_spike = *e;
-            }
-            //pass spike if the concept doesn't have a satisfying motor command
-            decision = Decision_Suggest(c, e, currentTime);
+            c->goal_spike = *e;
         }
+        //pass spike if the concept doesn't have a satisfying motor command
+        decision = Decision_Suggest(c, e, currentTime);
     }
     return decision;
 }
@@ -89,9 +81,18 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 //Process an event, by creating a concept, or activating an existing
 static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
 {
+    assert(e->occurrenceTime != OCCURRENCE_ETERNAL, "Cycle_ProcessSensorimotorEvent triggered by eternal event");
     Decision best_decision = {0};
     //add a new concept for e if not yet existing
-    Memory_Conceptualize(&e->term, currentTime);
+    Concept *c = Memory_Conceptualize(&e->term, currentTime);
+    if(c == NULL)
+    {
+        return best_decision;
+    }
+    if(Narsese_copulaEquals(e->term.atoms[0], SEQUENCE))
+    {
+        OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex); //created sequences don't go to the index otherwise
+    }
     e->processed = true;
     e->creationTime = currentTime;
     //determine the concept it is related to
