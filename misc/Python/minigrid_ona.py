@@ -99,7 +99,6 @@ def coneForward():
         indexX=StartIndexX
         indexY -=1
         width+=2
-    L[0], L[1] = L[1], L[0] #make 3,5 the first element
     return L
 
 def coneRight():
@@ -211,9 +210,11 @@ for i in range(0, 10000000):
         successes += 1
     if max_steps == -1 or action != default_action: #only record values once for external mode
         print("successes=" + str(successes) + " time="+str(timestep))
+    if timestep >= max_steps and max_steps != 1:
+        break
     if action != default_action:
         timestep += 1
-    if done or (timestep+2 >= max_steps and max_steps != -1):
+    if done:
         DisableToggle = False
         #NAR.AddInput("20") #don't temporally relate observations across reset
         h+=1
@@ -239,6 +240,5 @@ for i in range(0, 10000000):
 while timestep <= max_steps:
     print("successes=" + str(successes) + " time="+str(timestep))
     timestep += 1
-print(timestep, max_steps)
 env.close()
 
