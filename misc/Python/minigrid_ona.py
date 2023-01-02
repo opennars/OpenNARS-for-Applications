@@ -70,7 +70,7 @@ def renderANSI(env):
 #Configure NARS:
 NAR.AddInput("*volume=0")
 NAR.AddInput("*babblingops=5")
-NAR.AddInput("*motorbabbling=0.1")
+NAR.AddInput("*motorbabbling=0.05")
 actions = {"^left" : 0, "^right" : 1, "^forward" : 2, "^pick" : 3, "^toggle" : 5} #,  "^drop" : 4, "^drop" : 5, "^say" : 6} #
 for i, x in enumerate(actions):
     NAR.AddInput("*setopname " + str(i+1) + " " + x)
@@ -128,23 +128,22 @@ def coneLeft():
         indexY-=1
     return L
 
-def scan(cone, cells, colorBlind=True):
+def scan(cone, cells, colorBlind=True, wall=False):
     if colorBlind:
         cells[3][6][1] = 0
     L = cone()
     k = 0
     for (x,y,distance) in L:
-        cellState2 = cells[x][y][2]
         if colorBlind:
             cells[x][y][1] = 0
-            cells[x][y][2] = 0
-        if cells[x][y][0] != 1 and (k==0 or cells[x][y][0] != 2): #a seen object or physical contact with a wall
+            #cells[x][y][2] = 0
+        if cells[x][y][0] != 1 and (k==0 or wall==False or cells[x][y][0] != 2): #a seen object or physical contact with a wall
             if cells[x][y][0] == 0:
-                cells[x][y][0] = 1 #behind wall indicator, so we see a wall
-            if cells[x][y][0] == 4 and cellState2 == 0:
-                cells[x][y][0] = 1 #open door as free place
+                cells[x][y][0] = 1 #behind wall indicator, so we see nothing
             return distance, cells[x][y] #return first non-empty cell
         k += 1
+    if not wall:
+        return scan(cone, cells, colorBlind=colorBlind, wall=True) #nearest wall
     return 9999, np.array([1,0,0])
 
 def stateconcat(state):
@@ -153,8 +152,6 @@ def stateconcat(state):
 
 def encode(direction, state):
     state = state.replace("[","").replace("]","")
-    #return direction + state
-    #ret = f"<{{{state}}} --> ([{direction}] & object)>"
     ret = f"<{{{state}}} --> [{direction}]>"
     return ret
 
@@ -162,62 +159,54 @@ def nearestObject(cells):
     dist_f, forward = scan(coneForward, cells)
     dist_l, left = scan(coneLeft, cells)
     dist_r, right = scan(coneRight, cells)
+    #return encode("state", stateconcat(forward)+str(dist_f)+stateconcat(left)+str(dist_l)+stateconcat(right)+str(dist_r))
     if dist_f <= dist_l and dist_f <= dist_r:
-        return encode("forward", stateconcat(forward)), forward
+        return encode("forward", stateconcat(forward))
     if dist_l <= dist_f and dist_l <= dist_r:
-        return encode("left", stateconcat(left)), left
+        return encode("left", stateconcat(left))
     if dist_r <= dist_l and dist_r <= dist_f:
-        return encode("right", stateconcat(right)), right
+        return encode("right", stateconcat(right))
 
 #Local grid vector to Narsese event:
 def observationToEvent(cells):
-    global collided
     forward = encode("forward", stateconcat(scan(coneForward,cells)[1]))
     left = encode("left", stateconcat(scan(coneLeft,cells)[1]))
     right = encode("right", stateconcat(scan(coneRight,cells)[1]))
     inventory = encode("holding", stateconcat(cells[3][6]))
-    narsese = "(( " + right + " &| " + left + " ) &| (" + forward + " &| " + inventory + ") ). :|:"
-    obj, cell = nearestObject(cells)
-    if cell[0] != 2:
-        collided = False
-    narsese = "( " + obj + " &| " + inventory + " ). :|:"
+    obj = nearestObject(cells)
+    narsese = "( " + obj + " &/ " + inventory + " ). :|:"
     return narsese
 
+#Similate for 100000 steps:
 successes = 0
 timestep = 0
-
-#Similate for 100000 steps:
 k=1
 h=0
-collided = False
 DisableToggle=False #strangely locked state isn't returned anymore so this is now necessary
-for i in range(0, 100000):
+for i in range(0, 10000000):
     default_action = 6 #nop action
     action = default_action
     chosenAction = False
-    executions = NAR.AddInput(("(! collision)" if collided else goal) + "! :|:", Print=True)["executions"]
-    #executions += NAR.AddInput("2", Print=False)["executions"]
+    executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
     if executions:
         chosenAction = True
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
     if not chosenAction:
         action = default_action
-    if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4 and obs["image"][3][5][2] == 0:
+    if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4: # and obs["image"][3][5][2] == 0:
         DisableToggle = True
     elif action == 5 and DisableToggle:
         action = default_action
     obs, reward, done, info, _ = env.step(action)
-    if obs["image"][3][5][0] == 2:
-        collided=True
     NAR.AddInput(observationToEvent(obs["image"]))
-    if obs["image"][3][5][0] != 2 and collided:
-        collided=False
-        NAR.AddInput("(! collision). :|:")
     env.step_count = 0 #avoids episode max_time reset cheat
-    if done: #reward > 0:
-        input()
+    if done:
+        NAR.AddInput(goal + ". :|: {1.0 0.9}")
+        NAR.AddInput("<(?1 &/ ^forward) =/> G>?")
+        NAR.AddInput("<(?1 &/ ^left) =/> G>?")
+        NAR.AddInput("<(?1 &/ ^right) =/> G>?")
+        #input()
         obs = None
-        NAR.AddInput(goal + ". :|: {1.0 0.99}")
         successes += 1
     if action != default_action:
         print("successes=" + str(successes) + " time="+str(timestep))
@@ -226,25 +215,25 @@ for i in range(0, 100000):
         DisableToggle = False
         NAR.AddInput("20") #don't temporally relate observations across reset
         h+=1
-        if h % 5 == 0:
+        if h % 10 == 0:
             k += 1
-        if k == 2:
+        if k == 3:
             env.close()
             env = gym.make('MiniGrid-Unlock-v0').env
             #env.seed(2)
-        elif k == 3:
+        elif k == 4:
             env.close()
             env = gym.make('MiniGrid-DoorKey-8x8-v0').env
             #env.seed(1337)
-        elif k == 5:
+        elif k == 8:
             env.close()
             env = gym.make('MiniGrid-DoorKey-16x16-v0').env
             #env.seed(11)
-        elif k == 6:
+        elif k == 9:
             env.close()
             env = gym.make('MiniGrid-DoorKey-16x16-v0').env
             #env.seed(7)
-        elif k == 7:
+        elif k == 10:
             break
         else:
             None
