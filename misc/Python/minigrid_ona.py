@@ -4,6 +4,7 @@ import NAR
 import sys
 import time
 import numpy as np
+import random
 
 max_steps = -1
 try:
@@ -185,24 +186,25 @@ for i in range(0, 10000000):
     default_action = 6 #nop action
     action = default_action
     chosenAction = False
-    executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
+    #executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
     renderANSI(env)
-    if executions:
-        chosenAction = True
-        action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
-    if not chosenAction:
-        action = default_action
+    #if executions:
+    #    chosenAction = True
+    #    action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
+    action = random.choice(list(actions.values()))
+    #if not chosenAction:
+    #    action = default_action
     if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4:
         DisableToggle = True
     elif action == 5 and DisableToggle:
         action = default_action
     obs, reward, done, info, _ = env.step(action)
-    NAR.AddInput(observationToEvent(obs["image"]))
+    #NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
     if max_steps == -1:
-        time.sleep(0.001)
+        time.sleep(0.05)
     if done:
-        NAR.AddInput(goal + ". :|: {1.0 0.9}")
+        #NAR.AddInput(goal + ". :|: {1.0 0.9}")
         if max_steps == -1:
             time.sleep(0.5)
         obs = None
@@ -213,7 +215,7 @@ for i in range(0, 10000000):
         timestep += 1
     if done or (timestep+2 >= max_steps and max_steps != -1):
         DisableToggle = False
-        NAR.AddInput("20") #don't temporally relate observations across reset
+        #NAR.AddInput("20") #don't temporally relate observations across reset
         h+=1
         if h % 10 == 0:
             k += 1
