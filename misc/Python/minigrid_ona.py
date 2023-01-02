@@ -71,7 +71,7 @@ def renderANSI(env):
 #Configure NARS:
 NAR.AddInput("*volume=0")
 NAR.AddInput("*babblingops=5")
-NAR.AddInput("*motorbabbling=0.05")
+NAR.AddInput("*motorbabbling=0.3")
 actions = {"^left" : 0, "^right" : 1, "^forward" : 2, "^pick" : 3, "^toggle" : 5} #,  "^drop" : 4, "^drop" : 5, "^say" : 6} #
 for i, x in enumerate(actions):
     NAR.AddInput("*setopname " + str(i+1) + " " + x)
@@ -80,9 +80,8 @@ goal = "G"
 #Setup environment:
 env = gym.make('MiniGrid-Empty-6x6-v0').env
 env.reset(seed=1337)
-viewDistance=3 #how many cells forward the agent can see
 
-def coneForward():
+def coneForward(viewDistance=3):
     L=[]
     index = 0
     StartIndexX, StartIndexY = (2,5)
@@ -94,14 +93,13 @@ def coneForward():
                 L.append((indexX, indexY, k))
             indexX += 1
             index+=1
-        StartIndexX -=1
+        StartIndexX = max(0, StartIndexX - 1)
         indexX=StartIndexX
         indexY -=1
-        width+=2
-    L[0], L[1] = L[1], L[0] #make 3,5 the first element
+        width=min(7,width+2)
     return L
 
-def coneRight():
+def coneRight(viewDistance=3):
     L=[]
     StartIndexX, StartIndexY = (3,6)
     indexX, indexY = (StartIndexX,StartIndexY)
@@ -113,9 +111,10 @@ def coneRight():
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
+    L.insert(1, (4,5,1))
     return L
 
-def coneLeft():
+def coneLeft(viewDistance=3):
     L=[]
     StartIndexX, StartIndexY = (3,6)
     indexX, indexY = (StartIndexX,StartIndexY)
@@ -127,24 +126,21 @@ def coneLeft():
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
+    L.insert(1, (2,5,1))
     return L
 
 def scan(cone, cells, colorBlind=True, wall=False):
     if colorBlind:
         cells[3][6][1] = 0
     L = cone()
-    k = 0
     for (x,y,distance) in L:
         if colorBlind:
             cells[x][y][1] = 0
-        if cells[x][y][0] != 1 and (k==0 or wall==False or cells[x][y][0] != 2): #a seen object or physical contact with a wall
-            if cells[x][y][0] == 0:
-                cells[x][y][0] = 1 #behind wall indicator, so we see nothing
-            return distance, cells[x][y] #return first non-empty cell
-        k += 1
+        if cells[x][y][0] != 0 and cells[x][y][0] != 1 and (wall or cells[x][y][0] != 2): #a seen object or physical contact with a wall
+            return distance, cells[x][y], cells[x][y][0] == 1 or cells[x][y][0] == 2 #return first non-empty cell
     if not wall:
         return scan(cone, cells, colorBlind=colorBlind, wall=True) #nearest wall
-    return 9999, np.array([1,0,0])
+    return 9999, np.array([1,0,0]), True
 
 def stateconcat(state):
     return str(state).replace("\n","").replace(" ","")
@@ -155,9 +151,19 @@ def encode(direction, state):
     return ret
 
 def nearestObject(cells):
-    dist_f, forward = scan(coneForward, cells)
-    dist_l, left = scan(coneLeft, cells)
-    dist_r, right = scan(coneRight, cells)
+    dist_f, forward, isWallOrVoid_f = scan(coneForward, cells)
+    dist_l, left, isWallOrVoid_l = scan(coneLeft, cells)
+    dist_r, right, isWallOrVoid_r = scan(coneRight, cells)
+    #print(dist_f, forward, isWallOrVoid_f)
+    #print(dist_l, left, isWallOrVoid_l)
+    #print(dist_r, right, isWallOrVoid_r)
+    #print("^^^")
+    if not isWallOrVoid_f:
+        return encode("forward", stateconcat(forward))
+    if not isWallOrVoid_l:
+        return encode("left", stateconcat(left))
+    if not isWallOrVoid_r:
+        return encode("right", stateconcat(right))
     if dist_f <= dist_l and dist_f <= dist_r:
         return encode("forward", stateconcat(forward))
     if dist_l <= dist_f and dist_l <= dist_r:
@@ -172,6 +178,7 @@ def observationToEvent(cells):
     right = encode("right", stateconcat(scan(coneRight,cells)[1]))
     inventory = encode("holding", stateconcat(cells[3][6]))
     obj = nearestObject(cells)
+    #print(forward,left,right)
     narsese = "( " + obj + " &/ " + inventory + " ). :|:"
     return narsese
 
@@ -192,12 +199,15 @@ for i in range(0, 10000000):
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
     if not chosenAction:
         action = default_action
+    #astr = input()
+    #action = default_action if astr=="" else int(astr)
     if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4:
         DisableToggle = True
     elif action == 5 and DisableToggle:
         action = default_action
     obs, reward, done, info, _ = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
+    #input()
     env.step_count = 0 #avoids episode max_time reset cheat
     if max_steps == -1:
         time.sleep(0.001)
