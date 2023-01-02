@@ -200,7 +200,7 @@ for i in range(0, 10000000):
     NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
     if max_steps == -1:
-    time.sleep(0.001)
+        time.sleep(0.001)
     if done:
         NAR.AddInput(goal + ". :|: {1.0 0.9}")
         if max_steps == -1:
