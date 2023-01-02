@@ -75,7 +75,7 @@ NAR.AddInput("*motorbabbling=0.05")
 actions = {"^left" : 0, "^right" : 1, "^forward" : 2, "^pick" : 3, "^toggle" : 5} #,  "^drop" : 4, "^drop" : 5, "^say" : 6} #
 for i, x in enumerate(actions):
     NAR.AddInput("*setopname " + str(i+1) + " " + x)
-goal = "G" # "<{200} --> [catched]>"
+goal = "G"
     
 #Setup environment:
 env = gym.make('MiniGrid-Empty-6x6-v0').env
@@ -192,7 +192,7 @@ for i in range(0, 10000000):
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
     if not chosenAction:
         action = default_action
-    if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4: # and obs["image"][3][5][2] == 0:
+    if not DisableToggle and action == 5 and "obs" in globals() and obs is not None and obs["image"][3][6][0] == 5 and obs["image"][3][5][0] == 4:
         DisableToggle = True
     elif action == 5 and DisableToggle:
         action = default_action
