@@ -50,7 +50,7 @@ if not SkipFolderSetup:
         os.system("git checkout " + b)
         os.chdir(scriptroot)
 examples = ["pong", "pong2", "alien", "cartpole", "robot", "minigrid_ona.py"]
-steps = [10000, 10000, 10000, 10000, 1500, 2000]
+steps = [10000, 10000, 10000, 10000, 1500, 30000]
 seeds = [42, 1337, 666, 900, 10000, 77, 2324, 22, 11, 876]
 successCriterias = ["ratio", "ratio", "ratio", "ratio", "eaten", "successes"]
 #alternatively, but it won't produce reproducible plots:
