@@ -199,10 +199,12 @@ for i in range(0, 10000000):
     obs, reward, done, info, _ = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
+    if max_steps == -1:
     time.sleep(0.001)
     if done:
         NAR.AddInput(goal + ". :|: {1.0 0.9}")
-        time.sleep(0.5)
+        if max_steps == -1:
+            time.sleep(0.5)
         obs = None
         successes += 1
     print("successes=" + str(successes) + " time="+str(timestep))
@@ -217,27 +219,20 @@ for i in range(0, 10000000):
         if k == 3:
             env.close()
             env = gym.make('MiniGrid-Unlock-v0').env
-            #env.seed(2)
         elif k == 4:
             env.close()
             env = gym.make('MiniGrid-DoorKey-8x8-v0').env
-            #env.seed(1337)
         elif k == 8:
             env.close()
             env = gym.make('MiniGrid-DoorKey-16x16-v0').env
-            #env.seed(11)
         elif k == 9:
             env.close()
             env = gym.make('MiniGrid-DoorKey-16x16-v0').env
-            #env.seed(7)
         elif k == 10:
             break
         else:
             None
-            #env.seed(1337+i)
         env.reset()
-    #if max_steps == -1:
-    #   env.render()
 while timestep <= max_steps:
     print("successes=" + str(successes) + " time="+str(timestep))
     timestep += 1
