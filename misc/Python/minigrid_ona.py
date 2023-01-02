@@ -207,7 +207,8 @@ for i in range(0, 10000000):
             time.sleep(0.5)
         obs = None
         successes += 1
-    print("successes=" + str(successes) + " time="+str(timestep))
+    if max_steps == -1 or action != default_action: #only record values once for external mode
+        print("successes=" + str(successes) + " time="+str(timestep))
     if action != default_action:
         timestep += 1
     if done or (timestep+2 >= max_steps and max_steps != -1):
