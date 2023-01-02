@@ -2,6 +2,7 @@ import gymnasium as gym
 import minigrid
 import NAR
 import sys
+import time
 import numpy as np
 
 max_steps = -1
@@ -136,7 +137,6 @@ def scan(cone, cells, colorBlind=True, wall=False):
     for (x,y,distance) in L:
         if colorBlind:
             cells[x][y][1] = 0
-            #cells[x][y][2] = 0
         if cells[x][y][0] != 1 and (k==0 or wall==False or cells[x][y][0] != 2): #a seen object or physical contact with a wall
             if cells[x][y][0] == 0:
                 cells[x][y][0] = 1 #behind wall indicator, so we see nothing
@@ -149,7 +149,6 @@ def scan(cone, cells, colorBlind=True, wall=False):
 def stateconcat(state):
     return str(state).replace("\n","").replace(" ","")
 
-
 def encode(direction, state):
     state = state.replace("[","").replace("]","")
     ret = f"<{{{state}}} --> [{direction}]>"
@@ -159,7 +158,6 @@ def nearestObject(cells):
     dist_f, forward = scan(coneForward, cells)
     dist_l, left = scan(coneLeft, cells)
     dist_r, right = scan(coneRight, cells)
-    #return encode("state", stateconcat(forward)+str(dist_f)+stateconcat(left)+str(dist_l)+stateconcat(right)+str(dist_r))
     if dist_f <= dist_l and dist_f <= dist_r:
         return encode("forward", stateconcat(forward))
     if dist_l <= dist_f and dist_l <= dist_r:
@@ -188,6 +186,7 @@ for i in range(0, 10000000):
     action = default_action
     chosenAction = False
     executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
+    renderANSI(env)
     if executions:
         chosenAction = True
         action = actions[executions[0]["operator"]] if executions[0]["operator"] in actions else default_action
@@ -200,16 +199,14 @@ for i in range(0, 10000000):
     obs, reward, done, info, _ = env.step(action)
     NAR.AddInput(observationToEvent(obs["image"]))
     env.step_count = 0 #avoids episode max_time reset cheat
+    time.sleep(0.001)
     if done:
         NAR.AddInput(goal + ". :|: {1.0 0.9}")
-        NAR.AddInput("<(?1 &/ ^forward) =/> G>?")
-        NAR.AddInput("<(?1 &/ ^left) =/> G>?")
-        NAR.AddInput("<(?1 &/ ^right) =/> G>?")
-        #input()
+        time.sleep(0.5)
         obs = None
         successes += 1
+    print("successes=" + str(successes) + " time="+str(timestep))
     if action != default_action:
-        print("successes=" + str(successes) + " time="+str(timestep))
         timestep += 1
     if done or (timestep+2 >= max_steps and max_steps != -1):
         DisableToggle = False
@@ -241,7 +238,6 @@ for i in range(0, 10000000):
         env.reset()
     #if max_steps == -1:
     #   env.render()
-    renderANSI(env)
 while timestep <= max_steps:
     print("successes=" + str(successes) + " time="+str(timestep))
     timestep += 1
