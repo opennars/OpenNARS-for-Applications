@@ -83,16 +83,13 @@ env.reset(seed=1337)
 
 def coneForward(viewDistance=6):
     L=[]
-    index = 0
     StartIndexX, StartIndexY = (2,5)
     indexX, indexY = (StartIndexX,StartIndexY)
     width = 3 #cone starts with the 3 cells right in front of agent
     for k in range(viewDistance):
         for h in range(width):
-            if index != 0 and index != 2: #remove corner items as the system can't toggle switches if diagonal
-                L.append((indexX, indexY, k))
+            L.append((indexX, indexY, k))
             indexX += 1
-            index+=1
         StartIndexX = max(0, StartIndexX - 1)
         indexX=StartIndexX
         indexY -=1
@@ -111,7 +108,6 @@ def coneRight(viewDistance=3):
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
-    L.insert(1, (4,5,1))
     return L
 
 def coneLeft(viewDistance=3):
@@ -126,7 +122,6 @@ def coneLeft(viewDistance=3):
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
-    L.insert(1, (2,5,1))
     return L
 
 def scan(cone, cells, colorBlind=True, wall=False):
