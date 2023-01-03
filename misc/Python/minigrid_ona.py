@@ -89,8 +89,7 @@ def coneForward(viewDistance=3):
     width = 3 #cone starts with the 3 cells right in front of agent
     for k in range(viewDistance):
         for h in range(width):
-            if index != 0 and index != 2: #remove corner items as the system can't toggle switches if diagonal
-                L.append((indexX, indexY, k))
+            L.append((indexX, indexY, k))
             indexX += 1
             index+=1
         StartIndexX = max(0, StartIndexX - 1)
@@ -111,7 +110,6 @@ def coneRight(viewDistance=3):
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
-    L.insert(1, (4,5,1))
     return L
 
 def coneLeft(viewDistance=3):
@@ -126,7 +124,6 @@ def coneLeft(viewDistance=3):
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
-    L.insert(1, (2,5,1))
     return L
 
 def scan(cone, cells, colorBlind=True, wall=False):
@@ -178,8 +175,7 @@ def observationToEvent(cells):
     right = encode("right", stateconcat(scan(coneRight,cells)[1]))
     inventory = encode("holding", stateconcat(cells[3][6]))
     obj = nearestObject(cells)
-    #print(forward,left,right)
-    narsese = "( " + obj + " &/ " + inventory + " ). :|:"
+    narsese = "( " + obj + " &/ " + inventory + " ). :|: {1.0 0.99}"
     return narsese
 
 #Similate for 100000 steps:
@@ -192,7 +188,7 @@ for i in range(0, 10000000):
     default_action = 6 #nop action
     action = default_action
     chosenAction = False
-    executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
+    executions = NAR.AddInput(goal + "! :|: {1.0 0.99}", Print=True)["executions"]
     renderANSI(env)
     if executions:
         chosenAction = True
@@ -212,7 +208,7 @@ for i in range(0, 10000000):
     if max_steps == -1:
         time.sleep(0.001)
     if done:
-        NAR.AddInput(goal + ". :|: {1.0 0.9}")
+        NAR.AddInput(goal + ". :|: {1.0 0.99}")
         if max_steps == -1:
             time.sleep(0.5)
         obs = None
