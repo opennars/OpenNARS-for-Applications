@@ -80,9 +80,8 @@ goal = "G"
 #Setup environment:
 env = gym.make('MiniGrid-Empty-6x6-v0').env
 env.reset(seed=1337)
-viewDistance=3 #how many cells forward the agent can see
 
-def coneForward():
+def coneForward(viewDistance=6):
     L=[]
     index = 0
     StartIndexX, StartIndexY = (2,5)
@@ -94,14 +93,13 @@ def coneForward():
                 L.append((indexX, indexY, k))
             indexX += 1
             index+=1
-        StartIndexX -=1
+        StartIndexX = max(0, StartIndexX - 1)
         indexX=StartIndexX
         indexY -=1
-        width+=2
-    L[0], L[1] = L[1], L[0] #make 3,5 the first element
+        width=min(7,width+2)
     return L
 
-def coneRight():
+def coneRight(viewDistance=3):
     L=[]
     StartIndexX, StartIndexY = (3,6)
     indexX, indexY = (StartIndexX,StartIndexY)
@@ -113,9 +111,10 @@ def coneRight():
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
+    L.insert(1, (4,5,1))
     return L
 
-def coneLeft():
+def coneLeft(viewDistance=3):
     L=[]
     StartIndexX, StartIndexY = (3,6)
     indexX, indexY = (StartIndexX,StartIndexY)
@@ -127,21 +126,18 @@ def coneLeft():
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
+    L.insert(1, (2,5,1))
     return L
 
 def scan(cone, cells, colorBlind=True, wall=False):
     if colorBlind:
         cells[3][6][1] = 0
     L = cone()
-    k = 0
     for (x,y,distance) in L:
         if colorBlind:
             cells[x][y][1] = 0
-        if cells[x][y][0] != 1 and (k==0 or wall==False or cells[x][y][0] != 2): #a seen object or physical contact with a wall
-            if cells[x][y][0] == 0:
-                cells[x][y][0] = 1 #behind wall indicator, so we see nothing
+        if cells[x][y][0] != 0 and cells[x][y][0] != 1 and (distance==0 or wall or cells[x][y][0] != 2): #a seen object or physical contact with a wall: #a seen object or physical contact with a wall
             return distance, cells[x][y] #return first non-empty cell
-        k += 1
     if not wall:
         return scan(cone, cells, colorBlind=colorBlind, wall=True) #nearest wall
     return 9999, np.array([1,0,0])
