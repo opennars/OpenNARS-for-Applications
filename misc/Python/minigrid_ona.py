@@ -81,50 +81,53 @@ goal = "G"
 env = gym.make('MiniGrid-Empty-6x6-v0').env
 env.reset(seed=1337)
 
-def coneForward(viewDistance=3):
+def coneForward(viewDistance=6):
     L=[]
     index = 0
-    StartIndexX, StartIndexY = (2,5)
+    StartIndexX, StartIndexY = (3,5)
     indexX, indexY = (StartIndexX,StartIndexY)
-    width = 3 #cone starts with the 3 cells right in front of agent
+    width = 1 #cone starts with the 3 cells right in front of agent
     for k in range(viewDistance):
         for h in range(width):
-            L.append((indexX, indexY, k))
+            L.append((indexX, indexY, abs(3-indexX)+abs(6-indexY)))
             indexX += 1
             index+=1
         StartIndexX = max(0, StartIndexX - 1)
         indexX=StartIndexX
         indexY -=1
         width=min(7,width+2)
+    L.sort(key = lambda x: x[2])
     return L
 
 def coneRight(viewDistance=3):
     L=[]
-    StartIndexX, StartIndexY = (3,6)
+    StartIndexX, StartIndexY = (2,6)
     indexX, indexY = (StartIndexX,StartIndexY)
     for h in range(viewDistance):
-        for k in range(viewDistance-h):
+        for k in range(viewDistance-h+1):
             xLeft = indexX+1
-            L.append((xLeft, indexY, h))
+            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
             indexX+=1
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
-    return L
+    L.sort(key = lambda x: x[2])
+    return L[1:]
 
 def coneLeft(viewDistance=3):
     L=[]
-    StartIndexX, StartIndexY = (3,6)
+    StartIndexX, StartIndexY = (4,6)
     indexX, indexY = (StartIndexX,StartIndexY)
     for h in range(viewDistance):
-        for k in range(viewDistance-h):
+        for k in range(viewDistance-h+1):
             xLeft = indexX-1
-            L.append((xLeft, indexY, h))
+            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
             indexX-=1
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
-    return L
+    L.sort(key = lambda x: x[2])
+    return L[1:]
 
 def scan(cone, cells, colorBlind=True, wall=False):
     if colorBlind:
@@ -156,7 +159,7 @@ def nearestObject(cells):
     #print(dist_r, right, isWallOrVoid_r)
     #print("^^^")
     if not isWallOrVoid_f:
-        return encode("forward", stateconcat(forward))
+        return encode("forward" if dist_f > 1 else "touched", stateconcat(forward))
     if not isWallOrVoid_l:
         return encode("left", stateconcat(left))
     if not isWallOrVoid_r:
