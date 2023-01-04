@@ -23,6 +23,7 @@
  * """
 
 import NAR
+NAR.AddInput("*volume=0")
 
 #NAL truth functions
 def Truth_w2c(w):
@@ -91,7 +92,7 @@ def resolveViaChoice(word, i, ITEM, isRelation):
             return (unifier[0][1], i, truth)
     return ITEM
 
-def produceSentenceNarsese(words):
+def getNounRelNoun(words):
     RELATION = (None, -1, (0.5,0.0))
     SUBJECT = (None, -1, (0.5,0.0))
     OBJECT = (None, -1, (0.5,0.0))
@@ -103,9 +104,16 @@ def produceSentenceNarsese(words):
         SUBJECT = resolveViaChoice(word, j, SUBJECT, isRelation=False)
     for k, word in enumerate(words[RELATION[1]:]):
         OBJECT = resolveViaChoice(word, k, OBJECT, isRelation=False)
-    S,R,O = (SUBJECT[0], RELATION[0], OBJECT[0])
+    return (SUBJECT[0], RELATION[0], OBJECT[0])
+
+def produceSentenceNarsese(words):
+    S,R,O = getNounRelNoun(words)
     if S is None or R is None or O is None:
         return
+    if Truth_Expectation(Query(f"<{R} --> [flipped]>")[1]) > 0.5:
+        temp = O
+        O = S
+        S = temp
     if R == "IS":
         NAR.AddInput(f"<{S} --> {O}>. :|:")
     else:
@@ -144,7 +152,11 @@ def correlate():
     for x in words:
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
-    
+    S,R,O = getNounRelNoun(words)
+    if S == OBJECT and O == SUBJECT:
+        print("Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
+        AddBelief(f"<{RELATION} --> [flipped]>")
+
 def processInput(inp):
     print("//Input: " + inp)
     if inp.isdigit():
@@ -200,6 +212,39 @@ def Test1():
     processInput("the human is to the right")
     #Output: <HUMAN --> [RIGHT]>. :|:
 
+def Test2():
+    TrainStart()
+    processInput("<CAT --> [see]>.")
+    processInput("cat")
+    processInput("1")
+    processInput("<CAT --> [hear]>.")
+    processInput("cat")
+    processInput("1")
+    processInput("<HUMAN --> [LEFT]>.")
+    processInput("left eser human")
+    processInput("1")
+    processInput("<HUMAN --> [RIGHT]>.")
+    processInput("right eser human")
+    processInput("1")
+    processInput("<STONE --> [RIGHT]>.")
+    processInput("right")
+    processInput("1")
+    processInput("<CAT --> [LEFT]>.")
+    processInput("left eser cat")
+    processInput("1")
+    processInput("<HUMAN --> [RIGHT]>.")
+    processInput("right eser human")
+    processInput("1")
+    TrainEnd()
+    print(Query(f"<(human * ?1) --> R>", isRelation=False))
+    #Output: ('<(human * HUMAN) --> R>', (1.0, 0.9642857142857143), [('?1', 'HUMAN')])
+    print(Query(f"<(right * ?1) --> R>", isRelation=False))
+    #Output: ('<(right * [RIGHT]) --> R>', (1.0, 0.9642857142857143), [('?1', '[RIGHT]')])
+    print(Query(f"<(left * ?1) --> R>", isRelation=False))
+    #Output: ('<(left * [LEFT]) --> R>', (1.0, 0.9473684210526316), [('?1', '[LEFT]')])
+    processInput("left eser cat")
+    processInput("right eser cat")
+
 Training=False
 if __name__ == "__main__":
     while True:
@@ -207,6 +252,9 @@ if __name__ == "__main__":
             inp = input().rstrip("\n")
         except:
             exit(0)
+        if inp.startswith("//"):
+            print(inp)
+            continue
         if inp.startswith("*train=true"):
             TrainStart()
             continue
@@ -219,4 +267,13 @@ if __name__ == "__main__":
         elif inp.startswith("*test1"):
             Test1()
             continue
+        elif inp.startswith("*test2"):
+            Test2()
+            continue
+        elif inp.startswith("*"):
+            print(inp)
+            continue
         processInput(inp)
+
+
+

@@ -1,0 +1,22 @@
+*train=true
+<CAT --> [SEE]>.
+seen is cat
+1
+<CAT --> [HEAR]>.
+heard is cat
+1
+<DOG --> [HEAR]>.
+heard is dog
+1
+<DOG --> [SEE]>.
+seen is dog
+1
+<BIRD --> [SEE]>.
+bird
+1
+<BIRD --> [HEAR]>.
+bird
+1
+*train=false
+heard is bird
+//expected: Input: <BIRD --> [HEAR]>. :|: occurrenceTime=1 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
