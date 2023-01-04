@@ -90,13 +90,14 @@ def coneForward(viewDistance=6):
     for k in range(viewDistance):
         for h in range(width):
             if index != 0 and index != 2: #remove corner items as the system can't toggle switches if diagonal
-                L.append((indexX, indexY, k))
+                L.append((indexX, indexY, abs(3-indexX)+abs(6-indexY)))
             indexX += 1
             index+=1
         StartIndexX = max(0, StartIndexX - 1)
         indexX=StartIndexX
         indexY -=1
         width=min(7,width+2)
+    L.sort(key = lambda x: x[2])
     return L
 
 def coneRight(viewDistance=3):
@@ -106,12 +107,13 @@ def coneRight(viewDistance=3):
     for h in range(viewDistance):
         for k in range(viewDistance-h):
             xLeft = indexX+1
-            L.append((xLeft, indexY, h))
+            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
             indexX+=1
         StartIndexX+=1
         indexX = StartIndexX
         indexY-=1
     L.insert(1, (4,5,1))
+    L.sort(key = lambda x: x[2])
     return L
 
 def coneLeft(viewDistance=3):
@@ -121,12 +123,13 @@ def coneLeft(viewDistance=3):
     for h in range(viewDistance):
         for k in range(viewDistance-h):
             xLeft = indexX-1
-            L.append((xLeft, indexY, h))
+            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
             indexX-=1
         StartIndexX-=1
         indexX = StartIndexX
         indexY-=1
     L.insert(1, (2,5,1))
+    L.sort(key = lambda x: x[2])
     return L
 
 def scan(cone, cells, colorBlind=True, wall=False):
