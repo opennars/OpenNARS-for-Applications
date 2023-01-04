@@ -3,6 +3,7 @@ import minigrid
 import NAR
 import sys
 import time
+import math
 import numpy as np
 
 max_steps = -1
@@ -81,6 +82,9 @@ goal = "G"
 env = gym.make('MiniGrid-Empty-6x6-v0').env
 env.reset(seed=1337)
 
+def distance(A, B=(3,6)):
+    return math.sqrt((A[0]-B[0])**2 + (A[1]-B[1])**2)
+
 def coneForward(viewDistance=6):
     L=[]
     index = 0
@@ -90,7 +94,7 @@ def coneForward(viewDistance=6):
     for k in range(viewDistance):
         for h in range(width):
             if index != 0 and index != 2: #remove corner items as the system can't toggle switches if diagonal
-                L.append((indexX, indexY, abs(3-indexX)+abs(6-indexY)))
+                L.append((indexX, indexY, distance((indexX,indexY))))
             indexX += 1
             index+=1
         StartIndexX = max(0, StartIndexX - 1)
@@ -107,7 +111,7 @@ def coneRight(viewDistance=3):
     for h in range(viewDistance):
         for k in range(viewDistance-h):
             xLeft = indexX+1
-            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
+            L.append((xLeft, indexY, distance((xLeft,indexY))))
             indexX+=1
         StartIndexX+=1
         indexX = StartIndexX
@@ -123,7 +127,7 @@ def coneLeft(viewDistance=3):
     for h in range(viewDistance):
         for k in range(viewDistance-h):
             xLeft = indexX-1
-            L.append((xLeft, indexY, abs(3-xLeft)+abs(6-indexY)))
+            L.append((xLeft, indexY, distance((xLeft,indexY))))
             indexX-=1
         StartIndexX-=1
         indexX = StartIndexX
