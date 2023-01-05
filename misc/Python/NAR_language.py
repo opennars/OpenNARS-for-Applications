@@ -99,11 +99,21 @@ def getNounRelNoun(words):
     for i, word in enumerate(words):
         RELATION = resolveViaChoice(word, i, RELATION, isRelation=True)
     if RELATION is None:
-        return
-    for j, word in enumerate(words[:RELATION[1]]):
-        SUBJECT = resolveViaChoice(word, j, SUBJECT, isRelation=False)
-    for k, word in enumerate(words[RELATION[1]:]):
-        OBJECT = resolveViaChoice(word, k, OBJECT, isRelation=False)
+        return (None, None, None)
+    words.pop(RELATION[1])
+    for j, word in enumerate(words):
+        VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0)), isRelation=False)
+        if Truth_Expectation(VALUE[2]) > Truth_Expectation(SUBJECT[2]):
+            OBJECT = SUBJECT
+            SUBJECT = VALUE
+        elif Truth_Expectation(VALUE[2]) > Truth_Expectation(OBJECT[2]):
+            OBJECT = VALUE
+    #flip S and O if S is after O (SO permutation is handled separately)
+    if SUBJECT[1] > OBJECT[1]:
+        temp = SUBJECT
+        SUBJECT = OBJECT
+        OBJECT = SUBJECT
+    print(">>>",SUBJECT[0], RELATION[0], OBJECT[0])
     return (SUBJECT[0], RELATION[0], OBJECT[0])
 
 def produceSentenceNarsese(words):
@@ -153,7 +163,8 @@ def correlate():
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
     S,R,O = getNounRelNoun(words)
-    if S == OBJECT and O == SUBJECT:
+    print(S, R, O, SUBJECT, RELATION, OBJECT)
+    if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
         print("Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
         AddBelief(f"<{RELATION} --> [flipped]>")
 
