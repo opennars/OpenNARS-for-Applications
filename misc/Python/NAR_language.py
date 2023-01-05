@@ -113,7 +113,6 @@ def getNounRelNoun(words):
         temp = SUBJECT
         SUBJECT = OBJECT
         OBJECT = SUBJECT
-    print(">>>",SUBJECT[0], RELATION[0], OBJECT[0])
     return (SUBJECT[0], RELATION[0], OBJECT[0])
 
 def produceSentenceNarsese(words):
@@ -165,7 +164,7 @@ def correlate():
     S,R,O = getNounRelNoun(words)
     print(S, R, O, SUBJECT, RELATION, OBJECT)
     if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
-        print("Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
+        print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
         AddBelief(f"<{RELATION} --> [flipped]>")
 
 def processInput(inp):
@@ -197,16 +196,16 @@ def TrainOnData():
     processInput("human is right")
     processInput("1")
     processInput("<HUMAN --> [FRONT]>.")
-    processInput("human in front")
+    processInput("human is front")
     processInput("1")
     processInput("<BOX --> [RIGHT]>.")
-    processInput("box to the right")
+    processInput("box is right")
     processInput("1")
     processInput("<BALL --> [RIGHT]>.")
-    processInput("ball to the right")
+    processInput("ball is right")
     processInput("1")
     processInput("<BOX --> [LEFT]>.")
-    processInput("box to the left")
+    processInput("box is left")
     processInput("1")
     TrainEnd()
 
@@ -225,12 +224,6 @@ def Test1():
 
 def Test2():
     TrainStart()
-    processInput("<CAT --> [see]>.")
-    processInput("cat")
-    processInput("1")
-    processInput("<CAT --> [hear]>.")
-    processInput("cat")
-    processInput("1")
     processInput("<HUMAN --> [LEFT]>.")
     processInput("left eser human")
     processInput("1")
