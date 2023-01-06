@@ -67,7 +67,8 @@ def Query(term, isRelation=None):
                 if term2.startswith(parts[0]) and term2.endswith(parts[1]):
                     assignment = term2[len(parts[0]):-len(parts[1])]
                     if isRelation is not None:
-                        termRel, truthRel, _ = Query(f"<{assignment} --> RELATION>")
+                        #whether the word refers to a relational concept or not and if we want it so
+                        _, truthRel, _ = Query(f"<{assignment} --> RELATION>")
                         if not isRelation:
                             truthRel = Truth_Negation(truthRel)
                         if Truth_Expectation(truthRel) <= 0.5:
@@ -89,20 +90,37 @@ def resolveViaChoice(word, i, ITEM, isRelation):
     term, truth, unifier = Query(f"<({word} * ?1) --> R>", isRelation)
     if unifier:
         if Truth_Expectation(truth) >= Truth_Expectation(ITEM[2]):
-            return (unifier[0][1], i, truth)
+            return (unifier[0][1], i, truth, word)
     return ITEM
 
 def getNounRelNoun(words):
-    RELATION = (None, -1, (0.5,0.0))
-    SUBJECT = (None, -1, (0.5,0.0))
-    OBJECT = (None, -1, (0.5,0.0))
+    RELATION = (None, -1, (0.5,0.0), "")
+    SUBJECT = (None, -1, (0.5,0.0), "")
+    OBJECT = (None, -1, (0.5,0.0), "")
     for i, word in enumerate(words):
-        RELATION = resolveViaChoice(word, i, RELATION, isRelation=True)
+        _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
+        if Truth_Expectation(truthAssigned) < 0.1:
+            #whether this word was used to refer to a concept, else we don't consider it
+            print("//Unassigned1:", word, Truth_Expectation(truthAssigned))
+            continue
+        RELATION_TEMP = resolveViaChoice(word, i, RELATION, isRelation=True)
+        quRelation = Query(f"<({word} * ?1) --> R>", isRelation=True)
+        quConcept = Query(f"<({word} * ?1) --> R>", isRelation=False)
+        if Truth_Expectation(quRelation[1]) > Truth_Expectation(quConcept[1]):
+            RELATION = (quRelation[2][0][1], i, quRelation[1], word)
+            break
+        RELATION = RELATION_TEMP
     if RELATION is None:
         return (None, None, None)
-    words.pop(RELATION[1])
-    for j, word in enumerate(words):
-        VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0)), isRelation=False)
+    wordsWithoutRelation = [x for x in words]
+    wordsWithoutRelation.pop(RELATION[1])
+    for j, word in enumerate(wordsWithoutRelation):
+        _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
+        if Truth_Expectation(truthAssigned) < 0.1:
+            #whether this word was used to refer to a concept, else we don't consider it
+            print("//Unassigned2:", word, Truth_Expectation(truthAssigned))
+            continue
+        VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0), ""), isRelation=False)
         if Truth_Expectation(VALUE[2]) > Truth_Expectation(SUBJECT[2]):
             OBJECT = SUBJECT
             SUBJECT = VALUE
@@ -112,19 +130,28 @@ def getNounRelNoun(words):
     if SUBJECT[1] > OBJECT[1]:
         temp = SUBJECT
         SUBJECT = OBJECT
-        OBJECT = SUBJECT
+        OBJECT = temp
+    AddBelief(f"<{SUBJECT[3]} --> [ASSIGNED]>")
+    AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
+    AddBelief(f"<{OBJECT[3]} --> [ASSIGNED]>")
+    for x in words:
+        if x != SUBJECT[3] and x != RELATION[3] and x != OBJECT[3]:
+            AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
+    print((SUBJECT[0], RELATION[0], OBJECT[0]))
     return (SUBJECT[0], RELATION[0], OBJECT[0])
 
 def produceSentenceNarsese(words):
     S,R,O = getNounRelNoun(words)
     if S is None or R is None or O is None:
         return
-    if Truth_Expectation(Query(f"<{R} --> [flipped]>")[1]) > 0.5:
+    if Truth_Expectation(Query(f"<{R} --> [FLIPPED]>")[1]) > 0.5:
         temp = O
         O = S
         S = temp
     if R == "IS":
         NAR.AddInput(f"<{S} --> {O}>. :|:")
+    elif R == "LIKE":
+        NAR.AddInput(f"<{S} <-> {O}>. :|:")
     else:
         NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:")
 
@@ -132,23 +159,26 @@ global words
 def newSentence(sentence):
     global words
     words = sentence.split(" ")
-    print("//WORDS: ", words)
+    #print("//WORDS: ", words)
     if not Training:
         produceSentenceNarsese(words)
 
 def newConcept(term):
     global SUBJECT, RELATION, OBJECT, Training
-    if "-->" not in term:
+    if "-->" not in term and "<->" not in term:
         return
-    subject = term.split(" -->")[0][1:]
-    predicate = term.split("--> ")[1].replace(" :|:","")[:-1]
+    copula = "-->"
+    if "<->" in term:
+        copula = "<->"
+    subject = term.split(f" {copula}")[0][1:]
+    predicate = term.split(f"{copula} ")[1].replace(" :|:","")[:-1]
     if "*" in subject:
         RELATION = predicate
         SUBJECT = subject.split(" * ")[0][1:]
         OBJECT = subject.split(" * ")[1][:-1]
     else:
         SUBJECT = subject
-        RELATION = "IS"
+        RELATION = "IS" if copula == "-->" else "LIKE"
         OBJECT = predicate
     AddBelief("<" + SUBJECT + " --> RELATION>", (0.0, 0.9))
     AddBelief("<" + OBJECT + " --> RELATION>", (0.0, 0.9))
@@ -165,7 +195,7 @@ def correlate():
     print(S, R, O, SUBJECT, RELATION, OBJECT)
     if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
         print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
-        AddBelief(f"<{RELATION} --> [flipped]>")
+        AddBelief(f"<{RELATION} --> [FLIPPED]>")
 
 def processInput(inp):
     print("//Input: " + inp)
@@ -206,6 +236,12 @@ def TrainOnData():
     processInput("1")
     processInput("<BOX --> [LEFT]>.")
     processInput("box is left")
+    processInput("1")
+    processInput("<CAT --> [LEFT]>.")
+    processInput("cat is to the left")
+    processInput("1")
+    processInput("<dog --> [RIGHT]>.")
+    processInput("dog is to the right")
     processInput("1")
     TrainEnd()
 
