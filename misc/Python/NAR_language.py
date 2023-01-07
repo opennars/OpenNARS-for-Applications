@@ -23,6 +23,7 @@
  * """
 
 import NAR
+import json
 NAR.AddInput("*volume=0")
 
 #NAL truth functions
@@ -131,9 +132,12 @@ def getNounRelNoun(words):
         temp = SUBJECT
         SUBJECT = OBJECT
         OBJECT = temp
-    AddBelief(f"<{SUBJECT[3]} --> [ASSIGNED]>")
-    AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
-    AddBelief(f"<{OBJECT[3]} --> [ASSIGNED]>")
+    if SUBJECT[3] != "":
+        AddBelief(f"<{SUBJECT[3]} --> [ASSIGNED]>")
+    if RELATION[3] != "":
+        AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
+    if OBJECT[3] != "":
+        AddBelief(f"<{OBJECT[3]} --> [ASSIGNED]>")
     for x in words:
         if x != SUBJECT[3] and x != RELATION[3] and x != OBJECT[3]:
             AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
@@ -217,75 +221,8 @@ def TrainEnd():
     print("//Training End")
     Training = False
 
-def TrainOnData():
-    TrainStart()
-    processInput("<HUMAN --> [LEFT]>.")
-    processInput("human is left")
-    processInput("1")
-    processInput("<HUMAN --> [RIGHT]>.")
-    processInput("human is right")
-    processInput("1")
-    processInput("<HUMAN --> [FRONT]>.")
-    processInput("human is front")
-    processInput("1")
-    processInput("<BOX --> [RIGHT]>.")
-    processInput("box is right")
-    processInput("1")
-    processInput("<BALL --> [RIGHT]>.")
-    processInput("ball is right")
-    processInput("1")
-    processInput("<BOX --> [LEFT]>.")
-    processInput("box is left")
-    processInput("1")
-    processInput("<CAT --> [LEFT]>.")
-    processInput("cat is to the left")
-    processInput("1")
-    processInput("<dog --> [RIGHT]>.")
-    processInput("dog is to the right")
-    processInput("1")
-    TrainEnd()
-
-def Test1():
-    TrainOnData()
-    print(Query(f"<(human * ?1) --> R>", isRelation=False))
-    #Output: ('<(human * HUMAN) --> R>', (1.0, 0.9642857142857143), [('?1', 'HUMAN')])
-    print(Query(f"<(right * ?1) --> R>", isRelation=False))
-    #Output: ('<(right * [RIGHT]) --> R>', (1.0, 0.9642857142857143), [('?1', '[RIGHT]')])
-    print(Query(f"<(left * ?1) --> R>", isRelation=False))
-    #Output: ('<(left * [LEFT]) --> R>', (1.0, 0.9473684210526316), [('?1', '[LEFT]')])
-    processInput("the human is to the left")
-    #Output: <HUMAN --> [LEFT]>. :|:
-    processInput("the human is to the right")
-    #Output: <HUMAN --> [RIGHT]>. :|:
-
-def Test2():
-    TrainStart()
-    processInput("<HUMAN --> [LEFT]>.")
-    processInput("left eser human")
-    processInput("1")
-    processInput("<HUMAN --> [RIGHT]>.")
-    processInput("right eser human")
-    processInput("1")
-    processInput("<STONE --> [RIGHT]>.")
-    processInput("right")
-    processInput("1")
-    processInput("<CAT --> [LEFT]>.")
-    processInput("left eser cat")
-    processInput("1")
-    processInput("<HUMAN --> [RIGHT]>.")
-    processInput("right eser human")
-    processInput("1")
-    TrainEnd()
-    print(Query(f"<(human * ?1) --> R>", isRelation=False))
-    #Output: ('<(human * HUMAN) --> R>', (1.0, 0.9642857142857143), [('?1', 'HUMAN')])
-    print(Query(f"<(right * ?1) --> R>", isRelation=False))
-    #Output: ('<(right * [RIGHT]) --> R>', (1.0, 0.9642857142857143), [('?1', '[RIGHT]')])
-    print(Query(f"<(left * ?1) --> R>", isRelation=False))
-    #Output: ('<(left * [LEFT]) --> R>', (1.0, 0.9473684210526316), [('?1', '[LEFT]')])
-    processInput("left eser cat")
-    processInput("right eser cat")
-
 Training=False
+fname = "language.json"
 if __name__ == "__main__":
     while True:
         try:
@@ -295,20 +232,23 @@ if __name__ == "__main__":
         if inp.startswith("//"):
             print(inp)
             continue
+        if inp.startswith("*reset"):
+            memory = {}
+            continue
+        if inp.startswith("*save"):
+            with open(fname, 'w') as f:
+                json.dump(memory, f)
+        if inp.startswith("*load"):
+            memory = {}
+            if exists(fname):
+                with open(fname) as json_file:
+                    memory = json.load(json_file)
+            continue
         if inp.startswith("*train=true"):
             TrainStart()
             continue
         elif inp.startswith("*train=false"):
             TrainEnd()
-            continue
-        elif inp.startswith("*train"):
-            TrainOnData()
-            continue
-        elif inp.startswith("*test1"):
-            Test1()
-            continue
-        elif inp.startswith("*test2"):
-            Test2()
             continue
         elif inp.startswith("*"):
             print(inp)
