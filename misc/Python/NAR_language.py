@@ -252,6 +252,9 @@ if __name__ == "__main__":
         if inp.startswith("//"):
             print(inp)
             continue
+        if not Training and (inp.startswith("<") or inp.endswith(". :|:") or inp.endswith("! :|:")):
+            NAR.AddInput(inp)
+            continue
         if inp.startswith("*reset"):
             memory = {}
             continue

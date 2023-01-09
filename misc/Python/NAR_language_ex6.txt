@@ -1,0 +1,32 @@
+*train=true
+<X --> [see]>.
+x
+1
+<A --> [see]>.
+a
+1
+<B --> [see]>.
+b
+1
+<C --> [see]>.
+c
+1
+<(0 * 1) --> BELIEF>.
+0 n 1
+1
+<(1 * 2) --> BELIEF>.
+1 n 2
+1
+<(0 * 1) --> QUESTION>.
+q 0 1
+1
+<(1 * 2) --> QUESTION>.
+q 1 2
+1
+*train=false
+<((<(A * $1) --> BELIEF> &/ <(A * X) --> QUESTION>) &/ <({SELF} * $1) --> ^say>) =/> <QUESTION --> [ANSWERED]>>.
+a n b
+b n c
+q a x
+<QUESTION --> [ANSWERED]>! :|:
+//expected: ^say executed with args ({SELF} * B)
