@@ -233,7 +233,8 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     //now look at how much the precondition is fulfilled
     Concept *prec = imp->sourceConcept;
     Event *precondition = &prec->belief_spike; //a. :|:
-    if(precondition != NULL)
+    //assert(!prec->subsequence, "SUBSEQ! :)");
+    if(precondition != NULL && !prec->subsequence)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
         Term potential_operation = {0};

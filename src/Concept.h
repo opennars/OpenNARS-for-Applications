@@ -60,6 +60,8 @@ typedef struct {
     long processID2; //avoids duplicate processing
     long processID3; //avoids duplicate processing
     long lastSelectionTime; //for selective temporal compounding
+    long perceivedAmount;
+    bool subsequence;
 } Concept;
 
 #endif

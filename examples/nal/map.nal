@@ -26,6 +26,6 @@ tick. :|:
 
 //show that both the mental and external behaviors have been rewarded:
 <(tick &/ <({SELF} * $obj) --> ^remember>) =/> <$obj --> [localized]>>?
-//expected: <(tick &/ <({SELF} * $1) --> ^remember>) =/> <$1 --> [localized]>>. Truth: frequency=0.999013, confidence=0.900338
+//expected: <(tick &/ <({SELF} * $1) --> ^remember>) =/> <$1 --> [localized]>>. Truth: frequency=1.000000, confidence=0.900000
 <((<$obj --> [localized]> &/ <($obj * #location) --> at>) &/ <({SELF} * #location) --> ^goto>) =/> <$obj --> [see]>>?
 //expected: Answer: <((<$1 --> [localized]> &/ <($1 * #1) --> at>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>. Truth: frequency=0.999287, confidence=0.900245

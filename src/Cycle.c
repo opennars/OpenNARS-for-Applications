@@ -57,6 +57,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
 {
     Decision decision = {0};
     c->lastSelectionTime = currentTime;
+    c->perceivedAmount++;
     c->usage = Usage_use(c->usage, currentTime, false);
     //add event as spike to the concept:
     if(e->type == EVENT_TYPE_BELIEF)
@@ -454,6 +455,26 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                 {
                                     Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
+                                }
+                                Concept * cA = c;
+                                double wA = (double) cA->perceivedAmount; //Truth_c2w(c->belief.truth.confidence);
+                                Concept * cB = Memory_FindConceptByTerm(&postcondition.term);
+                                Concept * cAB = Memory_FindConceptByTerm(&seq.term);
+                                if(cB != NULL && cAB != NULL && labs(cB->belief_spike.occurrenceTime - cA->belief_spike.occurrenceTime) <= 1)
+                                {
+                                    double wB = (double) cB->perceivedAmount; //Truth_c2w(cB->belief.truth.confidence);
+                                    double wAB = (double) cAB->perceivedAmount;
+                                    double wdiff = (wA - wAB) + (wB - wAB);
+                                    Truth truth = { .frequency = wAB / (wAB + wdiff), .confidence = Truth_w2c(wAB + wdiff) };
+                                    bool isSubSeq = Truth_Expectation(truth) > BLOCKING_TRUTH_EXPECTATION; //wA > 1 && wB > 1 && wAB > 1 && wdiff<=(wA+wB)/10.0;
+                                    //fputs("!!!! ", stdout); Narsese_PrintTerm(&cAB->term); printf(" AB exp=%f\n", Truth_Expectation(truth));
+                                    cB->subsequence = isSubSeq;
+                                    cA->subsequence = isSubSeq;
+                                    if(isSubSeq)
+                                    {
+                                        cB->belief_spike = (Event) {0};
+                                        cA->belief_spike = (Event) {0};
+                                    }
                                 }
                             }
                         }

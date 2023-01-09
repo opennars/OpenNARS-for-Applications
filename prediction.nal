@@ -1,0 +1,35 @@
+*volume=0
+100
+a. :|:
+b. :|:
+c. :|:
+100
+x. :|:
+b. :|:
+y. :|:
+100
+a. :|:
+b. :|:
+c. :|:
+100
+x. :|:
+b. :|:
+y. :|:
+100
+a. :|:
+b. :|:
+c. :|:
+100
+x. :|:
+b. :|:
+y. :|:
+100
+a. :|:
+z. :|:
+
+<?1 =/> c>?
+//expected: Answer: <(a &/ b) =/> c>. Truth: frequency=0.973692, confidence=0.494996
+<?1 =/> y>?
+//expected: Answer: <(x &/ b) =/> y>. Truth: frequency=0.973692, confidence=0.494996
+<?1 =/> z>?
+//Answer: <a =/> z>. creationTime=720 Truth: frequency=0.982144, confidence=0.285894

@@ -96,6 +96,8 @@
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
 #define ALLOW_NOT_SELECTED_PRECONDITIONS_CONDITIONING false
+//How high virtual <A </> B> evidence needs to make seeing (A &/ B) unsee A and B (gestalt principle)
+#define BLOCKING_TRUTH_EXPECTATION 0.95
 
 /*------------------*/
 /* Space parameters */
