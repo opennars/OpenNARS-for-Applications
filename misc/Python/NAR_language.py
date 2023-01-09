@@ -95,9 +95,12 @@ def resolveViaChoice(word, i, ITEM, isRelation):
     return ITEM
 
 def getNounRelNoun(words):
+    EMPTY = (None, -1, (0.5,0.0), "")
     RELATION = (None, -1, (0.5,0.0), "")
     SUBJECT = (None, -1, (0.5,0.0), "")
     OBJECT = (None, -1, (0.5,0.0), "")
+    SUBJECT_MOD = (None, -1, (0.5,0.0), "")
+    OBJECT_MOD = (None, -1, (0.5,0.0), "")
     for i, word in enumerate(words):
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
         if Truth_Expectation(truthAssigned) < 0.1:
@@ -111,38 +114,56 @@ def getNounRelNoun(words):
             RELATION = (quRelation[2][0][1], i, quRelation[1], word)
             break
         RELATION = RELATION_TEMP
-    if RELATION is None:
+    if RELATION[0] is None:
         return (None, None, None)
-    wordsWithoutRelation = [x for x in words]
-    wordsWithoutRelation.pop(RELATION[1])
-    for j, word in enumerate(wordsWithoutRelation):
+    VALUES = []
+    for j, word in enumerate(words):
+        if j == RELATION[1]:
+            continue
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
         if Truth_Expectation(truthAssigned) < 0.1:
             #whether this word was used to refer to a concept, else we don't consider it
             print("//Unassigned2:", word, Truth_Expectation(truthAssigned))
             continue
         VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0), ""), isRelation=False)
-        if Truth_Expectation(VALUE[2]) > Truth_Expectation(SUBJECT[2]):
-            OBJECT = SUBJECT
-            SUBJECT = VALUE
-        elif Truth_Expectation(VALUE[2]) > Truth_Expectation(OBJECT[2]):
-            OBJECT = VALUE
-    #flip S and O if S is after O (SO permutation is handled separately)
-    if SUBJECT[1] > OBJECT[1]:
-        temp = SUBJECT
-        SUBJECT = OBJECT
-        OBJECT = temp
+        if VALUE[0] is not None:
+            VALUES.append(VALUE)
+    if len(VALUES) == 2:
+        SUBJECT = VALUES[0]
+        OBJECT = VALUES[1]
+    if len(VALUES) == 4:
+        SUBJECT_MOD = VALUES[0]
+        SUBJECT = VALUES[1]
+        OBJECT_MOD = VALUES[2]
+        OBJECT = VALUES[3]
+    if len(VALUES) == 3:
+        if VALUES[0][0][0] == '[':
+            SUBJECT_MOD = VALUES[0]
+            SUBJECT = VALUES[1] #modifiers are symmetric anyway
+            OBJECT = VALUES[2]
+        elif VALUES[1][0][0] == '[':
+            SUBJECT = VALUES[0]
+            OBJECT_MOD = VALUES[1]
+            OBJECT = VALUES[2]
     if SUBJECT[3] != "":
         AddBelief(f"<{SUBJECT[3]} --> [ASSIGNED]>")
     if RELATION[3] != "":
         AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
     if OBJECT[3] != "":
         AddBelief(f"<{OBJECT[3]} --> [ASSIGNED]>")
+    if SUBJECT_MOD[3] != "":
+        AddBelief(f"<{SUBJECT_MOD[3]} --> [ASSIGNED]>")
+    if OBJECT_MOD[3] != "":
+        AddBelief(f"<{OBJECT_MOD[3]} --> [ASSIGNED]>")
     for x in words:
-        if x != SUBJECT[3] and x != RELATION[3] and x != OBJECT[3]:
+        cond1 = x != SUBJECT[3] and x != RELATION[3] and x != OBJECT[3]
+        cond2 = x != SUBJECT_MOD[3] and x != OBJECT_MOD[3]
+        if cond1 and cond2:
             AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
-    print((SUBJECT[0], RELATION[0], OBJECT[0]))
-    return (SUBJECT[0], RELATION[0], OBJECT[0])
+    modify = lambda a,b: a[0] if b[0] is None else (f"({b[0]} & {a[0]})" if b[0][0] == '[' else f"({b[0]} * {a[0]})")
+    S, R, O = (modify(SUBJECT, SUBJECT_MOD), RELATION[0], modify(OBJECT, OBJECT_MOD))
+    print("//SRO: ", (S, R, O))
+    return (S, R, O)
 
 def produceSentenceNarsese(words):
     S,R,O = getNounRelNoun(words)
@@ -187,7 +208,7 @@ def newConcept(term):
     AddBelief("<" + SUBJECT + " --> RELATION>", (0.0, 0.9))
     AddBelief("<" + OBJECT + " --> RELATION>", (0.0, 0.9))
     AddBelief("<" + RELATION + " --> RELATION>")
-    print("//SRO:", [SUBJECT, RELATION, OBJECT])
+    print("//SRO:", (SUBJECT, RELATION, OBJECT))
     if not Training:
         NAR.AddInput(term + ". :|:")
 
@@ -196,7 +217,6 @@ def correlate():
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
     S,R,O = getNounRelNoun(words)
-    print(S, R, O, SUBJECT, RELATION, OBJECT)
     if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
         print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
         AddBelief(f"<{RELATION} --> [FLIPPED]>")
@@ -231,6 +251,15 @@ if __name__ == "__main__":
             exit(0)
         if inp.startswith("//"):
             print(inp)
+            continue
+        if not Training and (inp.startswith("<") or inp.endswith(". :|:") or inp.endswith("! :|:")):
+            executions = NAR.AddInput(inp)["executions"]
+            if executions:
+                for execution in executions:
+                    if execution["operator"] == "^say":
+                        arguments = [x.replace("*","").replace("(","").replace(")","") for x in execution["arguments"].split(" ")]
+                        for concept in arguments:
+                            print("//^say result: " + Query(f"<(?1 * {concept}) --> R>")[2][0][1])
             continue
         if inp.startswith("*reset"):
             memory = {}
