@@ -253,7 +253,13 @@ if __name__ == "__main__":
             print(inp)
             continue
         if not Training and (inp.startswith("<") or inp.endswith(". :|:") or inp.endswith("! :|:")):
-            NAR.AddInput(inp)
+            executions = NAR.AddInput(inp)["executions"]
+            if executions:
+                for execution in executions:
+                    if execution["operator"] == "^say":
+                        arguments = [x.replace("*","").replace("(","").replace(")","") for x in execution["arguments"].split(" ")]
+                        for concept in arguments:
+                            print("//^say result: " + Query(f"<(?1 * {concept}) --> R>")[2][0][1])
             continue
         if inp.startswith("*reset"):
             memory = {}
