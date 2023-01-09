@@ -64,6 +64,8 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
         {
             c->belief_spike = *e;
+            Event eternal_event = Event_Eternalized(e);
+            c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, NULL);
         }
     }
     else
@@ -429,7 +431,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     int op_id2 = Memory_getOperationID(&c->belief_spike.term);
                     bool is_op_seq = op_id && op_id2;
                     bool is_cond_seq = !op_id && !op_id2;
-                    if((is_cond_seq || is_op_seq) && !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
+                    if(/*(is_cond_seq || is_op_seq) &&*/ !Stamp_checkOverlap(&c->belief_spike.stamp, &postcondition.stamp))
                     {
                         bool success;
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
@@ -447,7 +449,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     break;
                                 }
                             }
-                            if((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN)) //only build seq if within len
+                            if((/*is_cond_seq &&*/ sequence_len < MAX_SEQUENCE_LEN) /*|| (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN)*/) //only build seq if within len
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);

@@ -235,6 +235,33 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
+        Term fullSeq = imp->term;
+        char str[2];
+        str[0] = SEQUENCE;
+        str[1] = 0;
+        fullSeq.atoms[0] = Narsese_AtomicTermIndex(str);
+        fullSeq.hashed = false; //since we manipulated it
+        Term leftpart = Term_ExtractSubterm(&fullSeq, 1);
+        Term rightpart = Term_ExtractSubterm(&fullSeq, 2);
+        Concept *cfullSeq = Memory_FindConceptByTerm(&fullSeq);
+        Concept *cleft = Memory_FindConceptByTerm(&leftpart);
+        Concept *cright = Memory_FindConceptByTerm(&rightpart);
+        if(cleft == NULL || cright == NULL || cfullSeq == NULL)
+        {
+            //fputs("//TERM! ",stdout); Narsese_PrintTerm(&fullSeq); puts("");
+            //printf("is null %d %d %d\n", (int) (cleft == NULL), (int) (cright == NULL), (int) (cfullSeq == NULL));
+            fflush(stdout);
+            return decision;
+        }
+        double wleft = 0.9 * cleft->belief.truth.frequency * Truth_c2w(cleft->belief.truth.confidence); //TODO properly not 0.9*
+        double wfullSeq = cfullSeq->belief.truth.frequency * Truth_c2w(cfullSeq->belief.truth.confidence);
+        double wplus = wfullSeq;
+        double wminus = wleft - wfullSeq;
+        
+        imp->truth.confidence = Truth_w2c(wplus + wminus);
+        imp->truth.frequency = wplus / (wplus + wminus);
+        //fputs("//DONE ", stdout); Narsese_PrintTerm(&imp->term); printf(" T=(%f %f)\n", imp->truth.frequency, imp->truth.confidence);
+        //fflush(stdout); exit(0);
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
         Term potential_operation = {0};
         Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
