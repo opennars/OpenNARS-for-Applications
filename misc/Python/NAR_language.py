@@ -97,10 +97,12 @@ def resolveViaChoice(word, i, ITEM, isRelation):
 def getNounRelNoun(words):
     EMPTY = (None, -1, (0.5,0.0), "")
     RELATION = (None, -1, (0.5,0.0), "")
+    RELATIONS = []
     C1 = (None, -1, (0.5,0.0), "")
     C2 = (None, -1, (0.5,0.0), "")
     C1_MOD = (None, -1, (0.5,0.0), "")
     C2_MOD = (None, -1, (0.5,0.0), "")
+    REL_FOUND = False
     for i, word in enumerate(words):
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
         if Truth_Expectation(truthAssigned) < 0.1:
@@ -111,14 +113,24 @@ def getNounRelNoun(words):
         quRelation = Query(f"<({word} * ?1) --> R>", isRelation=True)
         quConcept = Query(f"<({word} * ?1) --> R>", isRelation=False)
         if Truth_Expectation(quRelation[1]) > Truth_Expectation(quConcept[1]):
-            RELATION = (quRelation[2][0][1], i, quRelation[1], word)
-            break
-        RELATION = RELATION_TEMP
+            RELATIONS.append((quRelation[2][0][1], i, quRelation[1], word))
+        if not REL_FOUND:
+            if Truth_Expectation(quRelation[1]) > Truth_Expectation(quConcept[1]):
+                RELATION = (quRelation[2][0][1], i, quRelation[1], word)
+                REL_FOUND = True
+            else:
+                RELATION = RELATION_TEMP
+    if RELATION not in RELATIONS:
+        RELATIONS = [RELATION] + RELATIONS
     if RELATION[0] is None:
-        return (None, None, None)
+        return [(None, None, None)]
     VALUES = []
     for j, word in enumerate(words):
-        if j == RELATION[1]:
+        Continue = False
+        for R in RELATIONS:
+            if j == R[1]:
+                Continue = True
+        if Continue:
             continue
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
         if Truth_Expectation(truthAssigned) < 0.1:
@@ -137,8 +149,8 @@ def getNounRelNoun(words):
             if nextmod != EMPTY:
                 Cs.append(nextmod)
                 Ms.append(EMPTY)
-        elif x[0][0] == '[': #TODO also learn mod assignment order (for learning languages with right-to-left modifier assignment)
-            nextmod = x      #again by evidence collection as with SP switch
+        elif x[0][0] == '[':
+            nextmod = x
         else:
             Cs.append(x)
             Ms.append(nextmod)
@@ -150,6 +162,7 @@ def getNounRelNoun(words):
             Cs = [Cs[0], Ms[0]]
         Ms = [EMPTY for i in range(2)]
     if len(Cs) % 2 != 0:
+        print("!!!", Cs, RELATIONS)
         ASSIGN = False
     if ASSIGN:
         for x in Cs + Ms + [RELATION]:
@@ -165,25 +178,30 @@ def getNounRelNoun(words):
         AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
     modify = lambda a,b: a[0] if b[0] is None else (f"({b[0]} & {a[0]})" if b[0][0] == '[' else f"({b[0]} * {a[0]})")
     if not ASSIGN or len(Cs) < 2:
-        return (None, None, None)
-    S, R, O = (modify(Cs[0], Ms[0]), RELATION[0], modify(Cs[1], Ms[1]))
-    print("//R,C,M: ", RELATION, Cs, Ms)
-    return (S, R, O)
+        return [(None, None, None)]
+    SROs = []
+    print("//R,C,M: ", RELATIONS, Cs, Ms)
+    for i in range(0, len(Cs)-1, 2):
+        print(i, RELATIONS)
+        S, R, O = (modify(Cs[i], Ms[i]), RELATIONS[int(i/2)][0], modify(Cs[i+1], Ms[i+1]))
+        SROs.append((S, R, O))
+    return SROs
 
 def produceSentenceNarsese(words):
-    S,R,O = getNounRelNoun(words)
-    if S is None or R is None or O is None:
-        return
-    if Truth_Expectation(Query(f"<{R} --> [FLIPPED]>")[1]) > 0.5:
-        temp = O
-        O = S
-        S = temp
-    if R == "IS":
-        NAR.AddInput(f"<{S} --> {O}>. :|:")
-    elif R == "LIKE":
-        NAR.AddInput(f"<{S} <-> {O}>. :|:")
-    else:
-        NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:")
+    SROs = getNounRelNoun(words)
+    for (S,R,O) in SROs:
+        if S is None or R is None or O is None:
+            return
+        if Truth_Expectation(Query(f"<{R} --> [FLIPPED]>")[1]) > 0.5:
+            temp = O
+            O = S
+            S = temp
+        if R == "IS":
+            NAR.AddInput(f"<{S} --> {O}>. :|:")
+        elif R == "LIKE":
+            NAR.AddInput(f"<{S} <-> {O}>. :|:")
+        else:
+            NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:")
 
 def sub_lists(l):
     lists = []
@@ -251,10 +269,11 @@ def correlate():
     for x in words:
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
-    S,R,O = getNounRelNoun(words)
-    if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
-        print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
-        AddBelief(f"<{RELATION} --> [FLIPPED]>")
+    SROs = getNounRelNoun(words)
+    for (S,R,O) in SROs:
+        if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
+            print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
+            AddBelief(f"<{RELATION} --> [FLIPPED]>")
 
 def processInput(inp):
     print("//Input: " + inp)
