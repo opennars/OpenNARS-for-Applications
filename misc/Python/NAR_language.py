@@ -128,42 +128,46 @@ def getNounRelNoun(words):
         VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0), ""), isRelation=False)
         if VALUE[0] is not None:
             VALUES.append(VALUE)
-    #TODO replace with loop again to allow for arbitrary length
-    if len(VALUES) == 2:
-        C1 = VALUES[0]
-        C2 = VALUES[1]
-    if len(VALUES) == 4:
-        C1_MOD = VALUES[0]
-        C1 = VALUES[1]
-        C2_MOD = VALUES[2]
-        C2 = VALUES[3]
-    if len(VALUES) == 3:
-        if VALUES[0][0][0] == '[':
-            C1_MOD = VALUES[0]
-            C1 = VALUES[1] #modifiers are symmetric anyway
-            C2 = VALUES[2]
-        elif VALUES[1][0][0] == '[':
-            C1 = VALUES[0]
-            C2_MOD = VALUES[1]
-            C2 = VALUES[2]
-    if C1[3] != "":
-        AddBelief(f"<{C1[3]} --> [ASSIGNED]>")
-    if RELATION[3] != "":
-        AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
-    if C2[3] != "":
-        AddBelief(f"<{C2[3]} --> [ASSIGNED]>")
-    if C1_MOD[3] != "":
-        AddBelief(f"<{C1_MOD[3]} --> [ASSIGNED]>")
-    if C2_MOD[3] != "":
-        AddBelief(f"<{C2_MOD[3]} --> [ASSIGNED]>")
+    Cs = [] #concepts
+    Ms = [] #modifiers (same len)
+    nextmod = EMPTY
+    ASSIGN = True
+    for x in VALUES + [None]:
+        if x is None:
+            if nextmod != EMPTY:
+                Cs.append(nextmod)
+                Ms.append(EMPTY)
+        elif x[0][0] == '[': #TODO also learn mod assignment order (for learning languages with right-to-left modifier assignment)
+            nextmod = x      #again by evidence collection as with SP switch
+        else:
+            Cs.append(x)
+            Ms.append(nextmod)
+            nextmod = EMPTY
+    if len(Cs) == 1 and len([x for x in Ms if x != EMPTY]) == 1: #just one concept and 1 modifier, so the concept being modified is the sentence
+        if Ms[0][1] < Cs[0][1]:
+            Cs = [Ms[0], Cs[0]]
+        else:
+            Cs = [Cs[0], Ms[0]]
+        Ms = [EMPTY for i in range(2)]
+    if len(Cs) % 2 != 0:
+        ASSIGN = False
+    if ASSIGN:
+        for x in Cs + Ms + [RELATION]:
+            AddBelief(f"<{x[3]} --> [ASSIGNED]>")
     for x in words:
-        cond1 = x != C1[3] and x != RELATION[3] and x != C2[3]
-        cond2 = x != C1_MOD[3] and x != C2_MOD[3]
-        if cond1 and cond2:
-            AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
+        Break = False
+        for y in Cs + Ms + [RELATION]:
+            if x == y[3] and ASSIGN:
+                Break = True
+                break
+        if Break:
+            break
+        AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
     modify = lambda a,b: a[0] if b[0] is None else (f"({b[0]} & {a[0]})" if b[0][0] == '[' else f"({b[0]} * {a[0]})")
-    S, R, O = (modify(C1, C1_MOD), RELATION[0], modify(C2, C2_MOD))
-    print("//SRO: ", C1, C1_MOD, RELATION, C2, C2_MOD) #(S, R, O))
+    if not ASSIGN or len(Cs) < 2:
+        return (None, None, None)
+    S, R, O = (modify(Cs[0], Ms[0]), RELATION[0], modify(Cs[1], Ms[1]))
+    print("//R,C,M: ", RELATION, Cs, Ms)
     return (S, R, O)
 
 def produceSentenceNarsese(words):
@@ -247,7 +251,6 @@ def correlate():
     for x in words:
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
-            print("R: ",x,y)
     S,R,O = getNounRelNoun(words)
     if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
         print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
