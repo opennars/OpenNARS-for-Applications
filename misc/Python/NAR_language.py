@@ -145,7 +145,7 @@ def getNounRelNoun(words):
     Ms = [] #modifiers (same len)
     nextmod = EMPTY
     ASSIGN = True
-    for x in VALUES + [None]:
+    for i,x in enumerate(VALUES + [None]):
         if x is None:
             if nextmod != EMPTY:
                 Cs.append(nextmod)
