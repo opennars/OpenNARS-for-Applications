@@ -24,7 +24,7 @@
 
 import NAR
 import json
-NAR.AddInput("*volume=0")
+NAR.AddInput("*volume=100")
 
 #NAL truth functions
 def Truth_w2c(w):
@@ -198,11 +198,11 @@ def produceSentenceNarsese(words):
             O = S
             S = temp
         if R == "IS":
-            NAR.AddInput(f"<{S} --> {O}>. :|:")
+            print("Input:", NAR.PrintedTask(NAR.AddInput(f"<{S} --> {O}>. :|:", Print=False)["input"][0]))
         elif R == "LIKE":
-            NAR.AddInput(f"<{S} <-> {O}>. :|:")
+            print("Input:", NAR.PrintedTask(NAR.AddInput(f"<{S} <-> {O}>. :|:", Print=False)["input"][0]))
         else:
-            NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:")
+            print("Input:", NAR.PrintedTask(NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:", Print=False)["input"][0]))
 
 def sub_lists(l):
     lists = []
@@ -243,7 +243,7 @@ def newSentence(sentence):
 
 def newConcept(term):
     global SUBJECT, RELATION, OBJECT, Training
-    if "-->" not in term and "<->" not in term:
+    if "-->" not in term and "<->" not in term or "&&" in term or "==>" in term:
         return
     copula = "-->"
     if "<->" in term:
@@ -262,10 +262,10 @@ def newConcept(term):
     AddBelief("<" + OBJECT + " --> RELATION>", (0.0, 0.9))
     AddBelief("<" + RELATION + " --> RELATION>")
     print("//SRO:", (SUBJECT, RELATION, OBJECT))
-    if not Training:
-        NAR.AddInput(term + ". :|:")
 
 def correlate():
+    global SUBJECT, RELATION, OBJECT, words
+    print("//Cross-correlating: ", [SUBJECT, RELATION, OBJECT], "with", words)
     for x in words:
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
@@ -274,16 +274,20 @@ def correlate():
         if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
             print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
             AddBelief(f"<{RELATION} --> [FLIPPED]>")
+    (SUBJECT, RELATION, OBJECT, words) = (None, None, None, None)
 
-def processInput(inp):
-    print("//Input: " + inp)
+def processInput(inp, Print=True):
+    if Print: print("//Input: " + inp)
     if inp.isdigit():
-        correlate()
+        if "words" in globals() and "SUBJECT" in globals() and words is not None and SUBJECT is not None:
+            if words[0] is not None:
+                correlate()
         return
     if inp.startswith("<") or inp.startswith("("):
         newConcept(inp[:-1])
     else:
         newSentence(inp)
+        processInput("1", Print=False)
 
 def TrainStart():
     global Training
@@ -301,19 +305,27 @@ if __name__ == "__main__":
     while True:
         try:
             inp = input().rstrip("\n")
+            if inp=="":
+                inp = "1"
         except:
             exit(0)
         if inp.startswith("//"):
             print(inp)
             continue
-        if not Training and (inp.startswith("<") or inp.endswith(". :|:") or inp.endswith("! :|:")):
-            executions = NAR.AddInput(inp)["executions"]
+        if not Training and (inp.isdigit() or inp.startswith("<") or inp.endswith(". :|:") or inp.endswith("! :|:")):
+            ret = NAR.AddInput(inp, Print=False)
+            if ret["input"]:
+                print("Input:", NAR.PrintedTask(ret["input"][0]))
+            executions = ret["executions"]
             if executions:
                 for execution in executions:
                     if execution["operator"] == "^say":
                         arguments = [x.replace("*","").replace("(","").replace(")","") for x in execution["arguments"].split(" ")]
                         for concept in arguments:
                             print("//^say result: " + Query(f"<(?1 * {concept}) --> R>")[2][0][1])
+            if ret["selections"]:
+                print("Selected:", NAR.PrintedTask(ret["selections"][0]))
+                processInput(ret["selections"][0]["term"] + ret["selections"][0]["punctuation"])
             continue
         if inp.startswith("*reset"):
             memory = {}

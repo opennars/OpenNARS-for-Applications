@@ -1,22 +1,22 @@
 *train=true
 <BIRD --> [SEE]>.
 bird
-1
+
 <BIRD --> [HEAR]>.
 bird
-1
+
 <CAT --> [SEE]>.
 cat is seen
-1
+
 <CAT --> [HEAR]>.
 cat is heard
-1
+
 <DOG --> [HEAR]>.
 dog is heard
-1
+
 <DOG --> [SEE]>.
 dog is seen
-1
+
 *train=false
 bird is heard
 //expected: Input: <BIRD --> [HEAR]>. :|: occurrenceTime=1 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000

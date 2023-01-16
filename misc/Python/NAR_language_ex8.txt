@@ -1,28 +1,28 @@
 *train=true
 <A --> B>.
 a a
-1
+
 <CAT --> [SEE]>.
 b a
-1
+
 <CAT --> [HEAR]>.
 b a
-1
+
 <DOG --> [SEE]>.
 b b
-1
+
 <DOG --> [HEAR]>.
 b b
-1
+
 <ANIMAL --> [SEE]>.
 a b
-1
+
 <ANIMAL --> [HEAR]>.
 a b
-1
+
 <CAT --> ANIMAL>.
 b a a a a b
-1
+
 *train=false
 b b a a a b
 //expected: Input: <DOG --> ANIMAL>. :|: occurrenceTime=1 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000

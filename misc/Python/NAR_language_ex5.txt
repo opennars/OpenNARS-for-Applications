@@ -1,22 +1,22 @@
 *train=true
 <{PAT} --> [SEE]>.
 patrick
-1
+
 <GARDEN --> [SEE]>.
 garden
-1
+
 <CAT --> [BIG]>.
 big
-1
+
 <DOG --> [BIG]>.
 big
-1
+
 <(CAT * CINEMA) --> GO>.
 visits
-1
+
 <(DOG * SCHOOL) --> GO>.
 visits
-1
+
 *train=false
 patrick visits a big garden
 //expected: Input: <({PAT} * ([BIG] & GARDEN)) --> GO>. :|: occurrenceTime=1 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000

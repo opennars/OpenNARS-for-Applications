@@ -1,19 +1,19 @@
 *train=true
 <CAT --> [see]>.
 cat
-1
+
 <DOG --> [see]>.
 dog
-1
+
 <ANIMAL --> [see]>.
 animal
-1
+
 <A1 --> B1>.
 -->
-1
+
 <A2 --> B2>.
 -->
-1
+
 *train=false
 dog --> animal
 cat --> animal

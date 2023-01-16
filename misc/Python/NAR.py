@@ -103,3 +103,10 @@ def Reset(usedNAR=NARproc):
     AddInput("*reset", usedNAR=usedNAR)
 
 AddInput("*volume=100")
+
+def PrintedTask(task):
+    st = task["term"] + task["punctuation"]
+    st += (" :|: occurrenceTime="+task["occurrenceTime"] if task["occurrenceTime"].isdigit() else "")
+    st += " Priority=" + str(task["Priority"])
+    st += " Truth: frequency="+task["truth"]["frequency"] + " confidence="+task["truth"]["confidence"]
+    return st
