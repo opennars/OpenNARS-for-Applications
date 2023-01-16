@@ -24,6 +24,7 @@
 
 import NAR
 import json
+import sys
 NAR.AddInput("*volume=100")
 
 #NAL truth functions
@@ -234,7 +235,7 @@ def newSentence(sentence):
     global words, localist_tokens
     if " " not in sentence:
         localist_tokens = True
-    if localist_tokens:
+    if localist_tokens and not "genericTokenization" in sys.argv:
         words = sentence.split(" ")
     else:
         words = findSequences(sentence)
