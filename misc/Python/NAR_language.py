@@ -317,6 +317,10 @@ if __name__ == "__main__":
             ret = NAR.AddInput(inp, Print=False)
             if ret["input"]:
                 print("Input:", NAR.PrintedTask(ret["input"][0]))
+                if "answers" in ret:
+                    print("Answer:", NAR.PrintedTask(ret["answers"][0]))
+                if "executions" in ret:
+                    print(ret["executions"])
             executions = ret["executions"]
             if executions:
                 for execution in executions:

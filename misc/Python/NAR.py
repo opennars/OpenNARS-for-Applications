@@ -107,6 +107,6 @@ AddInput("*volume=100")
 def PrintedTask(task):
     st = task["term"] + task["punctuation"]
     st += (" :|: occurrenceTime="+task["occurrenceTime"] if task["occurrenceTime"].isdigit() else "")
-    st += " Priority=" + str(task["Priority"])
-    st += " Truth: frequency="+task["truth"]["frequency"] + " confidence="+task["truth"]["confidence"]
+    if "Priority" in task: st += " Priority=" + str(task["Priority"])
+    if "truth" in task: st += " Truth: frequency="+task["truth"]["frequency"] + " confidence="+task["truth"]["confidence"]
     return st
