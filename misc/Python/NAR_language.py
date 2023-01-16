@@ -150,7 +150,7 @@ def getNounRelNoun(words):
             if nextmod != EMPTY:
                 Cs.append(nextmod)
                 Ms.append(EMPTY)
-        elif x[0][0] == '[' or (i+1 < len(VALUES) and VALUES[i+1][1] - x[1] == 1):
+        elif x[0][0] == '[' or (i+1 < len(VALUES) and VALUES[i+1][1] - x[1] == 1 and x[3] + " " + VALUES[i+1][3] in sentence):
             nextmod = x
         else:
             Cs.append(x)
@@ -231,8 +231,10 @@ def findSequences(st):
     return sequences
 
 localist_tokens = False
-def newSentence(sentence):
-    global words, localist_tokens
+sentence = ""
+def newSentence(s):
+    global sentence, words, localist_tokens
+    sentence = s
     if " " not in sentence:
         localist_tokens = True
     if localist_tokens and not "genericTokenization" in sys.argv:
@@ -327,7 +329,7 @@ if __name__ == "__main__":
                     if execution["operator"] == "^say":
                         arguments = [x.replace("*","").replace("(","").replace(")","") for x in execution["arguments"].split(" ")]
                         for concept in arguments:
-                            print("//^say result: " + Query(f"<(?1 * {concept}) --> R>")[2][0][1])
+                            print("^say result: " + Query(f"<(?1 * {concept}) --> R>")[2][0][1])
             if ret["selections"]:
                 print("Selected:", NAR.PrintedTask(ret["selections"][0]))
                 processInput(ret["selections"][0]["term"] + ret["selections"][0]["punctuation"])
