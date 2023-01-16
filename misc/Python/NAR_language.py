@@ -162,7 +162,6 @@ def getNounRelNoun(words):
             Cs = [Cs[0], Ms[0]]
         Ms = [EMPTY for i in range(2)]
     if len(Cs) % 2 != 0:
-        print("!!!", Cs, RELATIONS)
         ASSIGN = False
     if ASSIGN:
         for x in Cs + Ms + [RELATION]:
@@ -182,7 +181,6 @@ def getNounRelNoun(words):
     SROs = []
     print("//R,C,M: ", RELATIONS, Cs, Ms)
     for i in range(0, len(Cs)-1, 2):
-        print(i, RELATIONS)
         S, R, O = (modify(Cs[i], Ms[i]), RELATIONS[int(i/2)][0], modify(Cs[i+1], Ms[i+1]))
         SROs.append((S, R, O))
     return SROs
