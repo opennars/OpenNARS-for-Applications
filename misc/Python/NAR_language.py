@@ -165,7 +165,8 @@ def getNounRelNoun(words):
         ASSIGN = False
     if ASSIGN:
         for x in Cs + Ms + [RELATION]:
-            AddBelief(f"<{x[3]} --> [ASSIGNED]>")
+            if x != EMPTY:
+                AddBelief(f"<{x[3]} --> [ASSIGNED]>")
     for x in words:
         Break = False
         for y in Cs + Ms + [RELATION]:
