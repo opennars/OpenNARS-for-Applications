@@ -150,7 +150,7 @@ def getNounRelNoun(words):
             if nextmod != EMPTY:
                 Cs.append(nextmod)
                 Ms.append(EMPTY)
-        elif x[0][0] == '[':
+        elif x[0][0] == '[' or (i+1 < len(VALUES) and VALUES[i+1][1] - x[1] == 1):
             nextmod = x
         else:
             Cs.append(x)
@@ -317,7 +317,7 @@ if __name__ == "__main__":
             ret = NAR.AddInput(inp, Print=False)
             if ret["input"]:
                 print("Input:", NAR.PrintedTask(ret["input"][0]))
-                if "answers" in ret:
+                if "answers" in ret and ret["answers"]:
                     print("Answer:", NAR.PrintedTask(ret["answers"][0]))
                 if "executions" in ret:
                     print(ret["executions"])

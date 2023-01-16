@@ -31,4 +31,4 @@ a n b
 b n c
 q a x
 <QUESTION --> [ANSWERED]>! :|:
-//expected: ^say executed with args ({SELF} * B)
+//expected: ^say result: b
