@@ -1,4 +1,10 @@
 *train=true
+<BIRD --> [SEE]>.
+bird
+1
+<BIRD --> [HEAR]>.
+bird
+1
 <CAT --> [SEE]>.
 is seen cat
 1
@@ -10,12 +16,6 @@ is heard dog
 1
 <DOG --> [SEE]>.
 is seen dog
-1
-<BIRD --> [SEE]>.
-bird
-1
-<BIRD --> [HEAR]>.
-bird
 1
 *train=false
 is heard bird

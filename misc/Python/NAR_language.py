@@ -97,10 +97,10 @@ def resolveViaChoice(word, i, ITEM, isRelation):
 def getNounRelNoun(words):
     EMPTY = (None, -1, (0.5,0.0), "")
     RELATION = (None, -1, (0.5,0.0), "")
-    SUBJECT = (None, -1, (0.5,0.0), "")
-    OBJECT = (None, -1, (0.5,0.0), "")
-    SUBJECT_MOD = (None, -1, (0.5,0.0), "")
-    OBJECT_MOD = (None, -1, (0.5,0.0), "")
+    C1 = (None, -1, (0.5,0.0), "")
+    C2 = (None, -1, (0.5,0.0), "")
+    C1_MOD = (None, -1, (0.5,0.0), "")
+    C2_MOD = (None, -1, (0.5,0.0), "")
     for i, word in enumerate(words):
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
         if Truth_Expectation(truthAssigned) < 0.1:
@@ -128,41 +128,42 @@ def getNounRelNoun(words):
         VALUE = resolveViaChoice(word, j, (None, -1, (0.5,0.0), ""), isRelation=False)
         if VALUE[0] is not None:
             VALUES.append(VALUE)
+    #TODO replace with loop again to allow for arbitrary length
     if len(VALUES) == 2:
-        SUBJECT = VALUES[0]
-        OBJECT = VALUES[1]
+        C1 = VALUES[0]
+        C2 = VALUES[1]
     if len(VALUES) == 4:
-        SUBJECT_MOD = VALUES[0]
-        SUBJECT = VALUES[1]
-        OBJECT_MOD = VALUES[2]
-        OBJECT = VALUES[3]
+        C1_MOD = VALUES[0]
+        C1 = VALUES[1]
+        C2_MOD = VALUES[2]
+        C2 = VALUES[3]
     if len(VALUES) == 3:
         if VALUES[0][0][0] == '[':
-            SUBJECT_MOD = VALUES[0]
-            SUBJECT = VALUES[1] #modifiers are symmetric anyway
-            OBJECT = VALUES[2]
+            C1_MOD = VALUES[0]
+            C1 = VALUES[1] #modifiers are symmetric anyway
+            C2 = VALUES[2]
         elif VALUES[1][0][0] == '[':
-            SUBJECT = VALUES[0]
-            OBJECT_MOD = VALUES[1]
-            OBJECT = VALUES[2]
-    if SUBJECT[3] != "":
-        AddBelief(f"<{SUBJECT[3]} --> [ASSIGNED]>")
+            C1 = VALUES[0]
+            C2_MOD = VALUES[1]
+            C2 = VALUES[2]
+    if C1[3] != "":
+        AddBelief(f"<{C1[3]} --> [ASSIGNED]>")
     if RELATION[3] != "":
         AddBelief(f"<{RELATION[3]} --> [ASSIGNED]>")
-    if OBJECT[3] != "":
-        AddBelief(f"<{OBJECT[3]} --> [ASSIGNED]>")
-    if SUBJECT_MOD[3] != "":
-        AddBelief(f"<{SUBJECT_MOD[3]} --> [ASSIGNED]>")
-    if OBJECT_MOD[3] != "":
-        AddBelief(f"<{OBJECT_MOD[3]} --> [ASSIGNED]>")
+    if C2[3] != "":
+        AddBelief(f"<{C2[3]} --> [ASSIGNED]>")
+    if C1_MOD[3] != "":
+        AddBelief(f"<{C1_MOD[3]} --> [ASSIGNED]>")
+    if C2_MOD[3] != "":
+        AddBelief(f"<{C2_MOD[3]} --> [ASSIGNED]>")
     for x in words:
-        cond1 = x != SUBJECT[3] and x != RELATION[3] and x != OBJECT[3]
-        cond2 = x != SUBJECT_MOD[3] and x != OBJECT_MOD[3]
+        cond1 = x != C1[3] and x != RELATION[3] and x != C2[3]
+        cond2 = x != C1_MOD[3] and x != C2_MOD[3]
         if cond1 and cond2:
             AddBelief(f"<{x} --> [ASSIGNED]>", (0.0, 0.9))
     modify = lambda a,b: a[0] if b[0] is None else (f"({b[0]} & {a[0]})" if b[0][0] == '[' else f"({b[0]} * {a[0]})")
-    S, R, O = (modify(SUBJECT, SUBJECT_MOD), RELATION[0], modify(OBJECT, OBJECT_MOD))
-    print("//SRO: ", (S, R, O))
+    S, R, O = (modify(C1, C1_MOD), RELATION[0], modify(C2, C2_MOD))
+    print("//SRO: ", C1, C1_MOD, RELATION, C2, C2_MOD) #(S, R, O))
     return (S, R, O)
 
 def produceSentenceNarsese(words):
@@ -180,11 +181,41 @@ def produceSentenceNarsese(words):
     else:
         NAR.AddInput(f"<({S} * {O}) --> {R}>. :|:")
 
-global words
+def sub_lists(l):
+    lists = []
+    for i in range(len(l) + 1):
+        for j in range(i):
+            subseq = l[j: i]
+            lists.append((i-len(subseq), subseq, i))
+    lists.sort(key=lambda x: x[0])
+    return lists
+
+sequenceMem=set([])
+def findSequences(st):
+    global sequenceMem
+    sequenceMem.add(st)
+    subsequences = sub_lists(st.split(" "))
+    words = [" ".join(x[1]) for x in subsequences]
+    startIndices = [x[0] for x in subsequences]
+    endIndices = [x[2] for x in subsequences]
+    sequences=[]
+    minStartIndex=0
+    for j,x in enumerate(words):
+        #if x != st:
+        if x in sequenceMem and startIndices[j] >= minStartIndex:
+            sequences.append(x.replace(" ","_"))
+            minStartIndex = endIndices[j]
+    return sequences
+
+localist_tokens = False
 def newSentence(sentence):
-    global words
-    words = sentence.split(" ")
-    #print("//WORDS: ", words)
+    global words, localist_tokens
+    if " " not in sentence:
+        localist_tokens = True
+    if localist_tokens:
+        words = sentence.split(" ")
+    else:
+        words = findSequences(sentence)
     if not Training:
         produceSentenceNarsese(words)
 
@@ -216,6 +247,7 @@ def correlate():
     for x in words:
         for y in [SUBJECT, RELATION, OBJECT]:
             AddBelief(f"<({x} * {y}) --> R>")
+            print("R: ",x,y)
     S,R,O = getNounRelNoun(words)
     if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
         print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
