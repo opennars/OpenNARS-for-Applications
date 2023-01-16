@@ -182,6 +182,8 @@ def getNounRelNoun(words):
     SROs = []
     print("//R,C,M: ", RELATIONS, Cs, Ms)
     for i in range(0, len(Cs)-1, 2):
+        if int(i/2) >= len(RELATIONS):
+            break
         S, R, O = (modify(Cs[i], Ms[i]), RELATIONS[int(i/2)][0], modify(Cs[i+1], Ms[i+1]))
         SROs.append((S, R, O))
     return SROs
@@ -222,7 +224,6 @@ def findSequences(st):
     sequences=[]
     minStartIndex=0
     for j,x in enumerate(words):
-        #if x != st:
         if x in sequenceMem and startIndices[j] >= minStartIndex:
             sequences.append(x.replace(" ","_"))
             minStartIndex = endIndices[j]
