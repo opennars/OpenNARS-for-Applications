@@ -25,12 +25,6 @@ plastic is meltable
 <BOTTLE --> [MELTABLE]>.
 a bottle is meltable
 
-<LIGHTNING --> [DANGEROUS]>.
-lightning is dangerous
-
-<THUNDER --> [LOUD]>.
-thunder is loud
-
 *train=false
 <<($1 * $2) --> CAUSE> ==> <<$1 --> [OBSERVE]> =/> <$2 --> [OBSERVE]>>>.
 <<$1 --> [MELTABLE]> ==> <(<$1 --> [OBSERVE]> &/ ^lighter) =/> <$1 --> [FLUID]>>>.
@@ -39,4 +33,4 @@ a plastic bottle is meltable
 <?1 =/> <THUNDER --> [OBSERVE]>>?
 Answer: <<LIGHTNING --> [OBSERVE]> =/> <THUNDER --> [OBSERVE]>>. Truth: frequency=1.000000 confidence=0.447514
 <?1 =/> <(PLASTIC * BOTTLE) --> [FLUID]>>?
-Answer: <(<(PLASTIC * BOTTLE) --> [OBSERVE]> &/ ^lighter) =/> <BOTTLE --> [FLUID]>>. Truth: frequency=1.000000 confidence=0.447514
+Answer: <(<(PLASTIC * BOTTLE) --> [OBSERVE]> &/ ^lighter) =/> <(PLASTIC * BOTTLE) --> [FLUID]>>. Truth: frequency=1.000000 confidence=0.447514
