@@ -99,10 +99,6 @@ def getNounRelNoun(words):
     EMPTY = (None, -1, (0.5,0.0), "")
     RELATION = (None, -1, (0.5,0.0), "")
     RELATIONS = []
-    C1 = (None, -1, (0.5,0.0), "")
-    C2 = (None, -1, (0.5,0.0), "")
-    C1_MOD = (None, -1, (0.5,0.0), "")
-    C2_MOD = (None, -1, (0.5,0.0), "")
     REL_FOUND = False
     for i, word in enumerate(words):
         _, truthAssigned, _ = Query(f"<{word} --> [ASSIGNED]>")
@@ -274,9 +270,13 @@ def correlate():
             AddBelief(f"<({x} * {y}) --> R>")
     SROs = getNounRelNoun(words)
     for (S,R,O) in SROs:
-        if S is not None and R is not None and O is not None and S == OBJECT and O == SUBJECT:
-            print("//Grammatical flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
-            AddBelief(f"<{RELATION} --> [FLIPPED]>")
+        if S is not None and R is not None and O is not None:
+            if S == OBJECT and O == SUBJECT:
+                print("//Grammatical relation flip detected", S, R, O, SUBJECT, RELATION, OBJECT)
+                AddBelief(f"<{RELATION} --> [FLIPPED]>", (1.0, 0.9))
+            if S == SUBJECT and O == OBJECT:
+                print("//Grammatical relation order detected", S, R, O, SUBJECT, RELATION, OBJECT)
+                AddBelief(f"<{RELATION} --> [FLIPPED]>", (0.0, 0.9))
     (SUBJECT, RELATION, OBJECT, words) = (None, None, None, None)
 
 def processInput(inp, Print=True):
@@ -321,7 +321,7 @@ if __name__ == "__main__":
                 print("Input:", NAR.PrintedTask(ret["input"][0]))
                 if "answers" in ret and ret["answers"]:
                     print("Answer:", NAR.PrintedTask(ret["answers"][0]))
-                if "executions" in ret:
+                if "executions" in ret and ret["executions"]:
                     print(ret["executions"])
             executions = ret["executions"]
             if executions:
