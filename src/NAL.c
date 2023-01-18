@@ -442,5 +442,33 @@ void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth con
 
 void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro)
 {
+    if(Narsese_copulaEquals(conclusionTerm.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(conclusionTerm.atoms[0], EXT_IMAGE2) || Narsese_copulaEquals(conclusionTerm.atoms[0], PRODUCT) ||
+       Narsese_copulaEquals(conclusionTerm.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(conclusionTerm.atoms[0], INT_IMAGE2) ||
+       Narsese_copulaEquals(conclusionTerm.atoms[0], EXT_SET)    || Narsese_copulaEquals(conclusionTerm.atoms[0], INT_SET) ||
+       Narsese_copulaEquals(conclusionTerm.atoms[0], EXT_INTERSECTION) || Narsese_copulaEquals(conclusionTerm.atoms[0], INT_INTERSECTION) ||
+       Narsese_copulaEquals(conclusionTerm.atoms[0], EXT_DIFFERENCE) || Narsese_copulaEquals(conclusionTerm.atoms[0], INT_DIFFERENCE))
+    {
+        return;
+    }
+    if(Narsese_copulaEquals(conclusionTerm.atoms[0], INHERITANCE) && Narsese_copulaEquals(conclusionTerm.atoms[1], PRODUCT) && Narsese_copulaEquals(conclusionTerm.atoms[2], PRODUCT))
+    {                                                                 //--> *  *   pre  con op
+        Term potential_op = Term_ExtractSubterm(&conclusionTerm, 5);  //1   2  3   4    5   6
+        if(Narsese_isOperation(&potential_op))
+        {
+            Term pre = Term_ExtractSubterm(&conclusionTerm, 3);
+            Term con = Term_ExtractSubterm(&conclusionTerm, 4);
+            bool success;
+            Term subject = Narsese_Sequence(&pre, &potential_op, &success);
+            if(success)
+            {
+                Term implication = {0};
+                implication.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+                if(Term_OverrideSubterm(&implication, 1, &subject) && Term_OverrideSubterm(&implication, 2, &con))
+                {
+                    NAL_DerivedEvent2(implication, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, false);
+                }
+            }
+        }
+    }
     NAL_DerivedEvent2(conclusionTerm, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, false);
 }

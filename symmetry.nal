@@ -1,0 +1,21 @@
+*volume=0
+
+(<A1 --> [sample]> &/ <B1 --> [left]>). :|:
+^left. :|:
+G. :|:
+
+(<B1 --> [sample]> &/ <A1 --> [left]>). :|:
+^left. :|:
+G. :|:
+
+
+
+<A1 --> [sample]>. :|:
+<B1 --> [left]>. :|:
+G! :|:
+
+<B1 --> [sample]>. :|:
+<A1 --> [left]>. :|:
+*volume=100
+G! :|:
+5

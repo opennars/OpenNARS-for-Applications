@@ -128,6 +128,31 @@ void Decision_Execute(Decision *decision)
         if(success)
         {
             NAR_AddInputBelief(feedbackTerm);
+            //transform usedContingency to a relation <(pre * cons) --> [operation]>:
+            if(decision->usedContingency.term.atoms[0])
+            {
+                Term subject = Term_ExtractSubterm(&decision->usedContingency.term, 1);
+                Term consequent = Term_ExtractSubterm(&decision->usedContingency.term, 2);
+                Term precondition = Narsese_GetPreconditionWithoutOp(&subject);
+                Term operation = Narsese_getOperationTerm(&subject);
+                Term quotedOp = {0};
+                quotedOp.atoms[0] = Narsese_CopulaIndex(PRODUCT);
+                quotedOp.atoms[2] = Narsese_CopulaIndex(SET_TERMINATOR);
+                Term product = {0};
+                product.atoms[0] = Narsese_CopulaIndex(PRODUCT);
+                if(Term_OverrideSubterm(&quotedOp, 1, &operation) && Term_OverrideSubterm(&product, 1, &precondition) && Term_OverrideSubterm(&product, 2, &consequent))
+                {
+                    Term contingency_relation = {0};
+                    contingency_relation.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                    if(Term_OverrideSubterm(&contingency_relation, 1, &product) && Term_OverrideSubterm(&contingency_relation, 2, &quotedOp))
+                    {
+                        Event e_rel = Event_InputEvent(contingency_relation, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
+                        e_rel.stamp = decision->usedContingency.stamp;
+                        e_rel.occurrenceTime = OCCURRENCE_ETERNAL;
+                        Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0);
+                    }
+                }
+            }
             //assumption of failure extension to specific cases not experienced before:
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
             {
@@ -362,6 +387,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = imp;
                                         }
                                     }
                                     else
@@ -371,6 +397,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = imp;
                                         }
                                     }
                                 }

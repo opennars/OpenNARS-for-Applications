@@ -1,0 +1,38 @@
+*volume=0
+*motorbabbling=false
+
+a. :|:
+^left. :|:
+b. :|:
+10
+
+a. :|:
+b! :|:
+//expected: ^left executed with args
+10
+
+b. :|:
+^right. :|:
+a. :|:
+10
+
+b. :|:
+a! :|:
+//expected: ^right executed with args
+10
+<<($1 * $2) --> (* ^right)> ==> <($2 * $1) --> (* ^left)>>?
+//expected: Answer: <<($1 * $2) --> (* ^right)> ==> <($2 * $1) --> (* ^left)>>. Truth: frequency=1.000000, confidence=0.230114
+
+x. :|:
+^left. :|:
+y. :|:
+10
+
+x. :|:
+y! :|:
+//expected: ^left executed with args
+10
+
+y. :|:
+x! :|:
+//expected: ^right executed with args

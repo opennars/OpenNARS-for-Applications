@@ -132,6 +132,29 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
     {
         Term subject = Term_ExtractSubterm(cur_inheritance, 1);
+        //special treatment for inheritance nested in inheritance:
+        if(Narsese_copulaEquals(subject.atoms[0], INHERITANCE) || Narsese_copulaEquals(subject.atoms[0], SIMILARITY) || Narsese_copulaEquals(subject.atoms[0], SEQUENCE))
+        {
+            Term subject_subject = Term_ExtractSubterm(&subject, 1);
+            Term subject_predicate = Term_ExtractSubterm(&subject, 2);
+            if(Narsese_copulaEquals(subject.atoms[0], SEQUENCE))
+            {
+                countStatementAtoms(&subject_subject, appearing, extensionally, ignore_structure);
+                countStatementAtoms(&subject_predicate, appearing, extensionally, ignore_structure);
+            }
+            else
+            {
+                if(extensionally)
+                {
+                    countStatementAtoms(&subject_subject, appearing, extensionally, ignore_structure);
+                }
+                else
+                {
+                    countStatementAtoms(&subject_predicate, appearing, extensionally, ignore_structure);
+                }
+            }
+            return;
+        }
         Term predicate = Term_ExtractSubterm(cur_inheritance, 2);
         if(extensionally || similarity)
         {
