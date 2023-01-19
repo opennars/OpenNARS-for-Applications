@@ -465,7 +465,27 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 implication.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
                 if(Term_OverrideSubterm(&implication, 1, &subject) && Term_OverrideSubterm(&implication, 2, &con))
                 {
-                    NAL_DerivedEvent2(implication, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, varIntro, false);
+                    Concept *c = Memory_FindConceptByTerm(&con);
+                    bool new_contingency = true;
+                    if(c != NULL)
+                    {
+                        for(int i=1; i<=OPERATIONS_MAX; i++)
+                        {
+                            for(int j=0; j<c->precondition_beliefs[i].itemsAmount; j++)
+                            {
+                                if(Term_Equal(&implication, &c->precondition_beliefs[i].array[j].term))
+                                {
+                                    new_contingency = false;
+                                    goto END_FOR;
+                                }
+                            }
+                        }
+                        END_FOR:;
+                    }
+                    if(new_contingency) //indirect evidence only when there is no direct
+                    {
+                        NAL_DerivedEvent2(implication, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                    }
                 }
             }
         }

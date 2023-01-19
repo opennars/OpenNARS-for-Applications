@@ -845,3 +845,15 @@ bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
     }
     return success;
 }
+
+bool Narsese_isContingencyRelation(Term *term)
+{
+    // -->  ...  *   ...  ...  ^op
+    // 1    2    3   4    5    6
+    if(Narsese_copulaEquals(term->atoms[0], INHERITANCE))
+    {
+        Term potential_op = Term_ExtractSubterm(term, 5);
+        return Narsese_copulaEquals(term->atoms[2], PRODUCT) && Narsese_copulaEquals(term->atoms[6], SET_TERMINATOR) && Narsese_isOperation(&potential_op);
+    }
+    return false;
+}

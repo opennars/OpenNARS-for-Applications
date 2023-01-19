@@ -580,7 +580,15 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
+            bool isContingencyRelation = Narsese_isContingencyRelation(&e->term);
+            if(!isContingencyRelation)
+            {
+                RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
+            }
+            if(isContingencyRelation && e->occurrenceTime != OCCURRENCE_ETERNAL)
+            {
+                break;
+            }
             RELATED_CONCEPTS_FOREACH(&e->term, c,
             {
                 long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
