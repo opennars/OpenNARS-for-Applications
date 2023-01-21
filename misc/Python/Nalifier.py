@@ -134,6 +134,7 @@ class Nalifier:
     conceptValueReporters = dict([])
     BestMatch = ""
     BiggestDifference = ""
+    propertyOfInterest = None
     
     def __init__(self, AIKR_Limit = 10):
       self.AIKR_Limit = AIKR_Limit
@@ -146,23 +147,29 @@ class Nalifier:
       for removal in removals:
           del self.conceptValueReporters[removal]
 
-    def differenceEvaluate(self, T1, T2, property, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, relation, relativeDifference = None):
+    def differenceEvaluate(self, T1, T2, property, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, relation, biggestDifferenceArg1, biggestDifferenceArg2, relativeDifference = None):
       continuous = property in self.continuous_comparison_properties
       truthDifference = Truth_Negation(Truth_FrequencyComparison(T1, T2)) if continuous else Truth_Difference(T1, T2)
       if relativeDifference is not None:
           truthDifference = relativeDifference
       #print("DIFFERENCE EVAL", property, T1,T2,Truth_Expectation(truthDifference))
-      if Truth_Expectation(truthDifference) > Truth_Expectation(biggestDifferenceTruth):
+      if (self.propertyOfInterest is None or property == self.propertyOfInterest) and Truth_Expectation(truthDifference) > Truth_Expectation(biggestDifferenceTruth):
         if T1[0] < T2[0]:
           relation = "-"
+        else:
+          relation = "+"
         biggestDifferenceProp = property
         biggestDifferenceTruth = truthDifference
-      return biggestDifferenceProp, biggestDifferenceTruth, relation
+        biggestDifferenceArg1 = term1
+        biggestDifferenceArg2 = term2
+      return biggestDifferenceProp, biggestDifferenceTruth, relation, biggestDifferenceArg1, biggestDifferenceArg2
 
     def inheritances(self, term1, terms_term1, term2, terms_term2, requireSameProperties=False, asymmetricComparison=True):
         Inheritances = dict([])
         biggestDifferenceProp = None
         biggestDifferenceTruth = (0.0, 1.0)
+        biggestDifferenceArg1 = None
+        biggestDifferenceArg2 = None
         rel = "+"
         commonProperties = set([])
         incomparable = []
@@ -194,7 +201,7 @@ class Nalifier:
                         #get the second truth value from the value reporter of term1_prop1
                         nodeRelativeDifference = Truth_Negation(Truth_FrequencyComparison((0.5, 0.9), self.conceptValueReporters[instance_property].reportValue(T1[0], Sensation_Reliance=T1[1], RangeUpdate=False, Print=False)))
                         #print("//RELATIVE VALUE GET", instance_property, T1, nodeRelativeDifference, self.conceptValueReporters[instance_property].values)
-                    biggestDifferenceProp, biggestDifferenceTruth, rel = self.differenceEvaluate(T1, T2, prop1, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel, relativeDifference=nodeRelativeDifference)
+                    biggestDifferenceProp, biggestDifferenceTruth, rel, biggestDifferenceArg1, biggestDifferenceArg2 = self.differenceEvaluate(T1, T2, prop1, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel, biggestDifferenceArg1, biggestDifferenceArg2, relativeDifference=nodeRelativeDifference)
         for prop1, T1 in extension1:
             for prop2, T2 in extension2:
                 if prop1 == prop2:
@@ -215,7 +222,7 @@ class Nalifier:
                 truth2 = Truth_Revision(truth2, truthMinus)
                 T1 = (0.0, 1.0) #fabricated truth since the property does not appear in T1
                 truth3 = Truth_Revision(truth3, f_Induction(T1, T2))
-                #biggestDifferenceProp, biggestDifferenceTruth, rel = differenceEvaluate(T1, T2, prop2, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel)
+                #biggestDifferenceProp, biggestDifferenceTruth, rel, biggestDifferenceArg1, biggestDifferenceArg2 = differenceEvaluate(T1, T2, prop2, biggestDifferenceProp, biggestDifferenceTruth, term1, term2, rel, biggestDifferenceArg1, biggestDifferenceArg2)
                 if prop2 in self.label_properties:
                     incomparable.append(term2)
         for inst1, T1 in extension1:
@@ -233,10 +240,9 @@ class Nalifier:
             Inheritances[term2] = truth3
         for bad_term in incomparable:
             Inheritances.pop(bad_term, None)
-        return Inheritances, (biggestDifferenceProp, biggestDifferenceTruth, rel), commonProperties
+        return Inheritances, (biggestDifferenceProp, biggestDifferenceTruth, rel, biggestDifferenceArg1, biggestDifferenceArg2), commonProperties
 
     def AddInput(self, inp, inverted=False, Print=False, Sensation_Reliance=0.9): #<{instance} --> [property]>. :|: %frequency%
-        global current_prototypes, prototypes, last_instance, last_winner, last_winner_truth_exp, last_winner_reldata, last_winner_common_properties, last_label, last_label_frequency, concept_id, conceptnames, winner_match_asymmetric
         if inp.startswith("//"):
             print(inp)
             return
@@ -251,11 +257,11 @@ class Nalifier:
               position1[instance] = frequency
               return
             if property.startswith("label_"):
-              last_label = property.split("label_")[1]
-              last_label_frequency = frequency
+              self.last_label = property.split("label_")[1]
+              self.last_label_frequency = frequency
             if not inverted and property in self.binary_extreme_comparison_properties:
                 NAL_AddInput("<{" + instance + "}" + " --> [" + "anti_" +  property + "]>. :|: %" + str(1-frequency) + "%", True, Print=Print)
-        if inp == "1": # or (instance != last_instance and last_instance is not None):
+        if inp == "1": # or (instance != self.last_instance and self.last_instance is not None):
             #DETERMINE BEST MATCH IN CURRENT PROTOTYPES:
             if self.last_winner is not None and self.last_winner_truth_exp > self.SUFFICIENT_MATCH_EXP:
                 for k,v in self.last_winner.items(): #just 1
@@ -263,18 +269,18 @@ class Nalifier:
                       self.usecounts[k] = 1
                     else:
                       self.usecounts[k] = self.usecounts[k] + 1
-                    (biggestDifferenceProp, biggestDifferenceTruth, rel) = self.last_winner_reldata
+                    (biggestDifferenceProp, biggestDifferenceTruth, rel, biggestDifferenceArg1, biggestDifferenceArg2) = self.last_winner_reldata
                     if Truth_Expectation(biggestDifferenceTruth) > self.SUFFICIENT_DIFFERENCE_EXP:
                       reduced_instance_representation = self.last_instance
                       #USE VARIABLE INSTEAD OF 2 STATEMENTS!!!!
                       termname = lambda T: "{" + T + "}" if T not in self.conceptnames else T
                       inst1 = termname(reduced_instance_representation) #"#1"
                       inst2 = termname(k)
-                      inst1forRel = inst1 if rel == "+" else inst2
-                      inst2forRel = inst2 if rel == "+" else inst1
+                      inst1forRel = termname(biggestDifferenceArg1) if rel == "+" else termname(biggestDifferenceArg2)
+                      inst2forRel = termname(biggestDifferenceArg2) if rel == "+" else termname(biggestDifferenceArg1)
                       evP = None
                       self.BiggestDifference = (rel, biggestDifferenceProp)
-                      rel = "--> " if winner_match_asymmetric else "<->"
+                      rel = "--> " if self.winner_match_asymmetric else "<->"
                       self.BestMatch = (rel, k)
                       #print("//BEST MATCH!!!", self.BestMatch, self.BiggestDifference)
                       if self.RelativeComparison:
@@ -290,13 +296,13 @@ class Nalifier:
                       if self.UseIntensionalDifference and biggestDifferenceProp not in self.continuous_comparison_properties:
                           relStatement = f"<({inst1forRel} ~ {inst2forRel}) --> [{biggestDifferenceProp}]>"
                       if self.last_label is not None: 
-                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && {relStatement}) &| <{{{inst2}}} --> {last_label}>). :|: %{last_label_frequency};{0.9}%"
-                        ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
+                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && {relStatement}) &| <{{{inst2}}} --> {self.last_label}>). :|: %{self.last_label_frequency};{0.9}%"
+                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> &| {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
                       else:
-                        ev1 = f"(<{inst1} {rel} {inst2}> &| {relStatement}). :|:"
+                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> &| {relStatement}). :|:"
                       inst1 = inst1.replace("{","").replace("}","") #not elegant
                       inst2 = inst2.replace("{","").replace("}","") #todo improve
-                      if inst1 in self.position0 and inst2 in self.position0 and inst1 in self.position1 and inst2 in self.position1 and not winner_match_asymmetric:
+                      if inst1 in self.position0 and inst2 in self.position0 and inst1 in self.position1 and inst2 in self.position1 and not self.winner_match_asymmetric:
                           if self.position0[inst1] > self.position0[inst2]:
                             if position1[inst1] > position1[inst2]:
                               evP = f"(<({{{inst1}}} * {{{inst2}}}) --> (+ position0)> &| <({{{inst1}}} * {{{inst2}}}) --> (+ position1)>). :|: %1.0;0.6%"
@@ -315,8 +321,8 @@ class Nalifier:
                       if Print:
                         print(ev1)
                     else:
-                      if last_label is not None:
-                        ev2 = f"<{{{k}}} --> {last_label}>. :|: %{self.last_label_frequency};{0.9}%"
+                      if self.last_label is not None:
+                        ev2 = f"<{{{k}}} --> {self.last_label}>. :|: %{self.last_label_frequency};{0.9}%"
                       else:
                         ev2 = f"<{{{k}}} --> [see]>. :|:"
                       self.Events.append(ev2)
@@ -328,7 +334,7 @@ class Nalifier:
                 names = sorted([k for (k,v) in self.last_winner_common_properties])
                 conceptname = "_".join(names)
                 #print(conceptname); exit(0);
-                if self.ConceptCreation and conceptname != "" and not winner_match_asymmetric:
+                if self.ConceptCreation and conceptname != "" and not self.winner_match_asymmetric:
                     conceptname += "_" + str(self.concept_id)
                     self.concept_id += 1
                     self.conceptnames.add(conceptname)
@@ -336,17 +342,19 @@ class Nalifier:
                     self.prototypes[conceptname] = (set([]), self.last_winner_common_properties)
             #else:
             if self.winner_match_asymmetric or not (self.last_winner is not None and self.last_winner_truth_exp > self.SUFFICIENT_MATCH_EXP):
-              if self.last_label is not None:
-                ev3 = f"<{{{self.last_instance}}} --> {self.last_label}>. :|: %{self.last_label_frequency};{0.9}%"
-              else:
-                ev3 = f"<{{{self.last_instance}}} --> [see]>. :|:"
-              self.Events.append(ev3)
-              if Print:
-                print(ev3)
+              if self.last_winner is None:
+                if self.last_label is not None:
+                  ev3 = f"<{{{self.last_instance}}} --> {self.last_label}>. :|: %{self.last_label_frequency};{0.9}%"
+                else:
+                  ev3 = f"<{{{self.last_instance}}} --> [see]>. :|:"
+                self.Events.append(ev3)
+                if Print:
+                  print(ev3)
               if self.InstanceCreation:
                 self.prototypes.update(self.current_prototypes)
             self.current_prototypes = {}
         if inp == "1":
+            self.propertyOfInterest = None
             if self.last_instance not in self.prototypes:
                 self.removeInstanceProperties(self.last_instance)
             return
@@ -382,7 +390,7 @@ class Nalifier:
                   winner_truth_exp = candidate_truth_exp
                   self.last_winner_reldata = reldata
                   self.last_winner_common_properties = commonProperties
-                  winner_match_asymmetric = False
+                  self.winner_match_asymmetric = False
         if winner_truth_exp <= self.SUFFICIENT_MATCH_EXP:
           for (key, value) in self.prototypes.items():
             candidate, reldata, commonProperties = self.inheritances(instance, self.current_prototypes[instance], key, value, asymmetricComparison=True)
@@ -393,7 +401,7 @@ class Nalifier:
                   winner_truth_exp = candidate_truth_exp
                   self.last_winner_reldata = reldata
                   self.last_winner_common_properties = commonProperties
-                  winner_match_asymmetric = True
+                  self.winner_match_asymmetric = True
         self.last_winner_truth_exp = winner_truth_exp
         self.last_winner = winner
         #capacity limit exceeded
@@ -428,6 +436,58 @@ class Nalifier:
                 (f,c) = (value, Sensation_Reliance)
             self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
 
+    def ShellInput(self, inp):
+        if inp.startswith("*SET_CONTINUOUS="):
+            propertyName = inp.split("*SET_CONTINUOUS=")[1]
+            if propertyName not in self.sensorValueReporters:
+              self.sensorValueReporters[propertyName] = ValueReporter()
+            self.continuous_comparison_properties.add(propertyName)
+            return None
+        if inp.startswith("*PROTOTYPES"):
+            print("//"+str(self.prototypes))
+            return None
+        if inp.startswith("*PROPERTY_OF_INTEREST="):
+            self.propertyOfInterest = inp.split("*PROPERTY_OF_INTEREST=")[1]
+            if self.propertyOfInterest == "":
+                self.propertyOfInterest = None
+            return None
+        if inp.startswith("*RESET_PROTOTYPES="):
+            self = Nalifier(int(inp.split("*RESET_PROTOTYPES=")[1]))
+            return None
+        if inp.startswith("*SUFFICIENT_MATCH_EXP="):
+            self.SUFFICIENT_MATCH_EXP = float(inp.split("*SUFFICIENT_MATCH_EXP=")[1])
+            return None
+        if inp.startswith("*SUFFICIENT_DIFFERENCE_EXP="):
+            self.SUFFICIENT_DIFFERENCE_EXP = float(inp.split("*SUFFICIENT_DIFFERENCE_EXP=")[1])
+            return None
+        if inp.startswith("*COMMON_PROPERTY_EXP="):
+            self.COMMON_PROPERTY_EXP = float(inp.split("*COMMON_PROPERTY_EXP=")[1])
+            return None
+        if inp.startswith("*CONCEPT_CREATION="):
+            self.ConceptCreation = True if inp.split("*CONCEPT_CREATION=")[1].lower() == "true" else False
+            return None
+        if inp.startswith("*INSTANCE_CREATION="):
+            self.InstanceCreation = True if inp.split("*INSTANCE_CREATION=")[1].lower() == "true" else False
+            return None
+        if inp.startswith("*RELATIVE_COMPARISON="):
+            self.RelativeComparison = True if inp.split("*RELATIVE_COMPARISON=")[1].lower() == "true" else False
+            return None
+        if inp.startswith("*CLOSED_WORLD_ASSUMPTION="):
+            self.ClosedWorldAssumption = True if inp.split("*CLOSED_WORLD_ASSUMPTION=")[1].lower() == "true" else False
+            return None
+        if inp.startswith("*USE_INTENSIONAL_DIFFERENCE="): #will be used for non-continuous properties only even when true
+            self.UseIntensionalDifference = True if inp.split("*USE_INTENSIONAL_DIFFERENCE=")[1].lower() == "true" else False
+            return None
+        lhs = inp.split(". :|:")[0]
+        if inp == "1":
+            self.AddInput(inp, Print=True)
+            return None
+        elif ". :|:" in inp and "{" in inp and "}" in inp and "[" in inp and "]" in inp and " * " not in inp:
+            self.AddInput(inp, Print=True)
+            return None
+        else:
+            return inp
+
 if "test" in sys.argv:
     nalifier = Nalifier(10)
     nalifier.ConceptCreation = False
@@ -457,46 +517,6 @@ if __name__ == "__main__":
             inp = input().rstrip("\n")
         except:
             exit(0)
-        if inp.startswith("*SET_CONTINUOUS="):
-            propertyName = inp.split("*SET_CONTINUOUS=")[1]
-            if propertyName not in nalifier.sensorValueReporters:
-              nalifier.sensorValueReporters[propertyName] = ValueReporter()
-            nalifier.continuous_comparison_properties.add(propertyName)
-            continue
-        if inp.startswith("*PROTOTYPES"):
-            print("//"+str(nalifier.prototypes))
-            continue
-        if inp.startswith("*RESET_PROTOTYPES="):
-            nalifier = Nalifier(int(inp.split("*RESET_PROTOTYPES=")[1]))
-            continue
-        if inp.startswith("*SUFFICIENT_MATCH_EXP="):
-            nalifier.SUFFICIENT_MATCH_EXP = float(inp.split("*SUFFICIENT_MATCH_EXP=")[1])
-            continue
-        if inp.startswith("*SUFFICIENT_DIFFERENCE_EXP="):
-            nalifier.SUFFICIENT_DIFFERENCE_EXP = float(inp.split("*SUFFICIENT_DIFFERENCE_EXP=")[1])
-            continue
-        if inp.startswith("*COMMON_PROPERTY_EXP="):
-            nalifier.COMMON_PROPERTY_EXP = float(inp.split("*COMMON_PROPERTY_EXP=")[1])
-            continue
-        if inp.startswith("*CONCEPT_CREATION="):
-            nalifier.ConceptCreation = True if inp.split("*CONCEPT_CREATION=")[1].lower() == "true" else False
-            continue
-        if inp.startswith("*INSTANCE_CREATION="):
-            nalifier.InstanceCreation = True if inp.split("*INSTANCE_CREATION=")[1].lower() == "true" else False
-            continue
-        if inp.startswith("*RELATIVE_COMPARISON="):
-            nalifier.RelativeComparison = True if inp.split("*RELATIVE_COMPARISON=")[1].lower() == "true" else False
-            continue
-        if inp.startswith("*CLOSED_WORLD_ASSUMPTION="):
-            nalifier.ClosedWorldAssumption = True if inp.split("*CLOSED_WORLD_ASSUMPTION=")[1].lower() == "true" else False
-            continue
-        if inp.startswith("*USE_INTENSIONAL_DIFFERENCE="): #will be used for non-continuous properties only even when true
-            nalifier.UseIntensionalDifference = True if inp.split("*USE_INTENSIONAL_DIFFERENCE=")[1].lower() == "true" else False
-            continue
-        lhs = inp.split(". :|:")[0]
-        if inp == "1":
-            nalifier.AddInput(inp, Print=True)
-        elif ". :|:" in inp and "{" in inp and "}" in inp and "[" in inp and "]" in inp and " * " not in inp:
-            nalifier.AddInput(inp, Print=True)
-        else:
-            print(inp)
+        ret = nalifier.ShellInput(inp)
+        if ret is not None:
+            print(ret)
