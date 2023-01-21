@@ -1,0 +1,42 @@
+*motorbabbling=false
+*volume=0
+
+(a &/ b). :|:
+^left. :|:
+G. :|:
+
+20
+
+(b &/ a). :|:
+^right. :|:
+G. :|:
+
+20
+
+(a &/ b). :|:
+G! :|:
+//expected: ^left executed with args
+
+20
+
+(b &/ a). :|:
+G! :|:
+//expected: ^right executed with args
+
+20
+
+(x &/ y). :|:
+^left. :|:
+G. :|:
+
+20
+
+(x &/ y). :|:
+G! :|:
+//expected: ^left executed with args
+
+20
+
+(y &/ x). :|:
+G! :|:
+//expected: ^right executed with args
