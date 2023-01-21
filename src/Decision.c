@@ -46,7 +46,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     negative_confirmation.stamp = (Stamp) { .evidentalBase = { -anticipationStampID } };
     anticipationStampID--;
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
+    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation, false);
     if(added != NULL)
     {
         added->sourceConcept = negative_confirmation.sourceConcept;

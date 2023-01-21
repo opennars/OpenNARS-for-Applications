@@ -59,7 +59,7 @@ void Table_Remove(Table *table, int index)
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
 
-Implication *Table_AddAndRevise(Table *table, Implication *imp)
+Implication *Table_AddAndRevise(Table *table, Implication *imp, bool considerStamp)
 {
     //1. find element with same Term
     int same_i = -1;
@@ -76,6 +76,10 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     {
         //revision adds the revised element, removing the old implication from the table
         Implication OldImp = table->array[same_i];
+        if(considerStamp && Stamp_checkOverlap(&imp->stamp, &OldImp.stamp))
+        {
+            return NULL;
+        }
         assert(OldImp.truth.frequency >= 0.0 && OldImp.truth.frequency <= 1.0, "(1) frequency out of bounds");
         assert(OldImp.truth.confidence >= 0.0 && OldImp.truth.confidence <= 1.0, "(1) confidence out of bounds");
         assert(imp->truth.frequency >= 0.0 && imp->truth.frequency <= 1.0, "(2) frequency out of bounds");

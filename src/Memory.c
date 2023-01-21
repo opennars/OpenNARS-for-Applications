@@ -317,7 +317,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
-                Implication *revised = Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                Implication *revised = Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, temporalImplicationEvent);
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
