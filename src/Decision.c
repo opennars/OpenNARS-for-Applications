@@ -130,10 +130,16 @@ void Decision_Execute(Decision *decision)
             NAR_AddInputBelief(feedbackTerm);
             if(decision->usedContingency.term.atoms[0] && !Variable_hasVariable(&decision->usedContingency.term, true, true, true))
             {
-                Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
-                e_rel.stamp = decision->usedContingency.stamp;
-                e_rel.occurrenceTime = OCCURRENCE_ETERNAL;
-                Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0, true);
+                //(((A &/ B) &/ Op1) =/> M)
+                //=/> &/ M &/
+                //0   1  2 3
+                if(Narsese_copulaEquals(decision->usedContingency.term.atoms[1], SEQUENCE) && Narsese_copulaEquals(decision->usedContingency.term.atoms[3], SEQUENCE))
+                {
+                    Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
+                    e_rel.stamp = decision->usedContingency.stamp;
+                    //e_rel.occurrenceTime = OCCURRENCE_ETERNAL;
+                    Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0, true);
+                }
             }
             //assumption of failure extension to specific cases not experienced before:
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
