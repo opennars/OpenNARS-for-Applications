@@ -42,8 +42,7 @@
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars);
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars, bool temporalImplicationEvent);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
 #define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
@@ -243,6 +242,12 @@ R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B
 R1( (A &| B), |-, A, Truth_StructuralDeduction )
 R1( (A &| B), |-, B, Truth_StructuralDeduction )
 R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
+#endif
+
+#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
+R2( (((A &/ B) &/ Op1) =/> M), (((B &/ A) &/ Op2) =/> M), |-, (((($1 &/ $2) &/ Op1) =/> M) ==> ((($2 &/ $1) &/ Op2) =/> M)), Truth_Induction )
+R2( (((A &/ B) &/ Op1) =/> M), (((B &/ C) &/ Op2) =/> M), |-, ((((A &/ B) &/ Op1) =/> M) && (((B &/ C) &/ Op2) =/> M)), Truth_Intersection )
+R2( (((A &/ C) &/ Op3) =/> M), ((((A &/ B) &/ Op1) =/> M) && (((B &/ C) &/ Op2) =/> M)), |-, ((((($1 &/ #2) &/ Op1) =/> M) && (((#2 &/ $2) &/ Op2) =/> M)) ==> ((($1 * $2) &/ Op3) =/> M)), Truth_Induction )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!

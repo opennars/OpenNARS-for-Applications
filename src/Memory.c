@@ -269,7 +269,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool temporalImplicationEvent)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
@@ -328,7 +328,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    else
+    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || temporalImplicationEvent)
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -372,7 +372,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0, false);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true, false);
@@ -382,8 +382,12 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool temporalImplicationEvent)
 {
+    if(SEMANTIC_INFERENCE_NAL_LEVEL <= 7)
+    {
+        temporalImplicationEvent = false;
+    }
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
@@ -400,11 +404,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || temporalImplicationEvent)
         {
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         }
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, temporalImplicationEvent);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
@@ -420,7 +424,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, 0);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, false);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

@@ -261,7 +261,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, layer);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, layer, false);
     return true;
 }
 
@@ -326,7 +326,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                             Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                             Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                             IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer, false);
                         }
                     }
                 }
@@ -356,7 +356,7 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true);
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, false);
                     return precondition_implication;
                 }
             }
@@ -490,7 +490,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Deduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, true);
             }
         }
         //Deduction with remaining condition
@@ -518,7 +518,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
                     Truth conclusionTruth = Truth_Deduction(truth2, truth1);
                     if(success)
                     {
-                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, true);
                     }
                 }
             }
@@ -532,7 +532,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Abduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, true);
             }
         }
     }
@@ -549,7 +549,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = Truth_AnonymousAnalogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, true);
             }
         }
     }
