@@ -32,7 +32,6 @@ double QUESTION_PRIMING = QUESTION_PRIMING_INITIAL;
 void NAR_INIT()
 {
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
-    Decision_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();

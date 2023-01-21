@@ -96,20 +96,20 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 
 bool Stamp_Equal(Stamp *a, Stamp *b)
 {
-    for (int i=0;i<STAMP_SIZE;i++)
+    for(int i=0;i<STAMP_SIZE;i++)
     {
-        if (a->evidentalBase[i] == STAMP_FREE)
+        if(a->evidentalBase[i] == STAMP_FREE)
         {
             return b->evidentalBase[i] == STAMP_FREE;
         }
         bool contained = false;
-        for (int j=0;j<STAMP_SIZE;j++)
+        for(int j=0;j<STAMP_SIZE;j++)
         {
-            if (b->evidentalBase[j] == STAMP_FREE)
+            if(b->evidentalBase[j] == STAMP_FREE)
             {
                 return a->evidentalBase[i] == STAMP_FREE;
             }
-            if (a->evidentalBase[i] == b->evidentalBase[j])
+            if(a->evidentalBase[i] == b->evidentalBase[j])
             {
                 contained = true;
                 break;

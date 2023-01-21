@@ -246,8 +246,8 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
 R2( (((A &/ B) &/ Op1) =/> M), (((B &/ A) &/ Op2) =/> M), |-, (((($1 &/ $2) &/ Op1) =/> M) ==> ((($2 &/ $1) &/ Op2) =/> M)), Truth_Induction )
-R2( (((A &/ B) &/ Op1) =/> M), (((B &/ C) &/ Op2) =/> M), |-, ((((A &/ B) &/ Op1) =/> M) && (((B &/ C) &/ Op2) =/> M)), Truth_Intersection )
-R2( (((A &/ C) &/ Op3) =/> M), ((((A &/ B) &/ Op1) =/> M) && (((B &/ C) &/ Op2) =/> M)), |-, ((((($1 &/ #2) &/ Op1) =/> M) && (((#2 &/ $2) &/ Op2) =/> M)) ==> ((($1 * $2) &/ Op3) =/> M)), Truth_Induction )
+R2( (((A &/ B) &/ Op1) =/> M), (((B &/ C) &/ Op2) =/> M), |-, ((((A &/ B) &/ Op1) && ((B &/ C) &/ Op2)) =/> M), Truth_Intersection )
+R2( (((A &/ C) &/ Op3) =/> M), ((((A &/ B) &/ Op1) && ((B &/ C) &/ Op2)) =/> M), |-, ((((($1 &/ #1) &/ Op1) && ((#1 &/ $2) &/ Op2)) =/> M) ==> ((($1 &/ $2) &/ Op3) =/> M)), Truth_Induction )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
