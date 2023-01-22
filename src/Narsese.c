@@ -686,7 +686,6 @@ void Narsese_INIT()
     }
     Narsese_AtomicTermIndex("Op1");
     Narsese_AtomicTermIndex("Op2");
-    Narsese_AtomicTermIndex("Op3");
     //index the copulas as well, to make sure these will have same index on next run
     for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
     {
