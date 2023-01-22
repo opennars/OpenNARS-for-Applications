@@ -245,7 +245,7 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
-//Mutual entailment
+//Mutual Entailment
 R2VarIntro( ((A &/ Op1) =/> M), ((B &/ Op2) =/> M), |-, (((A &/ Op1) =/> M) ==> ((B &/ Op2) =/> M)), Truth_Induction )
 #endif
 
