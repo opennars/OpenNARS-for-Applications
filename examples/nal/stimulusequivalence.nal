@@ -1,0 +1,38 @@
+*motorbabbling=false
+
+<a --> [see]>. :|:
+^left. :|:
+G. :|:
+
+20
+
+<a --> [see]>. :|:
+G! :|:
+//expected: ^left executed with args
+
+20
+
+<b --> [hear]>. :|:
+^left. :|:
+G. :|:
+
+20
+
+<b --> [hear]>. :|:
+G! :|:
+20
+
+<b --> [hear]>. :|:
+G! :|:
+20
+//expected: ^left executed with args
+
+<a --> [see]>. :|:
+^right. :|:
+H. :|:
+
+20
+
+<b --> [hear]>. :|:
+H! :|:
+//expected: ^right executed with args
