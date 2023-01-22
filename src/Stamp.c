@@ -73,19 +73,19 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
 
 bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
-    for (int i=0;i<STAMP_SIZE;i++)
+    for(int i=0;i<STAMP_SIZE;i++)
     {
-        if (a->evidentalBase[i] == STAMP_FREE) 
+        if(a->evidentalBase[i] == STAMP_FREE)
         {
             break;
         }
-        for (int j=0;j<STAMP_SIZE;j++)
+        for(int j=0;j<STAMP_SIZE;j++)
         {
-            if (b->evidentalBase[j] == STAMP_FREE)
+            if(b->evidentalBase[j] == STAMP_FREE)
             {
                 break;
             }
-            if (a->evidentalBase[i] == b->evidentalBase[j])
+            if(a->evidentalBase[i] == b->evidentalBase[j])
             {
                 return true;
             }
