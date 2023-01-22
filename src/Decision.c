@@ -126,17 +126,15 @@ void Decision_Execute(Decision *decision)
                 //(((A &/ B) &/ Op1) =/> M)
                 //=/> &/ M &/ 5   6 7 8 9
                 //1   2  3 4  Op1     A B
-                if(Narsese_copulaEquals(decision->usedContingency.term.atoms[1], SEQUENCE) && Narsese_copulaEquals(decision->usedContingency.term.atoms[3], SEQUENCE))
+                //don't do for compound ops:
+                Term should_be_nop = Term_ExtractSubterm(&decision->usedContingency.term, 8);
+                Term should_be_op = Term_ExtractSubterm(&decision->usedContingency.term, 4);
+                if(!Narsese_isOperation(&should_be_nop) && Narsese_isOperation(&should_be_op)) 
                 {
-                    Term should_be_nop = Term_ExtractSubterm(&decision->usedContingency.term, 8);
-                    Term should_be_op = Term_ExtractSubterm(&decision->usedContingency.term, 4);
-                    if(!Narsese_isOperation(&should_be_nop) && Narsese_isOperation(&should_be_op))
-                    {
-                        Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
-                        e_rel.stamp = decision->usedContingency.stamp;
-                        e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
-                        Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0, true);
-                    }
+                    Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
+                    e_rel.stamp = decision->usedContingency.stamp;
+                    e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
+                    Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0, true);
                 }
             }
             //assumption of failure extension to specific cases not experienced before:
