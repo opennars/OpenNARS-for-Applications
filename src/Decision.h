@@ -79,8 +79,6 @@ typedef struct
 
 //Methods//
 //-------//
-//Init module
-void Decision_INIT();
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"
