@@ -246,8 +246,8 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
 //!Functional implication and equivalence
-R2( (((A --> B) &/ Op1) =/> M), (((S --> P) &/ Op2) =/> M), |-, ((A --> B) <=> (S --> P)), Truth_Comparison )
-R2( (((A --> B) &/ Op1) =/> M), (((S --> P) &/ Op2) =/> M), |-, ((A --> B) ==> (S --> P)), Truth_Abduction )
+R2( (((A --> B) &/ Op1) =/> M), (((S --> P) &/ Op1) =/> M), |-, ((A --> B) <=> (S --> P)), Truth_Comparison )
+R2( (((A --> B) &/ Op1) =/> M), (((S --> P) &/ Op1) =/> M), |-, ((A --> B) ==> (S --> P)), Truth_Abduction )
 //!Mutual Entailment
 R2VarIntro( (((A &/ B) &/ Op1) =/> M), (((S &/ P) &/ Op2) =/> M), |-, ((((A &/ B) &/ Op1) =/> M) ==> (((S &/ P) &/ Op2) =/> M)), Truth_Induction )
 R2VarIntro( (((A &/ B) &/ Op1) =/> M), (((S &/ P) &/ Op2) =/> M), |-, ((((A &/ B) &/ Op1) =/> M) <=> (((S &/ P) &/ Op2) =/> M)), Truth_Comparison )
