@@ -230,7 +230,7 @@ R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>
 R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
 R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
 //!Relation symmetry, asymmetry, and transitivity:
-R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
@@ -246,7 +246,7 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
 //!Mutual Entailment
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> ((A &/ Op1) =/> S)), Truth_Abduction )
+R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> ((A &/ Op1) =/> S)), Truth_Induction )
 R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) <=> ((A &/ Op1) =/> S)), Truth_Comparison )
 #endif
 
