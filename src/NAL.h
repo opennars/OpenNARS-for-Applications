@@ -42,7 +42,7 @@
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars, bool temporalImplicationEvent);
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
 #define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
@@ -245,9 +245,9 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
-//Mutual Entailment
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op1) =/> P) ==> ((A &/ Op2) =/> S)), Truth_Abduction )
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op1) =/> P) <=> ((A &/ Op2) =/> S)), Truth_Comparison )
+//!Mutual Entailment
+R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> ((A &/ Op1) =/> S)), Truth_Abduction )
+R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) <=> ((A &/ Op1) =/> S)), Truth_Comparison )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
