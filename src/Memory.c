@@ -372,7 +372,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0, false);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0, temporalImplicationEvent);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true, false);
@@ -384,10 +384,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool temporalImplicationEvent)
 {
-    if(SEMANTIC_INFERENCE_NAL_LEVEL <= 7)
-    {
-        temporalImplicationEvent = false;
-    }
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);
