@@ -126,7 +126,7 @@ void Decision_Execute(Decision *decision)
                 Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
                 e_rel.stamp = decision->usedContingency.stamp;
                 e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
-                Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, false, 0, true);
+                Memory_AddEvent(&e_rel, currentTime, USED_CONTINGENCY_EVENT_PRIORITY, false, true, true, 0, true);
             }
             //assumption of failure extension to specific cases not experienced before:
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])

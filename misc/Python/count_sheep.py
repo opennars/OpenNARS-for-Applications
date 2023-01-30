@@ -41,7 +41,7 @@ for t in range(sheeps):
     NAR.AddInput("<sheep --> [white]>. :|:")
     NAR.AddInput("<{ex%d} --> [white]>. :|:" % t)
     NAR.AddInput("<({ex%d} * fence) --> jump>. :|:" % t)
-    NAR.AddInput("7")
+    NAR.AddInput("5")
     executions = NAR.AddInput("G! :|:")["executions"]
     for i in range(5):
         executions += NAR.AddInput("1")["executions"]
