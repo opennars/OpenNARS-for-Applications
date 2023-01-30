@@ -182,7 +182,7 @@ for i in range(0, 10000000):
     action = default_action
     chosenAction = False
     executions = NAR.AddInput(goal + "! :|:", Print=True)["executions"]
-    for i in range(5):
+    for i in range(3):
         executions += NAR.AddInput("1", Print=False)["executions"]
     renderANSI(env)
     if executions:
