@@ -29,6 +29,8 @@
 //  Shell  //
 /////////////
 //The shell for interaction with NAR
+//It accepts Narsese input and output,
+//together with various commands starting with *
 
 //Data structure//
 //--------------//

@@ -4,11 +4,14 @@ os.system("pkill NAR")
 sys.path.append('../Python/')
 import NAR
 from time import sleep
+from Nalifier import *
 import random
 
 picked = False
 frame = ""
 going = False
+transbot_vision_WIDTH = 640
+transbot_vision_HEIGHT = 480
 
 def getPicked():
     return picked
@@ -21,7 +24,8 @@ def detect_objects():
     if going:
         going = False
         return ([("person", 0, 480, 10, 10, 0.9)], "")
-    return ([("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9)], "")
+    return ([("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9, (0,0,0)),
+             ("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9, (0,0,0))], "")
 
 def getLocation():
     return [(0,0,0),(0,0,0,0)]

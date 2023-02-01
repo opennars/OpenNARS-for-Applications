@@ -25,9 +25,12 @@
 #ifndef H_NAR
 #define H_NAR
 
-//////////////////////////////
-//  NAR - Yet Another NARS  //
-//////////////////////////////
+//////////////////////////////////////
+//  NAR - The main reasoner module  //
+//////////////////////////////////////
+//The API to send events to the reaasoner
+//and to register operations it can invoke
+//plus initialization and execution of inference steps
 
 //References//
 //-----------//
@@ -40,6 +43,7 @@
 //----------//
 #define NAR_DEFAULT_TRUTH ((Truth) { .frequency = NAR_DEFAULT_FREQUENCY, .confidence = NAR_DEFAULT_CONFIDENCE })
 extern long currentTime;
+extern double QUESTION_PRIMING;
 
 //Callback function types//
 //-----------------------//

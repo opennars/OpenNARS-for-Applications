@@ -30,12 +30,6 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
-int anticipationStampID = -1;
-
-void Decision_INIT()
-{
-    anticipationStampID = -1;
-}
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
@@ -43,10 +37,9 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
     Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-    negative_confirmation.stamp = (Stamp) { .evidentalBase = { -anticipationStampID } };
-    anticipationStampID--;
+    negative_confirmation.stamp = (Stamp) {0};
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
+    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation, false);
     if(added != NULL)
     {
         added->sourceConcept = negative_confirmation.sourceConcept;
@@ -128,6 +121,13 @@ void Decision_Execute(Decision *decision)
         if(success)
         {
             NAR_AddInputBelief(feedbackTerm);
+            if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && decision->usedContingency.term.atoms[0])
+            {
+                Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
+                e_rel.stamp = decision->usedContingency.stamp;
+                e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
+                Memory_AddEvent(&e_rel, currentTime, USED_CONTINGENCY_EVENT_PRIORITY, false, true, true, 0, true);
+            }
             //assumption of failure extension to specific cases not experienced before:
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
             {
@@ -184,6 +184,43 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
+static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
+{
+    Event OpGoalImmediateOutcomes = {0};
+    //1. discount decision based on negative outcomes via revision
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
+        {
+            for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
+            {
+                Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
+                Concept *prec = imp.sourceConcept;
+                if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
+                {
+                    Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                    Term opTerm2 = {0};
+                    assert(Narsese_OperationSequenceAppendLeftNested(&opTerm2, &imp_subject), "Failed to extract operation in bad implication!");
+                    if(Term_Equal(&decision.operationTerm, &opTerm2))
+                    {
+                        Event ContextualOperation = Inference_GoalDeduction(&c->goal_spike, &imp, currentTime); //(&/,a,op())! :\:
+                        Event OpGoalLocal = Inference_GoalSequenceDeduction(&ContextualOperation, &prec->belief_spike, currentTime);
+                        OpGoalImmediateOutcomes = Inference_RevisionAndChoice(&OpGoalImmediateOutcomes, &OpGoalLocal, currentTime, NULL);
+                    }
+                    IN_DEBUG ( fputs("//Considered: ", stdout); Narsese_PrintTerm(&imp.term); printf(". Truth: frequency=%f confidence=%f dt=%f\n", imp.truth.frequency, imp.truth.confidence, imp.occurrenceTimeOffset); )
+                }
+            }
+        }
+    }
+    IN_DEBUG ( printf("//Evaluation local=%f global=%f\n",decision.desire, Truth_Expectation(OpGoalImmediateOutcomes.truth)); )
+    if(Truth_Expectation(OpGoalImmediateOutcomes.truth) < 0.5)
+    {
+        decision = (Decision) {0};
+    }
+    return decision;
+}
+
 static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp)
 {
     Decision decision = {0};
@@ -199,7 +236,11 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
     if(precondition != NULL)
     {
         Event ContextualOperation = Inference_GoalDeduction(goal, imp, currentTime); //(&/,a,op())! :\:
-        double operationGoalTruthExpectation = Truth_Expectation(Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth); //op()! :|:
+        Term potential_operation = {0};
+        Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
+        assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
+        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
+        double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
         (
             printf("CONSIDERED PRECON: desire=%f ", operationGoalTruthExpectation);
@@ -243,7 +284,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             i++;
         }
     }
-    return decision;
+    return Decision_ConsiderNegativeOutcomes(decision);
 }
 
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
@@ -321,6 +362,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                         }
                                     }
                                     else
@@ -330,6 +372,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                         }
                                     }
                                 }

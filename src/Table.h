@@ -28,7 +28,15 @@
 ///////////////
 //   Table   //
 ///////////////
-//A table of implications, ranked by truth expectation
+//A bounded table of temporal implications, ranked by truth expectation
+//Also revision and choice is supported in this structure
+//Please note: when a new item has lower truth expectation
+//than the lowest in the table, it will still replace the lowest.
+//This makes sure the system can still adapt when tables are full,
+//by giving the new link a place to grow.
+//As this isn't ideal yet, later version this might either be extended
+//to multiple places at the bottom of the table,
+//or the ranking will take the creation time of links into account
 
 //References//
 //----------//
@@ -53,6 +61,6 @@ Implication *Table_Add(Table *table, Implication *imp);
 //Add element at index from table
 void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
-Implication* Table_AddAndRevise(Table *table, Implication *imp);
+Implication* Table_AddAndRevise(Table *table, Implication *imp, bool considerStamp);
 
 #endif

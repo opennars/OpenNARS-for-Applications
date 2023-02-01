@@ -43,7 +43,10 @@ for i, frame in enumerate(frametexts):
     else:
         if fname == "testchamber":
             frame = frame.split("(same command)\n\n")[1]
-        frames.append(frame.split("Input:")[0].split("position")[0].split("shots")[0].split("\n\nCommand:")[0].split(", ratio=")[0].split("\ntime=")[0])
+        if fname == "bandrobot":
+            frames.append("Input:" + "Input:".join(frame.split("ratio=")[0].split("Input:")[1:2]).replace("occurrenceTime","\noccurrenceTime").replace("None.","None.\n"))
+        else:
+            frames.append(frame.split("Input:")[0].split("position")[0].split("shots")[0].split("\n\nCommand:")[0].split(", ratio=")[0].split("\ntime=")[0])
     performances.append(float(frame.split("ratio=" if fname != "robot" else "eaten=")[1].split(" ")[0].split(",")[0]))
 
 filenames = []
@@ -65,13 +68,16 @@ for i,frame in enumerate(frames):
             fontsize = 9
         elif fname == "robot":
             fontsize = 5
+        elif fname == "bandrobot":
+            fontsize = 7
+            h_padding = 0.03
         
         axs[0].text(h_padding, v_padding, frame, fontfamily = "monospace", fontsize=fontsize, bbox=dict(facecolor='gray', alpha=0.15))
         axs[0].set_yticklabels([])
         axs[0].set_xticklabels([])
-        axs[1].axis([0, framesexisting, 0, 1 if fname != "robot" else 60])
+        axs[1].axis([0, framesexisting, 0, 30 if fname == "bandrobot" else (1 if fname != "robot" else 60)])
         axs[1].set_xlabel('time')
-        axs[1].set_ylabel('Success ratio' if fname != "robot" else "collected food")
+        axs[1].set_ylabel('successes' if fname == "bandrobot" else ('Success ratio' if fname != "robot" else "collected food"))
         axs[1].set_title("Performance")
         axs[1].plot(performances[:i])
         filename = fname + "_" + str(i) + ".png"

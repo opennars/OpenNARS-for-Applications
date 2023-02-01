@@ -9,6 +9,8 @@ The ONA implementation has been developed with a pragmatic mindset. The focus on
 Video tutorials and demo videos can be found here: [Video tutorials](https://github.com/opennars/OpenNARS-for-Applications/wiki/Video-tutorials)
 Or click on the picture to watch the newest summary videos (summary and demo):
 
+[![Reasoning-learning systems based on Non Axiomatic Reasoning Theory](https://img.youtube.com/vi/pEiJ8V17RGk/0.jpg)](https://www.youtube.com/watch?v=pEiJ8V17RGk "Reasoning-learning systems based on Non Axiomatic Reasoning Theory")
+
 [![Autonomy through real-time learning and OpenNARS for Applications](https://img.youtube.com/vi/B9SKu7u6G-I/0.jpg)](https://www.youtube.com/watch?v=B9SKu7u6G-I "Autonomy through real-time learning and OpenNARS for Applications")
 
 [![OpenNARS for Applications v0.9.0: Transbot](https://img.youtube.com/vi/lp6rNO-nIms/0.jpg)](https://www.youtube.com/watch?v=lp6rNO-nIms "ONA v0.9.0: Playing Fetch with Henry the robot")

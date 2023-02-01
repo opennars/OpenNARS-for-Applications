@@ -29,11 +29,15 @@
 //  NAR Memory //
 /////////////////
 //The concept-based memory of NAR
+//Concepts are created from events
+//and are linked to each other with temporal implications
+//and by their subterms via InvertedAtomIndex
 
 //References//
 //////////////
 #include <math.h>
 #include "Concept.h"
+#include "OccurrenceTimeIndex.h"
 #include "InvertedAtomIndex.h"
 #include "PriorityQueue.h"
 #include "Config.h"
@@ -78,6 +82,8 @@ extern PriorityQueue cycling_belief_events;
 extern PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 //Hashtable of concepts used for fast retrieval of concepts via term:
 extern HashTable HTconcepts;
+//OccurrenceTimeIndex for accelerating temporal induction
+extern OccurrenceTimeIndex occurrenceTimeIndex;
 //Registered perations
 extern Operation operations[OPERATIONS_MAX];
 //Priority threshold for printing derivations
@@ -92,14 +98,14 @@ Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer);
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool temporalImplicationEvent);
 void Memory_AddInputEvent(Event *event, long currentTime);
 //Add operation to memory
 void Memory_AddOperation(int id, Operation op);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
 //Print an event in memory:
-void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo);
+void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected);
 //Print an implication in memory:
 void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
 //Get operation ID

@@ -26,9 +26,9 @@
 #define H_INVERTEDATOMINDEX
 
 ///////////////////////////
-//  Inverted atom table  //
+//  Inverted atom index  //
 ///////////////////////////
-//The inverted atom table for efficient query
+//The inverted atom table for efficient query of to an event semantically related concepts
 
 //References//
 //////////////

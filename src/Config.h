@@ -52,6 +52,8 @@
 #define SUBSUMPTION_CONFIDENCE_THRESHOLD 0.05
 //Subsumption confidence threshold below which a specific hypothesis inhibits more generals
 #define SUBSUMPTION_FREQUENCY_THRESHOLD 0.5
+//How long goal events describing bad outcomes are considered in decision making
+#define NEG_GOAL_AGE_MAX EVENT_BELIEF_DISTANCE
 
 /*----------------------*/
 /* Attention parameters */
@@ -64,14 +66,10 @@
 #define EVENT_DURABILITY 0.9999
 //Concept priority decay of events per cycle
 #define CONCEPT_DURABILITY 0.9
-//Minimum confidence to accept events
-#define MIN_CONFIDENCE 0.01
 //Minimum priority to accept events
 #define MIN_PRIORITY 0
 //Occurrence time distance in which case event belief is preferred over eternal 
 #define EVENT_BELIEF_DISTANCE 20
-//Time distance from now to still correlate an outcome
-#define CORRELATE_OUTCOME_RECENCY 5
 //Amount of belief concepts to select to be matched to the selected event
 #define BELIEF_CONCEPT_MATCH_TARGET 80
 //Adaptation speed of the concept priority threshold to meet the match target
@@ -80,10 +78,22 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
+//Questions concept activation priority
+#define QUESTION_PRIMING_INITIAL 0.1
+//Initial priority of used contingency events
+#define USED_CONTINGENCY_EVENT_PRIORITY 0.000001
+
+/*---------------------------------*/
+/* Temporal compounding parameters */
+/*---------------------------------*/
 //Maximum length of sequences
 #define MAX_SEQUENCE_LEN 2
 //Maximum compound op length
 #define MAX_COMPOUND_OP_LEN 2
+//Max. occurrence time distance between precondition and consequence
+#define PRECONDITION_CONSEQUENCE_DISTANCE EVENT_BELIEF_DISTANCE
+//Occurrence time distance to now to still correlate an outcome
+#define CORRELATE_OUTCOME_RECENCY EVENT_BELIEF_DISTANCE
 //Maximum time difference to form sequence between events
 #define MAX_SEQUENCE_TIMEDIFF EVENT_BELIEF_DISTANCE
 //Allow events which have not been selected to become preconditions
@@ -119,11 +129,13 @@
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
-#define NARSESE_LEN_MAX 256
+#define NARSESE_LEN_MAX 2148 //ATOMIC_TERM_LEN_MAX * COMPOUND_TERM_SIZE_MAX + 100 for punctuation event marker and TV
 //Goal events queue derivation depth layers
 #define CYCLING_GOAL_EVENTS_LAYERS 30
 //Hashtable bucket size for atom counters in term
 #define VAR_INTRO_HASHTABLE_BUCKETS COMPOUND_TERM_SIZE_MAX
+//OccurrenceTimeIndex size (large enough to cover all events input and derived within EVENT_BELIEF_DISTANCE from currentTime)
+#define OCCURRENCE_TIME_INDEX_SIZE 512
 
 /*------------------*/
 /* Truth parameters */
@@ -140,12 +152,14 @@
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 //Maximum value for confidence
 #define MAX_CONFIDENCE 0.99
+//Minimum confidence to accept events
+#define MIN_CONFIDENCE 0.01
 
 /*-----------------------*/
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 7
+#define SEMANTIC_INFERENCE_NAL_LEVEL 8
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences

@@ -28,6 +28,7 @@
 ////////////////////////////////////////////
 //  NAL truth value and truth functions   //
 ////////////////////////////////////////////
+//Truth functions as specified in the NAL book (2013)
 
 //References//
 //----------//
@@ -66,6 +67,7 @@ Truth Truth_Eternalize(Truth v);
 Truth Truth_Projection(Truth v, long originalTime, long targetTime);
 void Truth_Print(Truth *truth);
 void Truth_Print2(Truth *truth);
+Truth Truth_GoalDeduction(Truth v1, Truth v2);
 //not part of sensorimotor inference:
 Truth Truth_Abduction(Truth v1, Truth v2);
 Truth Truth_Exemplification(Truth v1, Truth v2);
@@ -74,6 +76,7 @@ Truth Truth_Analogy(Truth v1, Truth v2);
 Truth Truth_Resemblance(Truth v1, Truth v2);
 Truth Truth_StructuralDeduction(Truth v1, Truth v2);
 Truth Truth_StructuralDeductionNegated(Truth v1, Truth v2);
+Truth Truth_StructuralIntersection(Truth v1, Truth v2);
 Truth Truth_Union(Truth v1, Truth v2);
 Truth Truth_Difference(Truth v1, Truth v2);
 Truth Truth_Conversion(Truth v1, Truth v2);
@@ -84,6 +87,7 @@ Truth Truth_DecomposePNP(Truth v1, Truth v2);
 Truth Truth_DecomposePPP(Truth v1, Truth v2);
 Truth Truth_DecomposeNNN(Truth v1, Truth v2);
 Truth Truth_AnonymousAnalogy(Truth v1, Truth v2);
+Truth Truth_FrequencyGreater(Truth v1, Truth v2);
+Truth Truth_FrequencyEqual(Truth v1, Truth v2);
 bool Truth_Equal(Truth *v1, Truth *v2);
-
 #endif

@@ -28,6 +28,7 @@
 //////////////
 //  Globals //
 //////////////
+//Various macros and utility functions which turned out to be necessary.
 
 //References//
 //////////////

@@ -25,6 +25,7 @@
 import sys
 import re
 
+BLUE = "\x1B[34m"
 GREEN = "\x1B[32m"
 YELLOW = "\x1B[33m"
 CYAN = "\x1B[36m"
@@ -46,6 +47,8 @@ for line in sys.stdin:
         COLOR = MAGENTA
     elif line.startswith("Input:"):
         COLOR = GREEN
+    elif line.startswith("Selected:"):
+        COLOR = BLUE
     elif line.startswith("Derived:") or line.startswith("Revised:"):
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
@@ -57,6 +60,8 @@ for line in sys.stdin:
     l = re.sub(r"\(([^><:]*)\s(/1|\\1|/2|\\1|\\2)\s([^><:]*)\)", YELLOW+r"(" + GREEN + r"\1" + YELLOW + r" \2 " + GREEN + r"\3" + YELLOW + ")" + COLOR, l)
     #Implication
     l = re.sub(r"<([^:]*)\s=(/|=|\|)>\s([^:]*)>", CYAN+ STATEMENT_OPENER + GREEN + r"\1" + CYAN + r" =\2> " + GREEN + r"\3" + CYAN + STATEMENT_CLOSER + COLOR, l)
+    #Equivalence
+    l = re.sub(r"<([^:]*)\s<(/|=|\|)>\s([^:]*)>", CYAN+ STATEMENT_OPENER + GREEN + r"\1" + CYAN + r" <\2> " + GREEN + r"\3" + CYAN + STATEMENT_CLOSER + COLOR, l)
     #Conjunction
     l = re.sub(r"\(([^:]*)\s&(/|&|\|)\s([^:]*)\)", MAGENTA+r"(" + GREEN + r"\1" + MAGENTA + r" &\2 " + GREEN + r"\3" + MAGENTA + ")" + COLOR, l)
     #Similarity and inheritance

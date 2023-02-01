@@ -27,11 +27,11 @@
 long currentTime = 1;
 static bool initialized = false;
 static int op_k = 0;
+double QUESTION_PRIMING = QUESTION_PRIMING_INITIAL;
 
 void NAR_INIT()
 {
     assert(pow(TRUTH_PROJECTION_DECAY_INITIAL,EVENT_BELIEF_DISTANCE) >= MIN_CONFIDENCE, "Bad params, increase projection decay or decrease event belief distance!");
-    Decision_INIT();
     Memory_INIT(); //clear data structures
     Event_INIT(); //reset base id counter
     Narsese_INIT();
@@ -155,7 +155,8 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     {
         //answer questions:
         Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
-        Truth best_truth_projected = {0};
+        Truth best_truth_projected = { .frequency = 0.0, .confidence = 1.0 };
+        Concept* best_belief_concept = NULL;
         Term best_term = {0};
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
@@ -206,6 +207,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                         best_truth_projected = potential_best_truth;
                         best_truth = c->belief_spike.truth;
                         best_term = c->belief_spike.term;
+                        best_belief_concept = c;
                         answerOccurrenceTime = c->belief_spike.occurrenceTime;
                         answerCreationTime = c->belief_spike.creationTime;
                     }
@@ -219,6 +221,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                         best_truth_projected = potential_best_truth;
                         best_truth = c->predicted_belief.truth;
                         best_term = c->predicted_belief.term;
+                        best_belief_concept = c;
                         answerOccurrenceTime = c->predicted_belief.occurrenceTime;
                         answerCreationTime = c->predicted_belief.creationTime;
                     }
@@ -230,10 +233,17 @@ void NAR_AddInputNarsese(char *narsese_sentence)
                 {
                     best_truth = c->belief.truth;
                     best_term = c->belief.term;
+                    best_belief_concept = c;
                     answerCreationTime = c->belief.creationTime;
                 }
             }
             Continue:;
+        }
+        //simplistic priming for Q&A:
+        if(best_belief_concept != NULL && QUESTION_PRIMING > 0.0)
+        {
+            best_belief_concept->priority = MAX(best_belief_concept->priority, QUESTION_PRIMING);
+            best_belief_concept->usage = Usage_use(best_belief_concept->usage, currentTime, tense == 0 ? true : false);
         }
         fputs("Answer: ", stdout);
         if(best_truth.confidence == 1.0)

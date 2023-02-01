@@ -1,0 +1,21 @@
+*train=true
+<CAT --> [see]>.
+cat
+
+<DOG --> [see]>.
+dog
+
+<ANIMAL --> [see]>.
+animal
+
+<A1 --> B1>.
+-->
+
+<A2 --> B2>.
+-->
+
+*train=false
+dog --> animal
+cat --> animal
+<CAT <-> DOG>?
+//expected: Answer: <CAT <-> DOG>. Truth: frequency=1.000000, confidence=0.282230

@@ -28,9 +28,7 @@
 ///////////////////
 //  INFERENCE    //
 ///////////////////
-//Support for NAL inference on Term's
-//But only a limited set:
-//the commented derivations are all that need to happen in NAR.
+//This module handles all temporal (NAL-7) and procedural (NAL-8) inference.
 
 //References//
 //----------//
@@ -62,5 +60,6 @@ Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long cu
 Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spike, long currentTime, bool *revised);
 //{Event a., Implication <a =/> b>.} |- Event b.  Truth_Deduction
 Event Inference_BeliefDeduction(Event *component, Implication *compound);
+Event Inference_EventRevision(Event *a, Event *b);
 
 #endif

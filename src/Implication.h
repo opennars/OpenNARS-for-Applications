@@ -28,7 +28,11 @@
 //////////////////////
 //  Implication     //
 //////////////////////
-//essentially allowing concepts to predict activations of others
+//Temporal implications, essentially allowing the system to predict
+//events from other events.
+//Usually, in learning scenarios:
+//- Positive evidence of a temporal implication comes from a successful prediction
+//- Negative evidence of a temporal implication comes from a prediction failure
 
 //References//
 //----------//

@@ -70,7 +70,7 @@ Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
 
 //{Event a., Event a.} |- Event a.
 //{Event a!, Event a!} |- Event a!
-static Event Inference_EventRevision(Event *a, Event *b)
+Event Inference_EventRevision(Event *a, Event *b)
 {
     DERIVATION_STAMP_AND_TIME(a,b)
     return (Event) { .term = a->term, 
@@ -104,7 +104,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
     //extract precondition: (plus unification once vars are there)
     return (Event) { .term = Narsese_GetPreconditionWithoutOp(&precondition), 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compound->truth, component->truth),
+                     .truth = Truth_GoalDeduction(component->truth, compound->truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = currentTime,
                      .creationTime = creationTime };
@@ -127,7 +127,7 @@ Event Inference_GoalSequenceDeduction(Event *compound, Event *component, long cu
     Event componentUpdated = Inference_EventUpdate(component, currentTime);
     return (Event) { .term = compound->term, 
                      .type = EVENT_TYPE_GOAL, 
-                     .truth = Truth_Deduction(compoundUpdated.truth, componentUpdated.truth),
+                     .truth = Truth_GoalDeduction(compoundUpdated.truth, componentUpdated.truth),
                      .stamp = conclusionStamp, 
                      .occurrenceTime = currentTime,
                      .creationTime = creationTime };

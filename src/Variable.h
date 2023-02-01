@@ -29,6 +29,12 @@
 // Variable utilities //
 ////////////////////////
 //Support for NAL-6 variables
+//This includes the ability to:
+//- check for variables in terms
+//- variable normalization
+//- unification returning an unifier
+//- substitution using an unifier
+//- introduction of variables
 
 //References//
 //----------//
