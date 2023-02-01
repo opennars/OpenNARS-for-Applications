@@ -83,6 +83,18 @@ def GetStats(usedNAR):
     return Stats
 
 def AddInput(narsese, Print=True, usedNAR=NARproc):
+    if not narsese.startswith("*"):
+        isGoalEvent = narsese.endswith("! :|:")
+        isBeliefEvent = narsese.endswith(". :|:")
+        if isBeliefEvent or isGoalEvent:
+            narsese=narsese.replace(". :|:", "").replace("! :|:", "")
+            narsese=narsese.replace(" ","").replace("&/","").replace("&&","").replace("&|","")
+            narsese=narsese.replace("-->","").replace("<->","").replace("[","").replace("]","").replace("{","").replace("}","")
+            narsese=narsese.replace("<","").replace(">","").replace("(","").replace(")","")
+        if isBeliefEvent:
+            narsese = narsese + ". :|:"
+        if isGoalEvent:
+            narsese = narsese + "! :|:"
     usedNAR.stdin.write(narsese + '\n')
     usedNAR.stdin.flush()
     ReturnStats = narsese == "*stats"

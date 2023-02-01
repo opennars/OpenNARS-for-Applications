@@ -96,6 +96,7 @@ Event NAR_AddInput(Term term, char type, Truth truth, bool eternal, double occur
             {
                 op.action(args);
             }
+            Narsese_PrintTerm(&op.term); puts(" executed with args");
         }
         goalTruth[state_new] = truth;
     }
