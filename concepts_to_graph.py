@@ -194,5 +194,7 @@ plt.show()
 #Also plot degree distribution:
 degrees = [G.degree(n) for n in G.nodes()]
 plt.hist(degrees)
+plt.xlabel("Degree")
+plt.ylabel("Count")
 plt.savefig("degrees.png")
 plt.show()
