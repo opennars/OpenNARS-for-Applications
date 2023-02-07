@@ -352,6 +352,14 @@ if __name__ == "__main__":
         elif inp.startswith("*train=false"):
             TrainEnd()
             continue
+        elif inp.startswith("*WordConceptMapping "):
+            arg = inp.split("*WordConceptMapping ")[1]
+            print(Query(f"<{arg} --> RELATION>"))
+            print(Query(f"<({arg} * ?1) --> R>", isRelation=True))
+            print(Query(f"<({arg} * ?1) --> R>", isRelation=False))
+            print(Query(f"<{arg} --> [FLIPPED]>")
+            print(Query(f"<{arg} --> [ASSIGNED]>")
+            continue
         elif inp.startswith("*"):
             print(inp)
             continue

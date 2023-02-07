@@ -110,7 +110,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
     if(punctuation == '?')
     {
         //answer questions:
-        Truth best_truth = { .frequency = 0.0, .confidence = 1.0 };
+        Truth best_truth = { .frequency = 0.0, .confidence = 1.1 };
         Truth best_truth_projected = { .frequency = 0.0, .confidence = 1.0 };
         Concept* best_belief_concept = NULL;
         Term best_term = {0};
@@ -202,7 +202,7 @@ void NAR_AddInputNarsese(char *narsese_sentence)
             best_belief_concept->usage = Usage_use(best_belief_concept->usage, currentTime, tense == 0 ? true : false);
         }
         fputs("Answer: ", stdout);
-        if(best_truth.confidence == 1.0)
+        if(best_truth.confidence == 1.1)
         {
             puts("None.");
         }
