@@ -158,8 +158,6 @@ def getNounRelNoun(words):
         else:
             Cs = [Cs[0], Ms[0]]
         Ms = [EMPTY for i in range(2)]
-    if len(Cs) % 2 != 0:
-        ASSIGN = False
     if ASSIGN:
         for x in Cs + Ms + [RELATION]:
             if x != EMPTY:
