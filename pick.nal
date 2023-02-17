@@ -1,0 +1,30 @@
+*volume=0
+*motorbabbling=false
+<((<A1 --> [sample]> &/ <B1 --> [left]>) &/ <({SELF} * [left]) --> ^pick>) =/> G>.
+<((<B1 --> [sample]> &/ <A1 --> [left]>) &/ <({SELF} * [left]) --> ^pick>) =/> G>.
+<((<X1 --> [sample]> &/ <Y1 --> [left]>) &/ <({SELF} * [left]) --> ^pick>) =/> G>.
+
+<A1 --> [sample]>. :|:
+<B1 --> [left]>. :|:
+G! :|:
+
+30
+
+<B1 --> [sample]>. :|:
+<A1 --> [left]>. :|:
+G! :|:
+
+30
+
+<X1 --> [sample]>. :|:
+<Y1 --> [left]>. :|:
+G! :|:
+
+30
+
+<Y1 --> [sample]>. :|:
+<X1 --> [left]>. :|:
+5
+G! :|:
+
+<<($1 * $2) --> ([sample] * [left])> ==> <($2 * $1) --> ([sample] * [left])>>?

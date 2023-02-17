@@ -212,6 +212,7 @@ static bool NAL_InhOrSimHasDepVar(Term *conclusionTerm)
 
 static bool NAL_HOLStatementComponentHasInvalidInhOrSim(Term *conclusionTerm, bool firstIteration)
 {
+    return false;
     if(!HOL_STATEMENT_COMPONENT_HAS_INVALID_INH_OR_SIM_FILTER)
         return false;
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm->atoms[0], CONJUNCTION) || Narsese_copulaEquals(conclusionTerm->atoms[0], DISJUNCTION))
