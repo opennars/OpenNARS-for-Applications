@@ -63,17 +63,17 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 1
 //!Syllogistic rules for Inheritance:
-R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
+/*R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
 R2( S, (S --> P), |-, P, Truth_Deduction )
-R2( P, (S --> P), |-, S, Truth_Abduction )
+R2( P, (S --> P), |-, S, Truth_Abduction )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
 //!Rules for Similarity:
-R1( (S <-> P), |-, (P <-> S), Truth_StructuralIntersection )
+/*R1( (S <-> P), |-, (P <-> S), Truth_StructuralIntersection )
 R2( (M <-> P), (S <-> M), |-, (S <-> P), Truth_Resemblance )
 R2( (P --> M), (S --> M), |-, (S <-> P), Truth_Comparison )
 R2( (M --> P), (M --> S), |-, (S <-> P), Truth_Comparison )
@@ -87,12 +87,12 @@ R1( ([S] --> P), |-, ([S] <-> P), Truth_StructuralIntersection )
 R2( ({M} --> P), (S <-> M), |-, ({S} --> P), Truth_Analogy )
 R2( (P --> [M]), (S <-> M), |-, (P --> [S]), Truth_Analogy )
 R1( ({A} <-> {B}), |-, (A <-> B), Truth_StructuralIntersection )
-R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralIntersection )
+R1( ([A] <-> [B]), |-, (A <-> B), Truth_StructuralIntersection )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 3
 //!Set decomposition:
-R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
+/*R1( ({A B} --> M), |-, <{A} --> M>, Truth_StructuralDeduction )
 R1( ({A B} --> M), |-, <{B} --> M>, Truth_StructuralDeduction )
 R1( (M --> [A B]), |-, <M --> [A]>, Truth_StructuralDeduction )
 R1( (M --> [A B]), |-, <M --> [B]>, Truth_StructuralDeduction )
@@ -124,12 +124,12 @@ R2( (M --> P), (M --> (S & P)), |-, (M --> S), Truth_DecomposePNN )
 R2( (M --> S), (M --> (S | P)), |-, (M --> P), Truth_DecomposeNPP )
 R2( (M --> P), (M --> (S | P)), |-, (M --> S), Truth_DecomposeNPP )
 R2( (M --> S), (M --> (S - P)), |-, (M --> P), Truth_DecomposePNP )
-R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
+R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 4
 //!Transformation rules between product and image:
-R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralIntersection )
+/*R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralIntersection )
 R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralIntersection )
@@ -159,12 +159,12 @@ R2( (R --> (A * B)), (C <-> B), |-, (R --> (A * C)), Truth_Analogy )
 R2( ((A * B) --> R), ((C * B) --> R), |-, (A <-> C), Truth_Comparison )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (B <-> C), Truth_Comparison )
 R2( (R --> (A * B)), (R --> (C * B)), |-, (A <-> C), Truth_Comparison )
-R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )
+R2( (R --> (A * B)), (R --> (A * C)), |-, (B <-> C), Truth_Comparison )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 5
 //!Negation conjunction and disjunction decomposition:
-R1( (! A), |-, A, Truth_Negation )
+/*R1( (! A), |-, A, Truth_Negation )
 R1( (A && B), |-, A, Truth_StructuralDeduction )
 R1( (A && B), |-, B, Truth_StructuralDeduction )
 R1( (A && B), |-, (B && A), Truth_StructuralIntersection )
@@ -194,7 +194,7 @@ R2( (P ==> M), (S ==> M), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
-R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
+R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL == 5
@@ -207,7 +207,7 @@ R2( A, (A <=> B), |-, B, Truth_Analogy )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
 //!First var intro step:
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
+/*R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
 R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
 R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison )
@@ -228,7 +228,7 @@ R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) && (A --> C)), Truth_In
 //!Second var intro step:
 R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
 R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction ) */
 //!Relation symmetry, asymmetry, and transitivity:
 R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
@@ -236,18 +236,20 @@ R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> (
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!Variable elimination in Cycle_SpecialInferences
+
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 7
-R1( (A &| B), |-, A, Truth_StructuralDeduction )
+/*R1( (A &| B), |-, A, Truth_StructuralDeduction )
 R1( (A &| B), |-, B, Truth_StructuralDeduction )
-R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
+R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )*/
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
 //!Mutual Entailment
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> ((A &/ Op1) =/> S)), Truth_Induction )
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) <=> ((A &/ Op1) =/> S)), Truth_Comparison )
+//R2VarIntro( (A --> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> (A --> S)), Truth_Induction )
+R2VarIntro( (A --> S), (((A --> S) &/ Op2) =/> P), |-, ((A --> S) ==> (((A --> S) &/ Op2) =/> P)), Truth_Abduction )
+//R2VarIntro( (A --> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) <=> (A --> S)), Truth_Comparison )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!

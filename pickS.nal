@@ -1,11 +1,11 @@
-*volume=0
-<(((<S --> T> &/ <A1 --> SAMPLE>) &/ <B1 --> L>) &/ <({SELF} * L) --> ^pick>) =/> G>.
-<(((<S --> T> &/ <B1 --> SAMPLE>) &/ <A1 --> L>) &/ <({SELF} * L) --> ^pick>) =/> G>.
+*volume=100
+*motorbabbling=false
+<(<((S * A1) * B1) --> ((T * SAMPLE) * L)> &/ <({SELF} * L) --> ^pick>) =/> G>.
+<(<((S * B1) * A1) --> ((T * SAMPLE) * L)> &/ <({SELF} * L) --> ^pick>) =/> G>.
 
 <S --> T>. :|:
 <A1 --> SAMPLE>. :|:
 <B1 --> L>. :|:
-5
 G! :|:
 
 30
@@ -13,7 +13,8 @@ G! :|:
 <S --> T>. :|:
 <B1 --> SAMPLE>. :|:
 <A1 --> L>. :|:
-*volume=100
 G! :|:
 
 30
+
+<?1 ==> <((?2 * ?3) * ?4) --> ((T * SAMPLE) * L)>>?

@@ -89,7 +89,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     {
         return best_decision;
     }
-    if(Narsese_copulaEquals(e->term.atoms[0], SEQUENCE))
+    if(Narsese_copulaEquals(e->term.atoms[0], SEQUENCE) || (Narsese_copulaEquals(e->term.atoms[0], INHERITANCE) && Narsese_copulaEquals(e->term.atoms[1], PRODUCT) && Narsese_copulaEquals(e->term.atoms[2], PRODUCT)))
     {
         OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex); //created sequences don't go to the index otherwise
     }
@@ -433,6 +433,16 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     {
                         bool success;
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
+                        if(is_cond_seq)
+                        {
+                            Term relseq = Narsese_RelationalSequence(seq.term);
+                            //fputs("!!!", stdout); Narsese_PrintTerm(&relseq); puts(""); fflush(stdout);
+                            if(relseq.atoms[0])
+                            {
+                                seq.term = relseq;
+                                //fputs("!SUCCESS>", stdout); Narsese_PrintTerm(&seq.term); puts(""); fflush(stdout);
+                            }
+                        }
                         if(success && seq.truth.confidence >= MIN_CONFIDENCE)
                         {
                             if(!op_id && !op_id2)

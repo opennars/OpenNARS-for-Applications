@@ -126,134 +126,15 @@ void Decision_Execute(Decision *decision)
                 Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
                 e_rel.stamp = decision->usedContingency.stamp;
                 e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
-                Memory_AddEvent(&e_rel, currentTime, USED_CONTINGENCY_EVENT_PRIORITY, false, true, true, 0, true);
+                Memory_AddEvent(&e_rel, currentTime, 1.0, false, true, true, 0, true);
             }
-            if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && decision->usedContingency.term.atoms[0])
+            if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && decision->reason != NULL && decision->reason->type != EVENT_TYPE_DELETED)
             {
-                Term prec_op = Term_ExtractSubterm(&decision->usedContingency.term, 1); //((a &/ b) &/ ^op)
-                if(Narsese_copulaEquals(prec_op.atoms[0], SEQUENCE))
+                Event utilized_reason = *decision->reason;
+                utilized_reason.occurrenceTime = currentTime;
+                if(Narsese_copulaEquals(utilized_reason.term.atoms[0], INHERITANCE))
                 {
-                    Term precondition = Term_ExtractSubterm(&prec_op, 1); //(a &/ b)
-                    if(Narsese_copulaEquals(precondition.atoms[0], SEQUENCE))
-                    {
-                        bool proceed = true;
-                        Term a = Term_ExtractSubterm(&precondition, 1); //a
-                        Term b = Term_ExtractSubterm(&precondition, 2); //b
-                        Truth truth_b = {0};
-                        Stamp stamp_b = {0};
-                        long occurrenceTime_b = 0;
-                        if(Narsese_copulaEquals(b.atoms[0], INHERITANCE))
-                        {
-                            Concept *c_b = Memory_FindConceptByTerm(&b);
-                            Event e_b = c_b->belief_spike;
-                            if(c_b != NULL && e_b.type != EVENT_TYPE_DELETED)
-                            {
-                                truth_b = e_b.truth;
-                                occurrenceTime_b = e_b.occurrenceTime;
-                            }
-                            else
-                            {
-                                proceed = false;
-                            }
-                        }
-                        while(proceed && Narsese_copulaEquals(a.atoms[0], SEQUENCE) && Narsese_copulaEquals(b.atoms[0], INHERITANCE))
-                        { //a = (x &/ <y --> Y>)    b = <z --> Z>
-                            Term y_Y = Term_ExtractSubterm(&a, 2);
-                            Term z_Z = b;
-                            if(Narsese_copulaEquals(y_Y.atoms[0], INHERITANCE))
-                            {
-                                /* fputs("!!!BEFORE", stdout); Narsese_PrintTerm(&a); fputs(" :> ", stdout); Narsese_PrintTerm(&b); puts("");
-                                fflush(stdout); //exit(0);
-                                Narsese_PrintTerm(&b); puts(""); */
-                                //a <- x:
-                                Term x = Term_ExtractSubterm(&a, 1);
-                                a = x;
-                                //b <- <(y * z) --> (Y * Z)>:
-                                Term y = Term_ExtractSubterm(&y_Y, 1);
-                                Term Y = Term_ExtractSubterm(&y_Y, 2);
-                                Term z = Term_ExtractSubterm(&z_Z, 1);
-                                Term Z = Term_ExtractSubterm(&z_Z, 2);
-                                /*fputs("!!!y Y z Z :>>> ", stdout);
-                                Narsese_PrintTerm(&y); fputs(" ; ", stdout);
-                                Narsese_PrintTerm(&Y); fputs(" ; ", stdout);
-                                Narsese_PrintTerm(&z); fputs(" ; ", stdout);
-                                Narsese_PrintTerm(&Z); fputs(" ; ", stdout);
-                                puts("");
-                                fflush(stdout); //exit(0); */
-                                b = (Term) {0};
-                                b.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
-                                b.atoms[1] = Narsese_CopulaIndex(PRODUCT);
-                                b.atoms[2] = Narsese_CopulaIndex(PRODUCT);
-                                bool succ1 = Term_OverrideSubterm(&b, 3, &y);
-                                bool succ2 = Term_OverrideSubterm(&b, 4, &z);
-                                bool succ3 = Term_OverrideSubterm(&b, 5, &Y);
-                                bool succ4 = Term_OverrideSubterm(&b, 6, &Z);
-                                //fputs("!!!b before", stdout); Narsese_PrintTerm(&b); puts(""); fflush(stdout);
-                                if(succ1 && succ2 && succ3 && succ4)
-                                {
-                                    //fputs("!!!b", stdout); Narsese_PrintTerm(&b); puts(""); fflush(stdout);
-                                    Concept *c_y_Y = Memory_FindConceptByTerm(&y_Y);
-                                    Event e_y_Y = c_y_Y->belief_spike;
-                                    if(c_y_Y != NULL && e_y_Y.type != EVENT_TYPE_DELETED)
-                                    {
-                                        e_y_Y.truth = Truth_Projection(e_y_Y.truth, e_y_Y.occurrenceTime, occurrenceTime_b);
-                                        truth_b = Truth_Intersection(truth_b, e_y_Y.truth);
-                                        stamp_b = e_y_Y.stamp;
-                                        //puts("YAY!!!");  fflush(stdout);
-                                    }
-                                    else
-                                    {
-                                        //puts("NOPE 1!!!");  fflush(stdout);
-                                        proceed = false;
-                                    }
-                                }
-                                else
-                                {
-                                    //puts("NOPE 2!!!");  fflush(stdout);
-                                    proceed = false;
-                                }
-                            }
-                            else
-                            {
-                                //puts("NOPE 3!!!");  fflush(stdout);
-                                proceed = false;
-                            }
-                        }
-                        if(proceed && Narsese_copulaEquals(a.atoms[0], INHERITANCE) && Narsese_copulaEquals(b.atoms[0], INHERITANCE))
-                        {
-                            //fputs("!!!AGAIN", stdout); Narsese_PrintTerm(&a); fputs(" :> ", stdout); Narsese_PrintTerm(&b); puts(""); fflush(stdout);
-                            Term subject_a = Term_ExtractSubterm(&a, 1);
-                            Term predicate_a = Term_ExtractSubterm(&a, 2);
-                            Term subject_b = Term_ExtractSubterm(&b, 1);
-                            Term predicate_b = Term_ExtractSubterm(&b, 2);
-                            Term relation = {0}; //<(sA * sB) --> (pA * pB)>
-                                                 //--> * * sA sB pA pB
-                                                 //  1 2 3  4  5  6  7
-                                                 //  0 1 2  3  4  5  6
-                            relation.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
-                            relation.atoms[1] = Narsese_CopulaIndex(PRODUCT);
-                            relation.atoms[2] = Narsese_CopulaIndex(PRODUCT);
-                            bool succ1 = Term_OverrideSubterm(&relation, 3, &subject_a);
-                            bool succ2 = Term_OverrideSubterm(&relation, 4, &subject_b);
-                            bool succ3 = Term_OverrideSubterm(&relation, 5, &predicate_a);
-                            bool succ4 = Term_OverrideSubterm(&relation, 6, &predicate_b);
-                            if(succ1 && succ2 && succ3 && succ4)
-                            {
-                                //puts("OK 1!!!");  fflush(stdout);
-                                Concept *c_a = Memory_FindConceptByTerm(&a);
-                                Event e_a = c_a->belief_spike;
-                                if(c_a != NULL && e_a.type != EVENT_TYPE_DELETED)
-                                {
-                                    e_a.truth = Truth_Projection(e_a.truth, e_a.occurrenceTime, occurrenceTime_b);
-                                    Truth truth = Truth_Intersection(e_a.truth, truth_b);
-                                    Event ev = Event_InputEvent(relation, EVENT_TYPE_BELIEF, truth, 0, currentTime);
-                                    ev.stamp = Stamp_make(&e_a.stamp, &stamp_b);
-                                    ev.occurrenceTime = MAX(e_a.occurrenceTime, occurrenceTime_b);
-                                    Memory_AddEvent(&ev, currentTime, 1.0, false, true, true, 0, false);
-                                }
-                            }
-                        }
-                    }
+                    Memory_AddEvent(&utilized_reason, currentTime, 1.0, false, true, true, 0, false);
                 }
             }
             //assumption of failure extension to specific cases not experienced before:

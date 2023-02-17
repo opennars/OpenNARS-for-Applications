@@ -846,3 +846,41 @@ bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
     }
     return success;
 }
+
+
+Term Narsese_RelationalSequence(Term precondition) //transforms (<a --> A> &/ <b --> B>) into <(a * b) --> (A * B)> iteratively
+{
+    if(Narsese_copulaEquals(precondition.atoms[0], SEQUENCE))
+    {
+        bool proceed = true;
+        Term aA = Term_ExtractSubterm(&precondition, 1); //a
+        Term bB = Term_ExtractSubterm(&precondition, 2); //b
+        if(Narsese_copulaEquals(aA.atoms[0], INHERITANCE) && Narsese_copulaEquals(bB.atoms[0], INHERITANCE))
+        {
+            Term subject_a = Term_ExtractSubterm(&aA, 1);
+            Term predicate_a = Term_ExtractSubterm(&aA, 2);
+            Term subject_b = Term_ExtractSubterm(&bB, 1);
+            Term predicate_b = Term_ExtractSubterm(&bB, 2);
+            Term relation = {0}; //<(sA * sB) --> (pA * pB)>
+                                 //--> * * sA sB pA pB
+                                 //  1 2 3  4  5  6  7
+                                 //  0 1 2  3  4  5  6
+            relation.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+            relation.atoms[1] = Narsese_CopulaIndex(PRODUCT);
+            relation.atoms[2] = Narsese_CopulaIndex(PRODUCT);
+            bool succ1 = Term_OverrideSubterm(&relation, 3, &subject_a);
+            bool succ2 = Term_OverrideSubterm(&relation, 4, &subject_b);
+            bool succ3 = Term_OverrideSubterm(&relation, 5, &predicate_a);
+            bool succ4 = Term_OverrideSubterm(&relation, 6, &predicate_b);
+            if(succ1 && succ2 && succ3 && succ4)
+            {
+                return relation;
+            }
+            else
+            {
+                return (Term) {0};
+            }
+        }
+    }
+    return (Term) {0};
+}
