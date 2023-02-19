@@ -39,7 +39,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
     negative_confirmation.stamp = (Stamp) {0};
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
-    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation, false);
+    Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
     if(added != NULL)
     {
         added->sourceConcept = negative_confirmation.sourceConcept;
@@ -121,13 +121,6 @@ void Decision_Execute(Decision *decision)
         if(success)
         {
             NAR_AddInputBelief(feedbackTerm);
-            if(SEMANTIC_INFERENCE_NAL_LEVEL >= 8 && decision->usedContingency.term.atoms[0])
-            {
-                Event e_rel = Event_InputEvent(decision->usedContingency.term, EVENT_TYPE_BELIEF, decision->usedContingency.truth, decision->usedContingency.occurrenceTimeOffset, currentTime);
-                e_rel.stamp = decision->usedContingency.stamp;
-                e_rel.occurrenceTime = OCCURRENCE_ETERNAL; //whether eternal evidence should be used here
-                Memory_AddEvent(&e_rel, currentTime, USED_CONTINGENCY_EVENT_PRIORITY, false, true, true, 0, true);
-            }
             //assumption of failure extension to specific cases not experienced before:
             if(ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION && decision->missing_specific_implication.term.atoms[0])
             {

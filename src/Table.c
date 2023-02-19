@@ -59,7 +59,7 @@ void Table_Remove(Table *table, int index)
     table->itemsAmount = MAX(0, table->itemsAmount-1);
 }
 
-Implication *Table_AddAndRevise(Table *table, Implication *imp, bool considerStamp)
+Implication *Table_AddAndRevise(Table *table, Implication *imp)
 {
     //1. find element with same Term
     int same_i = -1;
@@ -76,10 +76,6 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp, bool considerSta
     {
         //revision adds the revised element, removing the old implication from the table
         Implication OldImp = table->array[same_i];
-        if(considerStamp && Stamp_checkOverlap(&imp->stamp, &OldImp.stamp))
-        {
-            return NULL; //if there is overlap we keep what we have, as it might contain direct evidence (no choice here)
-        }                //which could else be potentially overriden with indirect one
         if(OldImp.occurrenceTimeOffset == 0.0 && imp->occurrenceTimeOffset > 0.0)
         {
             return NULL; //we don't add it if it would override a concurrent one

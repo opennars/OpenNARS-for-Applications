@@ -269,7 +269,7 @@ void Memory_printAddedImplication(Term *implication, Truth *truth, double occurr
     Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool temporalImplicationEvent)
+void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
@@ -317,7 +317,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
-                Implication *revised = Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp, temporalImplicationEvent);
+                Implication *revised = Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
@@ -328,7 +328,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || temporalImplicationEvent)
+    else
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -372,7 +372,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
             if(revision_happened)
             {
-                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0, temporalImplicationEvent);
+                Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
                     Memory_printAddedEvent(&c->belief, priority, false, false, true, true, false);
@@ -382,7 +382,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool temporalImplicationEvent)
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer)
 {
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -400,11 +400,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || temporalImplicationEvent)
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
         {
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         }
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, temporalImplicationEvent);
+        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
@@ -420,7 +420,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, false);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, 0);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

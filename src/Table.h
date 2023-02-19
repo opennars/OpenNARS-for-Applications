@@ -61,6 +61,6 @@ Implication *Table_Add(Table *table, Implication *imp);
 //Add element at index from table
 void Table_Remove(Table *table, int index);
 //Add implication to table while allowing revision
-Implication* Table_AddAndRevise(Table *table, Implication *imp, bool considerStamp);
+Implication* Table_AddAndRevise(Table *table, Implication *imp);
 
 #endif

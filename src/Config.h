@@ -80,8 +80,6 @@
 #define UNIFICATION_DEPTH 31
 //Questions concept activation priority
 #define QUESTION_PRIMING_INITIAL 0.1
-//Initial priority of used contingency events
-#define USED_CONTINGENCY_EVENT_PRIORITY 0.000001
 
 /*---------------------------------*/
 /* Temporal compounding parameters */

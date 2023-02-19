@@ -244,12 +244,6 @@ R1( (A &| B), |-, B, Truth_StructuralDeduction )
 R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 #endif
 
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 8
-//!Mutual Entailment
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) ==> ((A &/ Op1) =/> S)), Truth_Induction )
-R2VarIntro( ((A &/ Op1) =/> S), ((B &/ Op2) =/> P), |-, (((B &/ Op2) =/> P) <=> ((A &/ Op1) =/> S)), Truth_Comparison )
-#endif
-
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
 
 #endif
