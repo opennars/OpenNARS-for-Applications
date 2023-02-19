@@ -462,7 +462,14 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 if(c != NULL)
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
-                                    c->predicted_belief = result;
+                                    if(imp.occurrenceTimeOffset > 0.0)
+                                    {
+                                        c->predicted_belief = result;
+                                    }
+                                    if(imp.occurrenceTimeOffset == 0.0 && result.occurrenceTime > c->belief_spike.occurrenceTime) //use as belief_spike if newer
+                                    {
+                                        c->belief_spike = result;
+                                    }
                                 }
                             }
                         }

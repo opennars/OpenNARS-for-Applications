@@ -304,6 +304,11 @@ int Shell_ProcessInput(char *line)
             printf("done with %u additional inference steps.\n", steps); fflush(stdout);
         }
         else
+        if(!strncmp("*concurrent", line, strlen("*concurrent")))
+        {
+            currentTime-=1;
+        }
+        else
         {
             NAR_AddInputNarsese(line);
         }

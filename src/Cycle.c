@@ -422,9 +422,9 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                 Concept *c = OccurrenceTimeIndex_GetKthNewestElement(&occurrenceTimeIndex, i);
                 bool wasProcessed = c->processID2 == conceptProcessID2;
                 c->processID2 = conceptProcessID2;
-                if(!wasProcessed && c->belief_spike.type != EVENT_TYPE_DELETED && c->belief_spike.creationTime < currentTime && 
+                if(!wasProcessed && c->belief_spike.type != EVENT_TYPE_DELETED && c->belief_spike.creationTime <= currentTime && 
                    labs(c->belief_spike.occurrenceTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF && labs(c->lastSelectionTime - postcondition.occurrenceTime) <= MAX_SEQUENCE_TIMEDIFF &&
-                   c->belief_spike.occurrenceTime < postcondition.occurrenceTime && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
+                   c->belief_spike.occurrenceTime <= postcondition.occurrenceTime && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], EQUIVALENCE) && !Narsese_copulaEquals(c->belief_spike.term.atoms[0], IMPLICATION))
                 {
                     int op_id2 = Memory_getOperationID(&c->belief_spike.term);
                     bool is_op_seq = op_id && op_id2;
@@ -437,7 +437,11 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             if(!op_id && !op_id2)
                             {
-                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>
+                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>, <A =|> B>
+                                if(c->belief_spike.occurrenceTime == postcondition.occurrenceTime)
+                                {
+                                    Cycle_ReinforceLink(&postcondition, &c->belief_spike);
+                                }
                             }
                             int sequence_len = 0;
                             for(int i=1; sequence_len<MAX_SEQUENCE_LEN && i<COMPOUND_TERM_SIZE_MAX; i*=2, sequence_len++)
@@ -447,7 +451,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     break;
                                 }
                             }
-                            if((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN)) //only build seq if within len
+                            if(postcondition.occurrenceTime > c->belief_spike.occurrenceTime && ((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN))) //only build seq if within len
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);

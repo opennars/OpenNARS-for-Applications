@@ -1,0 +1,96 @@
+*volume=0
+*setopname 1 ^point
+*setopname 2 ^name
+*setopname 3 ^imitate
+*motorbabbling=false
+
+//Learn vision and sound correspondence for "CAT" for naming and imitating and pointing:
+<{catVisual} --> [see]>. :|:
+*concurrent
+<{catSound} --> [hear]>. :|:
+*concurrent
+<{catLabel} --> [read]>. :|:
+<({SELF} * {catLabel}) --> ^name>. :|:
+named. :|:
+
+20
+
+<{catVisual} --> [see]>. :|:
+*concurrent
+<{catSound} --> [hear]>. :|:
+*concurrent
+<{catLabel} --> [read]>. :|:
+<({SELF} * {catSound}) --> ^imitate>. :|:
+imitated. :|:
+
+20
+
+<{catVisual} --> [see]>. :|:
+*concurrent
+<{catSound} --> [hear]>. :|:
+*concurrent
+<{catLabel} --> [read]>. :|:
+<({SELF} * {catVisual}) --> ^point>. :|:
+pointed. :|:
+
+20
+
+<{dogVisual} --> [see]>. :|:
+*concurrent
+<{dogSound} --> [hear]>. :|:
+*concurrent
+<{dogLabel} --> [read]>. :|:
+
+20
+
+<{dogVisual} --> [see]>. :|:
+named! :|:
+//expected: ^name executed with args ({SELF} * {dogLabel})
+
+20
+
+<{dogSound} --> [hear]>. :|:
+named! :|:
+//expected: ^name executed with args ({SELF} * {dogLabel})
+
+20
+
+<{dogLabel} --> [read]>. :|:
+named! :|:
+//expected: ^name executed with args ({SELF} * {dogLabel})
+
+20
+
+<{dogVisual} --> [see]>. :|:
+imitated! :|:
+//expected: ^imitate executed with args ({SELF} * {dogSound})
+
+20
+
+<{dogSound} --> [hear]>. :|:
+imitated! :|:
+//expected: ^imitate executed with args ({SELF} * {dogSound})
+
+20
+
+<{dogLabel} --> [read]>. :|:
+imitated! :|:
+//expected: ^imitate executed with args ({SELF} * {dogSound})
+
+20
+
+<{dogVisual} --> [see]>. :|:
+pointed! :|:
+//expected: ^point executed with args ({SELF} * {dogVisual})
+
+20
+
+<{dogSound} --> [hear]>. :|:
+pointed! :|:
+//expected: ^point executed with args ({SELF} * {dogVisual})
+
+20
+
+<{dogLabel} --> [read]>. :|:
+pointed! :|:
+//expected: ^point executed with args ({SELF} * {dogVisual})

@@ -39,4 +39,4 @@ G! :|:
 
 (<y --> S> &/ <x --> L>). :|:
 G! :|:
-//expected: ^right executed with args
+//--expected: ^right executed with args
