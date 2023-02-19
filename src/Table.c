@@ -65,7 +65,9 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
     {
-        if(Term_Equal(&imp->term, &table->array[i].term))
+        bool are_concurrent_implications = imp->occurrenceTimeOffset == 0.0 && table->array[i].occurrenceTimeOffset == 0.0;
+        bool are_predictive_implications = imp->occurrenceTimeOffset >  0.0 && table->array[i].occurrenceTimeOffset >  0.0;
+        if(Term_Equal(&imp->term, &table->array[i].term) && (are_concurrent_implications || are_predictive_implications))
         {
             same_i = i;
             break;
@@ -76,15 +78,11 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     {
         //revision adds the revised element, removing the old implication from the table
         Implication OldImp = table->array[same_i];
-        if(OldImp.occurrenceTimeOffset == 0.0 && imp->occurrenceTimeOffset > 0.0)
-        {
-            return NULL; //we don't add it if it would override a concurrent one
-        }
         assert(OldImp.truth.frequency >= 0.0 && OldImp.truth.frequency <= 1.0, "(1) frequency out of bounds");
         assert(OldImp.truth.confidence >= 0.0 && OldImp.truth.confidence <= 1.0, "(1) confidence out of bounds");
         assert(imp->truth.frequency >= 0.0 && imp->truth.frequency <= 1.0, "(2) frequency out of bounds");
         assert(imp->truth.confidence >= 0.0 && imp->truth.confidence <= 1.0, "(2) confidence out of bounds");
-        Implication revised = OldImp.occurrenceTimeOffset > 0.0 && imp->occurrenceTimeOffset == 0.0 ? *imp : Inference_ImplicationRevision(&OldImp, imp);
+        Implication revised = Inference_ImplicationRevision(&OldImp, imp);
         assert(revised.truth.frequency >= 0.0 && revised.truth.frequency <= 1.0, "(3) frequency out of bounds");
         assert(revised.truth.confidence >= 0.0 && revised.truth.confidence <= 1.0, "(3) confidence out of bounds");
         revised.term = imp->term;
