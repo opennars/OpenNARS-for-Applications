@@ -290,7 +290,6 @@ int Shell_ProcessInput(char *line)
         if(!strncmp("*setopstdin ", line, strlen("*setopstdin ")))
         {
             int opID;
-            char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopstdin ")], "%d", &opID);
             operations[opID - 1].stdinOutput = true;
         }
