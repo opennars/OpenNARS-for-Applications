@@ -610,10 +610,6 @@ void Cycle_Inference(long currentTime)
                         project_belief.occurrenceTime = e->occurrenceTime;
                         belief = &project_belief;
                     }
-                    if(belief->occurrenceTime == OCCURRENCE_ETERNAL && Narsese_copulaEquals(belief->term.atoms[0], HAS_CONTINUOUS_PROPERTY))
-                    {
-                        continue;
-                    }
                     //Check for overlap and apply inference rules
                     if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                     {

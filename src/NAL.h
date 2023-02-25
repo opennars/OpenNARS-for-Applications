@@ -133,6 +133,7 @@ R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralInters
 R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralIntersection )
+//!Comparative relations
 R2( ({R} |-> [P]), ({S} |-> [P]), |-, (({R} * {S}) --> (+ P)), Truth_FrequencyGreater )
 R2( ((A * B) --> (+ P)), ((B * C) --> (+ P)), |-, ((A * C) --> (+ P)), Truth_Deduction )
 R2( ({R} |-> [P]), ({S} |-> [P]), |-, ((R * S) --> (= P)), Truth_FrequencyEqual )
