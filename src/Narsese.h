@@ -69,7 +69,7 @@ extern Atom SELF;
 #define IMPLICATION '?'
 #define EQUIVALENCE '^'
 #define DISJUNCTION '_'
-#define PARALLEL_CONJUNCTION ','
+#define HAS_CONTINUOUS_PROPERTY ','
 #define SET_TERMINATOR '@'
 
 //Methods//

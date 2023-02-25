@@ -333,7 +333,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
         {
-            if(event->occurrenceTime != OCCURRENCE_ETERNAL)
+            if(event->occurrenceTime != OCCURRENCE_ETERNAL && !Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY))
             {
                 OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex);
             }

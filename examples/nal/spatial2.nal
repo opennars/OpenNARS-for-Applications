@@ -1,9 +1,9 @@
 *volume=0
 
-<a --> [locationX]>. :|: %0.1%
-<a --> [locationY]>. :|: %0.3%
-<b --> [locationX]>. :|: %0.2%
+<a |-> [locationX]>. :|: %0.1%
+<a |-> [locationY]>. :|: %0.3%
+<b |-> [locationX]>. :|: %0.2%
 <(b * a) --> (= locationY)>. :|:
 5
-<b --> [locationY]>? :|:
-//expected: Answer: <b --> [locationY]>. :|: occurrenceTime=5 Truth: frequency=0.300000, confidence=0.466560
+<b |-> [locationY]>? :|:
+//expected: Answer: <b |-> [locationY]>. :|: occurrenceTime=5 Truth: frequency=0.300000, confidence=0.466560

@@ -1,7 +1,7 @@
 *volume=0
 
-<a --> [locationX]>. :|: %0.1%
-<b --> [locationX]>. :|: %0.2%
+<a |-> [locationX]>. :|: %0.1%
+<b |-> [locationX]>. :|: %0.2%
 <(c * b) --> (+ locationX)>. :|:
 <(c * a) --> (+ locationX)>? :|:
 //expected: Answer: <(c * a) --> (+ locationX)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.466560
