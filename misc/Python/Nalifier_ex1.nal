@@ -1,28 +1,25 @@
 *RESET_PROTOTYPES=3
-*SET_CONTINUOUS=red
-*SET_CONTINUOUS=green
-*SET_CONTINUOUS=blue
 *SUFFICIENT_MATCH_EXP=1
 *volume=0
-<{redInst} --> [red]>. :|: %1.0%
-<{redInst} --> [green]>. :|: %0.0%
-<{redInst} --> [blue]>. :|: %0.0%
+<{redInst} |-> [red]>. :|: %1.0%
+<{redInst} |-> [green]>. :|: %0.0%
+<{redInst} |-> [blue]>. :|: %0.0%
 1
-<{greenInst} --> [red]>. :|: %0.0%
-<{greenInst} --> [green]>. :|: %1.0%
-<{greenInst} --> [blue]>. :|: %0.0%
+<{greenInst} |-> [red]>. :|: %0.0%
+<{greenInst} |-> [green]>. :|: %1.0%
+<{greenInst} |-> [blue]>. :|: %0.0%
 1
-<{blueInst} --> [red]>. :|: %0.0%
-<{blueInst} --> [green]>. :|: %0.0%
-<{blueInst} --> [blue]>. :|: %1.0%
+<{blueInst} |-> [red]>. :|: %0.0%
+<{blueInst} |-> [green]>. :|: %0.0%
+<{blueInst} |-> [blue]>. :|: %1.0%
 1
 *SUFFICIENT_MATCH_EXP=0
-<{newcolor} --> [red]>. :|: %0.0%
-<{newcolor} --> [green]>. :|: %0.0%
-<{newcolor} --> [blue]>. :|: %0.1%
+<{newcolor} |-> [red]>. :|: %0.0%
+<{newcolor} |-> [green]>. :|: %0.0%
+<{newcolor} |-> [blue]>. :|: %0.1%
 1
 5
-<{newcolor} <-> {?what}>? :|:
-//expected: Answer: <{newcolor} <-> {blueInst}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
+<{?what} <-> {newcolor}>? :|:
+//expected: Answer: <{blueInst} <-> {newcolor}>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000
 <({blueInst} * {newcolor}) --> (+ blue)>? :|:
-//expected: Answer: <({blueInst} * {newcolor}) --> (+ blue)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <({blueInst} * {newcolor}) --> (+ blue)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000

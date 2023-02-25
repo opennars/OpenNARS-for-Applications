@@ -1,8 +1,6 @@
 *RESET_PROTOTYPES=2
 *SUFFICIENT_MATCH_EXP=1
 *CONCEPT_CREATION=true
-*SET_CONTINUOUS=brown
-*SET_CONTINUOUS=small
 *volume=0
 <{cat} --> [meowing]>. :|: %1.0%
 <{cat} --> [barking]>. :|: %0.0%
