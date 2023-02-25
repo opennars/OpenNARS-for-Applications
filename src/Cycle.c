@@ -370,7 +370,9 @@ void Cycle_ProcessBeliefEvents(long currentTime)
     for(int h=0; h<beliefsSelectedCnt; h++)
     {
         Event *toProcess = &selectedBeliefs[h];
-        if(toProcess != NULL && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (currentTime - toProcess->occurrenceTime) < CORRELATE_OUTCOME_RECENCY)
+        assert(toProcess != NULL, "Cycle.c: toProcess is NULL!");
+        bool isContinuousPropertyStatement = Narsese_copulaEquals(toProcess->term.atoms[0], HAS_CONTINUOUS_PROPERTY);
+        if(!isContinuousPropertyStatement && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (currentTime - toProcess->occurrenceTime) < CORRELATE_OUTCOME_RECENCY)
         {
             assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
             Cycle_ProcessSensorimotorEvent(toProcess, currentTime);

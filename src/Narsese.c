@@ -89,12 +89,6 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 i+=2; j++;
             }
             else
-            if(narsese[i] == '&' && narsese[i+1] == '|') // &| becomes ,
-            {
-                narsese_replaced[j] = ',';
-                i+=2; j++;
-            }
-            else
             if(narsese[i] == '&' && narsese[i+1] == '&') // && becomes ;
             {
                 narsese_replaced[j] = ';';
@@ -136,6 +130,12 @@ char* replaceWithCanonicalCopulas(char *narsese, int n)
                 if(narsese[i] == '-' && narsese[i+1] == '-' && narsese[i+2] == '>') // --> becomes :
                 {
                     narsese_replaced[j] = ':';
+                    i+=3; j++;
+                }
+                else
+                if(narsese[i] == '|' && narsese[i+1] == '-' && narsese[i+2] == '>') // |-> becomes ,
+                {
+                    narsese_replaced[j] = ',';
                     i+=3; j++;
                 }
                 else
@@ -490,9 +490,9 @@ void Narsese_PrintAtom(Atom atom)
             fputs("&/", stdout);
         }
         else
-        if(Narsese_copulaEquals(atom, PARALLEL_CONJUNCTION))
+        if(Narsese_copulaEquals(atom, HAS_CONTINUOUS_PROPERTY))
         {
-            fputs("&|", stdout);
+            fputs("|->", stdout);
         }
         else
         if(Narsese_copulaEquals(atom, IMPLICATION))
@@ -557,7 +557,8 @@ void Narsese_PrintTermPrettyRecursive(Term *term, int index) //start with index=
     bool isFrequencyEqual = Narsese_copulaEquals(atom, SIMILARITY) && !hasRightChild;
     bool isExtSet = Narsese_copulaEquals(atom, EXT_SET);
     bool isIntSet = Narsese_copulaEquals(atom, INT_SET);
-    bool isStatement = !isFrequencyEqual && (Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION) || Narsese_copulaEquals(atom, INHERITANCE) || Narsese_copulaEquals(atom, SIMILARITY) || Narsese_copulaEquals(atom, IMPLICATION) || Narsese_copulaEquals(atom, EQUIVALENCE));
+    bool isStatement = !isFrequencyEqual && (Narsese_copulaEquals(atom, TEMPORAL_IMPLICATION) || Narsese_copulaEquals(atom, INHERITANCE) || Narsese_copulaEquals(atom, SIMILARITY) ||
+                       Narsese_copulaEquals(atom, IMPLICATION) || Narsese_copulaEquals(atom, EQUIVALENCE) || Narsese_copulaEquals(atom, HAS_CONTINUOUS_PROPERTY));
     if(isExtSet)
     {
         fputs(hasLeftChild ? "{" : "", stdout);

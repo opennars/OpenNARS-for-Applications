@@ -1,22 +1,20 @@
 *RESET_PROTOTYPES=2
 *SUFFICIENT_MATCH_EXP=1
-*SET_CONTINUOUS=yellow
-*SET_CONTINUOUS=small
 *volume=0
-<{duck} --> [yellow]>. :|: %1.0%
-<{duck} --> [small]>. :|: %1.0%
+<{duck} |-> [yellow]>. :|: %1.0%
+<{duck} |-> [small]>. :|: %1.0%
 <{duck} --> [feathered]>. :|: %1.0%
 1
-<{dog} --> [brown]>. :|: %1.0%
-<{dog} --> [small]>. :|: %1.0%
+<{dog} |-> [brown]>. :|: %1.0%
+<{dog} |-> [small]>. :|: %1.0%
 <{dog} --> [furry]>. :|: %1.0%
 1
 *SUFFICIENT_MATCH_EXP=0
-<{newpattern} --> [yellow]>. :|: %1.0%
-<{newpattern} --> [small]>. :|: %0.0%
+<{newpattern} |-> [yellow]>. :|: %1.0%
+<{newpattern} |-> [small]>. :|: %0.0%
 1
 5
-<{newpattern} <-> {?what}>? :|:
-//expected: Answer: <{newpattern} <-> {duck}>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.810000
+<{?what} <-> {newpattern}>? :|:
+//expected: Answer: <{duck} <-> {newpattern}>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000
 <({duck} * {newpattern}) --> (+ ?1)>? :|:
-//expected: Answer: <({duck} * {newpattern}) --> (+ small)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <({duck} * {newpattern}) --> (+ small)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000

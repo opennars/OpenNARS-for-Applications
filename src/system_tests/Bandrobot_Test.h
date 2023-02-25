@@ -63,7 +63,6 @@ void NAR_Bandrobot(long iterations)
     NAR_AddOperation("^right", NAR_Bandrobot_Right);
     NAR_AddOperation("^pick", NAR_Bandrobot_Pick); 
     NAR_AddOperation("^drop", NAR_Bandrobot_Drop);
-    Shell_ProcessInput("*motorbabbling=0.02");
     Shell_ProcessInput("*questionpriming=0.0"); //questions are only used for debug here, not to influence attention
     long t = 0;
     int minpos = 0.0;
@@ -112,15 +111,17 @@ void NAR_Bandrobot(long iterations)
         memcpy(world, initial, sizeof(initial));
         DRAW_LINE(position, 2, 0, 1, (char*) world, 'A');
         DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
-        //NAR_AddInputNarsese("<(<(position * targetposition) --> [left]> &/ ?1) =/> aligned>?");
-        //NAR_AddInputNarsese("<(<(targetposition * position) --> [left]> &/ ?1) =/> aligned>?");
-        NAR_AddInputNarsese("<(?1 * ?2) --> (+ left)>? :\\:");
+        //NAR_AddInputNarsese("<(<({position} * {targetposition}) --> (+ left)> &/ ^right) =/> picked>?");
+        //NAR_AddInputNarsese("<(<({targetposition} * {position}) --> (+ left)> &/ ^left) =/> picked>?");
+        NAR_AddInputNarsese("<({?1} * {?2}) --> (+ left)>? :\\:");
         puts(world);
-        char positionStr[NARSESE_LEN_MAX];
-        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", (((float) (position-minpos))/((float) (maxpos-minpos)))/10.0);
+        char positionStr[NARSESE_LEN_MAX] = {0};
+        float v_position = MIN(1.0, MAX(0.0, (((float) (position-minpos))/((float) (maxpos-minpos)))));
+        sprintf(positionStr, "%s%f%s", "<{position} |-> [left]>. :|: %", v_position, "%\0");
         NAR_AddInputNarsese(positionStr);
-        char targetpositionStr[NARSESE_LEN_MAX];
-        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", (((float) (targetposition-minpos))/((float) (maxpos-minpos)))/10.0);
+        char targetpositionStr[NARSESE_LEN_MAX] = {0};
+        float v_targetposition = MIN(1.0, MAX(0.0, (((float) (targetposition-minpos))/((float) (maxpos-minpos)))));
+        sprintf(targetpositionStr, "%s%f%s", "<{targetposition} |-> [left]>. :|: %", v_targetposition, "%\0");
         NAR_AddInputNarsese(targetpositionStr);
         if(picked && !lastpicked)
         {

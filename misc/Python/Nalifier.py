@@ -249,6 +249,10 @@ class Nalifier:
         if inp != "1":
             instance = inp.split("{")[1].split("}")[0]
             property = inp.split("[")[1].split("]")[0]
+            if "|->" in inp:
+                if property not in self.sensorValueReporters:
+                  self.sensorValueReporters[property] = ValueReporter()
+                self.continuous_comparison_properties.add(property)
             frequency = float(inp.split("%")[1].split("%")[0].split(";")[0]) if "%" in inp else 1.0
             if property == "position0":
               position0[instance] = frequency
@@ -296,23 +300,23 @@ class Nalifier:
                       if self.UseIntensionalDifference and biggestDifferenceProp not in self.continuous_comparison_properties:
                           relStatement = f"<({inst1forRel} ~ {inst2forRel}) --> [{biggestDifferenceProp}]>"
                       if self.last_label is not None: 
-                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && {relStatement}) &| <{{{inst2}}} --> {self.last_label}>). :|: %{self.last_label_frequency};{0.9}%"
-                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> &| {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
+                        #ev1 = f"((<{{{inst2}}} <-> {inst1}> && {relStatement}) && <{{{inst2}}} --> {self.last_label}>). :|: %{self.last_label_frequency};{0.9}%"
+                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> && {relStatement}). :|: %{self.last_label_frequency};{0.9}%"
                       else:
-                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> &| {relStatement}). :|:"
+                        ev1 = f"(<{inst1forRel} {rel} {inst2forRel}> && {relStatement}). :|:"
                       inst1 = inst1.replace("{","").replace("}","") #not elegant
                       inst2 = inst2.replace("{","").replace("}","") #todo improve
                       if inst1 in self.position0 and inst2 in self.position0 and inst1 in self.position1 and inst2 in self.position1 and not self.winner_match_asymmetric:
                           if self.position0[inst1] > self.position0[inst2]:
                             if position1[inst1] > position1[inst2]:
-                              evP = f"(<({{{inst1}}} * {{{inst2}}}) --> (+ position0)> &| <({{{inst1}}} * {{{inst2}}}) --> (+ position1)>). :|: %1.0;0.6%"
+                              evP = f"(<({{{inst1}}} * {{{inst2}}}) --> (+ position0)> && <({{{inst1}}} * {{{inst2}}}) --> (+ position1)>). :|: %1.0;0.6%"
                             else:
-                              evP = f"(<({{{inst1}}} * {{{inst2}}}) --> (+ position0)> &| <({{{inst2}}} * {{{inst1}}}) --> (+ position1)>). :|: %1.0;0.6%"
+                              evP = f"(<({{{inst1}}} * {{{inst2}}}) --> (+ position0)> && <({{{inst2}}} * {{{inst1}}}) --> (+ position1)>). :|: %1.0;0.6%"
                           else:
                             if self.position1[inst1] > self.position1[inst2]:
-                              evP = f"(<({{{inst2}}} * {{{inst1}}}) --> (+ position0)> &| <({{{inst1}}} * {{{inst2}}}) --> (+ position1)>). :|: %1.0;0.6%"
+                              evP = f"(<({{{inst2}}} * {{{inst1}}}) --> (+ position0)> && <({{{inst1}}} * {{{inst2}}}) --> (+ position1)>). :|: %1.0;0.6%"
                             else:
-                              evP = f"(<({{{inst2}}} * {{{inst1}}}) --> (+ position0)> &| <({{{inst2}}} * {{{inst1}}}) --> (+ position1)>). :|: %1.0;0.6%"
+                              evP = f"(<({{{inst2}}} * {{{inst1}}}) --> (+ position0)> && <({{{inst2}}} * {{{inst1}}}) --> (+ position1)>). :|: %1.0;0.6%"
                       self.Events.append(ev1)
                       if evP is not None:
                         if Print:
@@ -434,7 +438,7 @@ class Nalifier:
                 (f,c) = self.sensorValueReporters[propertyName].reportValue(value, Print=False, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
             else:
                 (f,c) = (value, Sensation_Reliance)
-            self.AddInput("<{" + name + "} --> [" + propertyName + "]>. %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
+            self.AddInput("<{" + name + "} |-> [" + propertyName + "]>. %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
 
     def ShellInput(self, inp):
         if inp.startswith("*SET_CONTINUOUS="):

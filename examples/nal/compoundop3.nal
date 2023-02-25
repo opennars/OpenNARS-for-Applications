@@ -1,9 +1,0 @@
-*volume=100
-*motorbabbling=false
-
-x. :|:
-<({SELF} * a) --> ^left>. :|:
-<({SELF} * a) --> ^pick>. :|:
-b. :|:
-<((x &/ <({SELF} * #1) --> ^left>) &/ <({SELF} * #1) --> ^pick>) =/> b>?
-//expected: Answer: <((x &/ <({SELF} * #1) --> ^left>) &/ <({SELF} * #1) --> ^pick>) =/> b>. Truth: frequency=1.000000, confidence=0.174792
