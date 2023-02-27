@@ -156,6 +156,12 @@ void NAR_Bandrobot(long iterations)
         }
         lastpicked = picked;
         NAR_AddInputNarsese("dropped! :|:");
-        printf("ratio=%d time=%ld\n", successes, t);
+        int t_includeSleep = 17500;
+        printf("ratio=%d sleepInVisualization=%s time=%ld\n", successes, (t_includeSleep ? "true" : "false"), t);
+        fflush(stdout);
+        if(t>t_includeSleep)
+        {
+            SLEEP;
+        }
     }
 }
