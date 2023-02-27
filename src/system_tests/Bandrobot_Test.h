@@ -141,7 +141,7 @@ void NAR_Bandrobot(long iterations)
         {
             if(position == goalposition)
             {
-                NAR_AddInputNarsese("dropped. :|:");
+                NAR_AddInputNarsese("delivered. :|:");
                 targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
                 goalposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
                 successes++;
@@ -155,7 +155,7 @@ void NAR_Bandrobot(long iterations)
             }
         }
         lastpicked = picked;
-        NAR_AddInputNarsese("dropped! :|:");
+        NAR_AddInputNarsese("delivered! :|:");
         int t_includeSleep = 17500;
         printf("ratio=%d sleepInVisualization=%s time=%ld\n", successes, (t_includeSleep ? "true" : "false"), t);
         fflush(stdout);
