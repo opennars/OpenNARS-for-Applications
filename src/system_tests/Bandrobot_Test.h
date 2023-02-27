@@ -57,7 +57,8 @@ void NAR_Bandrobot(long iterations)
                      "---------------------|\n"
                      "                     |\n"
                      "                     |\n"
-                     "                     |\n";
+                     "                     |\n"
+                     "'''''''''''''''''''''|\n";
     puts(">>NAR Bandrobot start");
     NAR_AddOperation("^left", NAR_Bandrobot_Left);
     NAR_AddOperation("^right", NAR_Bandrobot_Right);
@@ -69,7 +70,8 @@ void NAR_Bandrobot(long iterations)
     int maxpos = 20.0;
     int position = 0;
     int targetposition = 1; //maxpos; //maxpos/2;
-    bool picked = false, lastpicked = false;
+    int goalposition = 2;
+    bool picked = false, lastpicked = false, hasObj = false;
     int successes = 0;
     while(1)
     {
@@ -98,12 +100,14 @@ void NAR_Bandrobot(long iterations)
             if(position == targetposition)
             {
                 picked = true;
+                hasObj = true;
             }
         }
         if(NAR_Bandrobot_Drop_executed)
         {
             NAR_Bandrobot_Drop_executed = false;
             picked = false;
+            hasObj = false;
         }
         //SLEEP;
         CLEAR_SCREEN;
@@ -111,17 +115,22 @@ void NAR_Bandrobot(long iterations)
         memcpy(world, initial, sizeof(initial));
         DRAW_LINE(position, 2, 0, 1, (char*) world, 'A');
         DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
+        DRAW_LINE(goalposition, 5, 0, 1, (char*) world, 'U');
         //NAR_AddInputNarsese("<(<({position} * {targetposition}) --> (+ left)> &/ ^right) =/> picked>?");
         //NAR_AddInputNarsese("<(<({targetposition} * {position}) --> (+ left)> &/ ^left) =/> picked>?");
-        NAR_AddInputNarsese("<({?1} * {?2}) --> (+ left)>? :\\:");
+        char *propname = hasObj ? "dropPosLeft" : "pickPosLeft";
+        char questionStr[NARSESE_LEN_MAX] = {0};
+        sprintf(questionStr, "%s%s%s", "<({?1} * {?2}) --> (+ ", propname, ")>? :\\:\0");
+        NAR_AddInputNarsese(questionStr);
         puts(world);
         char positionStr[NARSESE_LEN_MAX] = {0};
         float v_position = MIN(1.0, MAX(0.0, (((float) (position-minpos))/((float) (maxpos-minpos)))));
-        sprintf(positionStr, "%s%f%s", "<{position} |-> [left]>. :|: %", v_position, "%\0");
+        sprintf(positionStr, "%s%s%s%f%s", "<{position} |-> [", propname, "]>. :|: %", v_position, "%\0");
         NAR_AddInputNarsese(positionStr);
         char targetpositionStr[NARSESE_LEN_MAX] = {0};
-        float v_targetposition = MIN(1.0, MAX(0.0, (((float) (targetposition-minpos))/((float) (maxpos-minpos)))));
-        sprintf(targetpositionStr, "%s%f%s", "<{targetposition} |-> [left]>. :|: %", v_targetposition, "%\0");
+        double used_position = hasObj ? goalposition : targetposition;
+        float v_usedposition = MIN(1.0, MAX(0.0, (((float) (used_position-minpos))/((float) (maxpos-minpos)))));
+        sprintf(targetpositionStr, "%s%s%s%f%s", "<{targetposition} |-> [", propname, "]>. :|: %", v_usedposition, "%\0");
         NAR_AddInputNarsese(targetpositionStr);
         if(picked && !lastpicked)
         {
@@ -130,9 +139,20 @@ void NAR_Bandrobot(long iterations)
         else
         if(!picked && lastpicked)
         {
-            NAR_AddInputNarsese("dropped. :|:");
-            targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
-            successes++;
+            if(position == goalposition)
+            {
+                NAR_AddInputNarsese("dropped. :|:");
+                targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
+                goalposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
+                successes++;
+                //if(iterations == -1)
+                {
+                    for(int k=0; k<10; k++)
+                    {
+                        SLEEP;
+                    }
+                }
+            }
         }
         lastpicked = picked;
         NAR_AddInputNarsese("dropped! :|:");
