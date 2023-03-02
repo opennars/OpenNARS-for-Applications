@@ -21,7 +21,7 @@ G! :|:
 G. :|:
 5
 <(<{t1} --> [quacks]> &/ ^pick) =/> G>?
-//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.987128, confidence=0.243731
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=1.000000, confidence=0.241351
 
 100
 
@@ -33,5 +33,5 @@ G! :|:
 G. :|:
 5
 <(<{t1} --> [quacks]> &/ ^pick) =/> G>?
-//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.969682, confidence=0.247033
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.985997, confidence=0.292821
 

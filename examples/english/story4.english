@@ -8,6 +8,6 @@ What is in the garden?
 The cat is in the garden?
 //expected: Answer: <(cat * garden) --> in>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.900000
 The mouse is dead?
-//expected: Answer: <mouse --> [dead]>. :|: occurrenceTime=4 Truth: frequency=0.990186, confidence=0.305513
+//--expected: Answer: <mouse --> [dead]>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
 The cat is eating an animal?
 //expected: Answer: <(cat * animal) --> eat>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.286319

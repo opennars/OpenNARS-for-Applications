@@ -100,4 +100,4 @@
 //Q&A time
 //What color does the floor have where the large clock is?
 <<clock --> [large]> =/> <floor --> [?what]>>?
-//expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.909098, confidence=0.463819
+//expected: Answer: <<clock --> [large]> =/> <floor --> [red]>>. Truth: frequency=0.990992, confidence=0.442449

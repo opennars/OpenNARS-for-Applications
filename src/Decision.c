@@ -37,7 +37,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
     Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-    negative_confirmation.stamp = (Stamp) {0};
+    negative_confirmation.stamp = precondition->stamp;
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
     Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
     if(added != NULL)
@@ -438,7 +438,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                              .occurrenceTime = currentTime };
                 bool success;
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
-                if(success)
+                if(success && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                 {
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
                     if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume

@@ -297,7 +297,7 @@ while True:
             TruthString = "" if "OutputTruth" not in sys.argv else " {" + str(Truth[0]) + " " + str(Truth[1]) + "}"
             statement = "(! " + y + ")" if isNegated else " " + y + " "
             punctuation = "?" if isQuestion else ("!" if isGoal else ".")
-            print(statement.replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " " + nonEternalMarker)) + TruthString)
+            print(statement.replace("=/>", "==>").replace(" {What} "," ?1 ").replace(" {Who} "," ?1 ").replace(" {It} ", " $1 ").replace(" what "," ?1 ").replace(" who "," ?1 ").replace(" it ", " $1 ").strip() + (punctuation + ("" if eternal else " " + nonEternalMarker)) + TruthString)
             sys.stdout.flush()
         if len(typetextSplit) > 0 and thinkcycles != None:
             print(thinkcycles, flush=True)
