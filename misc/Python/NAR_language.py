@@ -140,18 +140,24 @@ def getNounRelNoun(words):
     Cs = [] #concepts
     Ms = [] #modifiers (same len)
     nextmod = EMPTY
+    nextmodmod = EMPTY
     ASSIGN = True
     for i,x in enumerate(VALUES + [None]):
         if x is None:
             if nextmod != EMPTY:
                 Cs.append(nextmod)
-                Ms.append(EMPTY)
+                Ms.append(nextmodmod)
         elif x[0][0] == '[' or (i+1 < len(VALUES) and VALUES[i+1][1] - x[1] == 1 and x[3] + " " + VALUES[i+1][3] in sentence):
-            nextmod = x
+            if nextmod != EMPTY and x[0][0] == '[':
+                nextmodmod = nextmod
+                nextmod = x
+            else:
+                nextmod = x
         else:
             Cs.append(x)
             Ms.append(nextmod)
             nextmod = EMPTY
+            nextmodmod = EMPTY
     if len(Cs) == 1 and len([x for x in Ms if x != EMPTY]) == 1: #just one concept and 1 modifier, so the concept being modified is the sentence
         if Ms[0][1] < Cs[0][1]:
             Cs = [Ms[0], Cs[0]]
