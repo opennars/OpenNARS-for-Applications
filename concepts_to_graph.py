@@ -109,7 +109,7 @@ for line in inlines:
         del dictionary['termlinks']
         dictionary["color"] = truth_to_color(truth)
         dictionary["size"] = 1.0
-        dictionary["label"] = concept
+        dictionary["label"] = concept.replace("$","\$")
         if dictionary["confidence"] > 0:
             dictionary["label"] += "\n" + truthstring(truth)
         if concept not in G:
@@ -129,7 +129,7 @@ for line in inlines:
                     if not variable:
                         tldict = {"color": "gray"}
                         tldict["size"] = 1.0
-                        tldict["label"] = x
+                        tldict["label"] = x.replace("$","\$")
                         G.add_nodes_from([(x, tldict)])
         
 #Add subterm links:
