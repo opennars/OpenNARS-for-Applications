@@ -2,7 +2,7 @@
 *decisionthreshold=0.51
 *volume=0
 
-//Avoid faced obstacle (due to innate collision pain to avoid, this can also be learned):
+//Avoid faced obstacle (due to collision to avoid, this can also be learned):
 <(<obstacle --> [left]> &/ ^right) =/> <obstacle --> [free]>>.
 <(<obstacle --> [right]> &/ ^left) =/> <obstacle --> [free]>>.
 <(<obstacle --> [front]> &/ ^left) =/> <obstacle --> [free]>>.
@@ -12,16 +12,12 @@
 <(<gripper --> [holding]> &/ <({SELF} * $obj) --> ^goto>) =/> <$obj --> [left]>>.
 
 //If gripper is open and a bottle is seen, pick it up to hold it
-<((<gripper --> [open]> &/ <bottle --> [locationX]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
+<((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 
-//If gripper is open, and there is a larger bottle than on the right, pick the left bottle
-//<((<gripper --> [open]> &/ <(less_size0 /1 right) --> bottle>) &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
-//<((<gripper --> [open]> &/ <(less_size1 /1 right) --> bottle>) &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
-
-
-//If gripper is open, and there is a larger bottle than on the left, pick the right bottle
-//<((<gripper --> [open]> &/ <(less_size0 /1 left) --> bottle>) &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
-//<((<gripper --> [open]> &/ <(less_size1 /1 left) --> bottle>) &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
+//If there is a larger bottle than on the left, pick the right bottle
+//<(<(bottle * [left]) --> (+ size0)> &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
+//If there is a larger bottle than on the right, pick the left bottle
+//<(<(bottle * [right]) --> (+ size0)> &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
 
 //If the gripper is holding an object and a human is seen, drop it there
 <((<gripper --> [hold]> &/ <person --> [locationX]>) &/ ^drop) =/> G>.
