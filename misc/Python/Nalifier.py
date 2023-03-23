@@ -438,7 +438,7 @@ class Nalifier:
                 (f,c) = self.sensorValueReporters[propertyName].reportValue(value, Print=False, RangeUpdate=self.InstanceCreation, Sensation_Reliance = Sensation_Reliance)
             else:
                 (f,c) = (value, Sensation_Reliance)
-            self.AddInput("<{" + name + "} |-> [" + propertyName + "]>. %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
+            self.AddInput("<{" + name + "} |-> [" + propertyName + "]>. :|: %" + str(f) + "%", Print=Print, Sensation_Reliance=Sensation_Reliance) # + str(c) + "%")
 
     def ShellInput(self, inp):
         if inp.startswith("*SET_CONTINUOUS="):

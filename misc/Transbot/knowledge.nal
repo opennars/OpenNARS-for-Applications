@@ -12,12 +12,12 @@
 <(<gripper --> [holding]> &/ <({SELF} * $obj) --> ^goto>) =/> <$obj --> [left]>>.
 
 //If gripper is open and a bottle is seen, pick it up to hold it
-<((<gripper --> [open]> &/ <bottle --> [left]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
+<((<gripper --> [open]> &/ <bottle --> [#1]>) &/ <({SELF} * bottle) --> ^pick>) =/> G>.
 
 //If there is a larger bottle than on the left, pick the right bottle
 //<(<(bottle * [left]) --> (+ size0)> &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
 //If there is a larger bottle than on the right, pick the left bottle
-//<(<(bottle * [right]) --> (+ size0)> &/ <({SELF} * (right * bottle)) --> ^pick>) =/> G>.
+//<(<(bottle * [right]) --> (+ size0)> &/ <({SELF} * (left * bottle)) --> ^pick>) =/> G>.
 
 //If the gripper is holding an object and a human is seen, drop it there
-<((<gripper --> [hold]> &/ <person --> [locationX]>) &/ ^drop) =/> G>.
+<((<gripper --> [hold]> &/ <person --> [#1]>) &/ ^drop) =/> G>.

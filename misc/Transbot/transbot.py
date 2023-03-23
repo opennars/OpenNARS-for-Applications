@@ -235,47 +235,48 @@ def process(line):
             action = cv.waitKey(10) & 0xFF
             detections, frame = detect_objects()
             (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = ("", -1, -1, -1, -1, 0, (0,0,0))
-            for detection in detections:
-                (obj, x, y, w, h, c, color) = detection
+            detections.sort(key=lambda d: -(d[2]+d[4]))
+            if len(detections) > 0:
+                (obj, x, y, w, h, c, color) = detections[0] #nearest
                 x_real = x+w/2
                 y_real = y+h #down side of bb
-                if y_real > y_real_temp:
-                    (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = (obj, x_real, y_real, w, h, c, color)
+                (obj_temp, x_real_temp, y_real_temp, w_temp, h_temp, c_temp, color_temp) = (obj, x_real, y_real, w, h, c, color)
             if y_real_temp != -1 and y_real_temp >= y_too_far_to_grab:
                 if len(detections) >=2 and detections[0][0] == detections[1][0]: #same object, compare using Nalifier!
-                    detections_xsorted = detections.copy()
+                    detections_xsorted = [detections[0], detections[1]]
                     detections_xsorted.sort(key=lambda x: x[1])
-                    color_sensitivity = 100.0
+                    color_insensitivity = 2.0
+                    size_insensitivity = 1.0
                     maxSizeX = max(detections[0][3], detections[1][3])
                     maxSizeY = max(detections[0][4], detections[1][4])
-                    extractVectors = lambda detection: ([detection[6][0]/(255.0 * color_sensitivity), detection[6][1]/(255.0 * color_sensitivity), detection[6][2]/(255.0 * color_sensitivity)],
-                                                        [detection[3]/maxSizeX, detection[4]/maxSizeY]) #color and size thus far
+                    extractVectors = lambda detection: ([detection[6][0]/(255.0 * color_insensitivity), detection[6][1]/(255.0 * color_insensitivity), detection[6][2]/(255.0 * color_insensitivity)],
+                                                        [detection[3]/(maxSizeX * size_insensitivity), detection[4]/(maxSizeY*size_insensitivity)]) #color and size thus far
                     left = detections_xsorted[0]
                     right = detections_xsorted[1]
                     color_left, size_left = extractVectors(left)
                     color_right, size_right = extractVectors(right)
                     nalifier = Nalifier(1)
-                    nalifier.AddInputVector("left", color_left, dimname="color")
-                    nalifier.AddInputVector("left", size_left, dimname="size")
+                    nalifier.AddInputVector("left", color_left, dimname="color", UseHistogram=False)
+                    nalifier.AddInputVector("left", size_left, dimname="size", UseHistogram=False)
                     nalifier.AddInput("1", Print=False)
                     nalifier.InstanceCreation = False
-                    nalifier.AddInputVector("right", color_right, dimname="color")
-                    nalifier.AddInputVector("right", size_right, dimname="size")
+                    nalifier.AddInputVector("right", color_right, dimname="color", UseHistogram=False)
+                    nalifier.AddInputVector("right", size_right, dimname="size", UseHistogram=False)
                     nalifier.SUFFICIENT_MATCH_EXP = 0.0 #find nearest node
                     nalifier.AddInput("1", Print=True)
+                    #print("//color_left:", color_left, "color_right:", color_right)
+                    #print("//size_left:", size_left, "size_right:", size_right)
                     biggestDifference = nalifier.BiggestDifference
                     if biggestDifference[0] == "+":
-                        statement1 = f"<({right[0]} * left) --> (+ {biggestDifference[1]})>"
-                        statement1 = f"<(right * {left[0]}) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<({right[0]} * [left]) --> (+ {biggestDifference[1]})>"
+                        statement2 = f"<([right] * {left[0]}) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                     else:
                         statement1 = f"<(left * {right[0]}) --> (+ {biggestDifference[1]})>"
-                        statement1 = f"<({left[0]} * right) --> (+ {biggestDifference[1]})>"
+                        statement2 = f"<({left[0]} * right) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                 else:
-                    for i, detection in enumerate(detections):
-                        if i >= 2:
-                            break
+                    for detection in [detections[0], detections[1]]:
                         (obj, x, y, w, h, c, color) = detection
                         x_real = x+w/2
                         y_real = y+h #down side of bb
