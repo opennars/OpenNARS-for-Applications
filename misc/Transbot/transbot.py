@@ -272,8 +272,8 @@ def process(line):
                         statement2 = f"<([right] * {left[0]}) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                     else:
-                        statement1 = f"<(left * {right[0]}) --> (+ {biggestDifference[1]})>"
-                        statement2 = f"<({left[0]} * right) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<([left] * {right[0]}) --> (+ {biggestDifference[1]})>"
+                        statement2 = f"<({left[0]} * [right]) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                 else:
                     for detection in [detections[0], detections[1]]:
