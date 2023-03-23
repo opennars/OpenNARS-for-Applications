@@ -191,8 +191,11 @@ def TransbotPerceiveAt(obj, trans, rot):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
-    locationToFreq = 1.0 - 0.1 * (screenX / 640)
-    NAR.AddInput(("<%s --> [locationX]>. :|: " % obj) + "%" + str(locationToFreq) + "%")
+    if screenX < robotVisualMiddle-centerSize:
+        direction = "left"
+    elif screenX > robotVisualMiddle+centerSize:
+        direction = "right"
+    NAR.AddInput("<%s --> [%s]>. :|:" % (obj, direction))
 
 Configuration = """
 *reset
@@ -262,9 +265,13 @@ def process(line):
                     nalifier.AddInput("1", Print=True)
                     biggestDifference = nalifier.BiggestDifference
                     if biggestDifference[0] == "+":
-                        NAR.AddInput("(<(more_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(less_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
+                        statement1 = f"<({right[0]} * left) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<(right * {left[0]}) --> (+ {biggestDifference[1]})>"
+                        NAR.AddInput(f"({statement1} && {statement2}). :|:")
                     else:
-                        NAR.AddInput("(<(less_" + biggestDifference[1] +" /1 " + "left) --> " + right[0] + "> &| <(more_" + biggestDifference[1] +" /1 " + "right) --> " + left[0] + ">). :|:")
+                        statement1 = f"<(left * {right[0]}) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<({left[0]} * right) --> (+ {biggestDifference[1]})>"
+                        NAR.AddInput(f"({statement1} && {statement2}). :|:")
                 else:
                     for i, detection in enumerate(detections):
                         if i >= 2:
