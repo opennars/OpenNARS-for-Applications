@@ -251,10 +251,10 @@ def process(line):
                     maxSizeY = max(detections[0][4], detections[1][4])
                     extractVectors = lambda detection: ([detection[6][0]/(255.0 * color_insensitivity), detection[6][1]/(255.0 * color_insensitivity), detection[6][2]/(255.0 * color_insensitivity)],
                                                         [detection[3]/(maxSizeX * size_insensitivity), detection[4]/(maxSizeY*size_insensitivity)]) #color and size thus far
-                    left = detections_xsorted[0]
-                    right = detections_xsorted[1]
-                    color_left, size_left = extractVectors(left)
-                    color_right, size_right = extractVectors(right)
+                    dleft = detections_xsorted[0]
+                    dright = detections_xsorted[1]
+                    color_left, size_left = extractVectors(dleft)
+                    color_right, size_right = extractVectors(dright)
                     nalifier = Nalifier(1)
                     nalifier.AddInputVector("left", color_left, dimname="color", UseHistogram=False)
                     nalifier.AddInputVector("left", size_left, dimname="size", UseHistogram=False)
@@ -268,15 +268,15 @@ def process(line):
                     #print("//size_left:", size_left, "size_right:", size_right)
                     biggestDifference = nalifier.BiggestDifference
                     if biggestDifference[0] == "+":
-                        statement1 = f"<({right[0]} * [left]) --> (+ {biggestDifference[1]})>"
-                        statement2 = f"<([right] * {left[0]}) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<({dright[0]} * [left]) --> (+ {biggestDifference[1]})>"
+                        statement2 = f"<([right] * {dleft[0]}) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                     else:
-                        statement1 = f"<([left] * {right[0]}) --> (+ {biggestDifference[1]})>"
-                        statement2 = f"<({left[0]} * [right]) --> (+ {biggestDifference[1]})>"
+                        statement1 = f"<([left] * {dright[0]}) --> (+ {biggestDifference[1]})>"
+                        statement2 = f"<({dleft[0]} * [right]) --> (+ {biggestDifference[1]})>"
                         NAR.AddInput(f"({statement1} && {statement2}). :|:")
                 else:
-                    for detection in [detections[0], detections[1]]:
+                    for detection in detections[0:2]:
                         (obj, x, y, w, h, c, color) = detection
                         x_real = x+w/2
                         y_real = y+h #down side of bb
