@@ -8,7 +8,6 @@ def distance(posX, posY, posX2, posY2):
     dx = posX - posX2
     dy = posY - posY2
     return max(abs(dx), abs(dy))
-    #return math.sqrt(dx * dx + dy * dy)
 
 class Street:
     def __init__(self,forCarsOnly, startX, startY, endX, endY):
@@ -146,9 +145,8 @@ class InformPredictionNar:
         self.input += self.inputs[-1]
 
     def informAboutTrafficLight(self, light, minX, minY):
-        #String id = String.valueOf(light.id);
         colour = "green" if light.colour == 0 else "red"
-        narsese = "<trafficLight --> ["+colour+"]>. :|:"
+        narsese = colour + ". :|:" #"<trafficLight --> ["+colour+"]>. :|:"
         self.inputs.append(narsese);
         self.input+=narsese;
 
@@ -237,10 +235,9 @@ while i < pedestrians/2:
     i += 1.05
 
 def cycle():
-    #if (t % perception_update == 0) {
-    hadInput = False;
+    hadInput = False
     for c in cameras:
-        force = True; # not required HACK
+        force = True
         #hadInput = hadInput or c.see(entities, trafficLights, force)
         c.see(entities, trafficLights, force)
     for e in entities + trafficLights:
@@ -276,7 +273,6 @@ for i in range(100000):
             for y in range(drawsizeY):
                 loc = f"{x}_{y}"
                 ret = NAR.AddInput("(?1 * " + loc + ")? :/:", Print=False)
-                #print(ret)
                 if ret["answers"][0]["term"] != 'None':
                     answer = ret["answers"][0]
                     answerocc = int(answer["occurrenceTime"])
@@ -309,11 +305,6 @@ for i in range(100000):
                 else:
                     streetcol = streetcolor(ent.posX,ent.posY)
                 drawings[y][x] = streetcol + color + drawchar + drawid + colorend
-    #for ent in trafficLights:
-        
     print("\033[1;1H\033[2J")
     for line in drawings:
         print("".join(line))
-    #for x in entities:
-    #    if isinstance(x, Pedestrian):
-    #        print("pedestrian", x.posX, x.posY)
