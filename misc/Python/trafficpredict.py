@@ -103,17 +103,19 @@ class Pedestrian(Entity):
         self.maxSpeed = 1
     def simulate(self, trafficLights, entities, streets):
         super().simulate(trafficLights, entities, streets)
-        #self.angle+=(random.uniform(0,1)*0.1-0.05)
+        self.angle+=(random.uniform(0,1)*0.1-0.05)
         #ok pedestrian, don't go on grass
         forPedestrians = False
         for street in streets:
-            if not street.forCarsOnly and self.posX > street.startX and self.posX < street.endX and self.posY > street.startY and self.posY < street.endY:
+            if not street.forCarsOnly and self.posX > street.startX and self.posX < street.endX and self.posY > street.startY + discretization and self.posY < street.endY:
                 forPedestrians = True
                 break
         if not forPedestrians:
             self.angle = self.initialAngle
             self.posX = self.prevX
             self.posY = self.prevY
+        self.prevX = self.posX
+        self.prevY = self.posY
 
 class Car(Entity):
     maxSpeed = 2
@@ -229,7 +231,7 @@ i=0.0
 while i < pedestrians/2:
     entities.append(Pedestrian(entityID, 900 - i * 100, 500 + streetWidth - 1, 0.3, 0));
     entityID+=1
-    entities.append(Pedestrian(entityID, 900 - i * 100, 500 + discretization, 0.3, -math.pi));
+    entities.append(Pedestrian(entityID, 900 - i * 100, 500 + discretization*2, 0.3, -math.pi));
     entityID+=1
     break
     i += 1.05
@@ -262,7 +264,7 @@ for i in range(100000):
     incolor = "\x1B[31m"
     predcolor = "\x1B[36m"
     colorend = "\x1B[0m"
-    NAR.AddInput("3")
+    #NAR.AddInput("1")
     for x in range(drawsizeX):
         for y in range(drawsizeY):
             streetcol = streetcolor(x*discretization+cameras[0].minX,y*discretization+cameras[0].minY)
@@ -279,7 +281,9 @@ for i in range(100000):
                     f,c = float(answer["truth"]["frequency"]), float(answer["truth"]["confidence"])
                     truthexp = (c * (f - 0.5) + 0.5)
                     color = predcolor
-                    if answerocc >= lastinputocc and truthexp > 0.6:# and answerocc - lastinputocc < 5:
+                    if answerocc > lastinputocc and truthexp > 0.51:# and answerocc - lastinputocc < 5:
+                        if answerocc - lastinputocc > 15:
+                            predcolor = "\x1b[34m"
                         answerterm = answer["term"]
                         entname = answerterm.split("(")[1].split(" * ")[0]
                         streetcol = streetcolor(x*discretization+cameras[0].minX,y*discretization+cameras[0].minY)
