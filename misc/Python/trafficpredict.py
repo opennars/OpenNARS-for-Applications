@@ -265,7 +265,7 @@ for i in range(100000):
     incolor = "\x1B[31m"
     predcolor = "\x1B[36m"
     colorend = "\x1B[0m"
-    #NAR.AddInput("3")
+    NAR.AddInput("3")
     for x in range(drawsizeX):
         for y in range(drawsizeY):
             streetcol = streetcolor(x*discretization+cameras[0].minX,y*discretization+cameras[0].minY)
