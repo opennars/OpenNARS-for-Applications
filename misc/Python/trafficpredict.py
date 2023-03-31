@@ -31,7 +31,6 @@ class Entity:
     maxSpeed = 2.0
     pedestrianIgnoreTrafficLight = False
     carIgnoreTrafficLight = False
-    normalness = 0.0
     isPredicted = False
     lastPosX = 0
     lastPosY = 0
@@ -42,16 +41,9 @@ class Entity:
         self.velocity = velocity
         self.angle = angle
 
-    def tick(self):
-        self.normalness *= 0.91
-
     def hasMoved(self):
         dist = self.velocity;
         return dist >= 0.1
-
-    def isAnomaly(self):
-        # exception: is not a anomaly if it hasn't moved
-        return self.normalness < 0.3 and self.hasMoved()
 
     def simulate(self, trafficLights, entities, streets):
         accelerate = True;
@@ -244,8 +236,6 @@ def cycle():
         c.see(entities, trafficLights, force)
     for e in entities + trafficLights:
         e.simulate(trafficLights, entities, streets)
-    for ie in entities:
-        ie.tick()
 
 def streetcolor(x,y):
     for street in streets:
@@ -254,6 +244,17 @@ def streetcolor(x,y):
                 return "\x1b[47m"
             return "\x1b[43m" 
     return ""
+
+def drawIDtoDirectionIndicator(drawid):
+    if drawid == "1":
+        drawid = "^"
+    if drawid == "2":
+        drawid = "v"
+    if drawid == "3":
+        drawid = ">"
+    if drawid == "4":
+        drawid = "<"
+    return drawid
 
 for i in range(100000):
     cycle()
@@ -287,7 +288,7 @@ for i in range(100000):
                         answerterm = answer["term"]
                         entname = answerterm.split("(")[1].split(" * ")[0]
                         streetcol = streetcolor(x*discretization+cameras[0].minX,y*discretization+cameras[0].minY)
-                        drawings[y][x] = streetcol + predcolor + entname[0] + entname[1] + colorend
+                        drawings[y][x] = streetcol + predcolor + entname[0] + drawIDtoDirectionIndicator(entname[1]) + colorend
         for ent in entities+trafficLights:
             loc = [int(x) for x in positionToTerm(ent.posX-cameras[0].minX, ent.posY-cameras[0].minY, discretization).split("_")]
             x,y = loc[0], loc[1]
@@ -308,7 +309,7 @@ for i in range(100000):
                         color = "\x1b[31;41m"
                 else:
                     streetcol = streetcolor(ent.posX,ent.posY)
-                drawings[y][x] = streetcol + color + drawchar + drawid + colorend
+                drawings[y][x] = streetcol + color + drawchar + drawIDtoDirectionIndicator(drawid) + colorend
     print("\033[1;1H\033[2J")
     for line in drawings:
         print("".join(line))
