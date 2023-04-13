@@ -34,6 +34,7 @@ NoTermlinks = "NoTermlinks" in sys.argv
 NoProceduralLinks = "NoProceduralLinks" in sys.argv
 NoTemporalLinks = "NoTemporalLinks" in sys.argv
 NoLinkLabels = "NoLinkLabels" in sys.argv
+NoImages = "NoImages" in sys.argv
 lines = []
 curline = None
 G = nx.MultiDiGraph()
@@ -41,9 +42,12 @@ inlines = []
 for line in sys.stdin:
     inlines.append(line)
 
+def hasImage(line):
+    return "/1" in line or "/2" in line or "\\1" in line or "\\2" in line 
+
 #Utility functions:
 def parse_concept(line):
-    if line.startswith("//{i="):
+    if line.startswith("//{i=") and (not NoImages or not hasImage(line)):
         concept = " ".join(line.split(" ")[1:]).split(":")[0]
         dictionary = ast.literal_eval("{" + line.split(": {")[1])
         return (concept, dictionary)

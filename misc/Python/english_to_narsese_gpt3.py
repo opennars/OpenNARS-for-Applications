@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  * """
- 
+
+import sys
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 import openai
@@ -35,6 +36,9 @@ def Property(noun,adjective): ... #put property into database
 Capture the complete sentence meaning with code that calls the two functions, and only use a single word per argument.
 The sentence: 
 """
+
+if "EventOutput" in sys.argv:
+    eternal = False
 
 lemma = WordNetLemmatizer()
 def Lemmatize(word, tag):
@@ -70,7 +74,10 @@ def process_commands(commands, isQuestion):
                 Relation(*s_v_p, punctuation_tv)
 
 while True:
-    inp = input().rstrip("\n")
+    try:
+        inp = input().rstrip("\n")
+    except:
+        exit(0)
     if len(inp) == 0:
         print("\n")
     elif inp.startswith("*eternal=false"):
@@ -92,3 +99,7 @@ while True:
         )
         commands = response['choices'][0]['message']['content'].split("\n")
         process_commands(commands, isQuestion)
+        for arg in sys.argv:
+            if arg.startswith("BetweenEventDelay="):
+                delay = arg.split("BetweenEventDelay=")[1]
+                print(delay)
