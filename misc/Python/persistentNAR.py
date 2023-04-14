@@ -72,7 +72,9 @@ if __name__ == "__main__":
             if "truth" not in answer:
                 print("Answer: None.")
             else:
-                print("Answer: " + answer["term"] + answer["punctuation"] + " {" + str(answer["truth"]["frequency"]) + " " + str(answer["truth"]["confidence"]) + "}")
+                print(answer)
+                occurrenceTimeInfo = "" if answer["occurrenceTime"] == "eternal" else " t="+answer["occurrenceTime"]
+                print("Answer: " + answer["term"] + answer["punctuation"] + " {" + str(answer["truth"]["frequency"]) + " " + str(answer["truth"]["confidence"]) + "}" + occurrenceTimeInfo)
         ProcessNAROutput(ret)
         with open(fname, 'w') as f:
             json.dump(memory, f)
