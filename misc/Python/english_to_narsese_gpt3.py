@@ -31,7 +31,7 @@ import openai
 openai.api_key = "YOUR_KEY"
 Eternal = True #whether to use event or eternal output
 Negation = False #whether negated statements should also be generated
-PrintInput=False
+PrintInput=True
 Prepositions = False
 CleanRelations = True
 levenstein_threshold = 0.8
@@ -67,7 +67,7 @@ used_verbs = set([])
 lemma = WordNetLemmatizer()
 def Lemmatize(word, tag, isQuestion, s=None, p=None):
     global used_verbs
-    ret = lemma.lemmatize(word.lower(), pos = tag).strip().lower().replace(" ","_")
+    ret = lemma.lemmatize(word.lower(), pos = tag).strip().lower().replace(" ","_").replace("-","_")
     #print("//!!!",ret)
     varwords = ["something","someone", "somewhere", "somewhen", "somewhat", "nowhere"] + questionwords + ["noun", "none", "unknown", "unspecified", "it", "they", "he", "she", "it"]
     if isQuestion:
@@ -140,7 +140,7 @@ def Lemmatize(word, tag, isQuestion, s=None, p=None):
                 if x != ret and x not in prepositions:
                     print(f"//using {x} instead of {ret} since the former is simpler")
                     return x, s, p
-        ret = lemma.lemmatize(ret.lower(), pos = tag).strip().lower().replace(" ","_")
+        ret = lemma.lemmatize(ret.lower(), pos = tag).strip().lower().replace(" ","_").replace("-","_")
         if ret == "location" or ret == "locate":
             ret = "in"
         used_verbs.add(ret) #and if there is no such, use the new verb
@@ -201,21 +201,17 @@ def process_input(inp):
     )
     commands = response['choices'][0]['message']['content'].split("\n")
     process_commands(commands, isQuestion)
-    for arg in sys.argv:
-        if arg.startswith("BetweenEventDelay="):
-            delay = arg.split("BetweenEventDelay=")[1]
-            print(delay)
 
 while True:
     try:
         inp = input().rstrip("\n")
-        if PrintInput:
-            print("//Sentence input:", inp)
     except:
         exit(0)
     #process commands
     if len(inp) == 0:
         print("\n")
+    elif inp.startswith("//"):
+        print(inp)
     elif inp.startswith("*eternal=false"):
         eternal = False
     elif inp.startswith("*eternal=true"):
@@ -223,6 +219,8 @@ while True:
     elif inp.isdigit() or inp.startswith("*") or inp.startswith("(") or inp.startswith("<"):
         print(inp)
     else: #process inputs
+        if PrintInput:
+            print("//Sentence input:", inp)
         process_input(inp)
         #gpt has issues with qu var, so let's use a dummy noun:
         if inp.endswith("?"):
@@ -234,3 +232,7 @@ while True:
                     if inp.startswith(word):
                         print("//Additional question pass for:", word)
                         process_input(inp.replace(word + " ", "bubub "))
+            for arg in sys.argv:
+                if arg.startswith("BetweenEventDelay="):
+                    delay = arg.split("BetweenEventDelay=")[1]
+                    print(delay)
