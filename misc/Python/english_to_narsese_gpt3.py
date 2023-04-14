@@ -178,15 +178,14 @@ def process_commands(commands, isQuestion):
             Positive = False
             truth = "{0.0 0.9}"
         if (x.startswith("Property(") or x.startswith("Relation(")) and x.endswith(")"):
-            #print("//",x)
             s_v_p = x.split("(")[1].split(")")[0].replace("\"","").replace("'","").split(",")
             if len(s_v_p) > 3:
                 continue
             eventMarker = "" if Eternal else " :|:"
             punctuation_tv = f"?{eventMarker}" if isQuestion else f".{eventMarker} {truth}"
-            if x.startswith("Property"):
+            if len(s_v_p) == 2:
                 Property(*s_v_p, punctuation_tv, isQuestion)
-            if x.startswith("Relation"):
+            if len(s_v_p) == 3:
                 Relation(*s_v_p, punctuation_tv, isQuestion)
 
 def process_input(inp):
