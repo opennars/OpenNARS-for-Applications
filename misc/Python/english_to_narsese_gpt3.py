@@ -28,7 +28,7 @@ from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 import openai
 
-openai.api_key = "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"
+openai.api_key = "YOUR_KEY"
 eternal = True #whether to use event or eternal output
 PrintInput=False
 Prepositions = False
