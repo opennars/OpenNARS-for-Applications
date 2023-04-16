@@ -23,14 +23,23 @@
  * """
 
 import sys
+import json
+from os.path import exists
 from Levenshtein import distance as lev
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 import openai
 
+fname = "used_verbs.json"
+used_verbs = set({})
+if exists(fname):
+    with open(fname) as json_file:
+        print("//Loaded used verbs content from", fname)
+        used_verbs = set(json.load(json_file))
+
 openai.api_key = "YOUR_KEY"
 Eternal = True #whether to use event or eternal output
-Negation = False #whether negated statements should also be generated
+Negation = True #whether negated statements should also be generated
 PrintInput=True
 Prepositions = False
 CleanRelations = True
@@ -236,3 +245,5 @@ while True:
                 if arg.startswith("BetweenEventDelay="):
                     delay = arg.split("BetweenEventDelay=")[1]
                     print(delay)
+        with open(fname, 'w') as f:
+            json.dump(list(used_verbs), f)

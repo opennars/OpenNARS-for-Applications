@@ -8,6 +8,7 @@ Print = "Print" in sys.argv
 memory = {}
 if exists(fname):
     with open(fname) as json_file:
+        print("//Loaded memory content from", fname)
         memory = json.load(json_file)
 retrieved = set([])
 
