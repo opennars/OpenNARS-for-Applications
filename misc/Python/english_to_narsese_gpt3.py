@@ -29,15 +29,8 @@ from Levenshtein import distance as lev
 from nltk import WordNetLemmatizer
 from nltk.corpus import wordnet
 import openai
-
-fname = "used_verbs.json"
-used_verbs = set({})
-if exists(fname):
-    with open(fname) as json_file:
-        print("//Loaded used verbs content from", fname)
-        used_verbs = set(json.load(json_file))
-
 openai.api_key = "YOUR_KEY"
+
 Eternal = True #whether to use event or eternal output
 Negation = True #whether negated statements should also be generated
 PrintInput=True
@@ -64,6 +57,13 @@ Property(noun,adjective)
 Capture the complete sentence meaning with code that calls the two functions, and only use a single word per argument.
 The sentence: 
 """
+fname = "used_verbs.json"
+
+used_verbs = set({})
+if exists(fname):
+    with open(fname) as json_file:
+        print("//Loaded used verbs content from", fname)
+        used_verbs = set(json.load(json_file))
 
 if "EventOutput" in sys.argv:
     Eternal = False
