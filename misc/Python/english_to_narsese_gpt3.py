@@ -150,7 +150,7 @@ def Lemmatize(word, tag, isQuestion, s=None, p=None):
                     print(f"//using {x} instead of {ret} since the former is simpler")
                     return x, s, p
         ret = lemma.lemmatize(ret.lower(), pos = tag).strip().lower().replace(" ","_").replace("-","_")
-        if ret == "location" or ret == "locate":
+        if ret == "location" or ret == "locate" or ret == "islocatedin" or ret == "locatedin" or ret == "locatedat":
             ret = "in"
         used_verbs.add(ret) #and if there is no such, use the new verb
     hasNoAlnum = True in [x.isalnum() for x in ret]
