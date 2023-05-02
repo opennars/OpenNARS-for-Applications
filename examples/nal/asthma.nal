@@ -18,7 +18,7 @@
 //--(no transitivity currently) expected: Answer: <{jonas} --> [asthma]>. Truth: frequency=1.000000, confidence=0.531441
 //Angelika has asthma?
 <{angelika} --> [asthma]>? :|:
-//expected: Answer: <{angelika} --> [asthma]>. :|: occurrenceTime=16 Truth: frequency=0.998022, confidence=0.465729
+//expected: Answer: <{angelika} --> [asthma]>. :|: occurrenceTime=14 Truth: frequency=1.000000, confidence=0.729000
 10
 //Jonas is stressed
 <{jonas} --> [stressed]>. :|:

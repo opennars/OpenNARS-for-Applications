@@ -37,7 +37,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
     Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-    negative_confirmation.stamp = (Stamp) {0};
+    negative_confirmation.stamp = (Stamp) {0}; //precondition->stamp;
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
     Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
     if(added != NULL)
@@ -295,7 +295,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
             {
                 if(!Memory_ImplicationValid(&goalconcept->precondition_beliefs[opi].array[j]))
                 {
-                    Table_Remove(&goalconcept->precondition_beliefs[opi], j--);
+                    Table_Remove(&goalconcept->precondition_beliefs[opi], j);
                     continue;
                 }
                 Implication imp = goalconcept->precondition_beliefs[opi].array[j];
@@ -402,7 +402,6 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
             if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[k]))
             {
                 Table_Remove(&postc->precondition_beliefs[operationID], k);
-                k--;
                 continue;
             }
             Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
@@ -452,16 +451,28 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             if(success2)
                             {
                                 Concept *c = Memory_Conceptualize(&result.term, currentTime);
-                                if(c != NULL)
+                                if(c != NULL && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     if(imp.occurrenceTimeOffset > 0.0)
                                     {
-                                        c->predicted_belief = result;
+                                        Truth oldTruth = c->predicted_belief.truth;
+                                        long oldOccurrenceTime = c->predicted_belief.occurrenceTime;
+                                        c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &result, currentTime, NULL);
+                                        if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
+                                        {
+                                            Memory_printAddedEvent(&c->predicted_belief, 1.0, false, true, false, true, false);
+                                        }
                                     }
                                     if(imp.occurrenceTimeOffset == 0.0 && result.occurrenceTime > c->belief_spike.occurrenceTime) //use as belief_spike if newer
                                     {
-                                        c->belief_spike = result;
+                                        Truth oldTruth = c->belief_spike.truth;
+                                        long oldOccurrenceTime = c->belief_spike.occurrenceTime;
+                                        c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
+                                        if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
+                                        {
+                                            Memory_printAddedEvent(&c->belief_spike, 1.0, false, true, false, true, false);
+                                        }
                                     }
                                 }
                             }
