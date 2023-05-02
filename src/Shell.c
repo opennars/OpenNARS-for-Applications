@@ -287,6 +287,16 @@ int Shell_ProcessInput(char *line)
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
         }
         else
+        if(!strncmp("*query ", line, strlen("*query ")))
+        {
+            double threshold;
+            char narsese[NARSESE_LEN_MAX+1] = {0};
+            narsese[NARSESE_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*query ")], "%lf %" STR(NARSESE_LEN_MAX) "[^\n]", &threshold, (char*) &narsese);
+            assert(threshold >= 0.0 && threshold <= 1.0, "Query truth exp out of bounds!");
+            NAR_AddInputNarsese2(narsese, true, threshold);
+        }
+        else
         if(!strncmp("*setopstdin ", line, strlen("*setopstdin ")))
         {
             int opID;
