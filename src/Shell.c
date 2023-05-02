@@ -239,6 +239,29 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*stampid=")], "%ld", &base);
         }
         else
+        if(!strncmp("*stampimport=[", line, strlen("*stampimport=[")))
+        {
+            // Find the position of the first '[' character
+            char *start = strchr(line, '[');
+            // Find the position of the last ']' character
+            char *end = strrchr(line, ']');
+            // Extract the substring between the '[' and ']' characters
+            char substr[1000];
+            strncpy(substr, start + 1, end - start - 1);
+            substr[end - start - 1] = '\0';
+            // Tokenize the substring using ',' as the delimiter
+            char *token = strtok(substr, ",");
+            // Reset import stamp:
+            importstamp = (Stamp) {0};
+            // Parse each token and store it in the stamp if it fits
+            int i = 0;
+            while(token != NULL && i < STAMP_SIZE)
+            {
+                importstamp.evidentalBase[i++] = strtol(token, NULL, 10);
+                token = strtok(NULL, ",");
+            }
+        }
+        else
         if(!strcmp(line,"*motorbabbling=false"))
         {
             MOTOR_BABBLING_CHANCE = 0.0;
