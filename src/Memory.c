@@ -232,7 +232,7 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int lay
     return false;
 }
 
-static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
+static void Memory_printAddedKnowledge(Stamp *stamp, Term *term, char type, Truth *truth, long occurrenceTime, double occurrenceTimeOffset, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
 {
     if((input && PRINT_INPUT) || (!input && PRINT_DERIVATIONS && priority > PRINT_EVENTS_PRIORITY_THRESHOLD))
     {
@@ -249,6 +249,8 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
         if(controlInfo)
         {
             printf("Priority=%f ", priority);
+            Stamp_print(stamp);
+            fputs(" ", stdout);
             Truth_Print(truth);
         }
         else
@@ -259,14 +261,14 @@ static void Memory_printAddedKnowledge(Term *term, char type, Truth *truth, long
     }
 }
 
-void Memory_printAddedEvent(Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
+void Memory_printAddedEvent(Stamp *stamp, Event *event, double priority, bool input, bool derived, bool revised, bool controlInfo, bool selected)
 {
-    Memory_printAddedKnowledge(&event->term, event->type, &event->truth, event->occurrenceTime, event->occurrenceTimeOffset, priority, input, derived, revised, controlInfo, selected);
+    Memory_printAddedKnowledge(stamp, &event->term, event->type, &event->truth, event->occurrenceTime, event->occurrenceTimeOffset, priority, input, derived, revised, controlInfo, selected);
 }
 
-void Memory_printAddedImplication(Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo)
+void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo)
 {
-    Memory_printAddedKnowledge(implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
+    Memory_printAddedKnowledge(stamp, implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input)
@@ -321,9 +323,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
-                    Memory_printAddedImplication(&event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
+                    Memory_printAddedImplication(&event->stamp, &event->term, &imp.truth, event->occurrenceTimeOffset, priority, input, false, true);
                     if(wasRevised)
-                        Memory_printAddedImplication(&revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
+                        Memory_printAddedImplication(&revised->stamp, &revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
             }
         }
@@ -368,14 +370,14 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             c->belief.creationTime = currentTime; //for metrics
             if(input)
             {
-                Memory_printAddedEvent(event, priority, input, false, false, true, false);
+                Memory_printAddedEvent(&event->stamp, event, priority, input, false, false, true, false);
             }
             if(revision_happened)
             {
                 Memory_AddEvent(&c->belief, currentTime, priority, false, true, true, 0);
                 if(event->occurrenceTime == OCCURRENCE_ETERNAL)
                 {
-                    Memory_printAddedEvent(&c->belief, priority, false, false, true, true, false);
+                    Memory_printAddedEvent(&c->belief.stamp, &c->belief, priority, false, false, true, true, false);
                 }
             }
         }
@@ -395,7 +397,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(input && event->type == EVENT_TYPE_GOAL)
     {
-        Memory_printAddedEvent(event, priority, input, false, false, true, false);
+        Memory_printAddedEvent(&event->stamp, event, priority, input, false, false, true, false);
     }
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
@@ -413,7 +415,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(addedToCyclingEventsQueue && !input) //print new tasks
     {
-        Memory_printAddedEvent(event, priority, input, derived, revised, true, false);
+        Memory_printAddedEvent(&event->stamp, event, priority, input, derived, revised, true, false);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
 }

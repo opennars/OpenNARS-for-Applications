@@ -95,7 +95,7 @@ void NAR_AddOperation(char *term_name, Action procedure)
     operations[use_k-1] = (Operation) { .term = term, .action = procedure };
 }
 
-static void NAR_PrintAnswer(Term best_term, Truth best_truth, long answerOccurrenceTime, long answerCreationTime)
+static void NAR_PrintAnswer(Stamp stamp, Term best_term, Truth best_truth, long answerOccurrenceTime, long answerCreationTime)
 {
     fputs("Answer: ", stdout);
     if(best_truth.confidence == 1.1)
@@ -113,6 +113,8 @@ static void NAR_PrintAnswer(Term best_term, Truth best_truth, long answerOccurre
         {
             printf(". :|: occurrenceTime=%ld creationTime=%ld ", answerOccurrenceTime, answerCreationTime);
         }
+        Stamp_print(&stamp);
+        fputs(" ", stdout);
         Truth_Print(&best_truth);
     }
     fflush(stdout);
@@ -137,6 +139,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
         Truth best_truth_projected = { .frequency = 0.0, .confidence = 1.0 };
         Concept* best_belief_concept = NULL;
         Term best_term = {0};
+        Stamp best_stamp = {0};
         long answerOccurrenceTime = OCCURRENCE_ETERNAL;
         long answerCreationTime = 0;
         bool isImplication = Narsese_copulaEquals(term.atoms[0], TEMPORAL_IMPLICATION);
@@ -167,10 +170,11 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                         }
                         if(queryCommand && Truth_Expectation(imp->truth) > answerTruthExpThreshold)
                         {
-                            NAR_PrintAnswer(imp->term, imp->truth, answerOccurrenceTime, imp->creationTime);
+                            NAR_PrintAnswer(imp->stamp, imp->term, imp->truth, answerOccurrenceTime, imp->creationTime);
                         }
                         if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
                         {
+                            best_stamp = imp->stamp;
                             best_truth = imp->truth;
                             best_term = imp->term;
                             answerCreationTime = imp->creationTime;
@@ -186,11 +190,12 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                     Truth potential_best_truth = Truth_Projection(c->belief_spike.truth, c->belief_spike.occurrenceTime, currentTime);
                     if(queryCommand && Truth_Expectation(potential_best_truth) > answerTruthExpThreshold)
                     {
-                        NAR_PrintAnswer(c->belief_spike.term, c->belief_spike.truth, c->belief_spike.occurrenceTime, c->belief_spike.creationTime);
+                        NAR_PrintAnswer(c->belief_spike.stamp, c->belief_spike.term, c->belief_spike.truth, c->belief_spike.occurrenceTime, c->belief_spike.creationTime);
                     }
                     if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
                        (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->belief_spike.occurrenceTime > answerOccurrenceTime))
                     {
+                        best_stamp = c->belief_spike.stamp;
                         best_truth_projected = potential_best_truth;
                         best_truth = c->belief_spike.truth;
                         best_term = c->belief_spike.term;
@@ -204,11 +209,12 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                     Truth potential_best_truth = Truth_Projection(c->predicted_belief.truth, c->predicted_belief.occurrenceTime, currentTime);
                     if(queryCommand && Truth_Expectation(potential_best_truth) > answerTruthExpThreshold)
                     {
-                        NAR_PrintAnswer(c->predicted_belief.term, c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->predicted_belief.creationTime);
+                        NAR_PrintAnswer(c->predicted_belief.stamp, c->predicted_belief.term, c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->predicted_belief.creationTime);
                     }
                     if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
                        (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->predicted_belief.occurrenceTime > answerOccurrenceTime))
                     {
+                        best_stamp = c->predicted_belief.stamp;
                         best_truth_projected = potential_best_truth;
                         best_truth = c->predicted_belief.truth;
                         best_term = c->predicted_belief.term;
@@ -222,10 +228,11 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
             {
                 if(c->belief.type != EVENT_TYPE_DELETED && queryCommand && Truth_Expectation(c->belief.truth) > answerTruthExpThreshold)
                 {
-                    NAR_PrintAnswer(c->belief.term, c->belief.truth, c->belief.occurrenceTime, c->belief.creationTime);
+                    NAR_PrintAnswer(c->belief.stamp, c->belief.term, c->belief.truth, c->belief.occurrenceTime, c->belief.creationTime);
                 }
                 if(c->belief.type != EVENT_TYPE_DELETED && Truth_Expectation(c->belief.truth) >= Truth_Expectation(best_truth))
                 {
+                    best_stamp = c->belief.stamp;
                     best_truth = c->belief.truth;
                     best_term = c->belief.term;
                     best_belief_concept = c;
@@ -242,7 +249,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
         }
         if(!queryCommand)
         {
-            NAR_PrintAnswer(best_term, best_truth, answerOccurrenceTime, answerCreationTime);
+            NAR_PrintAnswer(best_stamp, best_term, best_truth, answerOccurrenceTime, answerCreationTime);
         }
     }
     //input beliefs and goals

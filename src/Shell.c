@@ -174,14 +174,14 @@ int Shell_ProcessInput(char *line)
                 puts("]}");
                 if(c->belief.type != EVENT_TYPE_DELETED)
                 {
-                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false, false);
+                    Memory_printAddedEvent(&c->belief.stamp, &c->belief, 1, true, false, false, false, false);
                 }
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
                     for(int h=0; h<c->precondition_beliefs[opi].itemsAmount; h++)
                     {
                         Implication *imp = &c->precondition_beliefs[opi].array[h];
-                        Memory_printAddedImplication(&imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
+                        Memory_printAddedImplication(&imp->stamp, &imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
                     }
                 }
             }
@@ -227,6 +227,16 @@ int Shell_ProcessInput(char *line)
         if(!strncmp("*babblingops=", line, strlen("*babblingops=")))
         {
             sscanf(&line[strlen("*babblingops=")], "%d", &BABBLING_OPS);
+        }
+        else
+        if(!strncmp("*currenttime=", line, strlen("*currenttime=")))
+        {
+            sscanf(&line[strlen("*currenttime=")], "%ld", &currentTime);
+        }
+        else
+        if(!strncmp("*stampid=", line, strlen("*stampid=")))
+        {
+            sscanf(&line[strlen("*stampid=")], "%ld", &base);
         }
         else
         if(!strcmp(line,"*motorbabbling=false"))
