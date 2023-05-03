@@ -12,7 +12,18 @@ if exists(fname):
         memory = json.load(json_file)
 retrieved = set([])
 
+def Allow_requery_if_not_in_ONA(term):
+    #check if previously queried item is not in ONA memory anymore else we need
+    #to set it up for re-query by removing it from retrieved
+    if term in retrieved:
+        ret = NAR.AddInput(term + "?", Print=False)
+        if "answers" in ret and ret["answers"]:
+            answer = ret["answers"][0]
+            if "truth" not in answer and answer["term"] == "None":
+                retrieved.remove(term)
+
 def query(term):
+    Allow_requery_if_not_in_ONA(term)
     if term not in retrieved and term in memory:
         retrieved.add(term)
         (f, c, _) = memory[term]
@@ -28,6 +39,8 @@ def query(term):
                     bestTerm = term2
                     bestTruth = (f2, c2)
         if bestTerm is not None:
+            Allow_requery_if_not_in_ONA(bestTerm)
+        if bestTerm is not None and bestTerm not in retrieved:
             retrieved.add(bestTerm)
             ProcessNAROutput(NAR.AddInput(f"{bestTerm}. {{{bestTruth[0]} {bestTruth[1]}}}", Print=Print))
     retrieved.add(term)
@@ -73,7 +86,6 @@ if __name__ == "__main__":
             if "truth" not in answer:
                 print("Answer: None.")
             else:
-                print(answer)
                 occurrenceTimeInfo = "" if answer["occurrenceTime"] == "eternal" else " t="+answer["occurrenceTime"]
                 print("Answer: " + answer["term"] + answer["punctuation"] + " {" + str(answer["truth"]["frequency"]) + " " + str(answer["truth"]["confidence"]) + "}" + occurrenceTimeInfo)
         ProcessNAROutput(ret)
