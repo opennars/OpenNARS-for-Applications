@@ -16,7 +16,7 @@ from Nalifier import *
 motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
 cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
-centerSize = 30
+center_offset = 30
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
 
@@ -24,7 +24,7 @@ def pick_failed():
     arm_up()
     backward()
     backward()
-    backward()
+    right()
     right()
     right()
     open_gripper()
@@ -39,7 +39,7 @@ def pick_with_feedback(pickobj=None, location=None):
     arm_down()
     sleep(1)
     max_ops = 30
-    ops = 0
+    move_steps = 0
     max_swaps = 3
     max_ops = 30
     swaps = 0 #left/right focus attempts
@@ -47,8 +47,8 @@ def pick_with_feedback(pickobj=None, location=None):
     swap_Right = False
     while True:
         sys.stdout.flush()
-        ops+=1
-        if ops > max_ops:
+        move_steps+=1
+        if move_steps > max_ops:
             open_gripper()
             pick_failed()
             break
@@ -77,7 +77,9 @@ def pick_with_feedback(pickobj=None, location=None):
                 print("//pick failed, too far away to grab")
                 pick_failed()
                 break
-            if (x_real_temp >= robotVisualMiddle-centerSize and x_real_temp <= robotVisualMiddle+centerSize) or swaps > 3:
+            kp = 50
+            turn_steps_required = int(abs(x_real_temp - robotVisualMiddle) / kp)
+            if (x_real_temp >= robotVisualMiddle-center_offset and x_real_temp <= robotVisualMiddle+center_offset) or swaps > 3: # Object in the center case
                 print("//CENTER------------")
                 closer_to_gripper = 475
                 swaps = 0
@@ -89,32 +91,35 @@ def pick_with_feedback(pickobj=None, location=None):
                     forward()
                     forward()
                     forward()
-                    success = close_gripper() #gripper feedback
+                    success, grip_angle = close_gripper() # Grabbing object
                     if success:
-                        print("//pick succeeded")
-                        setPicked(True)
                         arm_up()
+                        success2, _ = close_gripper(grip_angle) # Check if gripper is still holds an object after lifting
+                        if success2:
+                            print("pick succeeded")
+                        else:
+                            open_gripper()
+                            print("//pick failed, object slipped")
+                            backward()
+                            backward()
+                            right()
+                            right()
+                            right()
                         break
                     else:
                         print("//pick failed, sensed nothing to grab")
                         pick_failed()
                         arm_up()
                         break
-            elif x_real_temp > robotVisualMiddle+centerSize:
+            elif x_real_temp > robotVisualMiddle+center_offset: # Object is on the RIGHT of the gripper
                 print("//RIGHT<<<<<<<<<<<<<<<<")
-                if ops < 3:
-                    right()
-                if ops < 5:
-                    right()
-                right()
+                turn_steps_required = max(1, turn_steps_required)
+                for i in range(abs(turn_steps_required)): right()
                 swap_Right = True
-            elif x_real_temp < robotVisualMiddle-centerSize:
+            else: # Object is on the LEFT of the gripper
                 print("//LEFT>>>>>>>>>>>>>>>")
-                if ops < 3:
-                    left()
-                if ops < 5:
-                    left()
-                left()
+                turn_steps_required = max(1, turn_steps_required)
+                for i in range(abs(turn_steps_required)): left()
                 swap_Left = True
             if swap_Left and swap_Right:
                 swap_Left = False
@@ -199,9 +204,9 @@ def TransbotPerceiveAt(obj, trans, rot):
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
     direction = "center" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
-    if screenX < robotVisualMiddle-centerSize:
+    if screenX < robotVisualMiddle-center_offset:
         direction = "left"
-    elif screenX > robotVisualMiddle+centerSize:
+    elif screenX > robotVisualMiddle+center_offset:
         direction = "right"
     NAR.AddInput("<%s --> [%s]>. :|:" % (obj, direction))
 
@@ -289,7 +294,7 @@ def process(line):
                         x_real = x+w/2
                         y_real = y+h #down side of bb
                         TransbotPerceiveVisual(obj, x_real, y_real, trans, rot)
-            if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-centerSize or collision != "free": #right side blocked by arm
+            if y_real_temp == -1 or y_real_temp < y_too_far_to_grab or x_real_temp > robotVisualMiddle-center_offset or collision != "free": #right side blocked by arm
                 NAR.AddInput("<obstacle --> [" + collision + "]>. :|:")
             cv.imshow('frame', frame)
         if line.endswith("! :|:"):
@@ -367,6 +372,5 @@ if __name__ == '__main__':
     reset_ona()
     print("//Welcome to ONA-Transbot shell!")
     transbot_shell()
-
 
 

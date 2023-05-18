@@ -89,8 +89,7 @@ def read_gripper_angle():
         ang = angles()
     return ang[9]
 
-def close_gripper():
-    target_angle = 30
+def close_gripper(target_angle = 30):
     step_size = 5.0
     tolerance = 14.0
     comparable = lambda x,y: abs(x-y) <= tolerance
@@ -105,14 +104,14 @@ def close_gripper():
             jointangle(9, last_target_angles[-2])
             print("//FEEDBACK STOP 1")
             sleep(0.7)
-            return True
+            return True, target_angle
         if comparable(target_angle, current_angle):
             target_angle += step_size
             jointangle(9, target_angle)
             sleep(0.7)
         else:
-            return False
-    return False
+            return False, target_angle
+    return False, target_angle
     
 def open_gripper():
     jointangle(9, 30)
