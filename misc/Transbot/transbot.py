@@ -102,10 +102,18 @@ def pick_with_feedback(pickobj=None, location=None):
                         break
             elif x_real_temp > robotVisualMiddle+centerSize:
                 print("//RIGHT<<<<<<<<<<<<<<<<")
+                if ops < 3:
+                    right()
+                if ops < 5:
+                    right()
                 right()
                 swap_Right = True
             elif x_real_temp < robotVisualMiddle-centerSize:
                 print("//LEFT>>>>>>>>>>>>>>>")
+                if ops < 3:
+                    left()
+                if ops < 5:
+                    left()
                 left()
                 swap_Left = True
             if swap_Left and swap_Right:
