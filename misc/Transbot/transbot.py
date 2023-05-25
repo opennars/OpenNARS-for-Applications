@@ -13,9 +13,7 @@ from transbot_lidar import *
 from Nalifier import *
 
 #Parameters:
-motorsleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
-cyclesleep = 5 if sys.argv[0] != "transbot_simulation.py" else 0
 center_offset = 30
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
@@ -149,7 +147,6 @@ def TransbotExecute(executions):
             forward()
             forward()
             forward()
-            #sleep(motorsleep)
             OpStop()
         elif op == "^left":
             OpStop()
@@ -157,8 +154,7 @@ def TransbotExecute(executions):
             left()
             left()
             left()
-            #OpGo(<F12>0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
-            #sleep(moto<F12>rsleep)
+            #OpGo(0.0, 0.0, 0.5, 1.0, frame_id = "base_link")
             OpStop()
         elif op == "^right":
             OpStop()
@@ -167,7 +163,6 @@ def TransbotExecute(executions):
             right()
             right()
             #OpGo(0.0, 0.0, -0.5, 1.0, frame_id = "base_link")
-            #sleep(motorsleep)
             OpStop()
         elif op == "^pick":
             OpStop()
@@ -338,6 +333,7 @@ def process(line):
             NAR.AddInput(line)
 
 lastGoal = "G! :|:"
+points = []
 def shell_step(lastLine = ""):
     global lastGoal
     #Get input line and forward potential command
@@ -350,15 +346,28 @@ def shell_step(lastLine = ""):
     print("//PROCESSED LINE: " + line)
     if line.endswith("! :|:"):
         lastGoal = line
+    if line.startswith("*clearpoints"):
+        points = []
+        return line
+    if line.startswith("*point "): #define checkpoint and time to get there
+        timeToGetThere = int(line.split("*point ")[1])
+        P = getLocation()
+        points.append((P, timeToGetThere))
+        return line
+    if line.startswith("*patrol ") #how often to patrol the points that have been defined
+        repetitions = int(line.split("*patrol ")[1])
+        for i in range(repetitions):
+            for ((trans, rot), timeToGetThere) in points:
+                OpGo(trans[0], trans[1], rot[0], rot[1])
+                time.sleep(timeToGetThere)
+                process(lastGoal)
     if line == "*loop": #endless sense-act cycle if desired
         while True:
             process(lastGoal)
-            sleep(cyclesleep)
     if line.startswith("*steps "): #k steps
         steps = int(line.split("*steps ")[1])
         for i in range(steps):
             process(lastGoal)
-            sleep(cyclesleep)
         print("//*steps DONE")
     process(line)
     return line

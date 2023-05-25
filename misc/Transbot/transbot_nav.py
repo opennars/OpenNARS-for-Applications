@@ -24,6 +24,7 @@ rospy.init_node('NARTest')
 #Code version of "rosrun tf tf_echo /map base_link | grep Translation:"
 from threading import Thread, Lock
 import subprocess
+import time
 lock = Lock()
 translation = [0,0,0]
 rotation = [0, 0, 0, 0]
@@ -48,6 +49,7 @@ def updateLocation():
           lock.acquire()
           rotation = [float(x.replace(",","")) for x in line.split("[")[1].split("]")[0].split(" ")]
           lock.release()
+      time.sleep(0.1)
       
 Thread(target=updateLocation).start()
 
