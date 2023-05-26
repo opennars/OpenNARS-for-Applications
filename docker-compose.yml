@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  ona:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ona 
+    container_name: ONA
+    restart: unless-stopped
