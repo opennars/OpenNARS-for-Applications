@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get upgrade -y
 
 # Install build-essential, etc...
-RUN apt install -y build-essential
+RUN apt install -y build-essential vim
 
 # Copy the entire current directory content into /app inside the docker image
 WORKDIR /app
@@ -15,4 +15,6 @@ COPY . /app
 RUN chmod +x /app/build.sh
 RUN /app/build.sh
 
-CMD ["/app/NAR", "shell"]
+# Set a command to keep the container running indefinitely
+CMD ["tail", "-f", "/dev/null"]
+

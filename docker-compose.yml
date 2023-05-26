@@ -6,6 +6,4 @@ services:
       dockerfile: Dockerfile
     image: ona 
     container_name: ONA
-    volumes:
-      - .:/app
-
+    restart: unless-stopped
