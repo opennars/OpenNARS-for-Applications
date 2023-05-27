@@ -10,7 +10,6 @@ class DockerWorker:
         self.container = self.client.containers.get(self.container_name)
         self.bash = pexpect.spawn('docker exec -it {} bash'.format(self.container.id))
         self.bash.sendline(init_command)  # Start init_command when DockerWorker is initialized
-        time.sleep(1)
 
     def execute_commands(self, commands):
         for cmd in commands:
@@ -27,45 +26,16 @@ class DockerWorker:
                 break
         return output
 
-    def execute_command1(self, cmd):
+    def execute_command5(self, cmd):
         self.bash.sendline(cmd)
-        print('cmd: >>>', cmd, '<<<')
-        self.bash.expect('0\r\n', timeout=1)
-        #self.bash.expect('\r\n', timeout=1)
-        #self.bash.expect([pexpect.EOF], timeout=1)
-        time.sleep(1)
-        output = self.bash.before.decode('utf-8')
-        print('output: >>>', output, '<<<')
-        return output
-
-    def execute_command3(self, cmd):
-        self.bash.sendline(cmd)
-        print('cmd: >>>', cmd, '<<<')
-
-        output = []
-        while True:
-          line = self.bash.expect([pexpect.EOF], timeout=1)
-          if line == 0:
-            break
-          output.append(line)
-
-        #self.bash.expect('\r\n', timeout=10)
-        output = self.bash.before.decode('utf-8')
-        print('output: >>>', output, '<<<')
-        return output
-
-    def execute_command4(self, cmd):
-        self.bash.sendline(cmd)
+        self.bash.sendline("0\n")
         print('cmd: >>>', cmd, '<<<')
         try:
-            self.bash.expect(pexpect.EOF, timeout=1)
+            self.bash.expect("done with 0 inference steps", timeout=1)
         except pexpect.EOF:
             pass
         except pexpect.TIMEOUT:
             pass
-        #self.bash.expect('\r\n', timeout=1)
-        #self.bash.expect([pexpect.EOF], timeout=1)
-        time.sleep(1)
         output = self.bash.before.decode('utf-8')
         print('output: >>>', output, '<<<')
         return output

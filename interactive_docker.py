@@ -14,7 +14,7 @@ class InteractiveDocker:
                 break
 
             # send input to docker container and get response
-            response = self.worker.execute_command4(user_input)
+            response = self.worker.execute_command5(user_input)
 
             # print response
             #print(response)
