@@ -5,7 +5,7 @@ FROM ubuntu:22.04
 RUN apt-get update && apt-get upgrade -y
 
 # Install build-essential, etc...
-RUN apt install -y build-essential vim
+RUN apt install -y build-essential vim python3 python3-pip
 
 # Copy the entire current directory content into /app inside the docker image
 WORKDIR /app
