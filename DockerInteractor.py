@@ -72,7 +72,7 @@ if __name__ == "__main__":
     docker_interactor = DockerInteractor(['docker', 'exec', '-i', 'ONA', '/app/NAR', 'shell'])
     iterations = 2000 
     for i in range(0, iterations):
-        response = docker_interactor.execute_command("<cat --> fuzzy_animal>.\n<cat --> fuzzy_animal>?\n0\n", "done with 0 additional inference steps")
+        response = docker_interactor.execute_command("<cat --> furry_animal>.\n<cat --> furry_animal>?\n0\n", "done with 0 additional inference steps")
         print(f"Response: {response}")
     print(f"Done with {iterations} iterations")
     docker_interactor.shutdown()
