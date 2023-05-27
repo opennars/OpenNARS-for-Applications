@@ -113,3 +113,14 @@ def PrintedTask(task):
     if "Priority" in task: st += " Priority=" + str(task["Priority"])
     if "truth" in task: st += " Truth: frequency="+task["truth"]["frequency"] + " confidence="+task["truth"]["confidence"]
     return st
+
+def Shell():
+    while True:
+        try:
+            inp = input().rstrip("\n")
+        except:
+            exit(0)
+        AddInput(inp)
+
+if __name__ == "__main__":
+    Shell()
