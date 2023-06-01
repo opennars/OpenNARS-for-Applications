@@ -1,5 +1,7 @@
+import os
 import sys
 import ast
+import signal
 import subprocess
 
 def spawnNAR():
@@ -10,6 +12,8 @@ def getNAR():
 def setNAR(proc):
     global NARproc
     NARproc = proc
+def terminateNAR(usedNAR=NARproc):
+    os.killpg(os.getpgid(usedNAR.pid), signal.SIGTERM)
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0].replace(",",""), "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
