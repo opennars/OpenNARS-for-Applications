@@ -318,7 +318,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, true, true)))
+                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, true, false)))
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
@@ -425,7 +425,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                     {
                         bool success2;
                         Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
-                        if(!success2 || !Variable_Unify(&opTerm, &specificOp).success)
+                        if(!success2 || !Variable_Unify(&specificOp, &opTerm).success)
                         {
                             continue; //same op id but different op args
                         }
