@@ -18,4 +18,4 @@ tick. :|:
 
 //show that the compound behavior has been rewarded:
 <((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>?
-//expected: Answer: <((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>. Truth: frequency=1.000000, confidence=0.901739
+//expected: Answer: <((tick &/ <({SELF} * ($1 * #1)) --> ^remember>) &/ <({SELF} * #1) --> ^goto>) =/> <$1 --> [see]>>. Truth: frequency=0.999010, confidence=0.900089
