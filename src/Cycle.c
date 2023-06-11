@@ -97,11 +97,12 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     e->creationTime = currentTime;
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
+    bool e_hasQueryVariable = Variable_hasVariable(&e->term, false, false, true);
     conceptProcessID++; //process the to e related concepts
     RELATED_CONCEPTS_FOREACH(&e->term, c,
     {
         Event ecp = *e;
-        if(!e_hasVariable)  //concept matched to the event which doesn't have variables
+        if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
         {
             Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
             if(subs.success)
@@ -111,7 +112,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 best_decision = Decision_BetterDecision(best_decision, decision);
             }
         }
-        else
+        if(e_hasVariable)
         {
             Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
             if(subs.success)

@@ -260,7 +260,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             }
             if(i-1 >= MAX_COMPOUND_OP_LEN)
             {
-                assert(false, "Operation sequence longer than the FIFO can build, increase MAX_SEQUENCE_LEN if this knowledge should be supported.");
+                assert(false, "Operation sequence longer than the FIFO can build, increase MAX_COMPOUND_OP_LEN if this knowledge should be supported.");
             }
             if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
             {
@@ -318,7 +318,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, true, true)))
+                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, false, false)))
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
@@ -425,7 +425,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                     {
                         bool success2;
                         Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
-                        if(!success2 || !Variable_Unify(&opTerm, &specificOp).success)
+                        if(!success2 || !Variable_Unify(&specificOp, &opTerm).success)
                         {
                             continue; //same op id but different op args
                         }
