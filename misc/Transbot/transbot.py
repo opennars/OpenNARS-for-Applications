@@ -11,12 +11,14 @@ from transbot_gripper import *
 from transbot_vision import *
 from transbot_lidar import *
 from Nalifier import *
+import json
 
 #Parameters:
 gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
 center_offset = 30
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
+checkpointdecisions = 1
 
 def pick_failed():
     arm_up()
@@ -230,6 +232,7 @@ def reset_ona():
     print("//transbot.py (ONA) go!")
 
 def process(line):
+    ActionInvoked = False
     if line != "":
         if line.endswith("? :|:") and "{SELF}" in line:
             (trans, rot) = getLocation()
@@ -328,8 +331,6 @@ def process(line):
             drop(force=True)
         elif line == "*droptrailer":
             drop_trailer(force=True)
-        elif line.startswith("*hastrailer "):
-            set_hastrailer(bool(line.split("*hastrailer ")[1]))
         elif line == "*reset":
             setPicked(False)
             OpStop()
@@ -337,6 +338,7 @@ def process(line):
             reset_ona()
         elif line.isdigit() or line.startswith("*volume") or line.startswith("*motorbabbling") or line.endswith("}"):
             NAR.AddInput(line)
+        return ActionInvoked
 
 lastGoal = "G! :|:"
 points = []
@@ -355,18 +357,30 @@ def shell_step(lastLine = ""):
     if line.startswith("*clearpoints"):
         points = []
         return line
-    if line.startswith("*point "): #define checkpoint and time to get there
-        timeToGetThere = int(line.split("*point ")[1])
+    if line.startswith("*point"): #define checkpoint
         P = getLocation()
-        points.append((P, timeToGetThere))
+        points.append(P)
         return line
     if line.startswith("*patrol "): #how often to patrol the points that have been defined
         repetitions = int(line.split("*patrol ")[1])
         for i in range(repetitions):
-            for ((trans, rot), timeToGetThere) in points:
+            for (trans, rot) in points:
                 OpGo(trans[0], trans[1], rot[2], rot[3])
-                time.sleep(timeToGetThere)
-                process(lastGoal)
+                for i in range(checkpointdecisions):
+                    if process(lastGoal):
+                        break
+        return line
+    if line.startswith("*savepoints"):
+        with open("points.json", "w") as json_file:
+            json.dump(points, json_file)
+        return line
+    if line.startswith("*loadpoints"):
+        with open("points.json") as json_file:
+            points = json.load(json_file)
+        return line
+    if line.startswith("*hastrailer "):
+        set_hastrailer(bool(line.split("*hastrailer ")[1]))
+        return line
     if line == "*loop": #endless sense-act cycle if desired
         while True:
             process(lastGoal)

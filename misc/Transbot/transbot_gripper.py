@@ -4,7 +4,7 @@ from transbot_msgs.msg import *
 from geometry_msgs.msg import Twist
 import rospy
 
-hastrailer = True
+hastrailer = False
 def get_hastrailer():
     return hastrailer
 def set_hastrailer(has):
