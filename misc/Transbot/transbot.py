@@ -379,7 +379,7 @@ def shell_step(lastLine = ""):
             points = json.load(json_file)
         return line
     if line.startswith("*hastrailer "):
-        set_hastrailer(bool(line.split("*hastrailer ")[1]))
+        set_hastrailer(line.split("*hastrailer ")[1] in ["true", "True"])
         return line
     if line == "*loop": #endless sense-act cycle if desired
         while True:
