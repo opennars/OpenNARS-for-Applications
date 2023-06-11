@@ -95,6 +95,8 @@ def pick_with_feedback(pickobj=None, location=None):
                         success2, _ = close_gripper(grip_angle) # Check if gripper is still holds an object after lifting
                         if success2:
                             print("pick succeeded")
+                            if get_hastrailer():
+                                drop_trailer()
                         else:
                             open_gripper()
                             print("//pick failed, object slipped")
@@ -324,6 +326,10 @@ def process(line):
         elif line == "*drop":
             OpStop()
             drop(force=True)
+        elif line == "*droptrailer":
+            drop_trailer(force=True)
+        elif line.startswith("*hastrailer "):
+            set_hastrailer(bool(line.split("*hastrailer ")[1]))
         elif line == "*reset":
             setPicked(False)
             OpStop()
@@ -335,7 +341,7 @@ def process(line):
 lastGoal = "G! :|:"
 points = []
 def shell_step(lastLine = ""):
-    global lastGoal
+    global lastGoal, points
     #Get input line and forward potential command
     try:
         line = input().rstrip("\n").replace("leave","Pleft") #"the green cat quickly eats the yellow mouse in the old house"
@@ -354,11 +360,11 @@ def shell_step(lastLine = ""):
         P = getLocation()
         points.append((P, timeToGetThere))
         return line
-    if line.startswith("*patrol ") #how often to patrol the points that have been defined
+    if line.startswith("*patrol "): #how often to patrol the points that have been defined
         repetitions = int(line.split("*patrol ")[1])
         for i in range(repetitions):
             for ((trans, rot), timeToGetThere) in points:
-                OpGo(trans[0], trans[1], rot[0], rot[1])
+                OpGo(trans[0], trans[1], rot[2], rot[3])
                 time.sleep(timeToGetThere)
                 process(lastGoal)
     if line == "*loop": #endless sense-act cycle if desired
