@@ -359,8 +359,10 @@ def shell_step(lastLine = ""):
     if line.startswith("*patrol "): #how often to patrol the points that have been defined
         repetitions = int(line.split("*patrol ")[1])
         for i in range(repetitions):
-            for (trans, rot) in points:
+            for j, (trans, rot) in enumerate(points):
                 OpGo(trans[0], trans[1], rot[2], rot[3])
+                TransbotPerceiveAt("{P" + str(j) + "}", trans, rot)
+                TransbotPerceiveAt("{SELF}", trans, rot)
                 for i in range(checkpointdecisions):
                     if process(lastGoal):
                         break
