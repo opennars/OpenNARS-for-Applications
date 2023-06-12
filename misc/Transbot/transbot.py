@@ -196,7 +196,7 @@ def TransbotPerceiveAt(obj, trans, rot):
     NAR.AddInput("<(%s * %s) --> at>. :|:" % (obj, transXYrotZW))
 
 def TransbotPerceiveVisual(obj, screenX, screenY, trans, rot):
-    direction = "center" #640  -> 320 center
+    direction = "front" #640  -> 320 center
     TransbotPerceiveAt(obj, trans, rot) #TODO improve
     if screenX < robotVisualMiddle-center_offset:
         direction = "left"
