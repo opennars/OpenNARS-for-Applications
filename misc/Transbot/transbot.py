@@ -14,7 +14,6 @@ from Nalifier import *
 import json
 
 #Parameters:
-gotosleep = 20 if sys.argv[0] != "transbot_simulation.py" else 0
 center_offset = 30
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
@@ -184,10 +183,6 @@ def TransbotExecute(executions):
                 (x,y,z,w) = locationQueryAnswer["term"].split(" * ")[1].split(") --> at>")[0].split("_")
                 (xf, yf, zf, wf) = (float(x)-valueToTermOffset, float(y)-valueToTermOffset, float(z)-valueToTermOffset, float(w)-valueToTermOffset)
                 OpGo(xf, yf, zf, wf)
-                for i in range(gotosleep):
-                    sleep(1)
-                    print("//^goto wait %d / %d" % (i+1, gotosleep))
-                    sys.stdout.flush()
                 OpStop()
         elif op == "^say":
             print("//SAY: " + arguments)
