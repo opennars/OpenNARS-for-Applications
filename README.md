@@ -48,7 +48,7 @@ If you have trouble building with OpenMP, then you probably need to specify libr
 
 ***For a proper reliable GPT-based English language channel***
 
-Check out [gptONA](https://github.com/patham9/NarsGPT/blob/gptONA/README.md) <img src="https://user-images.githubusercontent.com/8284677/234757994-5e8ad001-c5b1-4aa1-abe7-c56a4f7012dd.png" width="50px">!
+Check out [NARS-GPT](https://github.com/opennars/NARS-GPT) <img src="https://user-images.githubusercontent.com/8284677/234757994-5e8ad001-c5b1-4aa1-abe7-c56a4f7012dd.png" width="50px">!
 
 ***with legacy English NLP shell and syntax highlighting:***
 
