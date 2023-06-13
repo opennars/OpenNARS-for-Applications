@@ -43,6 +43,8 @@
 
 //Data structure//
 //--------------//
+extern long base;
+extern Stamp importstamp;
 #define EVENT_TYPE_GOAL 1
 #define EVENT_TYPE_BELIEF 2
 #define EVENT_TYPE_DELETED 0

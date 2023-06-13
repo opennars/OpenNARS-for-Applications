@@ -57,20 +57,21 @@ void NAR_Bandrobot(long iterations)
                      "---------------------|\n"
                      "                     |\n"
                      "                     |\n"
-                     "                     |\n";
+                     "                     |\n"
+                     "'''''''''''''''''''''|\n";
     puts(">>NAR Bandrobot start");
     NAR_AddOperation("^left", NAR_Bandrobot_Left);
     NAR_AddOperation("^right", NAR_Bandrobot_Right);
     NAR_AddOperation("^pick", NAR_Bandrobot_Pick); 
     NAR_AddOperation("^drop", NAR_Bandrobot_Drop);
-    Shell_ProcessInput("*motorbabbling=0.01");
     Shell_ProcessInput("*questionpriming=0.0"); //questions are only used for debug here, not to influence attention
     long t = 0;
     int minpos = 0.0;
     int maxpos = 20.0;
     int position = 0;
-    int targetposition = 1; //maxpos; //maxpos/2;
-    bool picked = false, lastpicked = false;
+    int targetposition = 2; //maxpos; //maxpos/2;
+    int goalposition = 1;
+    bool picked = false, lastpicked = false, hasObj = false;
     int successes = 0;
     while(1)
     {
@@ -99,12 +100,14 @@ void NAR_Bandrobot(long iterations)
             if(position == targetposition)
             {
                 picked = true;
+                hasObj = true;
             }
         }
         if(NAR_Bandrobot_Drop_executed)
         {
             NAR_Bandrobot_Drop_executed = false;
             picked = false;
+            hasObj = false;
         }
         //SLEEP;
         CLEAR_SCREEN;
@@ -112,15 +115,22 @@ void NAR_Bandrobot(long iterations)
         memcpy(world, initial, sizeof(initial));
         DRAW_LINE(position, 2, 0, 1, (char*) world, 'A');
         DRAW_LINE(targetposition, picked ? 3 : 4, 0, 1, (char*) world, 'o');
-        //NAR_AddInputNarsese("<(<(position * targetposition) --> [left]> &/ ?1) =/> aligned>?");
-        //NAR_AddInputNarsese("<(<(targetposition * position) --> [left]> &/ ?1) =/> aligned>?");
-        NAR_AddInputNarsese("<(?1 * ?2) --> (+ left)>? :\\:");
+        DRAW_LINE(goalposition, 5, 0, 1, (char*) world, 'U');
+        //NAR_AddInputNarsese("<(<({position} * {targetposition}) --> (+ left)> &/ ^right) =/> picked>?");
+        //NAR_AddInputNarsese("<(<({targetposition} * {position}) --> (+ left)> &/ ^left) =/> picked>?");
+        char *propname = hasObj ? "dropPosX" : "pickPosX";
+        char questionStr[NARSESE_LEN_MAX] = {0};
+        sprintf(questionStr, "%s%s%s", "<({?1} * {?2}) --> (+ ", propname, ")>? :\\:\0");
+        NAR_AddInputNarsese(questionStr);
         puts(world);
-        char positionStr[NARSESE_LEN_MAX];
-        sprintf(positionStr, "<position --> [left]>. :|: {%f 0.9}", (((float) (position-minpos))/((float) (maxpos-minpos)))/10.0);
+        char positionStr[NARSESE_LEN_MAX] = {0};
+        float v_position = MIN(1.0, MAX(0.0, (((float) (position-minpos))/((float) (maxpos-minpos)))));
+        sprintf(positionStr, "%s%s%s%f%s", "<{position} |-> [", propname, "]>. :|: %", v_position, "%\0");
         NAR_AddInputNarsese(positionStr);
-        char targetpositionStr[NARSESE_LEN_MAX];
-        sprintf(targetpositionStr, "<targetposition --> [left]>. :|: {%f 0.9}", (((float) (targetposition-minpos))/((float) (maxpos-minpos)))/10.0);
+        char targetpositionStr[NARSESE_LEN_MAX] = {0};
+        double used_position = hasObj ? goalposition : targetposition;
+        float v_usedposition = MIN(1.0, MAX(0.0, (((float) (used_position-minpos))/((float) (maxpos-minpos)))));
+        sprintf(targetpositionStr, "%s%s%s%f%s", "<{targetposition} |-> [", propname, "]>. :|: %", v_usedposition, "%\0");
         NAR_AddInputNarsese(targetpositionStr);
         if(picked && !lastpicked)
         {
@@ -129,12 +139,30 @@ void NAR_Bandrobot(long iterations)
         else
         if(!picked && lastpicked)
         {
-            NAR_AddInputNarsese("dropped. :|:");
-            targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
-            successes++;
+            if(position == goalposition)
+            {
+                NAR_AddInputNarsese("delivered. :|:");
+                targetposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
+                goalposition = (((double)myrand()/(double)(MY_RAND_MAX)) * (maxpos));
+                successes++;
+                if(iterations == -1)
+                {
+                    for(int k=0; k<10; k++)
+                    {
+                        SLEEP;
+                    }
+                }
+            }
         }
         lastpicked = picked;
-        NAR_AddInputNarsese("dropped! :|:");
-        printf("ratio=%d time=%ld\n", successes, t);
+        NAR_AddInputNarsese("delivered! :|:");
+        int t_includeSleep = 8000;
+        bool user_viz_sleep = iterations == -1;
+        printf("ratio=%d sleepInVisualization=%s time=%ld\n", successes, (user_viz_sleep ? "true" : "false"), t);
+        fflush(stdout);
+        if(user_viz_sleep)
+        {
+            SLEEP;
+        }
     }
 }

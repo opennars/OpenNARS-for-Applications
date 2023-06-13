@@ -73,19 +73,19 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
 
 bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
-    for (int i=0;i<STAMP_SIZE;i++)
+    for(int i=0;i<STAMP_SIZE;i++)
     {
-        if (a->evidentalBase[i] == STAMP_FREE) 
+        if(a->evidentalBase[i] == STAMP_FREE)
         {
             break;
         }
-        for (int j=0;j<STAMP_SIZE;j++)
+        for(int j=0;j<STAMP_SIZE;j++)
         {
-            if (b->evidentalBase[j] == STAMP_FREE)
+            if(b->evidentalBase[j] == STAMP_FREE)
             {
                 break;
             }
-            if (a->evidentalBase[i] == b->evidentalBase[j])
+            if(a->evidentalBase[i] == b->evidentalBase[j])
             {
                 return true;
             }
@@ -125,14 +125,21 @@ bool Stamp_Equal(Stamp *a, Stamp *b)
 
 void Stamp_print(Stamp *stamp)
 {
-    fputs("stamp=", stdout);
+    fputs("Stamp=[", stdout);
     for(int i=0; i<STAMP_SIZE; i++)
     {
         if(stamp->evidentalBase[i] == STAMP_FREE)
         {
             break;
         }
-        printf("%ld,", stamp->evidentalBase[i]);
+        if(i+1 >= STAMP_SIZE || stamp->evidentalBase[i+1] == STAMP_FREE)
+        {
+            printf("%ld", stamp->evidentalBase[i]);
+        }
+        else
+        {
+            printf("%ld,", stamp->evidentalBase[i]);
+        }
     }
-    puts("");
+    fputs("]", stdout);
 }

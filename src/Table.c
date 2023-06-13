@@ -65,7 +65,9 @@ Implication *Table_AddAndRevise(Table *table, Implication *imp)
     int same_i = -1;
     for(int i=0; i<table->itemsAmount; i++)
     {
-        if(Term_Equal(&imp->term, &table->array[i].term))
+        bool are_concurrent_implications = imp->occurrenceTimeOffset == 0.0 && table->array[i].occurrenceTimeOffset == 0.0;
+        bool are_predictive_implications = imp->occurrenceTimeOffset >  0.0 && table->array[i].occurrenceTimeOffset >  0.0;
+        if(Term_Equal(&imp->term, &table->array[i].term) && (are_concurrent_implications || are_predictive_implications))
         {
             same_i = i;
             break;

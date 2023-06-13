@@ -49,6 +49,19 @@ Truth Truth_Revision(Truth v1, Truth v2)
     double w1 = Truth_c2w(c1);
     double w2 = Truth_c2w(c2);
     double w = w1 + w2;
+    //in case that MAX_CONFIDENCE is set to 1.0, we allow an exception for axiomatic object-level knowledge:
+    if(MAX_CONFIDENCE == 1.0)
+    {
+        if(v1.confidence == 1.0)
+        {
+            return v1;
+        }
+        if(v2.confidence == 1.0)
+        {
+            return v2;
+        }
+    }
+    //else normal revision
     return (Truth) { .frequency = MIN(1.0, (w1 * f1 + w2 * f2) / w), 
                      .confidence = MIN(MAX_CONFIDENCE, MAX(MAX(Truth_w2c(w), c1), c2)) };
 }

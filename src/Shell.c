@@ -174,14 +174,14 @@ int Shell_ProcessInput(char *line)
                 puts("]}");
                 if(c->belief.type != EVENT_TYPE_DELETED)
                 {
-                    Memory_printAddedEvent(&c->belief, 1, true, false, false, false, false);
+                    Memory_printAddedEvent(&c->belief.stamp, &c->belief, 1, true, false, false, false, false);
                 }
                 for(int opi=0; opi<OPERATIONS_MAX; opi++)
                 {
                     for(int h=0; h<c->precondition_beliefs[opi].itemsAmount; h++)
                     {
                         Implication *imp = &c->precondition_beliefs[opi].array[h];
-                        Memory_printAddedImplication(&imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
+                        Memory_printAddedImplication(&imp->stamp, &imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
                     }
                 }
             }
@@ -227,6 +227,39 @@ int Shell_ProcessInput(char *line)
         if(!strncmp("*babblingops=", line, strlen("*babblingops=")))
         {
             sscanf(&line[strlen("*babblingops=")], "%d", &BABBLING_OPS);
+        }
+        else
+        if(!strncmp("*currenttime=", line, strlen("*currenttime=")))
+        {
+            sscanf(&line[strlen("*currenttime=")], "%ld", &currentTime);
+        }
+        else
+        if(!strncmp("*stampid=", line, strlen("*stampid=")))
+        {
+            sscanf(&line[strlen("*stampid=")], "%ld", &base);
+        }
+        else
+        if(!strncmp("*stampimport=[", line, strlen("*stampimport=[")))
+        {
+            // Find the position of the first '[' character
+            char *start = strchr(line, '[');
+            // Find the position of the last ']' character
+            char *end = strrchr(line, ']');
+            // Extract the substring between the '[' and ']' characters
+            char substr[1000];
+            strncpy(substr, start + 1, end - start - 1);
+            substr[end - start - 1] = '\0';
+            // Tokenize the substring using ',' as the delimiter
+            char *token = strtok(substr, ",");
+            // Reset import stamp:
+            importstamp = (Stamp) {0};
+            // Parse each token and store it in the stamp if it fits
+            int i = 0;
+            while(token != NULL && i < STAMP_SIZE)
+            {
+                importstamp.evidentalBase[i++] = strtol(token, NULL, 10);
+                token = strtok(NULL, ",");
+            }
         }
         else
         if(!strcmp(line,"*motorbabbling=false"))
@@ -287,10 +320,19 @@ int Shell_ProcessInput(char *line)
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
         }
         else
+        if(!strncmp("*query ", line, strlen("*query ")))
+        {
+            double threshold;
+            char narsese[NARSESE_LEN_MAX+1] = {0};
+            narsese[NARSESE_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*query ")], "%lf %" STR(NARSESE_LEN_MAX) "[^\n]", &threshold, (char*) &narsese);
+            assert(threshold >= 0.0 && threshold <= 1.0, "Query truth exp out of bounds!");
+            NAR_AddInputNarsese2(narsese, true, threshold);
+        }
+        else
         if(!strncmp("*setopstdin ", line, strlen("*setopstdin ")))
         {
             int opID;
-            char opname[ATOMIC_TERM_LEN_MAX] = {0};
             sscanf(&line[strlen("*setopstdin ")], "%d", &opID);
             operations[opID - 1].stdinOutput = true;
         }
@@ -302,6 +344,11 @@ int Shell_ProcessInput(char *line)
             printf("performing %u inference steps:\n", steps); fflush(stdout);
             NAR_Cycles(steps);
             printf("done with %u additional inference steps.\n", steps); fflush(stdout);
+        }
+        else
+        if(!strncmp("*concurrent", line, strlen("*concurrent")))
+        {
+            currentTime-=1;
         }
         else
         {

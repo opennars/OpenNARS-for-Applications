@@ -23,9 +23,8 @@ def detect_objects():
     global going
     if going:
         going = False
-        return ([("person", 0, 480, 10, 10, 0.9)], "")
-    return ([("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9, (0,0,0)),
-             ("bottle" if not picked else "person", random.choice([0,375,375]), 480, 10, 10, 0.9, (0,0,0))], "")
+        return ([("person", 0, 480, 10, 10, 0.9, (0,0,0))], "")
+    return ([("bottle" if not picked else random.choice(["table", "person"]), random.choice([0,375,375]), 480, 10, 10, 0.9, (0,0,0))], "")
 
 def getLocation():
     return [(0,0,0),(0,0,0,0)]
@@ -57,10 +56,10 @@ def arm_down():
 def arm_up():
     None
 
-def close_gripper():
+def close_gripper(target_angle = 30):
     global picked
     picked = True
-    return True
+    return True, 0
 
 def open_gripper():
     None
@@ -74,6 +73,9 @@ def drop():
     global picked
     picked = False
     None
+
+def get_hastrailer():
+    return False
 
 class FakeCV:
     def waitKey(self, wtf):

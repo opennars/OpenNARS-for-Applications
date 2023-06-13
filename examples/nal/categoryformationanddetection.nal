@@ -236,12 +236,12 @@
 <{inst140} --> bird>? :|:
 
 <duck --> bird>?
-////expected: Answer: <duck --> bird>. creationTime=2059 Truth: frequency=1.000000, confidence=0.618321
+//--expected: Answer: <duck --> bird>. Truth: frequency=1.000000, confidence=0.618321
 <bird --> duck>?
-////expected: Answer: <bird --> duck>. creationTime=3017 Truth: frequency=0.500000, confidence=0.764151
+//--expected: Answer: <bird --> duck>. Truth: frequency=0.500000, confidence=0.764151
 <swan --> bird>?
-////expected: Answer: <swan --> bird>. creationTime=3062 Truth: frequency=1.000000, confidence=0.690548
+//--expected: Answer: <swan --> bird>. Truth: frequency=1.000000, confidence=0.618321
 <bird --> swan>?
-////expected: Answer: <bird --> swan>. creationTime=3017 Truth: frequency=0.500000, confidence=0.764151
+//--expected: Answer: <bird --> swan>. Truth: frequency=0.500000, confidence=0.764151
 
 //*concepts

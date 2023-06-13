@@ -55,7 +55,7 @@ Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 //{Event a., Event b., after(b,a)} |- Implication <a =/> b>.
 Implication Inference_BeliefInduction(Event *a, Event *b, bool *success)
 {
-    assert(b->occurrenceTime > a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
+    assert(b->occurrenceTime >= a->occurrenceTime, "after(b,a) violated in Inference_BeliefInduction");
     DERIVATION_STAMP_AND_TIME(a,b)
     Term term = {0};
     term.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);

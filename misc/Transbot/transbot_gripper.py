@@ -4,6 +4,12 @@ from transbot_msgs.msg import *
 from geometry_msgs.msg import Twist
 import rospy
 
+hastrailer = False
+def get_hastrailer():
+    return hastrailer
+def set_hastrailer(has):
+    global hastrailer
+    hastrailer = has
 runtime = 500  #1000
 RobotArm_client = rospy.ServiceProxy("/CurrentAngle", RobotArm)
 pub_Arm = rospy.Publisher("/TargetAngle", Arm, queue_size=1)
@@ -50,9 +56,9 @@ def arm_up():
     sleep(0.5)
     jointangle(7, 180)
     sleep(0.5)
-    jointangle(8, 30)
+    jointangle(8, 60 if hastrailer else 30)
     sleep(0.5)
-    jointangle(8, 30)
+    jointangle(8, 60 if hastrailer else 30)
     sleep(0.5)
     jointangle(7, 210)
     sleep(0.5)
@@ -89,8 +95,7 @@ def read_gripper_angle():
         ang = angles()
     return ang[9]
 
-def close_gripper():
-    target_angle = 30
+def close_gripper(target_angle = 30):
     step_size = 5.0
     tolerance = 14.0
     comparable = lambda x,y: abs(x-y) <= tolerance
@@ -105,14 +110,14 @@ def close_gripper():
             jointangle(9, last_target_angles[-2])
             print("//FEEDBACK STOP 1")
             sleep(0.7)
-            return True
+            return True, target_angle
         if comparable(target_angle, current_angle):
             target_angle += step_size
             jointangle(9, target_angle)
             sleep(0.7)
         else:
-            return False
-    return False
+            return False, target_angle
+    return False, target_angle
     
 def open_gripper():
     jointangle(9, 30)
@@ -202,5 +207,25 @@ def drop(force=False):
     right()
     right()
     picked = False
+
+def drop_trailer(force=False, t=0.7):
+    global picked
+    if not picked and not force:
+        return
+    for i in range(32):
+        right(angular=0.6)
+        sleep(t)
+    forward(linear=0.6)
+    sleep(t)
+    forward(linear=0.6)
+    sleep(t)
+    open_gripper()
+    backward(linear=0.6)
+    sleep(t)
+    backward(linear=0.6)
+    sleep(t)
+    for i in range(32):
+        left(angular=0.6)
+        sleep(t)
 
 print("//transbot_gripper.py go!")

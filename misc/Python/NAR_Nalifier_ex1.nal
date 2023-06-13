@@ -1,0 +1,19 @@
+*RESET_PROTOTYPES=2
+*SUFFICIENT_MATCH_EXP=1
+*CONCEPT_CREATION=false
+*SET_CONTINUOUS=brown
+*SET_CONTINUOUS=small
+<{cat} --> [meowing]>. :|: %0.6%
+<{cat} --> [barking]>. :|: %0.0%
+1
+*SUFFICIENT_MATCH_EXP=0.0
+<(<({#1} ~ {#2}) --> [meowing]> &/ <({SELF} * #1) --> ^say>) =/> G>.
+G! :|:
+10
+<{dog} --> [barking]>. :|: %1.0%
+<{dog} --> [meowing]>. :|: %0.3%
+1
+<({cat} ~ {dog}) --> [meowing]>? :|:
+//expected: Answer: <({cat} ~ {dog}) --> [meowing]>. :|: occurrenceTime=14 Truth: frequency=1.000000, confidence=0.810000
+G! :|:
+//expected: ^say executed with args ({SELF} * cat)

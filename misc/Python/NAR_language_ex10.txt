@@ -1,0 +1,36 @@
+*train=true
+*setopname 1 ^lighter
+
+<LIGHTNING --> [OBSERVE]>.
+lightning
+
+<THUNDER --> [OBSERVE]>.
+thunder
+
+<(ALCOHOL * ACCIDENT) --> CAUSE>.
+alcohol causes accidents
+
+<(SMOKING * CANCER) --> CAUSE>.
+smoking causes cancer
+
+<CAT --> ANIMAL>.
+a cat is an animal
+
+<CAR --> VEHICLE>.
+a car is a vehicle
+
+<PLASTIC --> [MELTABLE]>.
+plastic is meltable
+
+<BOTTLE --> [MELTABLE]>.
+a bottle is meltable
+
+*train=false
+<<($1 * $2) --> CAUSE> ==> <<$1 --> [OBSERVE]> =/> <$2 --> [OBSERVE]>>>.
+<<$1 --> [MELTABLE]> ==> <(<$1 --> [OBSERVE]> &/ ^lighter) =/> <$1 --> [FLUID]>>>.
+lightning causes thunder
+a plastic bottle is meltable
+<?1 =/> <THUNDER --> [OBSERVE]>>?
+Answer: <<LIGHTNING --> [OBSERVE]> =/> <THUNDER --> [OBSERVE]>>. Truth: frequency=1.000000 confidence=0.447514
+<?1 =/> <(PLASTIC * BOTTLE) --> [FLUID]>>?
+Answer: <(<(PLASTIC * BOTTLE) --> [OBSERVE]> &/ ^lighter) =/> <(PLASTIC * BOTTLE) --> [FLUID]>>. Truth: frequency=1.000000 confidence=0.447514

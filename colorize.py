@@ -60,6 +60,8 @@ for line in sys.stdin:
     l = re.sub(r"\(([^><:]*)\s(/1|\\1|/2|\\1|\\2)\s([^><:]*)\)", YELLOW+r"(" + GREEN + r"\1" + YELLOW + r" \2 " + GREEN + r"\3" + YELLOW + ")" + COLOR, l)
     #Implication
     l = re.sub(r"<([^:]*)\s=(/|=|\|)>\s([^:]*)>", CYAN+ STATEMENT_OPENER + GREEN + r"\1" + CYAN + r" =\2> " + GREEN + r"\3" + CYAN + STATEMENT_CLOSER + COLOR, l)
+    #Equivalence
+    l = re.sub(r"<([^:]*)\s<(/|=|\|)>\s([^:]*)>", CYAN+ STATEMENT_OPENER + GREEN + r"\1" + CYAN + r" <\2> " + GREEN + r"\3" + CYAN + STATEMENT_CLOSER + COLOR, l)
     #Conjunction
     l = re.sub(r"\(([^:]*)\s&(/|&|\|)\s([^:]*)\)", MAGENTA+r"(" + GREEN + r"\1" + MAGENTA + r" &\2 " + GREEN + r"\3" + MAGENTA + ")" + COLOR, l)
     #Similarity and inheritance
