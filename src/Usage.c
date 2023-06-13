@@ -26,7 +26,7 @@
 
 double Usage_usefulness(Usage usage, long currentTime)
 {
-    double recency = currentTime - usage.lastUsed;
+    double recency = MAX(0, currentTime - usage.lastUsed);
     double usefulnessToNormalize = ((double) usage.useCount) / (recency + 1.0);
     return usefulnessToNormalize / (usefulnessToNormalize + 1.0);
 }

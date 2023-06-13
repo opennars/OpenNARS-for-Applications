@@ -8,7 +8,9 @@ from time import sleep
 import sys
 import os
 import pycuda.autoinit
+from Transbot_Lib import Transbot
 
+bot = Transbot()
 path = os.getcwd()
 sys.path.append("/home/jetson/tensorrt_demos/")
 os.chdir("/home/jetson/tensorrt_demos/")
@@ -19,6 +21,8 @@ os.chdir(path)
 COLORS = np.random.uniform(0, 255, size=(len(COCO_CLASSES_LIST), 3))
 transbot_vision_WIDTH = 640
 transbot_vision_HEIGHT = 480
+warn_person_car = True
+warn_distance = 300 #upside down
 
 framelock = Lock()
 frame = ""
@@ -70,6 +74,10 @@ def applyYOLO(img):
         class_id = int(clss[i])
         box = boxes[i]
         class_name = COCO_CLASSES_LIST[class_id]
+        if warn_person_car and class_name in ["person", "car"]:
+            y = box[1] + (box[3] - box[1])
+            if y >= warn_distance:
+                bot.set_beep(1000)
         imagecropped = cropImage(img, (box[0], box[1], box[2]-box[0], box[3]-box[1]))
         dominantColor = dominantColorsWithPixelCounts(imagecropped)[0][0]
         detections.append([class_name, box[0], box[1], box[2]-box[0], box[3]-box[1], confs[i], (dominantColor[0], dominantColor[1], dominantColor[2])])

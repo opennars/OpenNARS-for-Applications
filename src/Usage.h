@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "Config.h"
+#include "Globals.h"
 
 //Data structure//
 //--------------//

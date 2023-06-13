@@ -42,8 +42,7 @@
 //Generates inference rule code
 void NAL_GenerateRuleTable();
 //Method for the derivation of new events as called by the generated rule table
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro);
-void NAL_DerivedEvent2(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars);
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars);
 //macro for syntactic representation, increases readability, double premise inference
 #define R2(premise1, premise2, _, conclusion, truthFunction)         NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, false); NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, false);
 #define R2VarIntro(premise1, premise2, _, conclusion, truthFunction) NAL_GenerateRule(#premise1, #premise2, #conclusion, #truthFunction, true, false, true);  NAL_GenerateRule(#premise2, #premise1, #conclusion, #truthFunction, true, true, true);
@@ -134,12 +133,13 @@ R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralInters
 R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\1 B) --> A), Truth_StructuralIntersection )
 R1Bidirectional( (R --> (A * B)), -|-, ((R \\2 A) --> B), Truth_StructuralIntersection )
-R2( (R --> [P]), (S --> [P]), |-, ((R * S) --> (+ P)), Truth_FrequencyGreater )
+//!Comparative relations
+R2( ({R} |-> [P]), ({S} |-> [P]), |-, (({R} * {S}) --> (+ P)), Truth_FrequencyGreater )
 R2( ((A * B) --> (+ P)), ((B * C) --> (+ P)), |-, ((A * C) --> (+ P)), Truth_Deduction )
-R2( (R --> [P]), (S --> [P]), |-, ((R * S) --> (= P)), Truth_FrequencyEqual )
+R2( ({R} |-> [P]), ({S} |-> [P]), |-, (({R} * {S}) --> (= P)), Truth_FrequencyEqual )
 R2( ((A * B) --> (= P)), ((B * C) --> (= P)), |-, ((A * C) --> (= P)), Truth_Deduction )
 R1( ((A * B) --> (= P)), |-, ((B * A) --> (= P)), Truth_StructuralIntersection )
-R2( (A --> [P]), ((A * B) --> (= P)), |-, (B --> [P]), Truth_Intersection )
+R2( ({A} |-> [P]), (({A} * {B}) --> (= P)), |-, ({B} |-> [P]), Truth_Intersection )
 //!Optional rules for more efficient reasoning about relation components:
 R2( ((A * B) --> R), ((C * B) --> R), |-, (C --> A), Truth_Abduction )
 R2( ((A * B) --> R), ((A * C) --> R), |-, (C --> B), Truth_Abduction )
@@ -231,18 +231,12 @@ R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>
 R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
 R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
 //!Relation symmetry, asymmetry, and transitivity:
-R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((A * B) --> S) ==> ((B * A) --> R)), Truth_Induction )
+R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
 R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!Variable elimination in Cycle_SpecialInferences
-#endif
-
-#if SEMANTIC_INFERENCE_NAL_LEVEL >= 7
-R1( (A &| B), |-, A, Truth_StructuralDeduction )
-R1( (A &| B), |-, B, Truth_StructuralDeduction )
-R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!
@@ -256,7 +250,6 @@ R1( (A &| B), |-, (B &| A), Truth_StructuralIntersection )
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
-ReduceStatement( (A &| A), A )
 //!Extensional set reductions:
 ReduceTerm( ({A} | {B}), {A B} )
 ReduceTerm( ({A B} | {C}), {(A . B) C} )

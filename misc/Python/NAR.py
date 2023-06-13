@@ -1,4 +1,7 @@
+import os
 import sys
+import ast
+import signal
 import subprocess
 
 def spawnNAR():
@@ -9,6 +12,8 @@ def getNAR():
 def setNAR(proc):
     global NARproc
     NARproc = proc
+def terminateNAR(usedNAR=NARproc):
+    os.killpg(os.getpgid(usedNAR.pid), signal.SIGTERM)
 
 def parseTruth(T):
     return {"frequency": T.split("frequency=")[1].split(" confidence")[0].replace(",",""), "confidence": T.split(" confidence=")[1].split(" dt=")[0].split(" occurrenceTime=")[0]}
@@ -20,9 +25,11 @@ def parseTask(s):
         s = s.replace(" :|:","")
         if "occurrenceTime" in s:
             M["occurrenceTime"] = s.split("occurrenceTime=")[1].split(" ")[0]
-    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Priority=")[0].split(" creationTime=")[0]
+    if "Stamp" in s:
+        M["Stamp"] = ast.literal_eval(s.split("Stamp=")[1].split("]")[0]+"]")
+    sentence = s.split(" occurrenceTime=")[0] if " occurrenceTime=" in s else s.split(" Stamp=")[0].split(" Priority=")[0].split(" creationTime=")[0]
     M["punctuation"] = sentence[-4] if ":|:" in sentence else sentence[-1]
-    M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0][:-1]
+    M["term"] = sentence.split(" creationTime")[0].split(" occurrenceTime")[0].split(" Truth")[0].split(" Stamp=")[0][:-1]
     if "Truth" in s:
         M["truth"] = parseTruth(s.split("Truth: ")[1])
     if "Priority" in s:
@@ -103,3 +110,21 @@ def Reset(usedNAR=NARproc):
     AddInput("*reset", usedNAR=usedNAR)
 
 AddInput("*volume=100")
+
+def PrintedTask(task):
+    st = task["term"] + task["punctuation"]
+    st += (" :|: occurrenceTime="+task["occurrenceTime"] if task["occurrenceTime"].isdigit() else "")
+    if "Priority" in task: st += " Priority=" + str(task["Priority"])
+    if "truth" in task: st += " Truth: frequency="+task["truth"]["frequency"] + " confidence="+task["truth"]["confidence"]
+    return st
+
+def Shell():
+    while True:
+        try:
+            inp = input().rstrip("\n")
+        except:
+            exit(0)
+        AddInput(inp)
+
+if __name__ == "__main__":
+    Shell()

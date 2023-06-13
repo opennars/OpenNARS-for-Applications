@@ -15,5 +15,4 @@ people withdraw money in volksbank
 1
 volksbank is a furniture?
 volksbank is a financial institute?
-//expected: Answer: <volksbank --> ([financial] & institute)>. :|: occurrenceTime=1013 Truth: frequency=1.000000, confidence=0.184662
-
+//expected: Answer: <volksbank --> ([financial] & institute)>. :|: occurrenceTime=1014 Truth: frequency=1.000000, confidence=0.228606

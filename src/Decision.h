@@ -74,13 +74,12 @@ typedef struct
     Operation op[MAX_COMPOUND_OP_LEN];
     Term arguments[MAX_COMPOUND_OP_LEN];
     Implication missing_specific_implication;
+    Implication usedContingency;
     Event *reason;
 }Decision;
 
 //Methods//
 //-------//
-//Init module
-void Decision_INIT();
 //execute decision
 void Decision_Execute(Decision *decision);
 //assumption of failure, also works for "do nothing operator"

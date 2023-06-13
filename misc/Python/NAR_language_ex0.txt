@@ -1,0 +1,44 @@
+*train=true
+<DOG --> [SEE]>.
+dog
+
+<CAT --> [SEE]>.
+cat
+
+<BIRD --> [SEE]>.
+bird
+
+<ANIMAL --> [SEE]>.
+animal
+
+<CAT --> [GREEN]>.
+cat is green
+
+<DOG --> [GREEN]>.
+dog is green
+
+<CAT --> [GREEN]>.
+the cat is green
+
+<DOG --> [GREEN]>.
+the dog is green
+
+<CAT --> [BLUE]>.
+the cat is blue
+
+<DOG --> [BLUE]>.
+the dog is blue
+
+<(CAT * BIRD) --> EAT>.
+eats
+
+<(DOG * ANIMAL) --> EAT>.
+eats
+
+*train=false
+the bird is an animal
+//expected: Input: <BIRD --> ANIMAL>. :|: occurrenceTime=1 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+the bird is green
+//expected: Input: <BIRD --> [GREEN]>. :|: occurrenceTime=2 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000
+the dog eats a cat
+//expected: Input: <(DOG * CAT) --> EAT>. :|: occurrenceTime=3 Priority=1.000000 Truth: frequency=1.000000, confidence=0.900000

@@ -30,12 +30,6 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
-int anticipationStampID = -1;
-
-void Decision_INIT()
-{
-    anticipationStampID = -1;
-}
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
@@ -43,8 +37,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
     Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));
     negative_confirmation.truth = Truth_Eternalize(Truth_Induction(TNew, TPast));
-    negative_confirmation.stamp = (Stamp) { .evidentalBase = { -anticipationStampID } };
-    anticipationStampID--;
+    negative_confirmation.stamp = (Stamp) {0}; //precondition->stamp;
     assert(negative_confirmation.truth.confidence >= 0.0 && negative_confirmation.truth.confidence <= 1.0, "(666) confidence out of bounds");
     Implication *added = Table_AddAndRevise(&postc->precondition_beliefs[operationID], &negative_confirmation);
     if(added != NULL)
@@ -267,7 +260,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             }
             if(i-1 >= MAX_COMPOUND_OP_LEN)
             {
-                assert(false, "Operation sequence longer than the FIFO can build, increase MAX_SEQUENCE_LEN if this knowledge should be supported.");
+                assert(false, "Operation sequence longer than the FIFO can build, increase MAX_COMPOUND_OP_LEN if this knowledge should be supported.");
             }
             if(!Narsese_isOperator(operation.atoms[0])) //it is an operation with args, not just an atomic operator, so remember the args
             {
@@ -325,7 +318,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
-                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, true, true)))
+                                if(success && (!genericGoalgenericConcept || !Variable_hasVariable(&specific_imp.term, true, false, false)))
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
@@ -362,6 +355,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                         }
                                     }
                                     else
@@ -371,6 +365,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             decision = considered;
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
+                                            decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                         }
                                     }
                                 }
@@ -387,8 +382,8 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     }
     //set execute and return execution
     printf("decision expectation=%f implication: ", decision.desire);
-    Narsese_PrintTerm(&bestImp.term); printf(". Truth: frequency=%f confidence=%f dt=%f", bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset); 
-    fputs(" precondition: ", stdout); Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout);  printf("Truth: frequency=%f confidence=%f", decision.reason->truth.frequency, decision.reason->truth.confidence); 
+    Narsese_PrintTerm(&bestImp.term); fputs(". ", stdout); Stamp_print(&bestImp.stamp); printf(" Truth: frequency=%f confidence=%f dt=%f", bestImp.truth.frequency, bestImp.truth.confidence, bestImp.occurrenceTimeOffset);
+    fputs(" precondition: ", stdout); Narsese_PrintTerm(&decision.reason->term); fputs(". :|: ", stdout); Stamp_print(&decision.reason->stamp); printf(" Truth: frequency=%f confidence=%f", decision.reason->truth.frequency, decision.reason->truth.confidence);
     printf(" occurrenceTime=%ld\n", decision.reason->occurrenceTime);
     decision.execute = true;
     return decision;
@@ -430,7 +425,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                     {
                         bool success2;
                         Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
-                        if(!success2 || !Variable_Unify(&opTerm, &specificOp).success)
+                        if(!success2 || !Variable_Unify(&specificOp, &opTerm).success)
                         {
                             continue; //same op id but different op args
                         }
@@ -457,10 +452,29 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             if(success2)
                             {
                                 Concept *c = Memory_Conceptualize(&result.term, currentTime);
-                                if(c != NULL)
+                                if(c != NULL && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
-                                    c->predicted_belief = result;
+                                    if(imp.occurrenceTimeOffset > 0.0)
+                                    {
+                                        Truth oldTruth = c->predicted_belief.truth;
+                                        long oldOccurrenceTime = c->predicted_belief.occurrenceTime;
+                                        c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &result, currentTime, NULL);
+                                        if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
+                                        {
+                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
+                                        }
+                                    }
+                                    if(imp.occurrenceTimeOffset == 0.0 && result.occurrenceTime > c->belief_spike.occurrenceTime) //use as belief_spike if newer
+                                    {
+                                        Truth oldTruth = c->belief_spike.truth;
+                                        long oldOccurrenceTime = c->belief_spike.occurrenceTime;
+                                        c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
+                                        if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
+                                        {
+                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
+                                        }
+                                    }
                                 }
                             }
                         }

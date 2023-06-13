@@ -1,0 +1,34 @@
+*train=true
+<X --> [see]>.
+x
+
+<A --> [see]>.
+a
+
+<B --> [see]>.
+b
+
+<C --> [see]>.
+c
+
+<(0 * 1) --> BELIEF>.
+0 n 1
+
+<(1 * 2) --> BELIEF>.
+1 n 2
+
+<(0 * 1) --> QUESTION>.
+q 0 1
+
+<(1 * 2) --> QUESTION>.
+q 1 2
+
+*train=false
+<((<(#2 * #1) --> BELIEF> &/ <(#2 * X) --> QUESTION>) &/ <({SELF} * #1) --> ^say>) =/> <QUESTION --> [ANSWERED]>>.
+//or with COMPOUND_TERM_SIZE_MAX >=128:
+//<<($1 * $2) --> BELIEF> ==> <(<($1 * X) --> QUESTION> &/ <({SELF} * $2) --> ^say>) =/> <QUESTION --> [ANSWERED]>>.
+a n b
+b n c
+q a x
+<QUESTION --> [ANSWERED]>! :|:
+//expected: ^say result: b

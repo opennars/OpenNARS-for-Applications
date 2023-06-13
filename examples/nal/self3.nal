@@ -1,0 +1,16 @@
+*motorbabbling=false
+<{SILENCE} --> [hear]>. :|:
+<({SELF} * {babababa}) --> ^say>. :|:
+<{babababa} --> [hear]>. :|:
+
+100
+
+<{SILENCE} --> [hear]>. :|:
+<{PIZZA} --> [hear]>. :|:
+<{vPizza} --> [see]>. :|:
+
+100
+
+<{SILENCE} --> [hear]>. :|:
+<{vPizza} --> [see]>! :|:
+//expected: ^say executed with args ({SELF} * {PIZZA})

@@ -62,5 +62,6 @@ Event NAR_AddInputGoal(Term term);
 void NAR_AddOperation(char *atomname, Action procedure);
 //Add an Narsese sentence:
 void NAR_AddInputNarsese(char *narsese_sentence);
-
+//Add an Narsese sentence with query functionality for questions:
+void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answerTruthExpThreshold);
 #endif

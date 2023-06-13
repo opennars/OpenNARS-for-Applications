@@ -1,0 +1,6 @@
+*volume=0
+
+<(a * b) --> (+ posX)>. :|:
+<(b * c) --> (+ posX)>. :|:
+<(a * c) --> (+ posX)>? :|:
+//expected: Answer: <(a * c) --> (+ posX)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.648000

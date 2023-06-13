@@ -1,0 +1,39 @@
+*volume=0
+*motorbabbling=false
+*setopname 1 ^clap
+*setopname 2 ^wave
+
+<(<B1 --> [seen]> &/ ^clap) =/> G>.
+<(<B2 --> [seen]> &/ ^wave) =/> G>.
+
+<<($1 * $2) --> same> ==> <($2 * $1) --> same>>.
+<(<($1 * #1) --> same> && <(#1 * $2) --> same>) ==> <($1 * $2) --> same>>.
+
+<<($1 * $2) --> opposite> ==> <($2 * $1) --> opposite>>.
+<(<($1 * #1) --> opposite> && <(#1 * $2) --> opposite>) ==> <($1 * $2) --> same>>.
+<(<($1 * #1) --> same> && <(#1 * $2) --> opposite>) ==> <($1 * $2) --> opposite>>.
+<(<($1 * #1) --> opposite> && <(#1 * $2) --> same>) ==> <($1 * $2) --> opposite>>.
+
+<(<#1 --> [seen]> && <(#1 * $2) --> same>) ==> <$2 --> [seen]>>.
+<(<#1 --> [seen]> && <(#1 * $2) --> opposite>) ==> (! <$2 --> [seen]>)>.
+<(A1 * B1) --> same>.
+<(A1 * C1) --> same>.
+<(A1 * B2) --> opposite>.
+<(A1 * C2) --> opposite>.
+
+20
+
+<C2 --> [seen]>. :|:
+10
+<B1 --> [seen]>? :|:
+<B2 --> [seen]>? :|:
+G! :|:
+//expected: ^wave executed with args
+
+
+<C1 --> [seen]>. :|:
+10
+<B1 --> [seen]>? :|:
+<B2 --> [seen]>? :|:
+G! :|:
+//expected: ^clap executed with args

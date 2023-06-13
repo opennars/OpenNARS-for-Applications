@@ -1,18 +1,17 @@
 *RESET_PROTOTYPES=3
-*SET_CONTINUOUS=bright
 *SUFFICIENT_MATCH_EXP=1.0
 *volume=0
-<{black} --> [bright]>. :|: %0.0%
+<{black} |-> [bright]>. :|: %0.0%
 1
-<{gray} --> [bright]>. :|: %0.5%
+<{gray} |-> [bright]>. :|: %0.5%
 1
-<{white} --> [bright]>. :|: %1.0%
+<{white} |-> [bright]>. :|: %1.0%
 1
 *SUFFICIENT_MATCH_EXP=0.0
-<{newshade} --> [bright]>. :|: %0.7%
+<{newshade} |-> [bright]>. :|: %0.7%
 1
 5
 <{newshade} <-> {?what}>? :|:
-//expected: Answer: <{newshade} <-> {gray}>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <{newshade} <-> {gray}>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000
 <({newshade} * {gray}) --> (+ bright)>? :|:
-//expected: Answer: <({newshade} * {gray}) --> (+ bright)>. :|: occurrenceTime=4 Truth: frequency=1.000000, confidence=0.810000
+//expected: Answer: <({newshade} * {gray}) --> (+ bright)>. :|: occurrenceTime=2 Truth: frequency=1.000000, confidence=0.810000

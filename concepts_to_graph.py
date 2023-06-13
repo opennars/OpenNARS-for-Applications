@@ -34,6 +34,7 @@ NoTermlinks = "NoTermlinks" in sys.argv
 NoProceduralLinks = "NoProceduralLinks" in sys.argv
 NoTemporalLinks = "NoTemporalLinks" in sys.argv
 NoLinkLabels = "NoLinkLabels" in sys.argv
+NoImages = "NoImages" in sys.argv
 lines = []
 curline = None
 G = nx.MultiDiGraph()
@@ -41,9 +42,12 @@ inlines = []
 for line in sys.stdin:
     inlines.append(line)
 
+def hasImage(line):
+    return "/1" in line or "/2" in line or "\\1" in line or "\\2" in line 
+
 #Utility functions:
 def parse_concept(line):
-    if line.startswith("//{i="):
+    if line.startswith("//{i=") and (not NoImages or not hasImage(line)):
         concept = " ".join(line.split(" ")[1:]).split(":")[0]
         dictionary = ast.literal_eval("{" + line.split(": {")[1])
         return (concept, dictionary)
@@ -109,7 +113,7 @@ for line in inlines:
         del dictionary['termlinks']
         dictionary["color"] = truth_to_color(truth)
         dictionary["size"] = 1.0
-        dictionary["label"] = concept
+        dictionary["label"] = concept.replace("$","\$")
         if dictionary["confidence"] > 0:
             dictionary["label"] += "\n" + truthstring(truth)
         if concept not in G:
@@ -129,7 +133,7 @@ for line in inlines:
                     if not variable:
                         tldict = {"color": "gray"}
                         tldict["size"] = 1.0
-                        tldict["label"] = x
+                        tldict["label"] = x.replace("$","\$")
                         G.add_nodes_from([(x, tldict)])
         
 #Add subterm links:
@@ -194,5 +198,7 @@ plt.show()
 #Also plot degree distribution:
 degrees = [G.degree(n) for n in G.nodes()]
 plt.hist(degrees)
+plt.xlabel("Degree")
+plt.ylabel("Count")
 plt.savefig("degrees.png")
 plt.show()
