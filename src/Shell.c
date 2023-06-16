@@ -367,7 +367,10 @@ void Shell_Start()
         char line[1024] = {0};
         if(fgets(line, 1024, stdin) == NULL)
         {
-            Stats_Print(currentTime);
+            if(EXIT_STATS)
+            {
+                Stats_Print(currentTime);
+            }
             break;
         }
         int cmd = Shell_ProcessInput(line);
