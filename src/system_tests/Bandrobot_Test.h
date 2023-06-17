@@ -69,8 +69,8 @@ void NAR_Bandrobot(long iterations)
     int minpos = 0.0;
     int maxpos = 20.0;
     int position = 0;
-    int targetposition = 2; //maxpos; //maxpos/2;
-    int goalposition = 1;
+    int targetposition = 1; //maxpos; //maxpos/2;
+    int goalposition = 3;
     bool picked = false, lastpicked = false, hasObj = false;
     int successes = 0;
     while(1)
