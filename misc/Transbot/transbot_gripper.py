@@ -102,6 +102,9 @@ def close_gripper(target_angle = 30):
     last_angles = []
     last_target_angles = []
     while(target_angle <= 180-step_size):
+        if target_angle >= 160:
+            print("//FEEDBACK STOP 0")
+            return False, target_angle
         current_angle = read_gripper_angle()
         print("//current angle and target angle %d %d" % (current_angle, target_angle))
         last_angles.append(current_angle)

@@ -15,7 +15,7 @@ import time
 import json
 
 #Parameters:
-center_offset = 30
+center_offset = 20
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
 checkpointdecisions = 1
@@ -87,16 +87,16 @@ def pick_with_feedback(pickobj=None, location=None, ForwardSleep=0.5):
                     forward()
                 elif y_real_temp > closer_to_gripper:
                     #left()
-                    forward()
+                    forward(linear=0.2)
                     if ForwardSleep is not None:
                         time.sleep(ForwardSleep)
-                    forward()
+                    forward(linear=0.2)
                     if ForwardSleep is not None:
                         time.sleep(ForwardSleep)
-                    forward()
+                    forward(linear=0.2)
                     if ForwardSleep is not None:
                         time.sleep(ForwardSleep)
-                    forward()
+                    forward(linear=0.2)
                     success, grip_angle = close_gripper() # Grabbing object
                     if success:
                         arm_up()
