@@ -227,5 +227,6 @@ def drop_trailer(force=False, t=0.7):
     for i in range(32):
         left(angular=0.6)
         sleep(t)
+    picked = False
 
 print("//transbot_gripper.py go!")

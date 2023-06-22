@@ -156,11 +156,11 @@ void NAR_Bandrobot(long iterations)
         }
         lastpicked = picked;
         NAR_AddInputNarsese("delivered! :|:");
-        int t_includeSleep = 8000;
+        int t_includeSleep = 100;
         bool user_viz_sleep = iterations == -1;
         printf("ratio=%d sleepInVisualization=%s time=%ld\n", successes, (user_viz_sleep ? "true" : "false"), t);
         fflush(stdout);
-        if(user_viz_sleep)
+        if(currentTime > 10500)
         {
             SLEEP;
         }

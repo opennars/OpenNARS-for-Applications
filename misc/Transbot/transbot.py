@@ -95,6 +95,7 @@ def pick_with_feedback(pickobj=None, location=None):
                         arm_up()
                         success2, _ = close_gripper(grip_angle) # Check if gripper is still holds an object after lifting
                         if success2:
+                            setPicked(True)
                             print("pick succeeded")
                             if get_hastrailer():
                                 drop_trailer()
