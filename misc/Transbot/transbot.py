@@ -11,6 +11,7 @@ from transbot_gripper import *
 from transbot_vision import *
 from transbot_lidar import *
 from Nalifier import *
+import time
 import json
 
 #Parameters:
@@ -28,7 +29,7 @@ def pick_failed():
     right()
     open_gripper()
 
-def pick_with_feedback(pickobj=None, location=None):
+def pick_with_feedback(pickobj=None, location=None, ForwardSleep=0.5):
     if " * " in pickobj:
         pickobj = pickobj.replace("(","").replace(")","")
         location = pickobj.split(" * ")[0]
@@ -87,8 +88,14 @@ def pick_with_feedback(pickobj=None, location=None):
                 elif y_real_temp > closer_to_gripper:
                     #left()
                     forward()
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
                     forward()
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
                     forward()
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
                     forward()
                     success, grip_angle = close_gripper() # Grabbing object
                     if success:
