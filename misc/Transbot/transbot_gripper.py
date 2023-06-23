@@ -227,7 +227,7 @@ def drop_trailer(force=False, t=0.7):
     sleep(t)
     backward(linear=0.6)
     sleep(t)
-    for i in range(32):
+    for i in range(30):
         left(angular=0.6)
         sleep(t)
     picked = False

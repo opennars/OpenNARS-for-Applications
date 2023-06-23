@@ -87,10 +87,10 @@ def pick_with_feedback(pickobj=None, location=None, ForwardSleep=0.5):
                     forward()
                 elif y_real_temp > closer_to_gripper:
                     #left()
-                    forward(linear=0.2)
+                    forward(linear=0.25)
                     if ForwardSleep is not None:
                         time.sleep(ForwardSleep)
-                    forward(linear=0.2)
+                    forward(linear=0.25)
                     if ForwardSleep is not None:
                         time.sleep(ForwardSleep)
                     forward(linear=0.2)
