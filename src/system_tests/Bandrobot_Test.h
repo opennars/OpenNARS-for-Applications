@@ -70,8 +70,8 @@ void NAR_Bandrobot(long iterations)
     int minpos = 0.0;
     int maxpos = 20.0;
     int position = 0;
-    int targetposition = 2; //maxpos; //maxpos/2;
-    int goalposition = 1;
+    int targetposition = 1; //maxpos; //maxpos/2;
+    int goalposition = 3;
     bool picked = false, lastpicked = false, hasObj = false;
     int successes = 0;
     while(1)
@@ -157,11 +157,11 @@ void NAR_Bandrobot(long iterations)
         }
         lastpicked = picked;
         NAR_AddInputNarsese("delivered! :|:");
-        int t_includeSleep = 8000;
+        int t_includeSleep = 100;
         bool user_viz_sleep = iterations == -1;
         printf("ratio=%d sleepInVisualization=%s time=%ld\n", successes, (user_viz_sleep ? "true" : "false"), t);
         fflush(stdout);
-        if(user_viz_sleep)
+        if(currentTime > 10500)
         {
             SLEEP;
         }

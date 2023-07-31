@@ -41,6 +41,8 @@
 //////////
 //Whether debug mode should be on
 #define DEBUG false
+//Exit with stats output
+#define EXIT_STATS true
 //Whether input should be printed
 #define PRINT_INPUT_INITIAL true
 //Whether derivations should be printed
