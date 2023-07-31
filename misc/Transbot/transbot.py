@@ -11,10 +11,11 @@ from transbot_gripper import *
 from transbot_vision import *
 from transbot_lidar import *
 from Nalifier import *
+import time
 import json
 
 #Parameters:
-center_offset = 30
+center_offset = 20
 y_too_far_to_grab = 340
 robotVisualMiddle = 375 #middle of the robot
 checkpointdecisions = 1
@@ -28,7 +29,7 @@ def pick_failed():
     right()
     open_gripper()
 
-def pick_with_feedback(pickobj=None, location=None):
+def pick_with_feedback(pickobj=None, location=None, ForwardSleep=0.5):
     if " * " in pickobj:
         pickobj = pickobj.replace("(","").replace(")","")
         location = pickobj.split(" * ")[0]
@@ -86,15 +87,22 @@ def pick_with_feedback(pickobj=None, location=None):
                     forward()
                 elif y_real_temp > closer_to_gripper:
                     #left()
-                    forward()
-                    forward()
-                    forward()
-                    forward()
+                    forward(linear=0.25)
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
+                    forward(linear=0.25)
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
+                    forward(linear=0.2)
+                    if ForwardSleep is not None:
+                        time.sleep(ForwardSleep)
+                    forward(linear=0.2)
                     success, grip_angle = close_gripper() # Grabbing object
                     if success:
                         arm_up()
                         success2, _ = close_gripper(grip_angle) # Check if gripper is still holds an object after lifting
                         if success2:
+                            setPicked(True)
                             print("pick succeeded")
                             if get_hastrailer():
                                 drop_trailer()
