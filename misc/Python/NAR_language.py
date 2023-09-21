@@ -25,6 +25,7 @@
 import NAR
 import json
 import sys
+from os.path import exists
 NAR.AddInput("*volume=100")
 
 #NAL truth functions
