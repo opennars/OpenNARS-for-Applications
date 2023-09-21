@@ -249,6 +249,7 @@ R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B
 ReduceTerm( (A & A), A )
 ReduceTerm( (A | A), A )
 ReduceStatement( (A && A), A )
+ReduceStatement( (A || A), A )
 //!Extensional set reductions:
 ReduceTerm( ({A} | {B}), {A B} )
 ReduceTerm( ({A B} | {C}), {(A . B) C} )
