@@ -3,9 +3,9 @@ import os
 os.system("pkill NAR")
 sys.path.append('../Python/')
 import NAR
-from time import sleep
 from Nalifier import *
 import random
+from time import sleep
 
 picked = False
 frame = ""
@@ -35,16 +35,16 @@ def getCollision():
 def OpStop():
     None
 
-def forward():
+def forward(linear=0):
     None
 
-def left():
+def left(angular=0):
     None
 
-def right():
+def right(angular=0):
     None
 
-def backward():
+def backward(linear=0):
     None
 
 def pick():
@@ -92,6 +92,6 @@ for i in range(len(lines)):
     if "import" in lines[i]:
         maxindex = i
 
-code = "\n".join(lines[maxindex+1:])
+code = "import time" + "\n" + "\n".join(lines[maxindex+1:])
 exec(code)
 
