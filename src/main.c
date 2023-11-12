@@ -140,6 +140,10 @@ int main(int argc, char *argv[])
 #else
     mysrand(666);
 #endif
+#ifdef BROWSER
+    Shell_Start();
+    return 0;
+#endif
     Process_Args(argc, argv);
     if(argc == 1)
     {
