@@ -19,7 +19,9 @@
             framearray[writeindex++] = frame;
             frame = "";
         }
-        text = text.replace("\033[1;1H\033[2J","");
+        text = text.replace("\033[1;1H\033[2J","")
+        const ansiEscape = /\x1B\[\d+(;\d+)*m/g;
+        text = text.replace(ansiEscape, '');
         console.log(text);
         frame += text + "\n";
         element.value += text + "\n";
