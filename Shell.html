@@ -10,6 +10,8 @@
     var element = document.getElementById('output');
     function outputProcess(text)
     {
+        text = text.replace("\033[1;1H\033[2J","");
+        console.log(text);
         element.value += text + "\n";
     }
     //which parameter to pass to ONA
