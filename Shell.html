@@ -25,7 +25,6 @@
         console.log(text);
         frame += text + "\n";
         element.value += text + "\n";
-        element.scrollTop = element.scrollHeight;
         readindex = 0;
     }
     //which parameter to pass to ONA
@@ -45,7 +44,6 @@
     var interval = setInterval(function(){
      if(readindex != -1 && readindex < framearray.length){
         element.value = framearray[readindex++];
-        element.scrollTop = element.scrollHeight;
      }
     }, 50)
     </script>
