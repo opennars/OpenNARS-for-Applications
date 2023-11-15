@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenNARS for Applications: Shell</title>
+</head>
+<body>
+    <textarea style="width: 100%" rows=10 id="input"></textarea>
+    <button onclick="handleClick()">Send</button>
+    <textarea style="width: 100%" rows=100 id="output"></textarea>
+    <script>
+    var input = document.getElementById('input');
+    function handleClick()
+    {
+        var inputs = input.value.split("\n");
+        var i=0;
+        while(i<inputs.length)
+        {
+            console.log(inputs[i]);
+            NAR_AddInput(inputs[i]+"\0");
+            i++;
+        }
+        input.value = "";
+    }
+    var output = document.getElementById('output');
+    function print(text)
+    {
+        output.value += text + "\n";
+        output.scrollTop = output.scrollHeight; // focus on bottom
+    }
+
+    var Module = {
+      arguments: ['nothing'],
+      'print': function(text) { print('stdout: ' + text) },
+      'printErr': function(text) { print('stderr: ' + text) },
+    };
+    
+    </script>
+    <script src="NAR.js"></script>
+    
+    <script>
+
+function NAR_AddInput(narsese)
+{
+    charptr = stringToNewUTF8(narsese)
+    Module._Shell_ProcessInput(charptr);
+    Module._free(charptr);
+}
+function NAR_INIT()
+{
+    Module._Shell_NARInit();
+}
+// Call the initialization function indirectly through the Module API (assuming Emscripten generated it)
+Module.onRuntimeInitialized = () => {
+    NAR_INIT(); // Assuming _NAR_INIT is the Emscripten-generated name for the function
+};
+    </script>
+    
+</body>
+</html>
