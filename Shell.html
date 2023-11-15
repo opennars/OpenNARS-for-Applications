@@ -44,6 +44,7 @@
     var interval = setInterval(function(){
      if(readindex != -1 && readindex < framearray.length){
         element.value = framearray[readindex++];
+        element.scrollTop = element.scrollHeight;
      }
     }, 50)
     </script>
