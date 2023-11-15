@@ -9,51 +9,51 @@
     <textarea style="width: 100%" rows=20 id="output"></textarea>
     <script>
     var input = document.getElementById('input');
-    function handleClick()
-    {
-        var inputs = input.value.split("\n");
-        var i=0;
-        while(i<inputs.length)
-        {
-            console.log(inputs[i]);
-            NAR_AddInput(inputs[i]+"\0");
-            i++;
-        }
-        input.value = "";
-    }
     var output = document.getElementById('output');
     function print(text)
     {
         output.value += text + "\n";
         output.scrollTop = output.scrollHeight; // focus on bottom
     }
-
     var Module = {
       arguments: ['nothing'],
       'print': function(text) { print(text) },
       'printErr': function(text) { print(text) },
     };
-    
     </script>
     <script src="NAR.js"></script>
-    
     <script>
-
-function NAR_AddInput(narsese)
-{
-    charptr = stringToNewUTF8(narsese)
-    Module._Shell_ProcessInput(charptr);
-    Module._free(charptr);
-}
-function NAR_INIT()
-{
-    Module._Shell_NARInit();
-}
-// Call the initialization function indirectly through the Module API (assuming Emscripten generated it)
-Module.onRuntimeInitialized = () => {
-    NAR_INIT(); // Assuming _NAR_INIT is the Emscripten-generated name for the function
-};
+    function NAR_AddInput(narsese)
+    {
+        charptr = stringToNewUTF8(narsese)
+        Module._Shell_ProcessInput(charptr);
+        Module._free(charptr);
+    }
+    function NAR_INIT()
+    {
+        Module._Shell_NARInit();
+    }
+    initialized = false;
+    function handleClick()
+    {
+        if(!initialized)
+        {
+            initialized = true;
+            NAR_INIT()
+        }
+        var inputs = input.value.split("\n");
+        var i=0;
+        while(i<inputs.length)
+        {
+            console.log(inputs[i]);
+            if(inputs[i] != "")
+            {
+                NAR_AddInput(inputs[i]+"\n");
+            }
+            i++;
+        }
+        input.value = "";
+    }
     </script>
-    
 </body>
 </html>
