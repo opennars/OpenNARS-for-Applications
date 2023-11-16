@@ -454,7 +454,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     break;
                                 }
                             }
-                            if(postcondition.occurrenceTime > c->belief_spike.occurrenceTime && ((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN))) //only build seq if within len
+                            if(postcondition.occurrenceTime >= c->belief_spike.occurrenceTime && ((is_cond_seq && sequence_len < MAX_SEQUENCE_LEN) || (is_op_seq && sequence_len < MAX_COMPOUND_OP_LEN))) //only build seq if within len
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);

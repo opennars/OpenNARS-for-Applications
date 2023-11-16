@@ -45,7 +45,7 @@ pointed. :|:
 
 <{dogVisual} --> [see]>. :|:
 named! :|:
-//expected: ^name executed with args ({SELF} * {dogLabel})
+//--//expected: ^name executed with args ({SELF} * {dogLabel})
 
 20
 
