@@ -105,7 +105,7 @@ Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
 **Acknowledgement**
 
-Over the years, research and development on this reasoning system has been funded by Digital Futures, Cisco and NASA Jet Propulsion Laboratory.
+Over the years, research and development on this reasoning system has been funded by [Digital Futures](https://www.digitalfutures.kth.se/research/postdoc-fellowships/completed-postdoc-fellowships/intelligence-through-reasoning/), Cisco and NASA Jet Propulsion Laboratory.
 
 **References**
 
