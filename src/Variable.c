@@ -26,6 +26,8 @@
 #include "HashTable.h"
 #include <stdint.h>
 
+SimilarityQuery similarityQuery = NULL;
+
 bool Variable_isIndependentVariable(Atom atom)
 {
     return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '$';
@@ -59,9 +61,10 @@ bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool que
     return false;
 }
 
-Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly)
+Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool unifyQueryVarOnly)
 {
     Substitution substitution = {0};
+    substitution.truth = truth;
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
         Atom general_atom = general->atoms[i];
@@ -90,7 +93,20 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
             {
                 if(general_atom != specific->atoms[i]) //inequality since specific atom differs
                 {
-                    return substitution;
+                    if(SIMILARITY_QUERY && truth.confidence != 0.0)
+                    {
+                        Term gen =  Term_ExtractSubterm(general, i);
+                        Term spec = Term_ExtractSubterm(specific, i); //might as well just be an atom, but maybe we can find a similarity
+                        substitution.truth = similarityQuery(substitution.truth, &gen, &spec);
+                        if(substitution.truth.confidence == 0.0)
+                        {
+                            return substitution;
+                        }
+                    }
+                    else
+                    {
+                        return substitution;
+                    }
                 }
             }
         }
@@ -99,9 +115,15 @@ Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOn
     return substitution;
 }
 
+Substitution Variable_UnifyWithAnalogy(Truth truth, Term *general, Term *specific)
+{
+    return Variable_Unify2(truth, general, specific, false);
+}
+
 Substitution Variable_Unify(Term *general, Term *specific)
 {
-    return Variable_Unify2(general, specific, false);
+    Truth unused = (Truth) {0};
+    return Variable_UnifyWithAnalogy(unused, general, specific);
 }
 
 Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *success)
@@ -410,4 +432,9 @@ void Variable_Normalize(Term *term)
             }
         }
     }
+}
+
+void Variable_INIT(SimilarityQuery queryFunc)
+{
+    similarityQuery = queryFunc;
 }

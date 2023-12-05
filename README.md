@@ -103,6 +103,10 @@ Real-time team chat: #nars IRC channel @ libera.chat, #nars:matrix.org (accessib
 
 Google discussion group: https://groups.google.com/forum/#!forum/open-nars
 
+**Acknowledgement**
+
+Over the years, research and development on this reasoning system has been funded by [Digital Futures](https://www.digitalfutures.kth.se/research/postdoc-fellowships/completed-postdoc-fellowships/intelligence-through-reasoning/), Cisco and NASA Jet Propulsion Laboratory.
+
 **References**
 
 [1] Hammer, P., & Lofthouse, T. (2020, September). [‘OpenNARS for Applications’: Architecture and Control](https://www.researchgate.net/publication/342713626_%27OpenNARS_for_Applications%27_Architecture_and_Control). In International Conference on Artificial General Intelligence (pp. 193-204). Springer, Cham.
