@@ -46,7 +46,9 @@
 typedef struct {
     Term map[27+1]; //there can only be 27 variables: $1 to $9 and #1 to #9 and ?1 to ?9, but it can't be 0
     bool success;
+    Truth truth; //how well did it substitute?
 } Substitution;
+typedef Truth (*SimilarityQuery)(Truth, Term*, Term*); //to get access to memory querying for term substitutability
 
 //Methods//
 //-------//
@@ -62,7 +64,8 @@ bool Variable_isVariable(Atom atom);
 bool Variable_hasVariable(Term *term, bool independent, bool dependent, bool query);
 //Unify two terms, returning the substitution/unifier
 Substitution Variable_Unify(Term *general, Term *specific);
-Substitution Variable_Unify2(Term *general, Term *specific, bool unifyQueryVarOnly);
+Substitution Variable_UnifyWithAnalogy(Truth truth, Term *general, Term *specific);
+Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool unifyQueryVarOnly);
 //Applying the substitution to a term, returning success
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
 //Introduce variables in an implication
@@ -71,5 +74,7 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.
 void Variable_Normalize(Term *term);
+//Memory query
+void Variable_INIT(SimilarityQuery queryFunc);
 
 #endif

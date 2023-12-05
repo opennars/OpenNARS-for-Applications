@@ -152,8 +152,9 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
         {
             Concept *c = concepts.items[i].address;
             //compare the predicate of implication, or if it's not an implication, the term
-            Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term; 
-            if(!Variable_Unify2(&toCompare, &c->term, true).success)
+            Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term;
+            Truth unused = (Truth) {0};
+            if(!Variable_Unify2(unused, &toCompare, &c->term, true).success)
             {
                 goto Continue;
             }
@@ -164,7 +165,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                     for(int j=0; j<c->precondition_beliefs[op_k].itemsAmount; j++)
                     {
                         Implication *imp = &c->precondition_beliefs[op_k].array[j];
-                        if(!Variable_Unify2(&term, &imp->term, true).success)
+                        if(!Variable_Unify2(unused, &term, &imp->term, true).success)
                         {
                             continue;
                         }

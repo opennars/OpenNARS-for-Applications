@@ -214,7 +214,7 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
     return decision;
 }
 
-static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp)
+static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Implication *imp, Truth preconTruth)
 {
     Decision decision = {0};
     IN_DEBUG
@@ -232,7 +232,12 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
         Term potential_operation = {0};
         Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
         assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
-        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, precondition, currentTime).truth;
+        Event preconCopy = *precondition;
+        if(SIMILARITY_QUERY)
+        {
+            preconCopy.truth = preconTruth;
+        }
+        Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, &preconCopy, currentTime).truth;
         double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
         (
@@ -286,7 +291,12 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     Implication bestImp = {0};
     long bestComplexity = COMPOUND_TERM_SIZE_MAX+1;
     bool genericGoalgenericConcept = Variable_hasVariable(&goalconcept->term, true, true, true) && Variable_hasVariable(&goal->term, true, true, true);
-    Substitution subs = Variable_Unify(&goalconcept->term, &goal->term);
+    Substitution subs = Variable_UnifyWithAnalogy(goal->truth, &goalconcept->term, &goal->term);
+    Event goalcopy = *goal;
+    if(SIMILARITY_QUERY)
+    {
+        goalcopy.truth = subs.truth;
+    }
     if(subs.success)
     {
         for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].term.atoms[0] != 0; opi++)
@@ -310,9 +320,9 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
                         Concept *cmatch = concepts.items[cmatch_k].address;
-                        if(!Variable_hasVariable(&cmatch->term, true, true, true))
+                        if(!Variable_hasVariable(&cmatch->term, true, true, true) && cmatch->belief_spike.type != EVENT_TYPE_DELETED)
                         {
-                            Substitution subs2 = Variable_Unify(&left_side, &cmatch->term);
+                            Substitution subs2 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_side, &cmatch->term);
                             if(subs2.success)
                             {
                                 Implication specific_imp = imp; //can only be completely specific
@@ -322,7 +332,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     specific_imp.sourceConcept = cmatch;
                                     specific_imp.sourceConceptId = cmatch->id;
-                                    Decision considered = Decision_ConsiderImplication(currentTime, goal, &specific_imp);
+                                    Decision considered = Decision_ConsiderImplication(currentTime, &goalcopy, &specific_imp, subs2.truth);
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
                                     if(impHasVariable)
                                     {
@@ -429,6 +439,10 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                         {
                             continue; //same op id but different op args
                         }
+                    }
+                    else
+                    {
+                        continue; //unification failed
                     }
                 }
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");

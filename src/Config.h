@@ -80,6 +80,8 @@
 #define UNIFICATION_DEPTH 31
 //Questions concept activation priority
 #define QUESTION_PRIMING_INITIAL 0.1
+//Similarity query in unification
+#define SIMILARITY_QUERY false
 
 /*---------------------------------*/
 /* Temporal compounding parameters */
@@ -157,7 +159,7 @@
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 7
+#define SEMANTIC_INFERENCE_NAL_LEVEL 6
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
