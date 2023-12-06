@@ -76,12 +76,20 @@
 #define CONCEPT_THRESHOLD_ADAPTATION 0.000001
 //Usage boost for input
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
-//Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
-#define UNIFICATION_DEPTH 31
 //Questions concept activation priority
 #define QUESTION_PRIMING_INITIAL 0.1
-//Similarity query in unification
+
+/*---------------------------------*/
+/* Unification parameters          */
+/*---------------------------------*/
+//Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
+#define UNIFICATION_DEPTH 31
+//Similarity query in unification. (for AniNAL)
 #define SIMILARITY_QUERY false
+//Variable introduction for set events. (for AniNAL)
+#define SET_EVENT_VAR_INTRO false
+//If var intro should be allowed at all (includes sensorimotor!)
+#define ALLOW_VAR_INTRO true
 
 /*---------------------------------*/
 /* Temporal compounding parameters */
