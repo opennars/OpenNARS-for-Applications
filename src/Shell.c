@@ -282,6 +282,40 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*questionpriming=")], "%lf", &QUESTION_PRIMING);
         }
         else
+        if(!strncmp("*space ", line, strlen("*space ")))
+        {
+            int granularity;
+            char termname[ATOMIC_TERM_LEN_MAX+1] = {0};
+            termname[ATOMIC_TERM_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*space ")], "%d %" STR(ATOMIC_TERM_LEN_MAX) "s", &granularity, (char*) &termname);
+            assert(granularity >= 1 && granularity <= 1000, "Granularity out of bounds!");
+            for(int i=0; i<granularity; i++)
+            {
+                for(int j=0; j<granularity; j++)
+                {
+                    char narsese[ATOMIC_TERM_LEN_MAX*COMPOUND_TERM_SIZE_MAX] = {0};
+                    double d = 0.99 - (fabs(((double) i) - ((double) j)) / ((double) granularity));
+                    double fx = ((double) i) / ((double) granularity);
+                    double fy = ((double) j) / ((double) granularity);
+                    if(granularity <= 10)
+                    {
+                        sprintf(narsese, "<%s_%.1f <-> %s_%.1f>. {1.0 %f}", termname, fx, termname, fy, d);
+                    }
+                    else
+                    if(granularity <= 100)
+                    {
+                        sprintf(narsese, "<%s_%.2f <-> %s_%.2f>. {1.0 %f}", termname, fx, termname, fy, d);
+                    }
+                    else
+                    if(granularity <= 1000)
+                    {
+                        sprintf(narsese, "<%s_%.3f <-> %s_%.3f>. {1.0 %f}", termname, fx, termname, fy, d);
+                    }
+                    NAR_AddInputNarsese(narsese);
+                }
+            }
+        }
+        else
         if(!strncmp("*setopname ", line, strlen("*setopname ")))
         {
             assert(concepts.itemsAmount == 0, "Operators can only be registered right after initialization / reset!");
