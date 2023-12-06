@@ -194,7 +194,10 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
     {
         if(VARS_IN_MULTI_ELEMENT_SETS_FILTER && (Narsese_copulaEquals(cur_inheritance->atoms[0], EXT_SET) || Narsese_copulaEquals(cur_inheritance->atoms[0], INT_SET)) && !Narsese_copulaEquals(cur_inheritance->atoms[2], SET_TERMINATOR))
         {
-            return;
+            if(!SET_EVENT_VAR_INTRO)
+            {
+                return;
+            }
         }
         for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
         {
@@ -234,7 +237,7 @@ static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, boo
         countHigherOrderStatementAtoms(&predicate, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
         return;
     }
-    countStatementAtoms(term, appearing, extensionally, false);
+    countStatementAtoms(term, appearing, extensionally, SET_EVENT_VAR_INTRO);
 }
 
 static bool Atom_Equal(void *a, void *b)
