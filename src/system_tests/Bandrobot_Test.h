@@ -118,7 +118,7 @@ void NAR_Bandrobot(long iterations)
         DRAW_LINE(goalposition, 5, 0, 1, (char*) world, 'U');
         //NAR_AddInputNarsese("<(<({position} * {targetposition}) --> (+ left)> &/ ^right) =/> picked>?");
         //NAR_AddInputNarsese("<(<({targetposition} * {position}) --> (+ left)> &/ ^left) =/> picked>?");
-        char *propname = hasObj ? "dropPosX" : "pickPosX";
+        const char *propname = hasObj ? "dropPosX" : "pickPosX";
         char questionStr[NARSESE_LEN_MAX] = {0};
         sprintf(questionStr, "%s%s%s", "<({?1} * {?2}) --> (+ ", propname, ")>? :\\:\0");
         NAR_AddInputNarsese(questionStr);

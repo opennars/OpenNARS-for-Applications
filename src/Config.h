@@ -84,10 +84,6 @@
 /*---------------------------------*/
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
-//Similarity query in unification. (for AniNAL)
-#define SIMILARITY_QUERY false
-//Variable introduction for set events. (for AniNAL)
-#define SET_EVENT_VAR_INTRO false
 //If var intro should be allowed at all (includes sensorimotor!)
 #define ALLOW_VAR_INTRO true
 

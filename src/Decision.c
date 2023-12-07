@@ -233,10 +233,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
         Term imp_subject = Term_ExtractSubterm(&imp->term, 1);
         assert(Narsese_OperationSequenceAppendLeftNested(&decision.operationTerm, &imp_subject), "Failed to extract operation in considered implication!");
         Event preconCopy = *precondition;
-        if(SIMILARITY_QUERY)
-        {
-            preconCopy.truth = preconTruth;
-        }
+        preconCopy.truth = preconTruth;
         Truth desireValue = Inference_GoalSequenceDeduction(&ContextualOperation, &preconCopy, currentTime).truth;
         double operationGoalTruthExpectation = Truth_Expectation(desireValue); //op()! :|:
         IN_DEBUG
@@ -293,10 +290,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     bool genericGoalgenericConcept = Variable_hasVariable(&goalconcept->term, true, true, true) && Variable_hasVariable(&goal->term, true, true, true);
     Substitution subs = Variable_UnifyWithAnalogy(goal->truth, &goalconcept->term, &goal->term);
     Event goalcopy = *goal;
-    if(SIMILARITY_QUERY)
-    {
-        goalcopy.truth = subs.truth;
-    }
+    goalcopy.truth = subs.truth;
     if(subs.success)
     {
         for(int opi=1; opi<=OPERATIONS_MAX && operations[opi-1].term.atoms[0] != 0; opi++)

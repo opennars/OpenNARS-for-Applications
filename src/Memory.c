@@ -84,33 +84,8 @@ VMItem* HTconcepts_storageptrs[CONCEPTS_MAX];
 VMItem HTconcepts_storage[CONCEPTS_MAX];
 VMItem* HTconcepts_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept term is the index
 
-static Truth Memory_similarityQueryFunc(Truth truth, Term *a, Term *b)
-{
-    Truth truth_current = (Truth) { .frequency = 0.0, .confidence=0.0 };
-    Term query_A_similar_B = (Term) {0};
-    query_A_similar_B.atoms[0] = Narsese_CopulaIndex(SIMILARITY);
-    Term_OverrideSubterm(&query_A_similar_B, 1, a);
-    Term_OverrideSubterm(&query_A_similar_B, 2, b);
-    Concept *A_similar_B = Memory_FindConceptByTerm(&query_A_similar_B);
-    if(A_similar_B != NULL && A_similar_B->belief.type != EVENT_TYPE_DELETED)
-    {
-        truth_current = A_similar_B->belief.truth;
-    }
-    Term query_B_similar_A = (Term) {0};
-    query_B_similar_A.atoms[0] = Narsese_CopulaIndex(SIMILARITY);
-    Term_OverrideSubterm(&query_B_similar_A, 1, b);
-    Term_OverrideSubterm(&query_B_similar_A, 2, a);
-    Concept *B_similar_A = Memory_FindConceptByTerm(&query_B_similar_A);
-    if(B_similar_A != NULL && B_similar_A->belief.type != EVENT_TYPE_DELETED && B_similar_A->belief.truth.confidence > truth_current.confidence)
-    {
-        truth_current = B_similar_A->belief.truth;
-    }
-    return Truth_Analogy(truth, truth_current);
-}
-
 void Memory_INIT()
 {
-    Variable_INIT(Memory_similarityQueryFunc);
     HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_HASHTABLE_BUCKETS, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();

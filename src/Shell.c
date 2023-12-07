@@ -282,6 +282,35 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*questionpriming=")], "%lf", &QUESTION_PRIMING);
         }
         else
+        if(!strncmp("*setvalue ", line, strlen("*setvalue ")))
+        {
+            int granularity;
+            double value;
+            char termname[ATOMIC_TERM_LEN_MAX+1] = {0};
+            termname[ATOMIC_TERM_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*setvalue ")], "%lf %d %" STR(ATOMIC_TERM_LEN_MAX) "s", &value, &granularity, (char*) &termname);
+            assert(granularity >= 1 && granularity <= 1000, "Granularity out of bounds!");
+            char termname_ext[ATOMIC_TERM_LEN_MAX+1] = {0};
+            termname_ext[ATOMIC_TERM_LEN_MAX-1] = 0;
+            const char* sep = termname[0] ? "_" : "";
+            if(granularity <= 10)
+            {
+                sprintf(termname_ext, "%s%s%.1f", termname, sep, value);
+            }
+            else
+            if(granularity <= 100)
+            {
+                sprintf(termname_ext, "%s%s%.2f", termname, sep, value);
+            }
+            else
+            if(granularity <= 100)
+            {
+                sprintf(termname_ext, "%s%s%.3f", termname, sep, value);
+            }
+            puts(termname_ext); fflush(stdout);
+            Narsese_setAtomValue((Atom) Narsese_AtomicTermIndex(termname_ext), value, termname);
+        }
+        else
         if(!strncmp("*space ", line, strlen("*space ")))
         {
             int granularity;
@@ -291,28 +320,10 @@ int Shell_ProcessInput(char *line)
             assert(granularity >= 1 && granularity <= 1000, "Granularity out of bounds!");
             for(int i=0; i<granularity; i++)
             {
-                for(int j=0; j<granularity; j++)
-                {
-                    char narsese[ATOMIC_TERM_LEN_MAX*COMPOUND_TERM_SIZE_MAX] = {0};
-                    double d = 0.99 - (fabs(((double) i) - ((double) j)) / ((double) granularity));
-                    double fx = ((double) i) / ((double) granularity);
-                    double fy = ((double) j) / ((double) granularity);
-                    if(granularity <= 10)
-                    {
-                        sprintf(narsese, "<%s_%.1f <-> %s_%.1f>. {1.0 %f}", termname, fx, termname, fy, d);
-                    }
-                    else
-                    if(granularity <= 100)
-                    {
-                        sprintf(narsese, "<%s_%.2f <-> %s_%.2f>. {1.0 %f}", termname, fx, termname, fy, d);
-                    }
-                    else
-                    if(granularity <= 1000)
-                    {
-                        sprintf(narsese, "<%s_%.3f <-> %s_%.3f>. {1.0 %f}", termname, fx, termname, fy, d);
-                    }
-                    NAR_AddInputNarsese(narsese);
-                }
+                char setval[NARSESE_LEN_MAX+1] = {0};
+                double fval = ((double) i) / ((double) granularity);
+                sprintf(setval, "*setvalue %f %d %s", fval, granularity, termname);
+                Shell_ProcessInput(setval);
             }
         }
         else
