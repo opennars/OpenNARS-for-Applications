@@ -307,7 +307,6 @@ int Shell_ProcessInput(char *line)
             {
                 sprintf(termname_ext, "%s%s%.3f", termname, sep, value);
             }
-            puts(termname_ext); fflush(stdout);
             Narsese_setAtomValue((Atom) Narsese_AtomicTermIndex(termname_ext), value, termname);
         }
         else
