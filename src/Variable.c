@@ -26,8 +26,6 @@
 #include "HashTable.h"
 #include <stdint.h>
 
-SimilarityQuery similarityQuery = NULL;
-
 bool Variable_isIndependentVariable(Atom atom)
 {
     return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '$';
@@ -91,13 +89,17 @@ Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool un
             }
             else
             {
-                if(general_atom != specific->atoms[i]) //inequality since specific atom differs
+                Atom specific_atom = specific->atoms[i];
+                if(general_atom != specific_atom) //inequality since specific atom differs
                 {
-                    if(SIMILARITY_QUERY && truth.confidence != 0.0)
+                    if(truth.confidence != 0.0 && Narsese_hasAtomValue(general_atom) && Narsese_hasAtomValue(specific_atom) &&
+                       !strcmp(Narsese_atomMeasurementNames[general_atom-1], Narsese_atomMeasurementNames[specific_atom-1]))
                     {
+                        double v1 = Narsese_getAtomValue(general_atom);
+                        double v2 = Narsese_getAtomValue(specific_atom);
                         Term gen =  Term_ExtractSubterm(general, i);
                         Term spec = Term_ExtractSubterm(specific, i); //might as well just be an atom, but maybe we can find a similarity
-                        substitution.truth = similarityQuery(substitution.truth, &gen, &spec);
+                        substitution.truth = Truth_Analogy(substitution.truth, (Truth) { .frequency = 1.0, .confidence = 1.0-fabs(v1-v2)});
                         if(substitution.truth.confidence == 0.0)
                         {
                             return substitution;
@@ -148,7 +150,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 
 //Search for variables which appear twice extensionally, if also appearing in the right side of the implication
 //then introduce as independent variable, else as dependent variable
-static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure)
+static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure, bool spatial_composition)
 {
     bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], SIMILARITY);
     if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
@@ -160,16 +162,16 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
             if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
                 Term relation = Term_ExtractSubterm(&subject, 1);
-                countStatementAtoms(&relation, appearing, extensionally, true);
+                countStatementAtoms(&relation, appearing, extensionally, true, spatial_composition);
             }
             else
             {
-                countStatementAtoms(&subject, appearing, extensionally, true);
+                countStatementAtoms(&subject, appearing, extensionally, true, spatial_composition);
             }
             if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
                 Term potential_image = Term_ExtractSubterm(&predicate, 2);
-                countStatementAtoms(&potential_image, appearing, extensionally, true);
+                countStatementAtoms(&potential_image, appearing, extensionally, true, spatial_composition);
             }
         }
         if(!extensionally || similarity)
@@ -177,24 +179,24 @@ static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, boo
             if(Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2))
             {
                 Term relation = Term_ExtractSubterm(&predicate, 1);
-                countStatementAtoms(&relation, appearing, extensionally, true);
+                countStatementAtoms(&relation, appearing, extensionally, true, spatial_composition);
             }
             else
             {
-                countStatementAtoms(&predicate, appearing, extensionally, true);
+                countStatementAtoms(&predicate, appearing, extensionally, true, spatial_composition);
             }
             if(Narsese_copulaEquals(subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2))
             {
                 Term argument = Term_ExtractSubterm(&subject, 2);
-                countStatementAtoms(&argument, appearing, extensionally, true);
+                countStatementAtoms(&argument, appearing, extensionally, true, spatial_composition);
             }
         }
     }
-    if(ignore_structure) //check avoids introducing vars for entire statements
+    if(ignore_structure || spatial_composition) //check avoids introducing vars for entire statements
     {
         if(VARS_IN_MULTI_ELEMENT_SETS_FILTER && (Narsese_copulaEquals(cur_inheritance->atoms[0], EXT_SET) || Narsese_copulaEquals(cur_inheritance->atoms[0], INT_SET)) && !Narsese_copulaEquals(cur_inheritance->atoms[2], SET_TERMINATOR))
         {
-            if(!SET_EVENT_VAR_INTRO)
+            if(!spatial_composition)
             {
                 return;
             }
@@ -237,7 +239,7 @@ static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, boo
         countHigherOrderStatementAtoms(&predicate, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
         return;
     }
-    countStatementAtoms(term, appearing, extensionally, SET_EVENT_VAR_INTRO);
+    countStatementAtoms(term, appearing, extensionally, false, Narsese_copulaEquals(term->atoms[0], INT_SET));
 }
 
 static bool Atom_Equal(void *a, void *b)
@@ -435,9 +437,4 @@ void Variable_Normalize(Term *term)
             }
         }
     }
-}
-
-void Variable_INIT(SimilarityQuery queryFunc)
-{
-    similarityQuery = queryFunc;
 }

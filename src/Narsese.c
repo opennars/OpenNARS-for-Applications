@@ -25,6 +25,10 @@
 #include "Narsese.h"
 #include "NAR.h"
 
+//Atomic term values:
+double Narsese_atomValues[ATOMS_MAX];
+bool Narsese_atomHasValue[ATOMS_MAX];
+char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
@@ -659,9 +663,12 @@ void Narsese_INIT()
 {
     HashTable_INIT(&HTatoms, HTatoms_storage, HTatoms_storageptrs, HTatoms_HT, ATOMS_HASHTABLE_BUCKETS, ATOMS_MAX, (Equal) Narsese_StringEqual, (Hash) Narsese_StringHash);
     term_index = 0;
+    memset(&Narsese_atomValues, 0, ATOMS_MAX * sizeof(double));
+    memset(&Narsese_atomHasValue, false, ATOMS_MAX * sizeof(bool));
     for(int i=0; i<ATOMS_MAX; i++)
     {
         memset(&Narsese_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
+        memset(&Narsese_atomMeasurementNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     for(int i=0; i<OPERATIONS_MAX; i++)
     {
@@ -782,7 +789,7 @@ Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 
 bool Narsese_IsSimpleAtom(Atom atom)
 {
-    return atom > 0 && (Narsese_atomNames[(int) atom - 1][0] == '^' ||
+    return atom > 0 && (
            (Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
            (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
            (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
@@ -846,4 +853,25 @@ bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence)
         }
     }
     return success;
+}
+
+void Narsese_setAtomValue(Atom atom, double value, char* measurementName)
+{
+    assert(atom > 0, "Narsese_setAtomValue: Atom was zero");
+    int atom_index = (int) atom-1;
+    Narsese_atomValues[atom_index] = value;
+    Narsese_atomHasValue[atom_index] = true;
+    strncpy(Narsese_atomMeasurementNames[atom_index], measurementName, ATOMIC_TERM_LEN_MAX-1);
+}
+
+bool Narsese_hasAtomValue(Atom atom)
+{
+    assert(atom > 0, "Narsese_hasAtomValue: Atom was zero");
+    return Narsese_atomHasValue[(int) atom-1];
+}
+
+double Narsese_getAtomValue(Atom atom)
+{
+    assert(atom > 0, "Narsese_getAtomValue: Atom was zero");
+    return Narsese_atomValues[(int) atom-1];
 }
