@@ -43,9 +43,9 @@
 //Data structure//
 //--------------//
 //Atomic term values:
-double Narsese_atomValues[ATOMS_MAX];
-bool Narsese_atomHasValue[ATOMS_MAX];
-char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
+extern double Narsese_atomValues[ATOMS_MAX];
+extern bool Narsese_atomHasValue[ATOMS_MAX];
+extern char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
