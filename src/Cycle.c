@@ -117,7 +117,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             categoricalInfoInEvent = false;
             for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
             {
-                Concept *c = concepts.items[cmatch_k].address;
+                Concept *c = (Concept*) concepts.items[cmatch_k].address;
                 Event ecp = *e;
                 if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
                 {
