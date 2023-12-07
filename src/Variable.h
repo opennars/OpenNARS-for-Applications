@@ -74,7 +74,5 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.
 void Variable_Normalize(Term *term);
-//Memory query
-void Variable_INIT(SimilarityQuery queryFunc);
 
 #endif

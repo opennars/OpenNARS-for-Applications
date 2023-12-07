@@ -42,6 +42,10 @@
 
 //Data structure//
 //--------------//
+//Atomic term values:
+extern double Narsese_atomValues[ATOMS_MAX];
+extern bool Narsese_atomHasValue[ATOMS_MAX];
+extern char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
@@ -121,5 +125,11 @@ HASH_TYPE Narsese_StringHash(char *name);
 bool Term_HasOperation(Term *term);
 //Append a sequence in left-nested way:
 bool Narsese_OperationSequenceAppendLeftNested(Term *start, Term *sequence);
+//Set atom value
+void Narsese_setAtomValue(Atom atom, double value, char* measurementName);
+//Atom has value
+bool Narsese_hasAtomValue(Atom atom);
+//Get atom value
+double Narsese_getAtomValue(Atom atom);
 
 #endif
