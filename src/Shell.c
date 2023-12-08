@@ -142,7 +142,7 @@ int Shell_ProcessInput(char *line)
             puts("//*concepts");
             for(int i=0; i<concepts.itemsAmount; i++)
             {
-                Concept *c = concepts.items[i].address;
+                Concept *c = (Concept*) concepts.items[i].address;
                 assert(c != NULL, "Concept is null");
                 fputs("//", stdout);
                 Narsese_PrintTerm(&c->term);
@@ -193,7 +193,7 @@ int Shell_ProcessInput(char *line)
             puts("//*cycling_belief_events");
             for(int i=0; i<cycling_belief_events.itemsAmount; i++)
             {
-                Event *e = cycling_belief_events.items[i].address;
+                Event *e = (Event*) cycling_belief_events.items[i].address;
                 assert(e != NULL, "Event is null");
                 Narsese_PrintTerm(&e->term);
                 printf(": { \"priority\": %f, \"time\": %ld } ", cycling_belief_events.items[i].priority, e->occurrenceTime);
@@ -209,7 +209,7 @@ int Shell_ProcessInput(char *line)
             {
                 for(int i=0; i<cycling_goal_events[layer].itemsAmount; i++)
                 {
-                    Event *e = cycling_goal_events[layer].items[i].address;
+                    Event *e = (Event*) cycling_goal_events[layer].items[i].address;
                     assert(e != NULL, "Event is null");
                     Narsese_PrintTerm(&e->term);
                     printf(": {\"priority\": %f, \"time\": %ld } ", cycling_goal_events[layer].items[i].priority, e->occurrenceTime);

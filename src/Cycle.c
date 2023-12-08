@@ -36,7 +36,7 @@ static long conceptProcessID3 = 0; //avoids duplicate concept processing
         while(chain != NULL) \
         { \
             Concept *CONCEPT = chain->c; \
-            chain = chain->next; \
+            chain = (ConceptChainElement*) chain->next; \
             if(CONCEPT != NULL && CONCEPT->processID != conceptProcessID) \
             { \
                 CONCEPT->processID = conceptProcessID; \
@@ -115,7 +115,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
         categoricalInfoInEvent = false;
         for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
         {
-            Concept *c = concepts.items[cmatch_k].address;
+            Concept *c = (Concept*) concepts.items[cmatch_k].address;
             Event ecp = *e;
             if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
             {
@@ -713,7 +713,7 @@ void Cycle_RelativeForgetting(long currentTime)
     //Apply concept forgetting:
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         c->priority *= CONCEPT_DURABILITY;
         concepts.items[i].priority = Usage_usefulness(c->usage, currentTime); //how concept memory is sorted by, by concept usefulness
     }
