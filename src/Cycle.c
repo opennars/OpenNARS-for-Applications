@@ -285,7 +285,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         })
         DONE_CONCEPT_ITERATING:
         //no corresponding belief
-        if(best_c == NULL)
+        if(best_c == NULL || !best_subs.success)
         {
             break;
         }
@@ -368,15 +368,18 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                         }
                         Term postcondition = Term_ExtractSubterm(&imp->term, 2);
                         Substitution subs = Variable_Unify(&postcondition, &c->goal_spike.term);
-                        Implication updated_imp = *imp;
-                        bool success;
-                        updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
-                        if(success)
+                        if(subs.success)
                         {
-                            Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
-                            Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
-                            IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                            Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                            Implication updated_imp = *imp;
+                            bool success;
+                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                            if(success)
+                            {
+                                Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
+                                Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                                IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                            }
                         }
                     }
                 }
