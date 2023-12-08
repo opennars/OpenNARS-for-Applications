@@ -100,6 +100,11 @@ int Shell_ProcessInput(char *line)
             sscanf(&line[strlen("*decisionthreshold=")], "%lf", &DECISION_THRESHOLD);
         }
         else
+        if(!strncmp("*similaritydistance=", line, strlen("*similaritydistance=")))
+        {
+            sscanf(&line[strlen("*similaritydistance=")], "%lf", &Variable_similarity_distance);
+        }
+        else
         if(!strcmp(line,"*stats"))
         {
             puts("//*stats");

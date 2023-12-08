@@ -452,7 +452,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                     if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
                     {
                         Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
-                        Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
+                        Substitution subs = Variable_UnifyWithAnalogy(precondition->truth, &current_prec->term, &precondition->term); //already penalized on match as we are using source concept directly
                         if(subs.success)
                         {
                             bool success2;

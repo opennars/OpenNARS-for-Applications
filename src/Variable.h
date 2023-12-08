@@ -49,6 +49,7 @@ typedef struct {
     Truth truth; //how well did it substitute?
 } Substitution;
 typedef Truth (*SimilarityQuery)(Truth, Term*, Term*); //to get access to memory querying for term substitutability
+extern double Variable_similarity_distance;
 
 //Methods//
 //-------//
