@@ -45,6 +45,7 @@ typedef struct
     int currentIndex;
     Concept* array[OCCURRENCE_TIME_INDEX_SIZE];
 } OccurrenceTimeIndex;
+
 //Methods//
 //-------//
 //Add an event to the OccurrenceTimeIndex
