@@ -26,6 +26,8 @@
 #include "HashTable.h"
 #include <stdint.h>
 
+double Variable_similarity_distance = SIMILARITY_DISTANCE;
+
 bool Variable_isIndependentVariable(Atom atom)
 {
     return atom > 0 && Narsese_atomNames[(int) atom-1][1] != 0 && Narsese_atomNames[(int) atom-1][0] == '$';
@@ -99,7 +101,7 @@ Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool un
                         double v2 = Narsese_getAtomValue(specific_atom);
                         Term gen =  Term_ExtractSubterm(general, i);
                         Term spec = Term_ExtractSubterm(specific, i); //might as well just be an atom, but maybe we can find a similarity
-                        substitution.truth = Truth_Analogy(substitution.truth, (Truth) { .frequency = 1.0, .confidence = 1.0-fabs(v1-v2)});
+                        substitution.truth = Truth_Analogy(substitution.truth, (Truth) { .frequency = 1.0, .confidence = MAX(0.0, 1.0-fabs(v1-v2)/Variable_similarity_distance)});
                         if(substitution.truth.confidence == 0.0)
                         {
                             return substitution;
