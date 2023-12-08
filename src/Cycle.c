@@ -122,8 +122,8 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
                 Substitution subs = Variable_UnifyWithAnalogy(e->truth, &c->term, &e->term); //concept with variables,
                 if(subs.success)
                 {
-                    ecp.truth = subs.truth;
                     ecp.term = e->term;
+                    ecp.truth = subs.truth;
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                     best_decision = Decision_BetterDecision(best_decision, decision);
                 }
@@ -152,23 +152,25 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
             Event ecp = *e;
             if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
             {
-                Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables, 
+                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &c->term, &e->term); //concept with variables,
                 if(subs.success)
                 {
                     ecp.term = e->term;
+                    ecp.truth = subs.truth;
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                     best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
             if(e_hasVariable)
             {
-                Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &e->term, &c->term); //event with variable matched to concept
                 if(subs.success)
                 {
                     bool success;
                     ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
                     if(success)
                     {
+                        ecp.truth = subs.truth;
                         Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                         best_decision = Decision_BetterDecision(best_decision, decision);
                     }
