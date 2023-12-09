@@ -99,85 +99,34 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     bool e_hasQueryVariable = Variable_hasVariable(&e->term, false, false, true);
     conceptProcessID++; //process the to e related concepts
-    bool categoricalInfoInEvent = true;
-    bool anyCategorical = false;
-    for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+    RELATED_CONCEPTS_FOREACH(&e->term, c,
     {
-        Atom atom = e->term.atoms[i];
-        if(Narsese_IsSimpleAtom(atom) && !Narsese_hasAtomValue(atom))
+        Event ecp = *e;
+        if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
         {
-            anyCategorical = true;
-            break;
-        }
-    }
-    if(!anyCategorical)
-    {
-        categoricalInfoInEvent = false;
-        for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
-        {
-            Concept *c = (Concept*) concepts.items[cmatch_k].address;
-            Event ecp = *e;
-            if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
+            Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables,
+            if(subs.success)
             {
-                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &c->term, &e->term); //concept with variables,
-                if(subs.success)
+                ecp.term = e->term;
+                Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
+                best_decision = Decision_BetterDecision(best_decision, decision);
+            }
+        }
+        if(e_hasVariable)
+        {
+            Substitution subs = Variable_Unify(&e->term, &c->term); //event with variable matched to concept
+            if(subs.success)
+            {
+                bool success;
+                ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
+                if(success)
                 {
-                    ecp.term = e->term;
-                    ecp.truth = subs.truth;
                     Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
                     best_decision = Decision_BetterDecision(best_decision, decision);
                 }
             }
-            if(e_hasVariable)
-            {
-                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &e->term, &c->term); //event with variable matched to concept
-                if(subs.success)
-                {
-                    bool success;
-                    ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
-                    if(success)
-                    {
-                        ecp.truth = subs.truth;
-                        Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                        best_decision = Decision_BetterDecision(best_decision, decision);
-                    }
-                }
-            }
         }
-    }
-    if(categoricalInfoInEvent)
-    {
-        RELATED_CONCEPTS_FOREACH(&e->term, c,
-        {
-            Event ecp = *e;
-            if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
-            {
-                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &c->term, &e->term); //concept with variables,
-                if(subs.success)
-                {
-                    ecp.term = e->term;
-                    ecp.truth = subs.truth;
-                    Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                    best_decision = Decision_BetterDecision(best_decision, decision);
-                }
-            }
-            if(e_hasVariable)
-            {
-                Substitution subs = Variable_UnifyWithAnalogy(e->truth, &e->term, &c->term); //event with variable matched to concept
-                if(subs.success)
-                {
-                    bool success;
-                    ecp.term = Variable_ApplySubstitute(e->term, subs, &success);
-                    if(success)
-                    {
-                        ecp.truth = subs.truth;
-                        Decision decision = Cycle_ActivateSensorimotorConcept(c, &ecp, currentTime);
-                        best_decision = Decision_BetterDecision(best_decision, decision);
-                    }
-                }
-            }
-        })
-    }
+    })
     return best_decision;
 }
 
