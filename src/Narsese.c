@@ -789,7 +789,7 @@ Term Narsese_GetPreconditionWithoutOp(Term *precondition)
 
 bool Narsese_IsSimpleAtom(Atom atom)
 {
-    return atom > 0 && (
+    return atom > 0 && (Narsese_atomNames[(int) atom - 1][0] == '^' ||
            (Narsese_atomNames[(int) atom - 1][0] >= 'a' && Narsese_atomNames[(int) atom - 1][0] <= 'z') ||
            (Narsese_atomNames[(int) atom - 1][0] >= 'A' && Narsese_atomNames[(int) atom - 1][0] <= 'Z') ||
            (Narsese_atomNames[(int) atom - 1][0] >= '0' && Narsese_atomNames[(int) atom - 1][0] <= '9'));
