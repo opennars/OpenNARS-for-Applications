@@ -309,31 +309,15 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     assert(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION), "This should be a temporal implication!");
                     Term left_side_with_op = Term_ExtractSubterm(&imp.term, 1);
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
-                    
-                    double best_match_conf = 0.0;
-                    for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
-                    {
-                        Concept *cmatch = concepts.items[cmatch_k].address;
-                        if(!Variable_hasVariable(&cmatch->term, true, true, true) && cmatch->belief_spike.type != EVENT_TYPE_DELETED)
-                        {
-                            if(labs(currentTime - cmatch->belief_spike.occurrenceTime) < EVENT_BELIEF_DISTANCE)
-                            {
-                                Substitution subs2 = Variable_UnifyWithAnalogy((Truth) { .frequency = 1.0, .confidence = 1.0 }, &left_side, &cmatch->term);
-                                if(subs2.success && subs2.truth.confidence >= best_match_conf)
-                                {
-                                    best_match_conf = subs2.truth.confidence;
-                                }
-                            }
-                        }
-                    }
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
                         Concept *cmatch = (Concept*) concepts.items[cmatch_k].address;
                         if(!Variable_hasVariable(&cmatch->term, true, true, true) && cmatch->belief_spike.type != EVENT_TYPE_DELETED)
                         {
                             Substitution subs2 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_side, &cmatch->term);
-                            if(subs2.success && Variable_UnifyWithAnalogy((Truth) { .frequency = 1.0, .confidence = 1.0 }, &left_side, &cmatch->term).truth.confidence == best_match_conf)
+                            if(subs2.success)
                             {
+                                bool perfectMatch = subs2.truth.confidence == cmatch->belief_spike.truth.confidence;
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
@@ -365,7 +349,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                                 }
                                             }
                                         }
-                                        if(!hypothesis_existed || best_match_conf < 1.0) //this specific implication was never observed before, so we have to keep track of it to apply anticipation
+                                        if(!hypothesis_existed || !perfectMatch) //this specific implication was never observed before, so we have to keep track of it to apply anticipation
                                         {                       //in addition to Decision_Anticipate which applies it to existing implications
                                             considered.missing_specific_implication = specific_imp;
                                         }
@@ -379,7 +363,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     }
                                     else
                                     {
-                                        if(best_match_conf < 1.0)
+                                        if(!perfectMatch)
                                         {
                                             considered.missing_specific_implication = specific_imp;
                                         }
