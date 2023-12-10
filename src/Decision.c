@@ -323,17 +323,14 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                 {
                                     for(int k=0; k<goalconcept->precondition_beliefs[opk].itemsAmount; k++)
                                     {
-                                        if(!(opi == opk && k == j))
+                                        Implication impk = goalconcept->precondition_beliefs[opk].array[k];
+                                        Term left_side_with_opk = Term_ExtractSubterm(&impk.term, 1);
+                                        Term left_sidek = Narsese_GetPreconditionWithoutOp(&left_side_with_opk);
+                                        Substitution subs3 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_sidek, &cmatch->term);
+                                        if(subs3.success && subs3.truth.confidence > subs2.truth.confidence)
                                         {
-                                            Implication impk = goalconcept->precondition_beliefs[opk].array[k];
-                                            Term left_side_with_opk = Term_ExtractSubterm(&impk.term, 1);
-                                            Term left_sidek = Narsese_GetPreconditionWithoutOp(&left_side_with_opk);
-                                            Substitution subs3 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_sidek, &cmatch->term);
-                                            if(subs3.success && subs3.truth.confidence > subs2.truth.confidence)
-                                            {
-                                                hasCloserPreconditionLink = true;
-                                                break;
-                                            }
+                                            hasCloserPreconditionLink = true;
+                                            break;
                                         }
                                     }
                                     if(hasCloserPreconditionLink)
