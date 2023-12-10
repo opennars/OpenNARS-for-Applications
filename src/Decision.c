@@ -318,6 +318,33 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                             if(subs2.success)
                             {
                                 bool perfectMatch = subs2.truth.confidence == cmatch->belief_spike.truth.confidence;
+                                bool hasCloserPreconditionLink = false;
+                                for(int opk=1; !perfectMatch && opk<=OPERATIONS_MAX && operations[opk-1].term.atoms[0] != 0; opk++)
+                                {
+                                    for(int k=0; k<goalconcept->precondition_beliefs[opk].itemsAmount; k++)
+                                    {
+                                        if(!(opi == opk && k == j))
+                                        {
+                                            Implication impk = goalconcept->precondition_beliefs[opk].array[k];
+                                            Term left_side_with_opk = Term_ExtractSubterm(&impk.term, 1);
+                                            Term left_sidek = Narsese_GetPreconditionWithoutOp(&left_side_with_opk);
+                                            Substitution subs3 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_sidek, &cmatch->term);
+                                            if(subs3.success && subs3.truth.confidence > subs2.truth.confidence)
+                                            {
+                                                hasCloserPreconditionLink = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if(hasCloserPreconditionLink)
+                                    {
+                                        break;
+                                    }
+                                }
+                                if(hasCloserPreconditionLink)
+                                {
+                                    continue;
+                                }
                                 Implication specific_imp = imp; //can only be completely specific
                                 bool success;
                                 specific_imp.term = Variable_ApplySubstitute(specific_imp.term, subs2, &success);
