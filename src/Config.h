@@ -87,7 +87,7 @@
 //If var intro should be allowed at all (includes sensorimotor!)
 #define ALLOW_VAR_INTRO true
 //Numeric term similarity distance scale (everything beyound distance leads to conf 0 analogy!)
-#define SIMILARITY_DISTANCE 0.3
+#define SIMILARITY_DISTANCE 1.0
 
 /*---------------------------------*/
 /* Temporal compounding parameters */
