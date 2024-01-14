@@ -80,8 +80,10 @@ typedef struct
 
 //Methods//
 //-------//
+//init decision
+void Decision_INIT();
 //execute decision
-void Decision_Execute(Decision *decision);
+void Decision_Execute(long currentTime, Decision *decision);
 //assumption of failure, also works for "do nothing operator"
 void Decision_Anticipate(int operationID, Term op_term, long currentTime);
 //NAR decision making rule applying when goal is an operation

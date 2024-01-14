@@ -1,0 +1,20 @@
+*volume=0
+<(a &/ ^left) =/> G>.
+<(b &/ ^left) =/> G>.
+
+a. :|:
+G! :|:
+//expected: ^left executed with args
+
+100
+
+b. :|:
+G! :|:
+//expected: ^left executed with args
+
+100
+
+<(a &/ ^right) =/> H>.
+b. :|:
+H! :|:
+//expected: ^right executed with args
