@@ -310,6 +310,8 @@ for i in range(100000):
                 else:
                     streetcol = streetcolor(ent.posX,ent.posY)
                 drawings[y][x] = streetcol + color + drawchar + drawIDtoDirectionIndicator(drawid) + colorend
-    print("\033[1;1H\033[2J")
+    printme = ""
     for line in drawings:
-        print("".join(line))
+        printme += "".join(line) + "\n"
+    print("\033[1;1H\033[2J")
+    print(printme)
