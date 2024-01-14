@@ -30,6 +30,7 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
+Decision last_decision;
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
@@ -48,8 +49,56 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 }
 
 //Inject action event after execution or babbling
-void Decision_Execute(Decision *decision)
+void Decision_Execute(long currentTime, Decision *decision)
 {
+    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0] && last_decision.usedContingency.term.atoms[0]) //both executed due to a reason
+    {
+        Term cons1 = Term_ExtractSubterm(&decision->usedContingency.term, 2);
+        Term cons2 = Term_ExtractSubterm(&last_decision.usedContingency.term, 2);
+        Term prec_op1 = Term_ExtractSubterm(&decision->usedContingency.term, 1);
+        Term prec_op2 = Term_ExtractSubterm(&last_decision.usedContingency.term, 1);
+        Term op1 = Term_ExtractSubterm(&prec_op1, 2);
+        Term op2 = Term_ExtractSubterm(&prec_op2, 2);
+        Term prec1 = Narsese_GetPreconditionWithoutOp(&prec_op1);
+        Term prec2 = Narsese_GetPreconditionWithoutOp(&prec_op2);
+        if(Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
+        {
+            Event a = { .term = prec1,
+                        .type = EVENT_TYPE_BELIEF,
+                        .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
+                        .stamp = decision->usedContingency.stamp,
+                        .occurrenceTime = currentTime };
+            Event b = { .term = prec2,
+                        .type = EVENT_TYPE_BELIEF,
+                        .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
+                        .stamp = last_decision.usedContingency.stamp,
+                        .occurrenceTime = currentTime };
+            if(!Stamp_checkOverlap(&a.stamp, &b.stamp))
+            {
+                bool success1 = false;
+                Implication imp1 = Inference_BeliefInduction(&a, &b, &success1);
+                if(success1)
+                {
+                    Event e_imp = { .term = imp1.term,
+                                    .type = EVENT_TYPE_BELIEF,
+                                    .truth = imp1.truth,
+                                    .occurrenceTime = currentTime };
+                    Memory_AddInputEvent(&e_imp, currentTime);
+                }
+                bool success2 = false;
+                Implication imp2 = Inference_BeliefInduction(&b, &a, &success2);
+                if(success2)
+                {
+                    Event e_imp = { .term = imp2.term,
+                                    .type = EVENT_TYPE_BELIEF,
+                                    .truth = imp2.truth,
+                                    .occurrenceTime = currentTime };
+                    Memory_AddInputEvent(&e_imp, currentTime);
+                }
+            }
+        }
+    }
+    last_decision = *decision;
     int n_ops_to_execute = 0;
     for(int i=0; i<MAX_COMPOUND_OP_LEN; i++)
     {
@@ -544,4 +593,9 @@ Decision Decision_BetterDecision(Decision best_decision, Decision decision)
         return decision;
     }
     return best_decision;
+}
+
+void Decision_INIT()
+{
+    last_decision = (Decision) {0}; 
 }

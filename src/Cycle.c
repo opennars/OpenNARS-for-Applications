@@ -293,7 +293,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
         //also don't re-add the selected goal:
         goalsSelectedCnt = 0;
         //execute decision
-        Decision_Execute(&best_decision);
+        Decision_Execute(currentTime, &best_decision);
     }
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
@@ -339,7 +339,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
     }
 }
 
-//Reinforce link between concept a and b
+//Reinforce temporal implication link between a's and b's concept (via temporal induction)
 static Implication Cycle_ReinforceLink(Event *a, Event *b)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
