@@ -84,6 +84,20 @@ void Decision_Execute(long currentTime, Decision *decision)
                                     .truth = imp1.truth,
                                     .occurrenceTime = currentTime };
                     Memory_AddInputEvent(&e_imp, currentTime);
+                    Event e_imp2 = e_imp;
+                    bool intro_success1;
+                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
+                    if(intro_success1)
+                    {
+                        Memory_AddInputEvent(&e_imp2, currentTime);
+                    }
+                    Event e_imp3 = e_imp;
+                    bool intro_success2;
+                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
+                    if(intro_success2)
+                    {
+                        Memory_AddInputEvent(&e_imp3, currentTime);
+                    }
                 }
                 bool success2 = false;
                 Implication imp2 = Inference_BeliefInduction(&b, &a, &success2);
@@ -94,6 +108,20 @@ void Decision_Execute(long currentTime, Decision *decision)
                                     .truth = imp2.truth,
                                     .occurrenceTime = currentTime };
                     Memory_AddInputEvent(&e_imp, currentTime);
+                    Event e_imp2 = e_imp;
+                    bool intro_success1;
+                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
+                    if(intro_success1)
+                    {
+                        Memory_AddInputEvent(&e_imp2, currentTime);
+                    }
+                    Event e_imp3 = e_imp;
+                    bool intro_success2;
+                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
+                    if(intro_success2)
+                    {
+                        Memory_AddInputEvent(&e_imp3, currentTime);
+                    }
                 }
             }
         }
