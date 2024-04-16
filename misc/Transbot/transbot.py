@@ -17,7 +17,7 @@ import json
 #Parameters:
 center_offset = 20
 y_too_far_to_grab = 340
-robotVisualMiddle = 375 #middle of the robot
+robotVisualMiddle = 385 #middle of the robot was 375
 checkpointdecisions = 1
 
 def pick_failed():
@@ -367,6 +367,7 @@ def shell_step(lastLine = ""):
     if line.startswith("*patrol "): #how often to patrol the points that have been defined
         repetitions = int(line.split("*patrol ")[1])
         for i in range(repetitions):
+            (trans0, rot0) = points[0]
             for j, (trans, rot) in enumerate(points):
                 OpGo(trans[0], trans[1], rot[2], rot[3])
                 TransbotPerceiveAt("{P" + str(j) + "}", trans, rot)
@@ -374,6 +375,10 @@ def shell_step(lastLine = ""):
                 for i in range(checkpointdecisions):
                     if process(lastGoal):
                         break
+                if getPicked():
+                    OpGo(trans0[0], trans0[1], rot0[2], rot0[3])
+                    OpStop()
+                    drop(force=True)
         return line
     if line.startswith("*savepoints"):
         with open("points.json", "w") as json_file:

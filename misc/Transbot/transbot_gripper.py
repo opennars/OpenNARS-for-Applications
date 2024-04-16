@@ -38,9 +38,9 @@ def jointangle(id, angle):
     pub_Arm.publish(arm)
 
 def arm_down():
-    jointangle(7, 180)
+    jointangle(7, 140) #180 -> 120
     sleep(0.5)
-    jointangle(7, 180)
+    jointangle(7, 140)
     sleep(0.5)
     jointangle(8, 220)
     sleep(0.5)
@@ -52,18 +52,18 @@ def arm_down():
     sleep(0.5)
 
 def arm_up():
-    jointangle(7, 180)
+    jointangle(7, 140)
     sleep(0.5)
-    jointangle(7, 180)
+    jointangle(7, 140)
     sleep(0.5)
-    jointangle(8, 60 if hastrailer else 30)
+    jointangle(8, 90 if hastrailer else 90)
     sleep(0.5)
-    jointangle(8, 60 if hastrailer else 30)
+    jointangle(8, 90 if hastrailer else 90)
     sleep(0.5)
-    jointangle(7, 210)
-    sleep(0.5)
-    jointangle(7, 210)
-    sleep(0.5)
+    #jointangle(7, 210)
+    #sleep(0.5)
+    #jointangle(7, 210)
+    #sleep(0.5)
 
 def init_pose():
     arm_up()
@@ -106,6 +106,7 @@ def close_gripper(target_angle = 30):
             print("//FEEDBACK STOP 0")
             return False, target_angle
         current_angle = read_gripper_angle()
+        if current_angle > 60: return True, target_angle
         print("//current angle and target angle %d %d" % (current_angle, target_angle))
         last_angles.append(current_angle)
         last_target_angles.append(target_angle)
@@ -231,5 +232,6 @@ def drop_trailer(force=False, t=0.7):
         left(angular=0.6)
         sleep(t)
     picked = False
-
+#arm_down()
+#arm_up()
 print("//transbot_gripper.py go!")

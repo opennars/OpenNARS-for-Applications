@@ -4,8 +4,13 @@ import ast
 import signal
 import subprocess
 
+#def spawnNAR():
+#    return subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+
 def spawnNAR():
-    return subprocess.Popen(["./../../NAR", "shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+    return subprocess.Popen(["ssh", "sage@91.203.212.130", "/home/sage/OpenNARS-for-Applications/NAR shell"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
+
+
 NARproc = spawnNAR()
 def getNAR():
     return NARproc
