@@ -23,7 +23,7 @@
  */
 
 bool NAR_Procedure_Test_Op_executed = false;
-Feedback NAR_Procedure_Test_Op()
+Feedback NAR_Procedure_Test_Op(Term args)
 {
     puts("op executed by NAR");
     NAR_Procedure_Test_Op_executed = true;
