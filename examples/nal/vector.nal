@@ -1,0 +1,13 @@
+*volume=0
+*space 10 B
+*space 10 S
+
+<((<(left * S_0.3) --> size> &/ <(left * B_0.1) --> brightness>) &/ ^left) =/> G>.
+<((<(left * S_0.8) --> size> &/ <(left * B_0.9) --> brightness>) &/ ^right) =/> G>.
+
+<(left * S_0.2) --> size>. :|:
+<(left * B_0.3) --> brightness>. :|:
+G! :|:
+//expected: ^left executed with args
+
+

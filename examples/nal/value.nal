@@ -1,0 +1,9 @@
+*volume=0
+*space 10 B
+
+<(<(left * B_0.1) --> brightness> &/ ^left) =/> G>.
+<(<(left * B_0.9) --> brightness> &/ ^right) =/> G>.
+
+<(left * B_0.8) --> brightness>. :|:
+G! :|:
+//expected: ^right executed with args
