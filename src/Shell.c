@@ -308,7 +308,7 @@ int Shell_ProcessInput(char *line)
                 sprintf(termname_ext, "%s%s%.2f", termname, sep, value);
             }
             else
-            if(granularity <= 100)
+            if(granularity <= 1000)
             {
                 sprintf(termname_ext, "%s%s%.3f", termname, sep, value);
             }

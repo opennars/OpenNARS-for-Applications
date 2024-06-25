@@ -36,9 +36,10 @@ BOLD = "\x1B[1m"
 STATEMENT_OPENER = r"<" if len(sys.argv) <= 1 or sys.argv[1] == "old" else r"("
 STATEMENT_CLOSER = r">" if len(sys.argv) <= 1 or sys.argv[1] == "old" else r")"
 
+print(YELLOW + '//------------ NAR Started ------------\\\\' + RESET)
 for line in sys.stdin:
     line = line.rstrip()
-    COLOR = GREEN
+    COLOR = ''
     if line.startswith("performing ") or line.startswith("done with"):
         COLOR = CYAN
     elif line.startswith("Comment: expected:"):
@@ -53,6 +54,9 @@ for line in sys.stdin:
         COLOR = YELLOW
     elif line.startswith("Answer:") or line.startswith("^") or "decision expectation" in line:
         COLOR = BOLD + RED
+    elif line.startswith("Statistics"):
+        line = '\n' + line
+        COLOR = BOLD
     #Ext and Int set
     l = re.sub(r"{([^><:\(\)\*]*)}", MAGENTA+r"{" + GREEN + r"\1" + MAGENTA + "}" + COLOR, line)
     l = re.sub(r"\[([^><:\(\)\*]*)\]", MAGENTA+r"[" + GREEN + r"\1" + MAGENTA + "]" + COLOR, l)
@@ -69,3 +73,4 @@ for line in sys.stdin:
     #Other compound term copulas (not higher order)
     l = re.sub(r"\(([^><:]*)\s(\*|&|~|-|\|)\s([^><:]*)\)", YELLOW+r"(" + GREEN + r"\1" + YELLOW + r" \2 " + GREEN + r"\3" + YELLOW + ")" + COLOR, l)
     print(COLOR + l + RESET)
+print(YELLOW + '\\\\------------ NAR Ended ------------//')
