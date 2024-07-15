@@ -78,6 +78,8 @@
 #define ETERNAL_INPUT_USAGE_BOOST 1000000
 //Questions concept activation priority
 #define QUESTION_PRIMING_INITIAL 0.1
+//Restricted concept world
+#define RESTRICTED_CONCEPT_CREATION_INITIAL false
 
 /*---------------------------------*/
 /* Unification parameters          */

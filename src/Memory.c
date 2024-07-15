@@ -36,6 +36,7 @@ OccurrenceTimeIndex occurrenceTimeIndex;
 //Operations
 Operation operations[OPERATIONS_MAX];
 //Parameters
+bool RESTRICTED_CONCEPT_CREATION = RESTRICTED_CONCEPT_CREATION_INITIAL;
 bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
 //Storage arrays for the datastructures
@@ -86,6 +87,7 @@ VMItem* HTconcepts_HT[CONCEPTS_HASHTABLE_BUCKETS]; //the hash of the concept ter
 
 void Memory_INIT()
 {
+    RESTRICTED_CONCEPT_CREATION = RESTRICTED_CONCEPT_CREATION_INITIAL;
     HashTable_INIT(&HTconcepts, HTconcepts_storage, HTconcepts_storageptrs, HTconcepts_HT, CONCEPTS_HASHTABLE_BUCKETS, CONCEPTS_MAX, (Equal) Term_Equal, (Hash) Term_Hash);
     conceptPriorityThreshold = 0.0;
     Memory_ResetConcepts();
@@ -386,6 +388,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer)
 {
+    if(RESTRICTED_CONCEPT_CREATION && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && Memory_FindConceptByTerm(&event->term) == NULL)
+    {
+        return;
+    }
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
         double complexity = Term_Complexity(&event->term);

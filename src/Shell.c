@@ -88,6 +88,16 @@ int Shell_ProcessInput(char *line)
             PRINT_EVENTS_PRIORITY_THRESHOLD = 0.0;
         }
         else
+        if(!strncmp("*restrictedconceptcreation=true", line, strlen("*restrictedconceptcreation=true")))
+        {
+            RESTRICTED_CONCEPT_CREATION = true;
+        }
+        else
+        if(!strncmp("*restrictedconceptcreation=false", line, strlen("*restrictedconceptcreation=false")))
+        {
+            RESTRICTED_CONCEPT_CREATION = false;
+        }
+        else
         if(!strncmp("*volume=", line, strlen("*volume=")))
         {
             int volume = 0;
