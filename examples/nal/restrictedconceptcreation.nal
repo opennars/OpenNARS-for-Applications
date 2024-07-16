@@ -1,0 +1,62 @@
+*volume=0
+*restrictedconceptcreation=true
+
+//just creates the concept
+<this <-> apple>. {0.5 0.01}
+<apple --> [green]>.
+<apple --> [round]>.
+<apple --> [saur]>.
+
+10
+
+//just creates the concept
+<this <-> banana>. {0.5 0.01}
+<banana --> [yellow]>.
+<banana --> [long]>.
+<banana --> [sweet]>.
+
+10
+
+<peach --> [red]>.
+<peach --> [round]>.
+<peach --> [sweet]>.
+
+10000
+
+<this --> [green]>. :|:
+*concurrent
+<this --> [long]>. :|:
+*concurrent
+<this --> [sweet]>. :|:
+
+<({SELF} * this) --> ^pick>. :|:
+<{SELF} --> [satisfied]>. :|:
+
+1000
+
+<this --> [yellow]>. :|:
+*concurrent
+<this --> [short]>. :|:
+*concurrent
+<this --> [sweet]>. :|:
+
+<({SELF} * this) --> ^pick>. :|:
+<{SELF} --> [satisfied]>. :|:
+
+1000
+
+<this --> [yellow]>. :|:
+*concurrent
+<this --> [long]>. :|:
+*concurrent
+<this --> [sour]>. :|:
+
+<({SELF} * this) --> ^pick>. :|:
+<{SELF} --> [satisfied]>. :|:
+
+100
+
+<this <-> ?1>? :|:
+//expected: Answer: <this <-> banana>. :|: occurrenceTime=12051 Truth: frequency=1.000000, confidence=0.618321
+<(?1 &/ <({SELF} * this) --> ^pick>) =/> <{SELF} --> [satisfied]>>?
+//expected: Answer: <(<this <-> banana> &/ <({SELF} * this) --> ^pick>) =/> <{SELF} --> [satisfied]>>. Truth: frequency=0.984176, confidence=0.383525
