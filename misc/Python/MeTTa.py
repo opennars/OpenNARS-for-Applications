@@ -10,7 +10,6 @@ def NAR_Cycle(n):
     NAR.AddInput(str(n))
 
 def toMeTTa(term):
-    #print(term)
     if term.startswith("dt="):
         term = " ".join(term.split(" ")[1:])
     term = re.sub(r"\^([a-zA-Z0-9]*)", r"(^ \1)", term)
@@ -57,7 +56,6 @@ def NAR_AddInput(metta):
         print("!(" + prefix + " ("  + "" + punctuation + " " + x["metta"] + " " + x["occurrenceTime"]+ "))")
 
 if "shell" in sys.argv:
-    print("WWW")
     while True:
         inp = input()
         if inp.isnumeric():
