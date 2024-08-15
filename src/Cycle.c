@@ -407,7 +407,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             bool success4;
                             Event seq_op_cur = Inference_BeliefIntersection(&prec->belief_spike, &opc->belief_spike, &success4);
-                            if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE)
+                            bool concurrentImplicationFilter = ALLOW_CONCURRENT_IMPLICATIONS || seq_op_cur.occurrenceTime != postcondition.occurrenceTime;
+                            if(success4 && seq_op_cur.truth.confidence >= MIN_CONFIDENCE && concurrentImplicationFilter)
                             {
                                 Term buildSeq = prec->belief_spike.term;
                                 bool success5 = Narsese_OperationSequenceAppendLeftNested(&buildSeq, &opc->belief_spike.term);
@@ -439,7 +440,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                     {
                         bool success;
                         Event seq = Inference_BeliefIntersection(&c->belief_spike, &postcondition, &success);
-                        if(success && seq.truth.confidence >= MIN_CONFIDENCE)
+                        bool concurrentImplicationFilter = ALLOW_CONCURRENT_IMPLICATIONS || c->belief_spike.occurrenceTime != postcondition.occurrenceTime;
+                        if(success && seq.truth.confidence >= MIN_CONFIDENCE && concurrentImplicationFilter)
                         {
                             if(!op_id && !op_id2)
                             {
