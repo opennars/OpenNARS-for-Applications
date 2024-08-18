@@ -572,7 +572,18 @@ void Cycle_Inference(long currentTime)
 {
     //Inferences
 #if STAGE==2
-    for(int i=0; i<beliefsSelectedCnt; i++)
+    int conceptSelectedCnt = 0;
+    if(beliefsSelectedCnt == 0 && concepts.itemsAmount > 0 && BACKGROUND_REASONING)
+    {
+        Concept *c = concepts.items[myrand() % concepts.itemsAmount].address;
+        if(c != NULL && c->belief.type != EVENT_TYPE_DELETED)
+        {
+            conceptSelectedCnt += 1;
+            selectedBeliefs[0] = c->belief;
+            selectedBeliefsPriority[0] = 1.0;
+        }
+    }
+    for(int i=0; i<beliefsSelectedCnt + conceptSelectedCnt; i++)
     {
         conceptProcessID++; //process the related belief concepts
         long countConceptsMatched = 0;
@@ -596,7 +607,7 @@ void Cycle_Inference(long currentTime)
             RELATED_CONCEPTS_FOREACH(&e->term, c,
             {
                 long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
-                if(c->priority < conceptPriorityThresholdCurrent)
+                if(c->priority < conceptPriorityThresholdCurrent) // && conceptSelectedCnt == 0)
                 {
                     continue;
                 }

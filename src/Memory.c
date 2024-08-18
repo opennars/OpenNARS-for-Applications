@@ -334,7 +334,15 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
     else
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        Concept *c = NULL;
+        if(priority > CONCEPTUALIZATION_THRESHOLD)
+        {
+            c = Memory_Conceptualize(&event->term, currentTime);
+        }
+        else
+        {
+            c = Memory_FindConceptByTerm(&event->term);
+        }
         if(c != NULL)
         {
             if(event->occurrenceTime != OCCURRENCE_ETERNAL && !Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY))
@@ -408,7 +416,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && priority > CONCEPTUALIZATION_THRESHOLD)
         {
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         }

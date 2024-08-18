@@ -80,6 +80,10 @@
 #define QUESTION_PRIMING_INITIAL 0.1
 //Restricted concept world
 #define RESTRICTED_CONCEPT_CREATION_INITIAL false
+//How much priority an event needs to have to be able to create a new concept
+#define CONCEPTUALIZATION_THRESHOLD 0.0
+//When there is nothing in the PQ, whether the system uses that time to reason about prior beliefs
+#define BACKGROUND_REASONING true
 
 /*---------------------------------*/
 /* Unification parameters          */
