@@ -94,7 +94,7 @@ Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool un
                 Atom specific_atom = specific->atoms[i];
                 if(general_atom != specific_atom) //inequality since specific atom differs
                 {
-                    if(truth.confidence != 0.0 && Narsese_hasAtomValue(general_atom) && Narsese_hasAtomValue(specific_atom) &&
+                    if(NUMERIC_TERM_SIMILARITY && truth.confidence != 0.0 && Narsese_hasAtomValue(general_atom) && Narsese_hasAtomValue(specific_atom) &&
                        !strcmp(Narsese_atomMeasurementNames[general_atom-1], Narsese_atomMeasurementNames[specific_atom-1]))
                     {
                         double v1 = Narsese_getAtomValue(general_atom);

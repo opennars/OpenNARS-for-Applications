@@ -90,6 +90,10 @@
 #define ALLOW_VAR_INTRO true
 //Numeric term similarity distance scale (everything beyound distance leads to conf 0 analogy!)
 #define SIMILARITY_DISTANCE 1.0
+//Whether numeric term similarity is allowed to be used (allows conditioning results on absolute value to transfer to similar values)
+#define NUMERIC_TERM_SIMILARITY true
+//Whether relations should be derived from two element sequences with attribute relations (allows Transposition / comparative relations to be formed in sensorimotor)
+#define ATTRIBUTE_TERM_RELATIONS false
 
 /*---------------------------------*/
 /* Temporal compounding parameters */
