@@ -463,6 +463,79 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                             {
                                 IN_DEBUG( fputs("SEQ ", stdout); Narsese_PrintTerm(&seq.term); puts(""); )
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);
+                                if(ATTRIBUTE_TERM_RELATIONS)
+                                {
+                                    //CHECK FOR (<(LOC1 * VAL1) --> ATTR> &/ <(LOC2 * VAL2) --> ATTR>) PATTERN
+                                    //THEN CONSTRUCT SEQ_REL = <(LOC1 * LOC2) --> VAL_REL> WHEREBY VAL_REL IS EITHER (EQUAL ATTR), (LARGER ATTR) or (SMALLER ATTR) or (UNEQUAL ATTR)
+                                    //1  2     3    4    5       6    7      8      9     10  11  12    13
+                                    //&/ -->  -->   *    ATTR    *    ATTR   LOC1   VAL1          LOC2  VAL2
+                                    //0  1     2    3    4       5    6      7      8     9   10  11    12
+                                    Term LOC1 = Term_ExtractSubterm(&seq.term, 7);
+                                    Term LOC2 = Term_ExtractSubterm(&seq.term, 11);
+                                    Term ATTR1 = Term_ExtractSubterm(&seq.term, 4);
+                                    Term ATTR2 = Term_ExtractSubterm(&seq.term, 6);
+                                    if(COMPOUND_TERM_SIZE_MAX >= 16 &&
+                                       seq.term.atoms[0] == Narsese_CopulaIndex(SEQUENCE) && seq.term.atoms[1] == Narsese_CopulaIndex(INHERITANCE) && seq.term.atoms[2] == Narsese_CopulaIndex(INHERITANCE) &&
+                                       seq.term.atoms[3] == Narsese_CopulaIndex(PRODUCT) && seq.term.atoms[5] == Narsese_CopulaIndex(PRODUCT) && Term_Equal(&ATTR1, &ATTR2))
+                                    {
+                                        Atom REL_EQU = Narsese_AtomicTermIndex("EQUAL");
+                                        Atom REL_NEQU = Narsese_AtomicTermIndex("UNEQUAL");
+                                        Atom REL_LARGER = Narsese_AtomicTermIndex("LARGER");
+                                        Atom REL_SMALLER = Narsese_AtomicTermIndex("SMALLER");
+                                        Atom relation = REL_EQU;
+                                        if(Narsese_hasAtomValue(seq.term.atoms[8]) && Narsese_hasAtomValue(seq.term.atoms[12]))
+                                        {
+                                            double v1 = Narsese_getAtomValue(seq.term.atoms[8]);
+                                            double v2 = Narsese_getAtomValue(seq.term.atoms[12]);
+                                            if(v1 > v2)
+                                            {
+                                                relation = REL_LARGER;
+                                            }
+                                            if(v1 < v2)
+                                            {
+                                                relation = REL_SMALLER;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Term v1 = Term_ExtractSubterm(&seq.term, 8); //could be a compound in this
+                                            Term v2 = Term_ExtractSubterm(&seq.term, 12);//case
+                                            if(!Term_Equal(&v1, &v2))
+                                            {
+                                                relation = REL_NEQU;
+                                            }
+                                        }
+                                        RELATE:
+                                        {
+                                            Term construct = {0};
+                                            //<(a * b) --> (EQUAL . shape)>.
+                                            // 1  2  3  4  5  6      7
+                                            //--> *  .  a  b  EQUAL  shape
+                                            // 0  1  2  3  4  5      6
+                                            construct.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                                            construct.atoms[1] = Narsese_CopulaIndex(PRODUCT);
+                                            construct.atoms[2] = Narsese_CopulaIndex(SET_ELEMT);
+                                            Term_OverrideSubterm(&construct, 3, &LOC1);
+                                            Term_OverrideSubterm(&construct, 4, &LOC2);
+                                            construct.atoms[5] = relation;
+                                            Term_OverrideSubterm(&construct, 6, &ATTR1);
+                                            Event seq_rel = seq;
+                                            seq_rel.term = construct;
+                                            Cycle_ProcessSensorimotorEvent(&seq_rel, currentTime);
+                                            Concept *c_seq_rel = Memory_FindConceptByTerm(&seq_rel.term);
+                                            if(c_seq_rel != NULL) //make eligable for temporal compounding
+                                            {
+                                                c_seq_rel->lastSelectionTime = currentTime;
+                                                OccurrenceTimeIndex_Add(c_seq_rel, &occurrenceTimeIndex);
+                                            }
+                                        }
+                                        if(relation == REL_LARGER || relation == REL_SMALLER)
+                                        {
+                                            relation = REL_NEQU;
+                                            goto RELATE;
+                                        }
+                                    }
+                                }
                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                 {
                                     Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
