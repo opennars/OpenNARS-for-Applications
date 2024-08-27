@@ -93,8 +93,6 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     {
         OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex); //created sequences don't go to the index otherwise
     }
-    e->processed = true;
-    e->creationTime = currentTime;
     //determine the concept it is related to
     bool e_hasVariable = Variable_hasVariable(&e->term, true, true, true);
     bool e_hasQueryVariable = Variable_hasVariable(&e->term, false, false, true);
@@ -102,6 +100,8 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     RELATED_CONCEPTS_FOREACH(&e->term, c,
     {
         Event ecp = *e;
+        ecp.processed = true;
+        ecp.creationTime = currentTime;
         if(!e_hasVariable || e_hasQueryVariable)  //concept matched to the event which doesn't have variables
         {
             Substitution subs = Variable_Unify(&c->term, &e->term); //concept with variables,
@@ -521,13 +521,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             Term_OverrideSubterm(&construct, 6, &ATTR1);
                                             Event seq_rel = seq;
                                             seq_rel.term = construct;
-                                            Cycle_ProcessSensorimotorEvent(&seq_rel, currentTime);
-                                            Concept *c_seq_rel = Memory_FindConceptByTerm(&seq_rel.term);
-                                            if(c_seq_rel != NULL) //make eligable for temporal compounding
-                                            {
-                                                c_seq_rel->lastSelectionTime = currentTime;
-                                                OccurrenceTimeIndex_Add(c_seq_rel, &occurrenceTimeIndex);
-                                            }
+                                            Memory_AddEvent(&seq_rel, currentTime, 1.0, false, true, false, 0); //complexity penalized
                                         }
                                         if(relation == REL_LARGER || relation == REL_SMALLER)
                                         {
@@ -555,8 +549,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
 
 //A, <A ==> B> |- B (Deduction)
 //A, <(A && B) ==> C> |- <B ==> C> (Deduction)
-//B, <A ==> B> |- A (Abduction')
-//A, (A && B) |- B  with dep var elim (Anonymous Analogy')
+//B, <A ==> B> |- A (Abduction)
+//A, (A && B) |- B  with dep var elim (Anonymous Analogy)
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
                        long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
 {
