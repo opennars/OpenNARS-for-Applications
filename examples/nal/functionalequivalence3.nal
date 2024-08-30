@@ -1,0 +1,25 @@
+*volume=0
+<((<(top * X) --> shape> &/ <(left * Y) --> shape>) &/ ^left) =/> G>.
+<((<(top * X) --> shape> &/ <(left * Z) --> shape>) &/ ^left) =/> G>.
+
+
+<(top * X) --> shape>. :|:
+<(left * Y) --> shape>. :|:
+<(right * A) --> shape>. :|:
+G! :|:
+//expected: ^left executed with args
+
+100
+
+<(top * X) --> shape>. :|:
+<(left * Z) --> shape>. :|:
+<(right * Z) --> shape>. :|:
+G! :|:
+//expected: ^left executed with args
+
+100
+
+<(<(left * Y) --> shape> &/ ^pick) =/> H>.
+<(left * Z) --> shape>. :|:
+H! :|:
+//--expected: ^pick executed with args
