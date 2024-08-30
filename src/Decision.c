@@ -61,7 +61,41 @@ void Decision_Execute(long currentTime, Decision *decision)
         Term op2 = Term_ExtractSubterm(&prec_op2, 2);
         Term prec1 = Narsese_GetPreconditionWithoutOp(&prec_op1);
         Term prec2 = Narsese_GetPreconditionWithoutOp(&prec_op2);
-        if(Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
+        bool prec1_prec2_equal = Term_Equal(&prec1, &prec2);
+        if(!prec1_prec2_equal)
+        {
+            if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
+            {
+                DECOMPOSE_NEXT_SEQUENCE_ELEMENT:
+                {
+                    Term Lpart_prec1 = Term_ExtractSubterm(&prec1, 1);
+                    Term Rpart_prec1 = Term_ExtractSubterm(&prec1, 2);
+                    Term Lpart_prec2 = Term_ExtractSubterm(&prec2, 1);
+                    Term Rpart_prec2 = Term_ExtractSubterm(&prec2, 2);
+                    if(Term_Equal(&Lpart_prec1, &Lpart_prec2))
+                    {
+                        prec1 = Rpart_prec1;
+                        prec2 = Rpart_prec2;
+                    }
+                    else
+                    if(Term_Equal(&Rpart_prec1, &Rpart_prec2))
+                    {
+                        prec1 = Lpart_prec1;
+                        prec2 = Lpart_prec2;
+                    }
+                    else
+                    {
+                        goto NO_EQUAL_PART;
+                    }
+                    if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
+                    {
+                       goto DECOMPOSE_NEXT_SEQUENCE_ELEMENT;
+                    }
+                }
+                NO_EQUAL_PART:;
+            }
+        }
+        if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
         {
             Event a = { .term = prec1,
                         .type = EVENT_TYPE_BELIEF,
