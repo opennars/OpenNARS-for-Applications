@@ -93,7 +93,7 @@
 //Whether numeric term similarity is allowed to be used (allows conditioning results on absolute value to transfer to similar values)
 #define NUMERIC_TERM_SIMILARITY true
 //Whether relations should be derived from two element sequences with attribute relations (allows Transposition / comparative relations to be formed in sensorimotor)
-#define ATTRIBUTE_TERM_RELATIONS false
+#define ATTRIBUTE_TERM_RELATIONS true
 
 /*---------------------------------*/
 /* Temporal compounding parameters */
