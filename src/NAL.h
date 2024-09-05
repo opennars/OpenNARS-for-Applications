@@ -128,6 +128,9 @@ R2( (M --> S), (M --> (P - S)), |-, (M --> P), Truth_DecomposeNNN )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 4
+//!Decomposing relations
+R1( ((A * B) --> (S * M)), |-, (A --> S),  Truth_StructuralDeduction )
+R1( ((A * B) --> (S * M)), |-, (B --> M),  Truth_StructuralDeduction )
 //!Transformation rules between product and image:
 R1Bidirectional( ((A * B) --> R), -|-, (A --> (R /1 B)),  Truth_StructuralIntersection )
 R1Bidirectional( ((A * B) --> R), -|-, (B --> (R /2 A)),  Truth_StructuralIntersection )
