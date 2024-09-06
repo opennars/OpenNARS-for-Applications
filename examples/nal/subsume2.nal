@@ -1,0 +1,15 @@
+*motorbabbling=false
+*volume=0
+*space 10 B
+
+//if left and right are equal in brightness, pick it up
+<(<(left * right) --> (= brightness)> &/ ^pick) =/> G>.
+//except for black
+<((<(left * B_0.0) --> brightness> &/ <(right * B_0.0) --> brightness>) &/ ^pick) =/> G>. %0%
+//where one has to go away
+<((<(left * B_0.0) --> brightness> &/ <(right * B_0.0) --> brightness>) &/ ^go) =/> G>. %0.8%
+
+<(left * B_0.0) --> brightness>. :|:
+<(right * B_0.0) --> brightness>. :|:
+G! :|:
+//expected: ^go executed with args

@@ -462,7 +462,8 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                     specific_imp.sourceConceptId = cmatch->id;
                                     Decision considered = Decision_ConsiderImplication(currentTime, goal, &specific_imp, subs2.truth);
                                     int specific_imp_complexity = Term_Complexity(&specific_imp.term);
-                                    if(impHasVariable)
+                                    
+                                    if(impHasVariable) // || has comparative relation)
                                     {
                                         bool inhibited = false;
                                         Term predicate = Term_ExtractSubterm(&specific_imp.term, 2);
@@ -470,10 +471,27 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                         bool hypothesis_existed = false;
                                         if(relatedc != NULL)
                                         {
+                                            fputs(":::::", stdout);Narsese_PrintTerm(&specific_imp.term); puts(""); fflush(stdout);
                                             for(int jj=0; jj<relatedc->precondition_beliefs[opi].itemsAmount; jj++)
                                             {
                                                 Implication *relatedimp = &relatedc->precondition_beliefs[opi].array[jj];
                                                 bool specific_exists = Term_Equal(&specific_imp.term, &relatedimp->term);
+                                                //it can also be that the related implication (BUT NEEDS GENERALIZATION TO N-ARY SEQUENCES!)
+                                                //<(<(a * b) --> (+ prop)> &/ ^op1) =/> G>
+                                                //should be subsumed by
+                                                //<(<(<(a * 0.2) --> prop> &/ <(b * 0.4) --> prop>) &/ ^op1) =/> G>
+                                                //or by
+                                                //<(<(<(b * 0.4) --> prop> &/ <(a * 0.2) --> prop>) &/ ^op1) =/> G>
+                                                //but not by
+                                                //<(<(<(a * 0.4) --> prop> &/ <(b * 0.2) --> prop>) &/ ^op1) =/> G>
+                                                //or by
+                                                //<(<(<(b * 0.2) --> prop> &/ <(a * 0.4) --> prop>) &/ ^op1) =/> G>
+                                                //AND
+                                                //<(<(a * b) --> (= prop)> &/ ^op1) =/> G>
+                                                //can be subsumed by:
+                                                //<(<(<(b * 0.2) --> prop> &/ <(a * 0.2) --> prop>) &/ ^op1) =/> G>
+                                                //but not when values differ
+                                                
                                                 if(specific_exists)
                                                 {
                                                     hypothesis_existed = true;
