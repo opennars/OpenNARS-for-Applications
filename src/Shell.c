@@ -105,6 +105,11 @@ int Shell_ProcessInput(char *line)
             PRINT_EVENTS_PRIORITY_THRESHOLD = 1.0 - ((double) volume) / 100.0;
         }
         else
+        if(!strncmp("*anticipationconfidence=", line, strlen("*anticipationconfidence=")))
+        {
+            sscanf(&line[strlen("*anticipationconfidence=")], "%lf", &ANTICIPATION_CONFIDENCE);
+        }
+        else
         if(!strncmp("*decisionthreshold=", line, strlen("*decisionthreshold=")))
         {
             sscanf(&line[strlen("*decisionthreshold=")], "%lf", &DECISION_THRESHOLD);
