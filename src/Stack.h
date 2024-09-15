@@ -34,7 +34,7 @@
 //----------//
 #include <stdlib.h>
 #include <stdbool.h>
-#include "Concept.h"
+#include "Globals.h"
 
 //Data structure//
 //--------------//
