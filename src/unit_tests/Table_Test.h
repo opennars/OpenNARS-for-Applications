@@ -31,18 +31,18 @@ void Table_Test()
     {
         Implication imp = { .term = Narsese_AtomicTerm("test"), 
                             .truth = { .frequency = 1.0, .confidence = 1.0/((double)(i+1)) },
-                            .stamp = { .evidentalBase = { i } },
+                            .stamp = { .evidentialBase = { i } },
                             .occurrenceTimeOffset = 10,
                             .sourceConcept = &sourceConcept };
         Table_Add(&table, &imp);
     }
     for(int i=0; i<TABLE_SIZE; i++)
     {
-        assert(i+1 == table.array[i].stamp.evidentalBase[0], "Item at table position has to be right");
+        assert(i+1 == table.array[i].stamp.evidentialBase[0], "Item at table position has to be right");
     }
     Implication imp = { .term = Narsese_AtomicTerm("test"), 
                         .truth = { .frequency = 1.0, .confidence = 0.9},
-                        .stamp = { .evidentalBase = { TABLE_SIZE*2+1 } },
+                        .stamp = { .evidentialBase = { TABLE_SIZE*2+1 } },
                         .occurrenceTimeOffset = 10,
                         .sourceConcept = &sourceConcept };
     assert(table.array[0].truth.confidence==0.5, "The highest confidence one should be the first.");

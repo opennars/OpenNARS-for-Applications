@@ -33,9 +33,9 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
     {
         if(processStamp1)
         {
-            if(stamp1->evidentalBase[i] != STAMP_FREE)
+            if(stamp1->evidentialBase[i] != STAMP_FREE)
             {
-                ret.evidentalBase[j] = stamp1->evidentalBase[i];
+                ret.evidentialBase[j] = stamp1->evidentialBase[i];
                 j++;
                 if(j >= STAMP_SIZE)
                 {
@@ -49,9 +49,9 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
         }
         if(processStamp2)
         {
-            if(stamp2->evidentalBase[i] != STAMP_FREE)
+            if(stamp2->evidentialBase[i] != STAMP_FREE)
             {
-                ret.evidentalBase[j] = stamp2->evidentalBase[i];
+                ret.evidentialBase[j] = stamp2->evidentialBase[i];
                 j++;
                 if(j >= STAMP_SIZE)
                 {
@@ -75,17 +75,17 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
     for(int i=0;i<STAMP_SIZE;i++)
     {
-        if(a->evidentalBase[i] == STAMP_FREE)
+        if(a->evidentialBase[i] == STAMP_FREE)
         {
             break;
         }
         for(int j=0;j<STAMP_SIZE;j++)
         {
-            if(b->evidentalBase[j] == STAMP_FREE)
+            if(b->evidentialBase[j] == STAMP_FREE)
             {
                 break;
             }
-            if(a->evidentalBase[i] == b->evidentalBase[j])
+            if(a->evidentialBase[i] == b->evidentialBase[j])
             {
                 return true;
             }
@@ -98,18 +98,18 @@ bool Stamp_Equal(Stamp *a, Stamp *b)
 {
     for (int i=0;i<STAMP_SIZE;i++)
     {
-        if (a->evidentalBase[i] == STAMP_FREE)
+        if (a->evidentialBase[i] == STAMP_FREE)
         {
-            return b->evidentalBase[i] == STAMP_FREE;
+            return b->evidentialBase[i] == STAMP_FREE;
         }
         bool contained = false;
         for (int j=0;j<STAMP_SIZE;j++)
         {
-            if (b->evidentalBase[j] == STAMP_FREE)
+            if (b->evidentialBase[j] == STAMP_FREE)
             {
-                return a->evidentalBase[i] == STAMP_FREE;
+                return a->evidentialBase[i] == STAMP_FREE;
             }
-            if (a->evidentalBase[i] == b->evidentalBase[j])
+            if (a->evidentialBase[i] == b->evidentialBase[j])
             {
                 contained = true;
                 break;
@@ -128,17 +128,17 @@ void Stamp_print(Stamp *stamp)
     fputs("Stamp=[", stdout);
     for(int i=0; i<STAMP_SIZE; i++)
     {
-        if(stamp->evidentalBase[i] == STAMP_FREE)
+        if(stamp->evidentialBase[i] == STAMP_FREE)
         {
             break;
         }
-        if(i+1 >= STAMP_SIZE || stamp->evidentalBase[i+1] == STAMP_FREE)
+        if(i+1 >= STAMP_SIZE || stamp->evidentialBase[i+1] == STAMP_FREE)
         {
-            printf("%ld", stamp->evidentalBase[i]);
+            printf("%ld", stamp->evidentialBase[i]);
         }
         else
         {
-            printf("%ld,", stamp->evidentalBase[i]);
+            printf("%ld,", stamp->evidentialBase[i]);
         }
     }
     fputs("]", stdout);

@@ -120,7 +120,7 @@
 #define OPERATIONS_MAX 10
 //Maximum amount of arguments an operation can babble
 #define OPERATIONS_BABBLE_ARGS_MAX 10
-//Maximum size of the stamp in terms of evidental base id's
+//Maximum size of the stamp in terms of evidential base id's
 #define STAMP_SIZE 10
 //Maximum Implication table size
 #define TABLE_SIZE 20
@@ -152,8 +152,8 @@
 #define NAR_DEFAULT_CONFIDENCE 0.9
 //Default confidence for analytical premise
 #define RELIANCE 0.9
-//NAL evidental horizon
-#define TRUTH_EVIDENTAL_HORIZON_INITIAL 1.0
+//NAL evidential horizon
+#define TRUTH_EVIDENTIAL_HORIZON_INITIAL 1.0
 //Time distance based projection decay of event truth
 #define TRUTH_PROJECTION_DECAY_INITIAL 0.8
 //Maximum value for confidence
