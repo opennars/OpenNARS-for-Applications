@@ -32,7 +32,7 @@ char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
-//upper bound of multplier 3 given by [ becoming "(' " replacement
+//upper bound of multiplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
 //size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
 #define EXPANSION_LEN REPLACEMENT_LEN*3
@@ -252,7 +252,7 @@ char** Narsese_PrefixTransform(char* narsese_expanded)
     static char* tokens[NARSESE_LEN_MAX+1]; //there cannot be more tokens than chars
     memset(tokens, 0, (NARSESE_LEN_MAX+1)*sizeof(char*)); //and last one stays NULL for sure
     char* token = strtok(narsese_expanded, " ");
-    int nt = 0, nc = NUM_ELEMENTS(Naresese_CanonicalCopulas) - 1;
+    int nt = 0, nc = NUM_ELEMENTS(Narsese_CanonicalCopulas) - 1;
     while(token)
     {
         tokens[nt] = token;
@@ -265,7 +265,7 @@ char** Narsese_PrefixTransform(char* narsese_expanded)
         {
             for(int k=0; k<nc; k++)
             {
-                if(tokens[i+1][0] == (int) Naresese_CanonicalCopulas[k] && tokens[i+1][1] == 0)
+                if(tokens[i+1][0] == (int) Narsese_CanonicalCopulas[k] && tokens[i+1][1] == 0)
                 {
                     goto Continue;
                 }
@@ -695,9 +695,9 @@ void Narsese_INIT()
     Narsese_AtomicTermIndex("Op1");
     Narsese_AtomicTermIndex("Op2");
     //index the copulas as well, to make sure these will have same index on next run
-    for(int i=0; i<(int)strlen(Naresese_CanonicalCopulas); i++)
+    for(int i=0; i<(int)strlen(Narsese_CanonicalCopulas); i++)
     {
-        char cop[2] = { (Naresese_CanonicalCopulas[i]), 0 };
+        char cop[2] = { (Narsese_CanonicalCopulas[i]), 0 };
         Narsese_AtomicTermIndex(cop);
     }
     SELF = Narsese_AtomicTermIndex("SELF");
@@ -760,7 +760,7 @@ Term Narsese_getOperationTerm(Term *term)
     {
         Term potential_operator = Term_ExtractSubterm(term, 2); //(a &/ ^op)
         Term potential_op_seq = {0};
-        if(!Narsese_isOperation(&potential_operator) || !Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, term)) //not an op, or in case there exists a, ^op such that a=(b &/ ^op) (which can happen recursively to b) extrract the op sequence
+        if(!Narsese_isOperation(&potential_operator) || !Narsese_OperationSequenceAppendLeftNested(&potential_op_seq, term)) //not an op, or in case there exists a, ^op such that a=(b &/ ^op) (which can happen recursively to b) extract the op sequence
         {
             return (Term) {0};
         }

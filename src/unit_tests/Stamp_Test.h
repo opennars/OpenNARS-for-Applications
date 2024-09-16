@@ -25,9 +25,9 @@
 void Stamp_Test()
 {
     puts(">>Stamp test start");
-    Stamp stamp1 = { .evidentalBase = {1,2} };
+    Stamp stamp1 = { .evidentialBase = {1,2} };
     Stamp_print(&stamp1);
-    Stamp stamp2 = { .evidentalBase = {2,3,4} };
+    Stamp stamp2 = { .evidentialBase = {2,3,4} };
     Stamp_print(&stamp2);
     Stamp stamp3 = Stamp_make(&stamp1, &stamp2);
     fputs("zipped:", stdout);

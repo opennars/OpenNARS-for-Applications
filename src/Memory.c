@@ -38,7 +38,7 @@ Operation operations[OPERATIONS_MAX];
 //Parameters
 bool PRINT_DERIVATIONS = PRINT_DERIVATIONS_INITIAL;
 bool PRINT_INPUT = PRINT_INPUT_INITIAL;
-//Storage arrays for the datastructures
+//Storage arrays for the data structures
 Concept concept_storage[CONCEPTS_MAX];
 Item concept_items_storage[CONCEPTS_MAX];
 Event cycling_belief_event_storage[CYCLING_BELIEF_EVENTS_MAX];
@@ -225,8 +225,8 @@ bool Memory_addCyclingEvent(Event *e, double priority, long currentTime, int lay
     PriorityQueue_Push_Feedback feedback = PriorityQueue_Push(priority_queue, priority);
     if(feedback.added)
     {
-        Event *toRecyle = feedback.addedItem.address;
-        *toRecyle = *e;
+        Event *toRecycle = feedback.addedItem.address;
+        *toRecycle = *e;
         return true;
     }
     return false;

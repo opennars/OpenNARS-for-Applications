@@ -262,7 +262,7 @@ int Shell_ProcessInput(char *line)
             int i = 0;
             while(token != NULL && i < STAMP_SIZE)
             {
-                importstamp.evidentalBase[i++] = strtol(token, NULL, 10);
+                importstamp.evidentialBase[i++] = strtol(token, NULL, 10);
                 token = strtok(NULL, ",");
             }
         }

@@ -84,7 +84,7 @@ extern PriorityQueue cycling_goal_events[CYCLING_GOAL_EVENTS_LAYERS];
 extern HashTable HTconcepts;
 //OccurrenceTimeIndex for accelerating temporal induction
 extern OccurrenceTimeIndex occurrenceTimeIndex;
-//Registered perations
+//Registered operations
 extern Operation operations[OPERATIONS_MAX];
 //Priority threshold for printing derivations
 extern double PRINT_EVENTS_PRIORITY_THRESHOLD;
