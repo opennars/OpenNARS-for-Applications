@@ -173,7 +173,7 @@
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 0
+#define SEMANTIC_INFERENCE_NAL_LEVEL 6
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
