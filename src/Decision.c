@@ -30,7 +30,6 @@ double ANTICIPATION_THRESHOLD = ANTICIPATION_THRESHOLD_INITIAL;
 double ANTICIPATION_CONFIDENCE = ANTICIPATION_CONFIDENCE_INITIAL;
 double MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
 int BABBLING_OPS = OPERATIONS_MAX;
-Decision last_decision;
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
@@ -51,116 +50,127 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 //Inject action event after execution or babbling
 void Decision_Execute(long currentTime, Decision *decision)
 {
-    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0] && last_decision.usedContingency.term.atoms[0]) //both executed due to a reason
+    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0])
     {
         Term cons1 = Term_ExtractSubterm(&decision->usedContingency.term, 2);
-        Term cons2 = Term_ExtractSubterm(&last_decision.usedContingency.term, 2);
-        Term prec_op1 = Term_ExtractSubterm(&decision->usedContingency.term, 1);
-        Term prec_op2 = Term_ExtractSubterm(&last_decision.usedContingency.term, 1);
-        Term op1 = Term_ExtractSubterm(&prec_op1, 2);
-        Term op2 = Term_ExtractSubterm(&prec_op2, 2);
-        Term prec1 = Narsese_GetPreconditionWithoutOp(&prec_op1);
-        Term prec2 = Narsese_GetPreconditionWithoutOp(&prec_op2);
-        bool prec1_prec2_equal = Term_Equal(&prec1, &prec2);
-        if(!prec1_prec2_equal)
+        Concept *C_goal = Memory_FindConceptByTerm(&cons1);
+        if(C_goal != NULL)
         {
-            if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
+            //now iterate through the implication table of the concept that has the same operation
+            for(int j=0; j<C_goal->precondition_beliefs[decision->tableIndex].itemsAmount; j++)
             {
-                DECOMPOSE_NEXT_SEQUENCE_ELEMENT:
+                Implication comparedImp = C_goal->precondition_beliefs[decision->tableIndex].array[j];
+                Term cons2 = Term_ExtractSubterm(&comparedImp.term, 2);
+                Term prec_op1 = Term_ExtractSubterm(&decision->usedContingency.term, 1);
+                Term prec_op2 = Term_ExtractSubterm(&comparedImp.term, 1);
+                Term op1 = Term_ExtractSubterm(&prec_op1, 2);
+                Term op2 = Term_ExtractSubterm(&prec_op2, 2);
+                Term prec1 = Narsese_GetPreconditionWithoutOp(&prec_op1);
+                Term prec2 = Narsese_GetPreconditionWithoutOp(&prec_op2);
+                bool prec1_prec2_equal = Term_Equal(&prec1, &prec2);
+                if(!prec1_prec2_equal)
                 {
-                    Term Lpart_prec1 = Term_ExtractSubterm(&prec1, 1);
-                    Term Rpart_prec1 = Term_ExtractSubterm(&prec1, 2);
-                    Term Lpart_prec2 = Term_ExtractSubterm(&prec2, 1);
-                    Term Rpart_prec2 = Term_ExtractSubterm(&prec2, 2);
-                    if(Term_Equal(&Lpart_prec1, &Lpart_prec2))
-                    {
-                        prec1 = Rpart_prec1;
-                        prec2 = Rpart_prec2;
-                    }
-                    else
-                    if(Term_Equal(&Rpart_prec1, &Rpart_prec2))
-                    {
-                        prec1 = Lpart_prec1;
-                        prec2 = Lpart_prec2;
-                    }
-                    else
-                    {
-                        goto NO_EQUAL_PART;
-                    }
                     if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
                     {
-                       goto DECOMPOSE_NEXT_SEQUENCE_ELEMENT;
+                        DECOMPOSE_NEXT_SEQUENCE_ELEMENT:
+                        {
+                            Term Lpart_prec1 = Term_ExtractSubterm(&prec1, 1);
+                            Term Rpart_prec1 = Term_ExtractSubterm(&prec1, 2);
+                            Term Lpart_prec2 = Term_ExtractSubterm(&prec2, 1);
+                            Term Rpart_prec2 = Term_ExtractSubterm(&prec2, 2);
+                            if(Term_Equal(&Lpart_prec1, &Lpart_prec2))
+                            {
+                                prec1 = Rpart_prec1;
+                                prec2 = Rpart_prec2;
+                            }
+                            else
+                            if(Term_Equal(&Rpart_prec1, &Rpart_prec2))
+                            {
+                                prec1 = Lpart_prec1;
+                                prec2 = Lpart_prec2;
+                            }
+                            else
+                            {
+                                goto NO_EQUAL_PART;
+                            }
+                            if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
+                            {
+                               goto DECOMPOSE_NEXT_SEQUENCE_ELEMENT;
+                            }
+                        }
+                        NO_EQUAL_PART:;
                     }
                 }
-                NO_EQUAL_PART:;
-            }
-        }
-        if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
-        {
-            Event a = { .term = prec1,
-                        .type = EVENT_TYPE_BELIEF,
-                        .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
-                        .stamp = decision->usedContingency.stamp,
-                        .occurrenceTime = currentTime };
-            Event b = { .term = prec2,
-                        .type = EVENT_TYPE_BELIEF,
-                        .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
-                        .stamp = last_decision.usedContingency.stamp,
-                        .occurrenceTime = currentTime };
-            if(!Stamp_checkOverlap(&a.stamp, &b.stamp))
-            {
-                bool success1 = false;
-                Implication imp1 = Inference_BeliefInduction(&a, &b, &success1);
-                if(success1)
+                if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
                 {
-                    Event e_imp = { .term = imp1.term,
-                                    .type = EVENT_TYPE_BELIEF,
-                                    .truth = imp1.truth,
-                                    .occurrenceTime = currentTime };
-                    Memory_AddInputEvent(&e_imp, currentTime);
-                    Event e_imp2 = e_imp;
-                    bool intro_success1;
-                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
-                    if(intro_success1)
+                    if(!Stamp_checkOverlap(&decision->usedContingency.stamp, &comparedImp.stamp))
                     {
-                        Memory_AddInputEvent(&e_imp2, currentTime);
-                    }
-                    Event e_imp3 = e_imp;
-                    bool intro_success2;
-                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
-                    if(intro_success2)
-                    {
-                        Memory_AddInputEvent(&e_imp3, currentTime);
-                    }
-                }
-                bool success2 = false;
-                Implication imp2 = Inference_BeliefInduction(&b, &a, &success2);
-                if(success2)
-                {
-                    Event e_imp = { .term = imp2.term,
-                                    .type = EVENT_TYPE_BELIEF,
-                                    .truth = imp2.truth,
-                                    .occurrenceTime = currentTime };
-                    Memory_AddInputEvent(&e_imp, currentTime);
-                    Event e_imp2 = e_imp;
-                    bool intro_success1;
-                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
-                    if(intro_success1)
-                    {
-                        Memory_AddInputEvent(&e_imp2, currentTime);
-                    }
-                    Event e_imp3 = e_imp;
-                    bool intro_success2;
-                    e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
-                    if(intro_success2)
-                    {
-                        Memory_AddInputEvent(&e_imp3, currentTime);
+                        Stamp equStamp = Stamp_make(&decision->usedContingency.stamp, &comparedImp.stamp);
+                        Term equTerm1 = {0};
+                        equTerm1.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+                        bool success1 = Term_OverrideSubterm(&equTerm1, 1, &prec1);
+                        bool success2 = Term_OverrideSubterm(&equTerm1, 2, &prec2);
+                        if(success1 && success2)
+                        {
+                            Event e_imp = { .term = equTerm1,
+                                            .type = EVENT_TYPE_BELIEF,
+                                            .truth = Truth_Analogy(decision->usedContingency.truth, comparedImp.truth),
+                                            .stamp = equStamp,
+                                            .occurrenceTime = currentTime };
+                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
+                            {
+                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp2 = e_imp;
+                            bool intro_success1;
+                            e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
+                            if(intro_success1 && Variable_hasVariable(&e_imp2.term, true, true, false))
+                            {
+                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp3 = e_imp;
+                            bool intro_success2;
+                            e_imp3.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
+                            if(intro_success2 && Variable_hasVariable(&e_imp3.term, true, true, false))
+                            {
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
+                            }
+                        }
+                        Term equTerm2 = {0};
+                        equTerm2.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+                        bool success3 = Term_OverrideSubterm(&equTerm2, 1, &prec2);
+                        bool success4 = Term_OverrideSubterm(&equTerm2, 2, &prec1);
+                        if(success3 && success4)
+                        {
+                            Event e_imp = { .term = equTerm2,
+                                            .type = EVENT_TYPE_BELIEF,
+                                            .truth = Truth_Analogy(decision->usedContingency.truth, comparedImp.truth),
+                                            .stamp = equStamp,
+                                            .occurrenceTime = currentTime };
+                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
+                            {
+                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp2 = e_imp;
+                            bool intro_success1;
+                            e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
+                            if(intro_success1 && Variable_hasVariable(&e_imp2.term, true, true, false))
+                            {
+                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp3 = e_imp;
+                            bool intro_success2;
+                            e_imp3.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
+                            if(intro_success2 && Variable_hasVariable(&e_imp3.term, true, true, false))
+                            {
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    last_decision = *decision;
     int n_ops_to_execute = 0;
     for(int i=0; i<MAX_COMPOUND_OP_LEN; i++)
     {
@@ -494,6 +504,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
                                             decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
+                                            decision.tableIndex = opi;
                                         }
                                     }
                                     else
@@ -508,6 +519,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             bestComplexity = specific_imp_complexity;
                                             bestImp = imp;
                                             decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
+                                            decision.tableIndex = opi;
                                         }
                                     }
                                 }
@@ -655,9 +667,4 @@ Decision Decision_BetterDecision(Decision best_decision, Decision decision)
         return decision;
     }
     return best_decision;
-}
-
-void Decision_INIT()
-{
-    last_decision = (Decision) {0}; 
 }

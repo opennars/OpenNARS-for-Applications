@@ -76,12 +76,11 @@ typedef struct
     Implication missing_specific_implication;
     Implication usedContingency;
     Event *reason;
+    int tableIndex;
 }Decision;
 
 //Methods//
 //-------//
-//init decision
-void Decision_INIT();
 //execute decision
 void Decision_Execute(long currentTime, Decision *decision);
 //assumption of failure, also works for "do nothing operator"
