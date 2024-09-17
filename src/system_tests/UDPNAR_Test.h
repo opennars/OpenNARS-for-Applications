@@ -49,5 +49,5 @@ void NAR_UDPNAR_Test()
     nanosleep((struct timespec[]){{0, timestep}}, NULL); //wait another timestep
     assert(NAR_UDPNAR_Test_op_left_executed, "UDPNAR operation wasn't executed!!");
     UDPNAR_Stop();
-    puts(">>UDPNAR test successul");
+    puts(">>UDPNAR test successful");
 }

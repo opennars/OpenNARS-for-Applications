@@ -48,5 +48,5 @@ void Stack_Test()
     VMItem *item1_popped_again = Stack_Pop(&stack);
     assert(item1_popped_again->value == &c1, "Popped item1 should point to c1 (2)");
     assert(Stack_IsEmpty(&stack), "Stack should be empty");
-    puts(">>Stack test successul");
+    puts(">>Stack test successful");
 }

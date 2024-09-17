@@ -87,7 +87,7 @@ void NAR_Sequence_Test()
     NAR_AddInputGoal(Narsese_AtomicTerm("g"));
     assert(op_1_executed && !op_2_executed && !op_3_executed, "Expected op1 execution");
     op_1_executed = op_2_executed = op_3_executed = false;
-    //TODO use "preconditons as operator argument" which then should be equal to (&/,a,b) here
+    //TODO use "preconditions as operator argument" which then should be equal to (&/,a,b) here
     NAR_Cycles(100);
     NAR_AddInputBelief(Narsese_AtomicTerm("b"));
     NAR_AddInputGoal(Narsese_AtomicTerm("g"));
@@ -99,5 +99,5 @@ void NAR_Sequence_Test()
     assert(!op_1_executed && !op_2_executed && op_3_executed, "Expected op3 execution"); //a here
     op_1_executed = op_2_executed = op_3_executed = false;
     MOTOR_BABBLING_CHANCE = MOTOR_BABBLING_CHANCE_INITIAL;
-    puts(">>Sequence Test successul");
+    puts(">>Sequence Test successful");
 }
