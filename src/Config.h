@@ -173,7 +173,7 @@
 /* Derivation parameters */
 /*-----------------------*/
 //The NAL level of semantic inference
-#define SEMANTIC_INFERENCE_NAL_LEVEL 6
+#define SEMANTIC_INFERENCE_NAL_LEVEL 0
 //Filter for twice appearing atoms
 #define ATOM_APPEARS_TWICE_FILTER true
 //Filter for derivations which include nested implications or equivalences
@@ -193,6 +193,8 @@
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 //Use functional equivalence
-#define FUNCTIONAL_EQUIVALENCE false
+#define FUNCTIONAL_EQUIVALENCE true
+//Whether to derive functional equivalences without variables too
+#define FUNCTIONAL_EQUIVALENCE_SPECIFIC true
 
 #endif
