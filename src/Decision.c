@@ -128,16 +128,9 @@ void Decision_Execute(long currentTime, Decision *decision)
                             {
                                 Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
                             }
-                            Event e_imp3 = e_imp;
-                            bool intro_success2;
-                            e_imp3.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
-                            if(intro_success2 && Variable_hasVariable(&e_imp3.term, true, true, false))
-                            {
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
-                            }
                         }
                         Term equTerm2 = {0};
-                        equTerm2.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+                        equTerm2.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success3 = Term_OverrideSubterm(&equTerm2, 1, &prec2);
                         bool success4 = Term_OverrideSubterm(&equTerm2, 2, &prec1);
                         if(success3 && success4)
@@ -157,13 +150,6 @@ void Decision_Execute(long currentTime, Decision *decision)
                             if(intro_success1 && Variable_hasVariable(&e_imp2.term, true, true, false))
                             {
                                 Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
-                            }
-                            Event e_imp3 = e_imp;
-                            bool intro_success2;
-                            e_imp3.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success2, false);
-                            if(intro_success2 && Variable_hasVariable(&e_imp3.term, true, true, false))
-                            {
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
                             }
                         }
                     }
@@ -562,16 +548,16 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
             Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
             valid_implications[k] = imp;
         }
-        int k_temporal = k;
-        for(int h=0, k=0; operationID == 0 && h<postc->implication_links.itemsAmount; h++, k++)
+        for(int h=0; operationID == 0 && h<postc->implication_links.itemsAmount; h++, k++)
         {
             if(!Memory_ImplicationValid(&postc->implication_links.array[h]))
             {
-                Table_Remove(&postc->implication_links, k);
+                Table_Remove(&postc->implication_links, h);
+                h--;
                 k--;
                 continue;
             }
-            Implication imp = postc->implication_links.array[k]; //a ==> b.
+            Implication imp = postc->implication_links.array[h]; //a ==> b.
             valid_implications[k] = imp;
         }
         for(int h=0; h<k; h++)
@@ -635,7 +621,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                         c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &result, currentTime, NULL);
                                         if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
                                         {
-                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 0.0, false, true, false, true, false);
+                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
                                         }
                                     }
                                     else
@@ -645,7 +631,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                         c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
                                         if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
                                         {
-                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 0.0, false, true, false, true, false);
+                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
                                         }
                                     }
                                 }

@@ -332,7 +332,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -408,7 +408,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
         {
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         }
