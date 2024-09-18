@@ -49,7 +49,7 @@ typedef struct {
 
 //Parameters//
 //----------//
-extern double TRUTH_EVIDENTAL_HORIZON;
+extern double TRUTH_EVIDENTIAL_HORIZON;
 extern double TRUTH_PROJECTION_DECAY;
 #define OCCURRENCE_ETERNAL -1
 #define STRUCTURAL_TRUTH (Truth) { .frequency = 1.0, .confidence = RELIANCE }

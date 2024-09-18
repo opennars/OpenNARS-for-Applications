@@ -28,7 +28,7 @@
 //////////////////////////////////////
 //  NAR - The main reasoner module  //
 //////////////////////////////////////
-//The API to send events to the reaasoner
+//The API to send events to the reasoner
 //and to register operations it can invoke
 //plus initialization and execution of inference steps
 

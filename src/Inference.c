@@ -149,7 +149,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
         long laterOccurrence = existing_potential->occurrenceTime > incoming_spike->occurrenceTime ? existing_potential->occurrenceTime : incoming_spike->occurrenceTime;
         Event existing_updated = Inference_EventUpdate(existing_potential, laterOccurrence);
         Event incoming_updated = Inference_EventUpdate(incoming_spike, laterOccurrence);
-        //check if there is evidental overlap
+        //check if there is evidential overlap
         bool overlap = Stamp_checkOverlap(&incoming_spike->stamp, &existing_potential->stamp);
         bool isDepVarConj = (Narsese_copulaEquals(incoming_spike->term.atoms[0], CONJUNCTION) || Narsese_copulaEquals(incoming_spike->term.atoms[0], SEQUENCE)) && Variable_hasVariable(&incoming_spike->term, false, true, false);
         //if there is or the terms aren't equal, apply choice, keeping the stronger one:

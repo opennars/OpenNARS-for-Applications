@@ -46,7 +46,7 @@ void Narsese_Test()
     puts("Result:");
     Narsese_PrintTerm(&ret);
     puts("");
-    puts(">>Narsese Test successul");
+    puts(">>Narsese Test successful");
     Narsese_PrintTerm(&ret);
     puts("");
 }

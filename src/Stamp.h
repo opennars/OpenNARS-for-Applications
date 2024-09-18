@@ -28,7 +28,7 @@
 /////////////
 //  Stamp  //
 /////////////
-//Keeps track of evidental bases
+//Keeps track of evidential bases
 //This ensures that evidence is only counted once in the conclusions the system makes
 //Design decisions:
 //- Stamps are merged by zipping two existing stamps
@@ -46,15 +46,15 @@
 //Stamp as implemented by all NARS implementations
 #define STAMP_FREE 0
 typedef struct {
-    //EvidentalBase of stamp
-    long evidentalBase[STAMP_SIZE];
+    //EvidentialBase of stamp
+    long evidentialBase[STAMP_SIZE];
 } Stamp;
 
 //Methods//
 //-------//
 //zip stamp1 and stamp2 into a stamp
 Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2);
-//true iff there is evidental base overlap between a and b
+//true iff there is evidential base overlap between a and b
 bool Stamp_checkOverlap(Stamp *a, Stamp *b);
 //Whether two stamps are equal
 bool Stamp_Equal(Stamp *a, Stamp *b);
