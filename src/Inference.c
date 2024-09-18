@@ -102,8 +102,8 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
     }
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     return (Implication) { .term = a->term,
-                           .truth = Truth_Revision(a->truth, b->truth),
-                           .stamp = conclusionStamp, 
+                           .truth = Narsese_copulaEquals(a->term.atoms[0], IMPLICATION)? T : Truth_Revision(a->truth, b->truth),
+                           .stamp = Narsese_copulaEquals(a->term.atoms[0], IMPLICATION)? S : conclusionStamp, 
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
                            .sourceConceptId = a->sourceConceptId,

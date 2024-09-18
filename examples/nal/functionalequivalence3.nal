@@ -22,4 +22,4 @@ G! :|:
 <(<(left * Y) --> shape> &/ ^pick) =/> H>.
 <(left * Z) --> shape>. :|:
 H! :|:
-//--expected: ^pick executed with args
+//expected: ^pick executed with args
