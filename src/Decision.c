@@ -114,7 +114,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         {
                             Event e_imp = { .term = equTerm1,
                                             .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Analogy(decision->usedContingency.truth, comparedImp.truth),
+                                            .truth = Truth_Abduction(decision->usedContingency.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
@@ -137,7 +137,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         {
                             Event e_imp = { .term = equTerm2,
                                             .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Analogy(decision->usedContingency.truth, comparedImp.truth),
+                                            .truth = Truth_Induction(decision->usedContingency.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
