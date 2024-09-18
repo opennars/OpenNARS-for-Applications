@@ -47,7 +47,7 @@ void Stats_Print(long currentTime)
     double Stats_averageConceptPriority = 0.0;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         Stats_averageConceptPriority += c->priority;
     }
     Stats_averageConceptPriority /= (double) CONCEPTS_MAX;

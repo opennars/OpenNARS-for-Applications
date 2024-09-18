@@ -25,7 +25,7 @@
 #include "./../NetworkNAR/UDPNAR.h"
 
 bool NAR_UDPNAR_Test_op_left_executed = false;
-Feedback NAR_UDPNAR_Test_op_left()
+Feedback NAR_UDPNAR_Test_op_left(Term args)
 {
     NAR_UDPNAR_Test_op_left_executed = true;
     return (Feedback) {0};
@@ -46,7 +46,8 @@ void NAR_UDPNAR_Test()
     UDP_SendData(sockfd_sender, ip, port, send_data2, strlen(send_data2)+1);
     char *send_data3 = "g! :|:";
     UDP_SendData(sockfd_sender, ip, port, send_data3, strlen(send_data3)+1);
-    nanosleep((struct timespec[]){{0, timestep}}, NULL); //wait another timestep
+    struct timespec ts = {0, timestep};
+    nanosleep(&ts, NULL); //wait another timestep
     assert(NAR_UDPNAR_Test_op_left_executed, "UDPNAR operation wasn't executed!!");
     UDPNAR_Stop();
     puts(">>UDPNAR test successful");

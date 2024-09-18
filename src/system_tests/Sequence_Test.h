@@ -23,19 +23,19 @@
  */
 
 bool op_1_executed = false;
-Feedback op_1()
+Feedback op_1(Term args)
 {
     op_1_executed = true;
     return (Feedback) {0};
 }
 bool op_2_executed = false;
-Feedback op_2()
+Feedback op_2(Term args)
 {
     op_2_executed = true;
     return (Feedback) {0};
 }
 bool op_3_executed = false;
-Feedback op_3()
+Feedback op_3(Term args)
 {
     op_3_executed = true;
     return (Feedback) {0};
