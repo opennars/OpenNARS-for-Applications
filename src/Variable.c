@@ -79,7 +79,7 @@ Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool un
                 {
                     return substitution;
                 }
-                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unificiation var consistency criteria
+                if(substitution.map[(int) general_atom].atoms[0] != 0 && !Term_Equal(&substitution.map[(int) general_atom], &subtree)) //unification var consistency criteria
                 {
                     return substitution;
                 }

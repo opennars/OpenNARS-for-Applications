@@ -84,5 +84,5 @@ void HashTable_Test()
     HashTable_Set(&HTtest2, blockname, (void*) 42);
     long res = (long) HashTable_Get(&HTtest2, blockname);
     assert(res == 42, "Result is not right!");
-    puts(">>HashTable test successul");
+    puts(">>HashTable test successful");
 }

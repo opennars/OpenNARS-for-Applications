@@ -39,8 +39,8 @@
 //However this isn't checked with individual thresholds
 //as this would be brittle and hard to tune,
 //instead deductive NAL inference is utilized to decide the desire
-//value of each operation goal (for eeach link) individually,
-//whereby the highest-truth expectation option above decison
+//value of each operation goal (for each link) individually,
+//whereby the highest-truth expectation option above decision
 //threshold is chosen.
 //If none however is above decision threshold, the system
 //derived the preconditions of the links as subgoals,

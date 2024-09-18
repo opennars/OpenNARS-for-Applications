@@ -63,5 +63,5 @@ void InvertedAtomIndex_Test()
     assert(invertedAtomIndex[Narsese_AtomicTermIndex("b")] == NULL, "Concept reference was not removed for key b! (4)");
     assert(invertedAtomIndex[Narsese_AtomicTermIndex("c")] == NULL, "Concept reference was not removed for key c! (4)");
     assert(invertedAtomIndex[Narsese_AtomicTermIndex("d")] == NULL, "Concept reference was not removed for key d! (4)");
-    puts(">>Inverted atom index test successul");
+    puts(">>Inverted atom index test successful");
 }
