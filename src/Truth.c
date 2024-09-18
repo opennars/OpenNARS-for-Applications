@@ -24,18 +24,18 @@
 
 #include "Truth.h"
 
-double TRUTH_EVIDENTAL_HORIZON = TRUTH_EVIDENTAL_HORIZON_INITIAL;
+double TRUTH_EVIDENTIAL_HORIZON = TRUTH_EVIDENTIAL_HORIZON_INITIAL;
 double TRUTH_PROJECTION_DECAY = TRUTH_PROJECTION_DECAY_INITIAL;
 #define TruthValues(v1,v2, f1,c1, f2,c2) double f1 = v1.frequency; double f2 = v2.frequency; double c1 = v1.confidence; double c2 = v2.confidence;
 
 double Truth_w2c(double w)
 {
-    return w / (w + TRUTH_EVIDENTAL_HORIZON);
+    return w / (w + TRUTH_EVIDENTIAL_HORIZON);
 }
 
 double Truth_c2w(double c)
 {
-    return TRUTH_EVIDENTAL_HORIZON * c / (1 - c);
+    return TRUTH_EVIDENTIAL_HORIZON * c / (1 - c);
 }
 
 double Truth_Expectation(Truth v)

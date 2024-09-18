@@ -48,5 +48,5 @@ void UDP_Test()
     char *send_data = "<(a &/ ^left) =/> g>.";
     UDP_SendData(sockfd_sender, ip, port, send_data, strlen(send_data)+1);
     pthread_join(thread_receiver, NULL);
-    puts(">>UDP test successul");
+    puts(">>UDP test successful");
 }

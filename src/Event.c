@@ -29,8 +29,8 @@ Stamp importstamp = {0};
 
 Event Event_InputEvent(Term term, char type, Truth truth, double occurrenceTimeOffset, long currentTime)
 {
-    Stamp stamp = { .evidentalBase = { base++ } };
-    if(importstamp.evidentalBase[0])
+    Stamp stamp = { .evidentialBase = { base++ } };
+    if(importstamp.evidentialBase[0])
     {
         stamp = importstamp;
         base--; //the stamp ID wasn't used

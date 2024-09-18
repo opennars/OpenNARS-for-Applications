@@ -193,7 +193,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                     {
                         NAR_PrintAnswer(c->belief_spike.stamp, c->belief_spike.term, c->belief_spike.truth, c->belief_spike.occurrenceTime, c->belief_spike.creationTime);
                     }
-                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occurrence time in case it's too far away to make a numerical distinction after truth projection:
                        (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->belief_spike.occurrenceTime > answerOccurrenceTime))
                     {
                         best_stamp = c->belief_spike.stamp;
@@ -212,7 +212,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
                     {
                         NAR_PrintAnswer(c->predicted_belief.stamp, c->predicted_belief.term, c->predicted_belief.truth, c->predicted_belief.occurrenceTime, c->predicted_belief.creationTime);
                     }
-                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occcurrence time in case it's too far away to make a numerical distinction after truth projection:
+                    if( Truth_Expectation(potential_best_truth) >  Truth_Expectation(best_truth_projected) || //look at occurrence time in case it's too far away to make a numerical distinction after truth projection:
                        (Truth_Expectation(potential_best_truth) == Truth_Expectation(best_truth_projected) && c->predicted_belief.occurrenceTime > answerOccurrenceTime))
                     {
                         best_stamp = c->predicted_belief.stamp;
