@@ -154,6 +154,33 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
             //compare the predicate of implication, or if it's not an implication, the term
             Term toCompare = isImplication ? Term_ExtractSubterm(&term, 2) : term;
             Truth unused = (Truth) {0};
+            if(Narsese_copulaEquals(term.atoms[0], IMPLICATION))
+            {
+                Term toCompare2 = Term_ExtractSubterm(&term, 2);
+                if(!Variable_Unify2(unused, &toCompare2, &c->term, true).success)
+                {
+                    goto Continue;
+                }
+                for(int j=0; j<c->implication_links.itemsAmount; j++)
+                {
+                    Implication *imp = &c->implication_links.array[j];
+                    if(!Variable_Unify2(unused, &term, &imp->term, true).success)
+                    {
+                        continue;
+                    }
+                    if(queryCommand && Truth_Expectation(imp->truth) > answerTruthExpThreshold)
+                    {
+                        NAR_PrintAnswer(imp->stamp, imp->term, imp->truth, answerOccurrenceTime, imp->creationTime);
+                    }
+                    if(Truth_Expectation(imp->truth) >= Truth_Expectation(best_truth))
+                    {
+                        best_stamp = imp->stamp;
+                        best_truth = imp->truth;
+                        best_term = imp->term;
+                        answerCreationTime = imp->creationTime;
+                    }
+                }
+            }
             if(!Variable_Unify2(unused, &toCompare, &c->term, true).success)
             {
                 goto Continue;
