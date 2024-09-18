@@ -85,6 +85,21 @@ Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
+    Truth T = Truth_Revision(a->truth, b->truth);
+    Stamp S = conclusionStamp;
+    if(Stamp_checkOverlap(&a->stamp, &b->stamp))
+    {
+        if(a->truth.confidence > b->truth.confidence)
+        {
+            T = a->truth;
+            S = a->stamp;
+        }
+        else
+        {
+            T = b->truth;
+            S = b->stamp;
+        }
+    }
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     return (Implication) { .term = a->term,
                            .truth = Truth_Revision(a->truth, b->truth),
@@ -94,6 +109,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .sourceConceptId = a->sourceConceptId,
                            .creationTime = creationTime };
 }
+
 
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
@@ -181,7 +197,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
-    assert(Narsese_copulaEquals(compound->term.atoms[0], TEMPORAL_IMPLICATION), "Not a valid temporal implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(compound->term.atoms[0], IMPLICATION), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
     Term postcondition = Term_ExtractSubterm(&compound->term, 2);
     return (Event) { .term = postcondition, 

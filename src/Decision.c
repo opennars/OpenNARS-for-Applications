@@ -107,7 +107,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                     {
                         Stamp equStamp = Stamp_make(&decision->usedContingency.stamp, &comparedImp.stamp);
                         Term equTerm1 = {0};
-                        equTerm1.atoms[0] = Narsese_CopulaIndex(TEMPORAL_IMPLICATION);
+                        equTerm1.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success1 = Term_OverrideSubterm(&equTerm1, 1, &prec1);
                         bool success2 = Term_OverrideSubterm(&equTerm1, 2, &prec2);
                         if(success1 && success2)
@@ -549,7 +549,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
     for(int j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = concepts.items[j].address;
-        Implication valid_implications[TABLE_SIZE] = {0};
+        Implication valid_implications[TABLE_SIZE*2] = {0};
         int k;
         for(k=0; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
         {
@@ -560,6 +560,18 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                 continue;
             }
             Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
+            valid_implications[k] = imp;
+        }
+        int k_temporal = k;
+        for(int h=0, k=0; operationID == 0 && h<postc->implication_links.itemsAmount; h++, k++)
+        {
+            if(!Memory_ImplicationValid(&postc->implication_links.array[h]))
+            {
+                Table_Remove(&postc->implication_links, k);
+                k--;
+                continue;
+            }
+            Implication imp = postc->implication_links.array[k]; //a ==> b.
             valid_implications[k] = imp;
         }
         for(int h=0; h<k; h++)
@@ -592,16 +604,19 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
                 Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
-                             .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
+                             .truth = (Truth) { .frequency = 1.0, .confidence = operationID == 0 ? 1.0 : 0.9 },
                              .occurrenceTime = currentTime };
                 bool success;
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
                 if(success)
                 {
                     Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
-                    if(Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
+                    if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
                     {
-                        Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
+                        if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                        {
+                            Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
+                        }
                         Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
                         if(subs.success)
                         {
@@ -613,24 +628,24 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                 if(c != NULL && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
-                                    if(imp.occurrenceTimeOffset > 0.0)
+                                    if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
                                     {
                                         Truth oldTruth = c->predicted_belief.truth;
                                         long oldOccurrenceTime = c->predicted_belief.occurrenceTime;
                                         c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &result, currentTime, NULL);
                                         if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
                                         {
-                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
+                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 0.0, false, true, false, true, false);
                                         }
                                     }
-                                    if(imp.occurrenceTimeOffset == 0.0 && result.occurrenceTime > c->belief_spike.occurrenceTime) //use as belief_spike if newer
+                                    else
                                     {
                                         Truth oldTruth = c->belief_spike.truth;
                                         long oldOccurrenceTime = c->belief_spike.occurrenceTime;
                                         c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
                                         if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
                                         {
-                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
+                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 0.0, false, true, false, true, false);
                                         }
                                     }
                                 }

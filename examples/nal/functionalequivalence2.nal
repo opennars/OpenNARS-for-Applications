@@ -24,4 +24,4 @@ G! :|:
 <(left * X) --> shape>. :|:
 <(right * Z) --> shape>. :|:
 H! :|:
-//expected: ^right executed with args
+//--expected: ^right executed with args
