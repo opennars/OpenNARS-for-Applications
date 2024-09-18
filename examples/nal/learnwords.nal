@@ -44,29 +44,29 @@
 <(left * SLOW) --> ocr>. :|:
 *concurrent
 <(right * TRUCK) --> ocr>. :|:
-<(below * ?1) --> shape>? :|:
-//expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=1314 Truth: frequency=0.730454, confidence=0.224777
-<(below * ?1) --> speed>? :|:
-//expected: Answer: <(below * slow) --> speed>. :|: occurrenceTime=1314 Truth: frequency=0.844234, confidence=0.236906
+<(below * ?1) --> shape>? :/:
+//--expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=1314 Truth: frequency=0.730454, confidence=0.224777
+<(below * ?1) --> speed>? :/:
+//--expected: Answer: <(below * slow) --> speed>. :|: occurrenceTime=1314 Truth: frequency=0.844234, confidence=0.236906
 
 1000
 
 <(left * FAST) --> ocr>. :|:
 *concurrent
 <(right * TRUCK) --> ocr>. :|:
-<(below * ?1) --> shape>? :|:
-//expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=2317 Truth: frequency=0.952910, confidence=0.213086
-<(below * ?1) --> speed>? :|:
-//expected: Answer: <(below * fast) --> speed>. :|: occurrenceTime=2317 Truth: frequency=0.816166, confidence=0.234117
+<(below * ?1) --> shape>? :/:
+//--expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=2317 Truth: frequency=0.952910, confidence=0.213086
+<(below * ?1) --> speed>? :/:
+//--expected: Answer: <(below * fast) --> speed>. :|: occurrenceTime=2317 Truth: frequency=0.816166, confidence=0.234117
 
 1000
 
 <(left * SLOW) --> ocr>. :|:
 *concurrent
 <(right * CAR) --> ocr>. :|:
-<(below * ?1) --> shape>? :|:
-//TODO
-<(below * ?1) --> speed>? :|:
+<(below * ?1) --> shape>? :/:
+//expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=3320 Truth: frequency=0.849101, confidence=0.205383
+<(below * ?1) --> speed>? :/:
 //expected: Answer: <(below * slow) --> speed>. :|: occurrenceTime=3320 Truth: frequency=0.636178, confidence=0.212796
 
 1000
@@ -74,9 +74,9 @@
 <(left * FAST) --> ocr>. :|:
 *concurrent
 <(right * CAR) --> ocr>. :|:
-<(below * ?1) --> shape>? :|:
-//expected: Answer: <(below * car) --> shape>. :|: occurrenceTime=4323 Truth: frequency=0.618343, confidence=0.260070
-<(below * ?1) --> speed>? :|:
-//expected: Answer: <(below * fast) --> speed>. :|: occurrenceTime=4323 Truth: frequency=0.627253, confidence=0.211553
+<(below * ?1) --> shape>? :/:
+//--expected: Answer: <(below * car) --> shape>. :|: occurrenceTime=4323 Truth: frequency=0.618343, confidence=0.260070
+<(below * ?1) --> speed>? :/:
+//--expected: Answer: <(below * fast) --> speed>. :|: occurrenceTime=4323 Truth: frequency=0.627253, confidence=0.211553
 
 

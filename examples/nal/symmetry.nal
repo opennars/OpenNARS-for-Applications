@@ -49,5 +49,5 @@
 20
 <(y * z) --> like>. :|:
 10
-<(z * y) --> like>? :|:
-//expected: Answer: <(z * y) --> like>. :|: occurrenceTime=266 Truth: frequency=0.963507, confidence=0.648099
+<(z * y) --> like>? :\:
+//expected: Answer: <(z * y) --> like>. :|: occurrenceTime=265 Truth: frequency=1.000000, confidence=0.741255

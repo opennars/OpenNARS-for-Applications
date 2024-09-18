@@ -55,6 +55,7 @@ typedef struct {
     Event predicted_belief;
     Event goal_spike;
     Table precondition_beliefs[OPERATIONS_MAX+1];
+    Table implication_links;
     double priority;
     long processID;  //avoids duplicate processing
     long processID2; //avoids duplicate processing
