@@ -31,7 +31,6 @@ bool Narsese_atomHasValue[ATOMS_MAX];
 char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
-char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 //upper bound of multiplier 3 given by [ becoming "(' " replacement
 #define REPLACEMENT_LEN 3*NARSESE_LEN_MAX
 //size for the expanded array with spaces for tokenization, has at most 3 times the amount of chars as the replacement array
@@ -669,10 +668,6 @@ void Narsese_INIT()
     {
         memset(&Narsese_atomNames[i], 0, ATOMIC_TERM_LEN_MAX);
         memset(&Narsese_atomMeasurementNames[i], 0, ATOMIC_TERM_LEN_MAX);
-    }
-    for(int i=0; i<OPERATIONS_MAX; i++)
-    {
-        memset(&Narsese_operatorNames[i], 0, ATOMIC_TERM_LEN_MAX);
     }
     //index variables at first, these atoms come first as also used by Substitution struct
     for(int i=1; i<=9; i++)
