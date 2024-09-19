@@ -48,7 +48,6 @@ extern bool Narsese_atomHasValue[ATOMS_MAX];
 extern char Narsese_atomMeasurementNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
 //Atomic term names:
 extern char Narsese_atomNames[ATOMS_MAX][ATOMIC_TERM_LEN_MAX];
-extern char Narsese_operatorNames[OPERATIONS_MAX][ATOMIC_TERM_LEN_MAX];
 extern Atom SELF;
 #define Narsese_RuleTableVars "ABCMRSPXYZ"
 #define Narsese_CanonicalCopulas "@*&|;:=$'\"/\\.-%#~+!?^_,"
