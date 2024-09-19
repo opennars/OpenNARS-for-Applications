@@ -277,7 +277,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
-    if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+    if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION))
     {
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
@@ -293,7 +293,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             Term sourceConceptTerm = subject;
             //now extract operation id
             int opi = 0;
-            if(Narsese_copulaEquals(subject.atoms[0], SEQUENCE)) //sequence
+            if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && Narsese_copulaEquals(subject.atoms[0], SEQUENCE)) //sequence
             {
                 Term potential_op = Term_ExtractSubterm(&subject, 2);
                 if(Narsese_isOperation(&potential_op)) //necessary to be an executable operator
@@ -321,7 +321,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
-                Implication *revised = Table_AddAndRevise(&target_concept->precondition_beliefs[opi], &imp);
+                Implication *revised = Table_AddAndRevise(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) ? &target_concept->implication_links : &target_concept->precondition_beliefs[opi], &imp);
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
@@ -332,7 +332,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    else
+    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -408,7 +408,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
         {
             addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
         }

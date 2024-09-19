@@ -195,6 +195,6 @@
 //Use functional equivalence
 #define FUNCTIONAL_EQUIVALENCE true
 //Whether to derive functional equivalences without variables too
-#define FUNCTIONAL_EQUIVALENCE_SPECIFIC true
+#define FUNCTIONAL_EQUIVALENCE_SPECIFIC false
 
 #endif

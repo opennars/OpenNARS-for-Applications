@@ -95,6 +95,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
                            .creationTime = creationTime };
 }
 
+
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
 {
@@ -181,7 +182,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
 //{Event a., Implication <a =/> b>.} |- Event b.
 Event Inference_BeliefDeduction(Event *component, Implication *compound)
 {
-    assert(Narsese_copulaEquals(compound->term.atoms[0], TEMPORAL_IMPLICATION), "Not a valid temporal implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(compound->term.atoms[0], IMPLICATION), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
     Term postcondition = Term_ExtractSubterm(&compound->term, 2);
     return (Event) { .term = postcondition, 
