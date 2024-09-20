@@ -17,7 +17,7 @@ Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 
 echo "Compilation started:"
 BaseFlags="-D_POSIX_C_SOURCE=199506L -pedantic -std=c99 -pthread -lpthread -lm"
-NoWarn="-Wno-unknown-pragmas -Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unused-parameter -Wno-unused-variable"
+NoWarn="-Wno-unknown-pragmas -Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unused-parameter -Wno-unused-variable -Wno-strict-prototypes"
 gcc -mfpmath=sse -msse2 -DSTAGE=1 -Wall -Wextra -Wformat-security $Str $NoWarn $BaseFlags -oNAR_first_stage || gcc -DSTAGE=1 -Wall -Wextra -Wformat-security $Str $NoWarn $BaseFlags -oNAR_first_stage
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 
