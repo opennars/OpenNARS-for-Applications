@@ -110,7 +110,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
                      .creationTime = creationTime };
 }
 
-//{Event a.} |- Event a. updated to currentTime
+//{Event a.} |- Event a. updated to targetTime
 Event Inference_EventUpdate(Event *ev, long targetTime)
 {
     Event ret = *ev;
