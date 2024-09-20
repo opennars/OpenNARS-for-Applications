@@ -23,7 +23,6 @@
  */
 
 #include "Inference.h"
-#include "Term.h"
 
 #define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp); \
                               long creationTime = MAX(a->creationTime, b->creationTime);

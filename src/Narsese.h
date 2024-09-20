@@ -39,6 +39,8 @@
 #include "Term.h"
 #include "Globals.h"
 #include "Config.h"
+#include "HashTable.h"
+#include "Variable.h"
 
 //Data structure//
 //--------------//
