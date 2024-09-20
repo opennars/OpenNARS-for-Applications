@@ -38,7 +38,9 @@
 
 //References//
 //----------//
+#include <stdint.h>
 #include "Narsese.h"
+#include "HashTable.h"
 
 //Data structure//
 //--------------//

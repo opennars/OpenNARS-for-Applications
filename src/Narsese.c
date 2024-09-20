@@ -23,7 +23,6 @@
  */
 
 #include "Narsese.h"
-#include "NAR.h"
 
 //Atomic term values:
 double Narsese_atomValues[ATOMS_MAX];

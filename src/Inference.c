@@ -23,7 +23,6 @@
  */
 
 #include "Inference.h"
-#include "Term.h"
 
 #define DERIVATION_STAMP(a,b) Stamp conclusionStamp = Stamp_make(&a->stamp, &b->stamp); \
                               long creationTime = MAX(a->creationTime, b->creationTime);
@@ -111,7 +110,7 @@ Event Inference_GoalDeduction(Event *component, Implication *compound, long curr
                      .creationTime = creationTime };
 }
 
-//{Event a.} |- Event a. updated to currentTime
+//{Event a.} |- Event a. updated to targetTime
 Event Inference_EventUpdate(Event *ev, long targetTime)
 {
     Event ret = *ev;

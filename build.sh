@@ -6,7 +6,7 @@ Str=`ls src/*.c src/NetworkNAR/*.c | xargs`
 echo $Str
 echo "Compilation started:"
 BaseFlags="-flto -g -pthread -lpthread -D_POSIX_C_SOURCE=199506L -std=c++17 -g3 -O3 $Str -lm -oNAR"
-NoWarn="-Wno-unknown-pragmas -Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unused-parameter -Wno-unused-variable -Wno-write-strings -Wno-missing-field-initializers -Wno-narrowing"
+NoWarn="-Wno-unknown-pragmas -Wno-tautological-compare -Wno-dollar-in-identifier-extension -Wno-unused-parameter -Wno-unused-variable -Wno-write-strings -Wno-missing-field-initializers -Wno-narrowing -Wno-strict-prototypes -Wno-c++20-compat -Wno-missing-braces"
 g++ $@ -DSTAGE=1 -Wall -Wextra -Wformat-security $NoWarn $BaseFlags
 echo "First stage done, generating RuleTable.c now, and finishing compilation."
 ./NAR NAL_GenerateRuleTable > ./src/RuleTable.c

@@ -23,8 +23,6 @@
  */
 
 #include "Variable.h"
-#include "HashTable.h"
-#include <stdint.h>
 
 double Variable_similarity_distance = SIMILARITY_DISTANCE;
 
