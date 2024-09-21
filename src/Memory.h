@@ -48,7 +48,6 @@
 //----------//
 //Inferences per cycle (amount of events from cycling events)
 extern bool RESTRICTED_CONCEPT_CREATION;
-extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 extern bool PRINT_INPUT;
 extern double conceptPriorityThreshold;
