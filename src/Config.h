@@ -99,7 +99,7 @@
 /* Temporal compounding parameters */
 /*---------------------------------*/
 //Maximum length of sequences
-#define MAX_SEQUENCE_LEN 2
+#define MAX_SEQUENCE_LEN 3
 //Maximum compound op length
 #define MAX_COMPOUND_OP_LEN 1
 //Max. occurrence time distance between precondition and consequence

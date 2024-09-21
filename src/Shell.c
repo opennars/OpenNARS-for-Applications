@@ -304,12 +304,12 @@ int Shell_ProcessInput(char *line)
         else
         if(!strncmp("*setvalue ", line, strlen("*setvalue ")))
         {
-            int granularity;
-            double value;
+            int granularity = -1;
+            double value = 0.0;
             char termname[ATOMIC_TERM_LEN_MAX+1] = {0};
             termname[ATOMIC_TERM_LEN_MAX-1] = 0;
             sscanf(&line[strlen("*setvalue ")], "%lf %d %" STR(ATOMIC_TERM_LEN_MAX) "s", &value, &granularity, (char*) &termname);
-            assert(granularity >= 1 && granularity <= 1000, "Granularity out of bounds!");
+            assert(granularity >= 1 && granularity <= 1000, "Granularity out of bounds or parameter order not respected!");
             char termname_ext[ATOMIC_TERM_LEN_MAX+1] = {0};
             termname_ext[ATOMIC_TERM_LEN_MAX-1] = 0;
             const char* sep = termname[0] ? "_" : "";

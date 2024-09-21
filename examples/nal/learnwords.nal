@@ -65,9 +65,9 @@
 *concurrent
 <(right * CAR) --> ocr>. :|:
 <(below * ?1) --> shape>? :/:
-//expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=3320 Truth: frequency=0.849101, confidence=0.205383
+//--expected: Answer: <(below * truck) --> shape>. :|: occurrenceTime=3320 Truth: frequency=0.849101, confidence=0.205383
 <(below * ?1) --> speed>? :/:
-//expected: Answer: <(below * slow) --> speed>. :|: occurrenceTime=3320 Truth: frequency=0.636178, confidence=0.212796
+//--expected: Answer: <(below * slow) --> speed>. :|: occurrenceTime=3320 Truth: frequency=0.636178, confidence=0.212796
 
 1000
 
