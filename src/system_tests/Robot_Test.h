@@ -483,7 +483,7 @@ void Agent_Invoke()
     if(percept.moved && collided)
     {
         collided = false;
-        NAR_AddInputNarsese("(! collision). :|:");
+        //NAR_AddInputNarsese("(! collision). :|:");
     }
     if(percept.viewfield[1] == 'w') //distance or touch sensor
     {
@@ -495,11 +495,11 @@ void Agent_Invoke()
         NAR_AddInputNarsese("eaten. :|:");
     }
     allowAction = true;
-    if(collided)
+    //if(collided)
     {
-        NAR_AddInputNarsese("(! collision)! :|:");
+        //NAR_AddInputNarsese("(! collision)! :|:");
     }
-    else
+    //else
     {
         NAR_AddInputNarsese("eaten! :|:");
     }

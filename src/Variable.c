@@ -151,7 +151,7 @@ Term Variable_ApplySubstitute(Term general, Substitution substitution, bool *suc
 static void countStatementAtoms(Term *cur_inheritance, HashTable *appearing, bool extensionally, bool ignore_structure, bool spatial_composition)
 {
     bool similarity = Narsese_copulaEquals(cur_inheritance->atoms[0], SIMILARITY);
-    if(Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
+    if((Narsese_copulaEquals(cur_inheritance->atoms[0], HAS_CONTINUOUS_PROPERTY) && !Narsese_copulaEquals(cur_inheritance->atoms[1], PRODUCT) && extensionally) || Narsese_copulaEquals(cur_inheritance->atoms[0], INHERITANCE) || similarity) //inheritance and similarity
     {
         Term subject = Term_ExtractSubterm(cur_inheritance, 1);
         Term predicate = Term_ExtractSubterm(cur_inheritance, 2);
@@ -233,8 +233,8 @@ static void countHigherOrderStatementAtoms(Term *term, HashTable *appearing, boo
     {
         Term subject = Term_ExtractSubterm(term, 1);
         Term predicate = Term_ExtractSubterm(term, 2);
-        countHigherOrderStatementAtoms(&subject, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
-        countHigherOrderStatementAtoms(&predicate, appearing, extensionally || Narsese_copulaEquals(term->atoms[0], SEQUENCE));
+        countHigherOrderStatementAtoms(&subject, appearing, extensionally);
+        countHigherOrderStatementAtoms(&predicate, appearing, extensionally);
         return;
     }
     countStatementAtoms(term, appearing, extensionally, false, Narsese_copulaEquals(term->atoms[0], INT_SET));
