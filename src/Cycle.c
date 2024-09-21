@@ -89,7 +89,7 @@ static Decision Cycle_ProcessSensorimotorEvent(Event *e, long currentTime)
     {
         return best_decision;
     }
-    if(Narsese_copulaEquals(e->term.atoms[0], SEQUENCE))
+    if(Narsese_copulaEquals(e->term.atoms[0], SEQUENCE) && !Variable_hasVariable(&e->term, true, true, false))
     {
         OccurrenceTimeIndex_Add(c, &occurrenceTimeIndex); //created sequences don't go to the index otherwise
     }
@@ -375,7 +375,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
     {
         Event *toProcess = &selectedBeliefs[h];
         assert(toProcess != NULL, "Cycle.c: toProcess is NULL!");
-        bool isContinuousPropertyStatement = Narsese_copulaEquals(toProcess->term.atoms[0], HAS_CONTINUOUS_PROPERTY);
+        bool isContinuousPropertyStatement = Narsese_copulaEquals(toProcess->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && !Narsese_copulaEquals(toProcess->term.atoms[1], PRODUCT);
         if(!isContinuousPropertyStatement && !toProcess->processed && toProcess->type != EVENT_TYPE_DELETED && toProcess->occurrenceTime != OCCURRENCE_ETERNAL && (currentTime - toProcess->occurrenceTime) < CORRELATE_OUTCOME_RECENCY)
         {
             assert(toProcess->type == EVENT_TYPE_BELIEF, "A different event type made it into belief events!");
@@ -475,7 +475,8 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                     Term ATTR1 = Term_ExtractSubterm(&seq.term, 4);
                                     Term ATTR2 = Term_ExtractSubterm(&seq.term, 6);
                                     if(COMPOUND_TERM_SIZE_MAX >= 16 &&
-                                       seq.term.atoms[0] == Narsese_CopulaIndex(SEQUENCE) && seq.term.atoms[1] == Narsese_CopulaIndex(INHERITANCE) && seq.term.atoms[2] == Narsese_CopulaIndex(INHERITANCE) &&
+                                       seq.term.atoms[0] == Narsese_CopulaIndex(SEQUENCE) && (seq.term.atoms[1] == Narsese_CopulaIndex(INHERITANCE) || seq.term.atoms[1] == Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY)) &&
+                                                                                             (seq.term.atoms[2] == Narsese_CopulaIndex(INHERITANCE) || seq.term.atoms[2] == Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY)) &&
                                        seq.term.atoms[3] == Narsese_CopulaIndex(PRODUCT) && seq.term.atoms[5] == Narsese_CopulaIndex(PRODUCT) && Term_Equal(&ATTR1, &ATTR2))
                                     {
                                         Atom REL_EQU = Narsese_CopulaIndex(SIMILARITY);

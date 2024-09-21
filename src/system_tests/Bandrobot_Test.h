@@ -54,24 +54,26 @@ Feedback NAR_Bandrobot_Drop(Term args)
 
 void NAR_Bandrobot(long iterations)
 {
-    char initial[] = "+++++++++++++++++++++|\n"
-                     "---------------------|\n"
-                     "                     |\n"
-                     "                     |\n"
-                     "                     |\n"
-                     "'''''''''''''''''''''|\n";
+    char initial[] = "+++++|\n"
+                     "-----|\n"
+                     "     |\n"
+                     "     |\n"
+                     "     |\n"
+                     "'''''|\n";
     puts(">>NAR Bandrobot start");
     NAR_AddOperation("^left", NAR_Bandrobot_Left);
     NAR_AddOperation("^right", NAR_Bandrobot_Right);
     NAR_AddOperation("^pick", NAR_Bandrobot_Pick); 
     NAR_AddOperation("^drop", NAR_Bandrobot_Drop);
     Shell_ProcessInput("*questionpriming=0.0"); //questions are only used for debug here, not to influence attention
+    Shell_ProcessInput("*space 100 P");
+    Shell_ProcessInput("*similaritydistance=100000.0");
     long t = 0;
     int minpos = 0.0;
-    int maxpos = 20.0;
+    int maxpos = 4.0;
     int position = 0;
     int targetposition = 1; //maxpos; //maxpos/2;
-    int goalposition = 3;
+    int goalposition = 1;
     bool picked = false, lastpicked = false, hasObj = false;
     int successes = 0;
     while(1)
@@ -119,23 +121,43 @@ void NAR_Bandrobot(long iterations)
         DRAW_LINE(goalposition, 5, 0, 1, (char*) world, 'U');
         //NAR_AddInputNarsese("<(<({position} * {targetposition}) --> (+ left)> &/ ^right) =/> picked>?");
         //NAR_AddInputNarsese("<(<({targetposition} * {position}) --> (+ left)> &/ ^left) =/> picked>?");
-        const char *propname = hasObj ? "dropPosX" : "pickPosX";
         char questionStr[NARSESE_LEN_MAX] = {0};
-        sprintf(questionStr, "%s%s%s", "<({?1} * {?2}) --> (+ ", propname, ")>? :\\:\0");
+        sprintf(questionStr, "%s", "<(?1 * ?2) --> (+ location)>? :\\:\0");
         NAR_AddInputNarsese(questionStr);
         puts(world);
+        if(hasObj) //TODO PROVIDE INFORMATION
+        {
+            NAR_AddInputNarsese("hasObj. :|:");
+        }
+        else
+        {
+            NAR_AddInputNarsese("NotHasObj. :|:");
+        }
+        Shell_ProcessInput("*concurrent");
         char positionStr[NARSESE_LEN_MAX] = {0};
-        float v_position = MIN(1.0, MAX(0.0, (((float) (position-minpos))/((float) (maxpos-minpos)))));
-        sprintf(positionStr, "%s%s%s%f%s", "<{position} |-> [", propname, "]>. :|: %", v_position, "%\0");
+        float v_position = MIN(1.0, MAX(0.0, (((float) (position-minpos))/((float) (maxpos-minpos + 1.0)))));
+        sprintf(positionStr, "%s%.2f%s", "<(crane * P_", v_position, ") |-> location>. :|:\0");
         NAR_AddInputNarsese(positionStr);
-        char targetpositionStr[NARSESE_LEN_MAX] = {0};
-        double used_position = hasObj ? goalposition : targetposition;
-        float v_usedposition = MIN(1.0, MAX(0.0, (((float) (used_position-minpos))/((float) (maxpos-minpos)))));
-        sprintf(targetpositionStr, "%s%s%s%f%s", "<{targetposition} |-> [", propname, "]>. :|: %", v_usedposition, "%\0");
-        NAR_AddInputNarsese(targetpositionStr);
+        //if(!hasObj) //TODO JUST FEED IF AND ELSE
+        {
+            Shell_ProcessInput("*concurrent");
+            char targetpositionStr[NARSESE_LEN_MAX] = {0};
+            float v_targetposition = MIN(1.0, MAX(0.0, (((float) (targetposition-minpos))/((float) (maxpos-minpos + 1.0)))));
+            sprintf(targetpositionStr, "%s%.2f%s", "<(object * P_", v_targetposition, ") |-> location>. :|:\0");
+            NAR_AddInputNarsese(targetpositionStr);
+        }
+        //else
+        {
+            Shell_ProcessInput("*concurrent");
+            char goalpositionStr[NARSESE_LEN_MAX] = {0};
+            float v_goalposition = MIN(1.0, MAX(0.0, (((float) (goalposition-minpos))/((float) (maxpos-minpos + 1.0)))));
+            sprintf(goalpositionStr, "%s%.2f%s", "<(goal * P_", v_goalposition, ") |-> location>. :|:\0");
+            NAR_AddInputNarsese(goalpositionStr);
+        }
+        Shell_ProcessInput("3");
         if(picked && !lastpicked)
         {
-            NAR_AddInputNarsese("picked. :|:");
+            //NAR_AddInputNarsese("picked. :|:");
         }
         else
         if(!picked && lastpicked)
