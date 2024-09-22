@@ -51,7 +51,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "Memory.h"
-#include "NAR.h"
 #include "Config.h"
 
 //Parameters//
