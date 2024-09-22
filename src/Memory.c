@@ -423,7 +423,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         Memory_printAddedEvent(&event->stamp, event, priority, input, derived, revised, true, false);
     }
-    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
+    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Erroneous event type");
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)
