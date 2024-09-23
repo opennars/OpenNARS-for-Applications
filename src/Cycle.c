@@ -502,7 +502,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             // 1  2  3  4  5  6      7
                                             //--> *  =  a  b  shape  @
                                             // 0  1  2  3  4  5      6
-                                            construct.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                                            construct.atoms[0] = Narsese_copulaEquals(seq.term.atoms[1], INHERITANCE) ? Narsese_CopulaIndex(INHERITANCE) : Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY);
                                             construct.atoms[1] = Narsese_CopulaIndex(PRODUCT);
                                             construct.atoms[2] = relation; //+
                                             if(smaller)
