@@ -465,28 +465,51 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 Cycle_ProcessSensorimotorEvent(&seq, currentTime);
                                 if(ATTRIBUTE_TERM_RELATIONS)
                                 {
+                                    Term rest = {0};
+                                    Term seq_term = seq.term;
+                                    //CHECK FOR ((REST &/ <(LOC1 * VAL1) --> ATTR>) &/ <(LOC2 * VAL2) --> ATTR>) PATTERN:
+                                    //1  2     3       4          5       6    7         8      9     10  11     12    13      14     15     16     17     18     19     20    21
+                                    //&/ &/    -->     REST       -->     *    ATT                    *   ATT    LOC2  VAL2                                              LOC1  VAL1
+                                    //0  1     2       3          4       5    6         7      8     9   10     11    12      13     14     15     16     17     18     19    20
+                                    Term ATT1 = Term_ExtractSubterm(&seq.term, 6);
+                                    Term ATT2 = Term_ExtractSubterm(&seq.term, 10);
+                                    if(COMPOUND_TERM_SIZE_MAX >= 32 &&
+                                       Narsese_copulaEquals(seq.term.atoms[0], SEQUENCE) && Narsese_copulaEquals(seq.term.atoms[1], SEQUENCE) &&
+                                       (Narsese_copulaEquals(seq.term.atoms[2], INHERITANCE) || Narsese_copulaEquals(seq.term.atoms[2], HAS_CONTINUOUS_PROPERTY)) &&
+                                       (Narsese_copulaEquals(seq.term.atoms[4], INHERITANCE) || Narsese_copulaEquals(seq.term.atoms[4], HAS_CONTINUOUS_PROPERTY)) &&
+                                       Narsese_copulaEquals(seq.term.atoms[5], PRODUCT) && Narsese_copulaEquals(seq.term.atoms[9], PRODUCT)
+                                      && Term_Equal(&ATT1, &ATT2))
+                                    {
+                                        Term relation1 = Term_ExtractSubterm(&seq.term, 4);
+                                        Term relation2 = Term_ExtractSubterm(&seq.term, 2);
+                                        rest = Term_ExtractSubterm(&seq.term, 3);
+                                        seq_term = (Term) {0};
+                                        seq_term.atoms[0] = Narsese_CopulaIndex(SEQUENCE);
+                                        Term_OverrideSubterm(&seq_term, 1, &relation1);
+                                        Term_OverrideSubterm(&seq_term, 2, &relation2);
+                                    }
                                     //CHECK FOR (<(LOC1 * VAL1) --> ATTR> &/ <(LOC2 * VAL2) --> ATTR>) PATTERN
                                     //THEN CONSTRUCT SEQ_REL = <(LOC1 * LOC2) --> VAL_REL> WHEREBY VAL_REL IS EITHER (EQUAL ATTR), (LARGER ATTR) or (SMALLER ATTR) or (UNEQUAL ATTR)
                                     //1  2     3    4    5       6    7      8      9     10  11  12    13
                                     //&/ -->  -->   *    ATTR    *    ATTR   LOC1   VAL1          LOC2  VAL2
                                     //0  1     2    3    4       5    6      7      8     9   10  11    12
-                                    Term LOC1 = Term_ExtractSubterm(&seq.term, 7);
-                                    Term LOC2 = Term_ExtractSubterm(&seq.term, 11);
-                                    Term ATTR1 = Term_ExtractSubterm(&seq.term, 4);
-                                    Term ATTR2 = Term_ExtractSubterm(&seq.term, 6);
+                                    Term LOC1 = Term_ExtractSubterm(&seq_term, 7);
+                                    Term LOC2 = Term_ExtractSubterm(&seq_term, 11);
+                                    Term ATTR1 = Term_ExtractSubterm(&seq_term, 4);
+                                    Term ATTR2 = Term_ExtractSubterm(&seq_term, 6);
                                     if(COMPOUND_TERM_SIZE_MAX >= 16 &&
-                                       seq.term.atoms[0] == Narsese_CopulaIndex(SEQUENCE) && (seq.term.atoms[1] == Narsese_CopulaIndex(INHERITANCE) || seq.term.atoms[1] == Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY)) &&
-                                                                                             (seq.term.atoms[2] == Narsese_CopulaIndex(INHERITANCE) || seq.term.atoms[2] == Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY)) &&
-                                       seq.term.atoms[3] == Narsese_CopulaIndex(PRODUCT) && seq.term.atoms[5] == Narsese_CopulaIndex(PRODUCT) && Term_Equal(&ATTR1, &ATTR2))
+                                       Narsese_copulaEquals(seq_term.atoms[0], SEQUENCE) && (Narsese_copulaEquals(seq_term.atoms[1], INHERITANCE) || Narsese_copulaEquals(seq_term.atoms[1], HAS_CONTINUOUS_PROPERTY)) &&
+                                                                                            (Narsese_copulaEquals(seq_term.atoms[2], INHERITANCE) || Narsese_copulaEquals(seq_term.atoms[2], HAS_CONTINUOUS_PROPERTY)) &&
+                                       Narsese_copulaEquals(seq_term.atoms[3], PRODUCT) && Narsese_copulaEquals(seq_term.atoms[5], PRODUCT) && Term_Equal(&ATTR1, &ATTR2))
                                     {
                                         Atom REL_EQU = Narsese_CopulaIndex(SIMILARITY);
                                         Atom REL_LARGER = Narsese_CopulaIndex(SEQUENCE);
                                         bool smaller = false;
                                         Atom relation = REL_EQU;
-                                        if(Narsese_hasAtomValue(seq.term.atoms[8]) && Narsese_hasAtomValue(seq.term.atoms[12]))
+                                        if(Narsese_hasAtomValue(seq_term.atoms[8]) && Narsese_hasAtomValue(seq_term.atoms[12]))
                                         {
-                                            double v1 = Narsese_getAtomValue(seq.term.atoms[8]);
-                                            double v2 = Narsese_getAtomValue(seq.term.atoms[12]);
+                                            double v1 = Narsese_getAtomValue(seq_term.atoms[8]);
+                                            double v2 = Narsese_getAtomValue(seq_term.atoms[12]);
                                             if(v1 > v2)
                                             {
                                                 relation = REL_LARGER;
@@ -497,29 +520,41 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                                 relation = REL_LARGER;
                                                 smaller = true;
                                             }
-                                            Term construct = {0};
+                                            Term Trelation = {0};
                                             //<(a * b) --> (= shape)>.
                                             // 1  2  3  4  5  6      7
                                             //--> *  =  a  b  shape  @
                                             // 0  1  2  3  4  5      6
-                                            construct.atoms[0] = Narsese_copulaEquals(seq.term.atoms[1], INHERITANCE) ? Narsese_CopulaIndex(INHERITANCE) : Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY);
-                                            construct.atoms[1] = Narsese_CopulaIndex(PRODUCT);
-                                            construct.atoms[2] = relation; //+
+                                            Trelation.atoms[0] = Narsese_copulaEquals(seq_term.atoms[1], INHERITANCE) ? Narsese_CopulaIndex(INHERITANCE) : Narsese_CopulaIndex(HAS_CONTINUOUS_PROPERTY);
+                                            Trelation.atoms[1] = Narsese_CopulaIndex(PRODUCT);
+                                            Trelation.atoms[2] = relation; //+
                                             if(smaller)
                                             {
-                                                Term_OverrideSubterm(&construct, 3, &LOC2);
-                                                Term_OverrideSubterm(&construct, 4, &LOC1);
+                                                Term_OverrideSubterm(&Trelation, 3, &LOC2);
+                                                Term_OverrideSubterm(&Trelation, 4, &LOC1);
                                             }
                                             else
                                             {
-                                                Term_OverrideSubterm(&construct, 3, &LOC1);
-                                                Term_OverrideSubterm(&construct, 4, &LOC2);
+                                                Term_OverrideSubterm(&Trelation, 3, &LOC1);
+                                                Term_OverrideSubterm(&Trelation, 4, &LOC2);
                                             }
-                                            Term_OverrideSubterm(&construct, 5, &ATTR1);
-                                            Term_OverrideSubterm(&construct, 6, &ATTR1);
-                                            construct.atoms[6] = Narsese_CopulaIndex(SET_TERMINATOR);
+                                            Term_OverrideSubterm(&Trelation, 5, &ATTR1);
+                                            Term_OverrideSubterm(&Trelation, 6, &ATTR1);
+                                            Trelation.atoms[6] = Narsese_CopulaIndex(SET_TERMINATOR);
+                                            Term TrelationWithContext = {0};
+                                            if(!rest.atoms[0])
+                                            {
+                                                TrelationWithContext = Trelation;
+                                            }
+                                            else
+                                            {
+                                                //in this case it is a sequence
+                                                TrelationWithContext.atoms[0] = Narsese_CopulaIndex(SEQUENCE);
+                                                Term_OverrideSubterm(&TrelationWithContext, 1, &rest);
+                                                Term_OverrideSubterm(&TrelationWithContext, 2, &Trelation);
+                                            }
                                             Event seq_rel = seq;
-                                            seq_rel.term = construct;
+                                            seq_rel.term = TrelationWithContext;
                                             Memory_AddEvent(&seq_rel, currentTime, 1.0, false, true, false, 0); //complexity penalized
                                         }
                                     }

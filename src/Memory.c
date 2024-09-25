@@ -411,7 +411,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
         {
-            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+            if(!(Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && (Narsese_copulaEquals(event->term.atoms[2], SIMILARITY) /*TODO, as it is =*/ || Narsese_copulaEquals(event->term.atoms[2], SEQUENCE) /*TODO, as it is +*/)))
+            {
+                addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+            }
         }
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
