@@ -48,7 +48,6 @@
 //----------//
 //Inferences per cycle (amount of events from cycling events)
 extern bool RESTRICTED_CONCEPT_CREATION;
-extern double PROPAGATION_THRESHOLD;
 extern bool PRINT_DERIVATIONS;
 extern bool PRINT_INPUT;
 extern double conceptPriorityThreshold;
@@ -68,7 +67,6 @@ typedef struct
     Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
     bool stdinOutput;
 }Operation;
-extern bool ontology_handling;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern int beliefsSelectedCnt;
