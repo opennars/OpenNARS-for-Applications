@@ -664,7 +664,7 @@ Decision Decision_Suggest(Concept *postc, Event *goal, long currentTime)
 Decision Decision_BetterDecision(Decision best_decision, Decision decision)
 {
     double sampling_amplitude = 0.1;
-    if(decision.execute && decision.desire + (myrand()-sampling_amplitude) >= best_decision.desire)
+    if(decision.execute && decision.desire + (myrand()-0.5)*sampling_amplitude >= best_decision.desire)
     {
         return decision;
     }
