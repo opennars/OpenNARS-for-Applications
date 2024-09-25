@@ -411,7 +411,10 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
         {
-            addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+            if(!(Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && (Narsese_copulaEquals(event->term.atoms[2], SIMILARITY) /*TODO, as it is =*/ || Narsese_copulaEquals(event->term.atoms[2], SEQUENCE) /*TODO, as it is +*/)))
+            {
+                addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+            }
         }
         Memory_ProcessNewBeliefEvent(event, currentTime, priority, input);
     }
@@ -424,7 +427,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     {
         Memory_printAddedEvent(&event->stamp, event, priority, input, derived, revised, true, false);
     }
-    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Errornous event type");
+    assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Erroneous event type");
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)

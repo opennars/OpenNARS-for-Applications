@@ -69,7 +69,7 @@ for line in sys.stdin:
     #Conjunction
     l = re.sub(r"\(([^:]*)\s&(/|&|\|)\s([^:]*)\)", MAGENTA+r"(" + GREEN + r"\1" + MAGENTA + r" &\2 " + GREEN + r"\3" + MAGENTA + ")" + COLOR, l)
     #Similarity and inheritance
-    l = re.sub(r"<([^><:]*)\s((-->)|(<->))\s([^><:]*)>", RED+ STATEMENT_OPENER + GREEN + r"\1" + RED + r" \2 " + GREEN + r"\5" + RED + STATEMENT_CLOSER + COLOR, l)
+    l = re.sub(r"<([^><:]*)\s(((-|<|\|)->))\s([^><:]*)>", RED+ STATEMENT_OPENER + GREEN + r"\1" + RED + r" \2 " + GREEN + r"\5" + RED + STATEMENT_CLOSER + COLOR, l)
     #Other compound term copulas (not higher order)
     l = re.sub(r"\(([^><:]*)\s(\*|&|~|-|\|)\s([^><:]*)\)", YELLOW+r"(" + GREEN + r"\1" + YELLOW + r" \2 " + GREEN + r"\3" + YELLOW + ")" + COLOR, l)
     print(COLOR + l + RESET)
