@@ -27,7 +27,6 @@ void OccurrenceTimeIndex_Test()
     puts(">>OccurrenceTimeIndex test start");
     OccurrenceTimeIndex fifo = {0};
     //First, evaluate whether the fifo works, not leading to overflow
-    int occurrence = 0;
     for(int i=OCCURRENCE_TIME_INDEX_SIZE*2; i>=1; i--) //"rolling over" once by adding a k*FIFO_Size items
     {
         Concept *c1 = (Concept*) (long) i;

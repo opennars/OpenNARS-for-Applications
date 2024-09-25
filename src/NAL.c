@@ -311,7 +311,7 @@ static bool NAL_IndepOrDepVariableAppearsOnce(Term *conclusionTerm)
 {
     for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        if(Variable_isDependentVariable(conclusionTerm->atoms[i]) || Variable_isDependentVariable(conclusionTerm->atoms[i]))
+        if(Variable_isIndependentVariable(conclusionTerm->atoms[i]) || Variable_isDependentVariable(conclusionTerm->atoms[i]))
         {
             for(int j=0; j<COMPOUND_TERM_SIZE_MAX; j++)
             {
