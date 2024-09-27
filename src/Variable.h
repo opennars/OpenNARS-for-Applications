@@ -73,6 +73,7 @@ Substitution Variable_Unify2(Truth truth, Term *general, Term *specific, bool un
 Term Variable_ApplySubstitute(Term term, Substitution substitution, bool *success);
 //Introduce variables in an implication
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally);
+Term Variable_IntroduceImplicationVariables2(Term implication, bool *success, bool extensionally, int sideOfProduct);
 //Introduce var in conjunction
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally);
 //Normalize variables, transforming ?what to ?1 for instance.

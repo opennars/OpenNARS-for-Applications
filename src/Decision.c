@@ -50,7 +50,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 //Inject action event after execution or babbling
 void Decision_Execute(long currentTime, Decision *decision)
 {
-    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0])
+    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0] && !Variable_hasVariable(&decision->usedContingency.term, true, true, false))
     {
         Term cons1 = Term_ExtractSubterm(&decision->usedContingency.term, 2);
         Concept *C_goal = Memory_FindConceptByTerm(&cons1);
@@ -60,6 +60,10 @@ void Decision_Execute(long currentTime, Decision *decision)
             for(int j=0; j<C_goal->precondition_beliefs[decision->tableIndex].itemsAmount; j++)
             {
                 Implication comparedImp = C_goal->precondition_beliefs[decision->tableIndex].array[j];
+                if(Variable_hasVariable(&comparedImp.term, true, true, false))
+                {
+                    continue;
+                }
                 Term cons2 = Term_ExtractSubterm(&comparedImp.term, 2);
                 Term prec_op1 = Term_ExtractSubterm(&decision->usedContingency.term, 1);
                 Term prec_op2 = Term_ExtractSubterm(&comparedImp.term, 1);
@@ -110,6 +114,8 @@ void Decision_Execute(long currentTime, Decision *decision)
                         equTerm1.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success1 = Term_OverrideSubterm(&equTerm1, 1, &prec1);
                         bool success2 = Term_OverrideSubterm(&equTerm1, 2, &prec2);
+                        Term Te_imp2 = {0};
+                        Term Te_imp3 = {0};
                         if(success1 && success2)
                         {
                             Event e_imp = { .term = equTerm1,
@@ -122,11 +128,20 @@ void Decision_Execute(long currentTime, Decision *decision)
                                 Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
                             }
                             Event e_imp2 = e_imp;
-                            bool intro_success1;
-                            e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
-                            if(intro_success1 && Variable_hasVariable(&e_imp2.term, true, true, false))
+                            bool intro_success2;
+                            e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
+                            if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false))
                             {
+                                Te_imp2 = e_imp2.term;
                                 Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp3 = e_imp;
+                            bool intro_success3;
+                            e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
+                            if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false))
+                            {
+                                Te_imp3 = e_imp3.term;
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
                             }
                         }
                         Term equTerm2 = {0};
@@ -145,11 +160,18 @@ void Decision_Execute(long currentTime, Decision *decision)
                                 Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
                             }
                             Event e_imp2 = e_imp;
-                            bool intro_success1;
-                            e_imp2.term = Variable_IntroduceImplicationVariables(e_imp.term, &intro_success1, true);
-                            if(intro_success1 && Variable_hasVariable(&e_imp2.term, true, true, false))
+                            bool intro_success2;
+                            e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
+                            if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false) && !Term_Equal(&Te_imp2, &e_imp2.term))
                             {
                                 Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                            }
+                            Event e_imp3 = e_imp;
+                            bool intro_success3;
+                            e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
+                            if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false) && !Term_Equal(&Te_imp3, &e_imp3.term))
+                            {
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
                             }
                         }
                     }
