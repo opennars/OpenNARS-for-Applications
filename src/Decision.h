@@ -74,6 +74,7 @@ typedef struct
     Operation op[MAX_COMPOUND_OP_LEN];
     Term arguments[MAX_COMPOUND_OP_LEN];
     Implication missing_specific_implication;
+    Implication specific_implication;
     Implication usedContingency;
     Event *reason;
     int tableIndex;
