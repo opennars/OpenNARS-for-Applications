@@ -50,9 +50,9 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 //Inject action event after execution or babbling
 void Decision_Execute(long currentTime, Decision *decision)
 {
-    if(FUNCTIONAL_EQUIVALENCE && decision->usedContingency.term.atoms[0] && !Variable_hasVariable(&decision->usedContingency.term, true, true, false))
+    if(FUNCTIONAL_EQUIVALENCE && decision->specific_implication.term.atoms[0] && !Variable_hasVariable(&decision->specific_implication.term, true, true, false))
     {
-        Term cons1 = Term_ExtractSubterm(&decision->usedContingency.term, 2);
+        Term cons1 = Term_ExtractSubterm(&decision->specific_implication.term, 2);
         Concept *C_goal = Memory_FindConceptByTerm(&cons1);
         if(C_goal != NULL)
         {
@@ -65,7 +65,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                     continue;
                 }
                 Term cons2 = Term_ExtractSubterm(&comparedImp.term, 2);
-                Term prec_op1 = Term_ExtractSubterm(&decision->usedContingency.term, 1);
+                Term prec_op1 = Term_ExtractSubterm(&decision->specific_implication.term, 1);
                 Term prec_op2 = Term_ExtractSubterm(&comparedImp.term, 1);
                 Term op1 = Term_ExtractSubterm(&prec_op1, 2);
                 Term op2 = Term_ExtractSubterm(&prec_op2, 2);
@@ -107,9 +107,9 @@ void Decision_Execute(long currentTime, Decision *decision)
                 }
                 if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
                 {
-                    if(!Stamp_checkOverlap(&decision->usedContingency.stamp, &comparedImp.stamp))
+                    if(!Stamp_checkOverlap(&decision->specific_implication.stamp, &comparedImp.stamp))
                     {
-                        Stamp equStamp = Stamp_make(&decision->usedContingency.stamp, &comparedImp.stamp);
+                        Stamp equStamp = Stamp_make(&decision->specific_implication.stamp, &comparedImp.stamp);
                         Term equTerm1 = {0};
                         equTerm1.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success1 = Term_OverrideSubterm(&equTerm1, 1, &prec1);
@@ -120,7 +120,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         {
                             Event e_imp = { .term = equTerm1,
                                             .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Induction(decision->usedContingency.truth, comparedImp.truth),
+                                            .truth = Truth_Induction(decision->specific_implication.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
@@ -152,7 +152,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         {
                             Event e_imp = { .term = equTerm2,
                                             .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Abduction(decision->usedContingency.truth, comparedImp.truth),
+                                            .truth = Truth_Abduction(decision->specific_implication.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
@@ -513,6 +513,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             bestImp = imp;
                                             decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                             decision.tableIndex = opi;
+                                            decision.specific_implication = specific_imp;
                                         }
                                     }
                                     else
@@ -528,6 +529,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                                             bestImp = imp;
                                             decision.usedContingency = goalconcept->precondition_beliefs[opi].array[j];
                                             decision.tableIndex = opi;
+                                            decision.specific_implication = specific_imp;
                                         }
                                     }
                                 }
