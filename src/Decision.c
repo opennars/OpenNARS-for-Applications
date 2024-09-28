@@ -635,7 +635,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                             if(success2)
                             {
                                 Concept *c = Memory_Conceptualize(&result.term, currentTime);
-                                if(c != NULL && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
+                                if(c != NULL)// && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                 {
                                     c->usage = Usage_use(c->usage, currentTime, false);
                                     if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
