@@ -2,8 +2,8 @@
 setlocal enabledelayedexpansion
 
 :: delete NAR and src\RuleTable.c
-del NAR
-del src\RuleTable.c
+del .\NAR.exe
+del .\src\RuleTable.c
 
 :: setup error handling
 set ERRORLEVEL=0
