@@ -105,7 +105,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         NO_EQUAL_PART:;
                     }
                 }
-                if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2))
+                if(!prec1_prec2_equal && Term_Equal(&cons1, &cons2) && Term_Equal(&op1, &op2) && (!FUNCTIONAL_EQUIVALENCE_LENGTH_RESTRICTION || Narsese_SequenceLength(&prec1) == Narsese_SequenceLength(&prec2)))
                 {
                     if(!Stamp_checkOverlap(&decision->specific_implication.stamp, &comparedImp.stamp))
                     {

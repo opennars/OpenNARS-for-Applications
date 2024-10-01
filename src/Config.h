@@ -196,5 +196,7 @@
 #define FUNCTIONAL_EQUIVALENCE true
 //Whether to derive functional equivalences without variables too
 #define FUNCTIONAL_EQUIVALENCE_SPECIFIC false
+//Whether functional equivalences can only be dervived between sequences of equal length
+#define FUNCTIONAL_EQUIVALENCE_LENGTH_RESTRICTION true
 
 #endif
