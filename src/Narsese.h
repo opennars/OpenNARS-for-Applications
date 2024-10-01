@@ -132,5 +132,7 @@ void Narsese_setAtomValue(Atom atom, double value, char* measurementName);
 bool Narsese_hasAtomValue(Atom atom);
 //Get atom value
 double Narsese_getAtomValue(Atom atom);
+//Sequence length
+int Narsese_SequenceLength(Term *sequence);
 
 #endif

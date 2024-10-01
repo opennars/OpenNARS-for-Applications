@@ -869,3 +869,17 @@ double Narsese_getAtomValue(Atom atom)
     assert(atom > 0, "Narsese_getAtomValue: Atom was zero");
     return Narsese_atomValues[(int) atom-1];
 }
+
+int Narsese_SequenceLength(Term *sequence)
+{
+    if(Narsese_copulaEquals(sequence->atoms[0], SEQUENCE))
+    {
+        Term left = Term_ExtractSubterm(sequence, 1);
+        Term right = Term_ExtractSubterm(sequence, 2);
+        return Narsese_SequenceLength(&left) + Narsese_SequenceLength(&right);
+    }
+    else
+    {
+        return 1;
+    }
+}
