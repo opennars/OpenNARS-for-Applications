@@ -76,12 +76,12 @@ Event NAR_AddInputGoal(Term term)
     return NAR_AddInput(term, EVENT_TYPE_GOAL, NAR_DEFAULT_TRUTH, false, 0);
 }
 
-void NAR_AddOperation(char *term_name, Action procedure)
+void NAR_AddOperation(char *operator_name, Action procedure)
 {
     assert(procedure != 0, "Cannot add an operation with null-procedure");
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
-    Term term = Narsese_AtomicTerm(term_name);
-    assert(term_name[0] == '^', "This atom does not belong to an operator!");
+    Term term = Narsese_AtomicTerm(operator_name);
+    assert(operator_name[0] == '^', "This atom does not belong to an operator!");
     //check if term already exists
     int existing_k = Memory_getOperationID(&term);
     //use the running k if not existing yet
