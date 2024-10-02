@@ -116,7 +116,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         bool success2 = Term_OverrideSubterm(&equTerm1, 2, &prec2);
                         Term Te_imp2 = {0};
                         Term Te_imp3 = {0};
-                        if(success1 && success2)
+                        if(success1 && success2 && Truth_Expectation(Memory_getTemporalLinkTruth(&prec1, &prec2)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP && Truth_Expectation(Memory_getTemporalLinkTruth(&prec2, &prec1)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP)
                         {
                             Event e_imp = { .term = equTerm1,
                                             .type = EVENT_TYPE_BELIEF,
@@ -148,7 +148,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                         equTerm2.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success3 = Term_OverrideSubterm(&equTerm2, 1, &prec2);
                         bool success4 = Term_OverrideSubterm(&equTerm2, 2, &prec1);
-                        if(success3 && success4)
+                        if(success3 && success4 && Truth_Expectation(Memory_getTemporalLinkTruth(&prec2, &prec1)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP && Truth_Expectation(Memory_getTemporalLinkTruth(&prec1, &prec2)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP)
                         {
                             Event e_imp = { .term = equTerm2,
                                             .type = EVENT_TYPE_BELIEF,

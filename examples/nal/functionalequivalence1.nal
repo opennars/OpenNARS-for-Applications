@@ -17,4 +17,4 @@ G! :|:
 <(a &/ ^right) =/> H>.
 b. :|:
 H! :|:
-//--expected: ^right executed with args
+//expected: ^right executed with args
