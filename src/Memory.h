@@ -107,5 +107,7 @@ void Memory_printAddedEvent(Stamp *stamp, Event *event, double priority, bool in
 void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth, double occurrenceTimeOffset, double priority, bool input, bool revised, bool controlInfo);
 //Get operation ID
 int Memory_getOperationID(Term *term);
+//Get temporal link truth value
+Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
 
 #endif
