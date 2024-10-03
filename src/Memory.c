@@ -455,3 +455,23 @@ int Memory_getOperationID(Term *term)
     }
     return 0;
 }
+
+Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition)
+{
+    Concept *c = Memory_FindConceptByTerm(postcondition);
+    if(c != NULL)
+    {
+        for(int i=0; i<c->precondition_beliefs[0].itemsAmount; i++)
+        {
+            Implication *imp = &c->precondition_beliefs[0].array[i];
+            Term imp_prec  = Term_ExtractSubterm(&imp->term, 1);
+            Term imp_post  = Term_ExtractSubterm(&imp->term, 2);
+            assert(Term_Equal(&imp_post, postcondition), "Link should not be in this table");
+            if(Term_Equal(&imp_prec , precondition))
+            {
+                return imp->truth;
+            }
+        }
+    }
+    return (Truth) {0};
+}
