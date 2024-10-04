@@ -778,6 +778,17 @@ void Cycle_RelativeForgetting(long currentTime)
 void Cycle_Perform(long currentTime)
 {   
     Metric_send("NARNode.Cycle", 1);
+    //0. Transfer predicted evidence in concepts to belief_spike when the time has come
+    for(int i=0; i<concepts.itemsAmount; i++)
+    {
+        Concept *c = concepts.items[i].address;
+        if(c->predicted_belief.occurrenceTime == currentTime && PREDICTION_RELIANCE > 0.0)
+        {
+            Event predicted_belief = c->predicted_belief;
+            predicted_belief.truth.confidence *= PREDICTION_RELIANCE;
+            c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &predicted_belief, currentTime, NULL);
+        }
+    }
     //1a. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2a. Process incoming belief events from FIFO, building implications utilizing input sequences

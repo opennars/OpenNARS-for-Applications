@@ -202,5 +202,7 @@
 #define FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_RESTRICTION true
 //Functional equivalence nontemporal restriction truth expectation threshold
 #define FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP 0.5
+//Prediction confidence trustworthiness multiplier
+#define PREDICTION_RELIANCE 1.0
 
 #endif

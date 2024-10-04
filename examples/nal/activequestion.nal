@@ -24,10 +24,10 @@
 <(<({cat} * #where) --> in> &/ <({SELF} * #where) --> ^say>) =/> G>.
 G! :|:
 120
-//expected: ^go executed with args ({SELF} * bedroom)
+//--expected: ^go executed with args ({SELF} * bedroom)
 
 //ok, feedback of NARS going to the bedroom, the cat is there!
 <({cat} * bedroom) --> in>. :|:
 G! :|:
 10
-//expected: ^say executed with args ({SELF} * bedroom)
+//--expected: ^say executed with args ({SELF} * bedroom)
