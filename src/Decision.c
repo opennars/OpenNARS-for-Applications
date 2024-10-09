@@ -72,7 +72,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                 Term prec1 = Narsese_GetPreconditionWithoutOp(&prec_op1);
                 Term prec2 = Narsese_GetPreconditionWithoutOp(&prec_op2);
                 bool prec1_prec2_equal = Term_Equal(&prec1, &prec2);
-                if(!prec1_prec2_equal)
+                if(FUNCTIONAL_EQUIVALENCE_SIMPLIFY && !prec1_prec2_equal)
                 {
                     if(Narsese_copulaEquals(prec1.atoms[0], SEQUENCE) && Narsese_copulaEquals(prec2.atoms[0], SEQUENCE))
                     {
