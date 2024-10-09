@@ -24,7 +24,7 @@
 
 #include "NAR.h"
 
-long currentTime = 1;
+static long currentTime = 1; //This needs to be private to encourage the design of "pass in parameters rather than using global variables"
 static bool initialized = false;
 static int op_k = 0;
 double QUESTION_PRIMING = QUESTION_PRIMING_INITIAL;

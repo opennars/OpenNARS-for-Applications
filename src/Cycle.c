@@ -154,7 +154,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
 //{Event (a &/ b)!, Event a.} |- Event b! Truth_Deduction
 //if Truth_Expectation(a) >= ANTICIPATION_THRESHOLD else
 //{Event (a &/ b)!} |- Event a! Truth_StructuralDeduction
-bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, int layer)
+bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPriority, int layer, long currentTime)
 {
     //1. Extract potential subgoals
     if(!Narsese_copulaEquals(selectedGoal->term.atoms[0], SEQUENCE)) //left-nested sequence
@@ -276,7 +276,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
         Event *goal = &selectedGoals[i];
         IN_DEBUG( fputs("selected goal ", stdout); Narsese_PrintTerm(&goal->term); puts(""); )
         //if goal is a sequence, overwrite with first deduced non-fulfilled element
-        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], layer)) //the goal was a sequence which leaded to a subgoal derivation
+        if(Cycle_GoalSequenceDecomposition(goal, selectedGoalsPriority[i], layer, currentTime)) //the goal was a sequence which leaded to a subgoal derivation
         {
             continue;
         }
@@ -340,7 +340,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
 }
 
 //Reinforce temporal implication link between a's and b's concept (via temporal induction)
-static Implication Cycle_ReinforceLink(Event *a, Event *b)
+static Implication Cycle_ReinforceLink(Event *a, Event *b, long currentTime)
 {
     if(a->type != EVENT_TYPE_BELIEF || b->type != EVENT_TYPE_BELIEF)
     {
@@ -416,7 +416,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 //so now derive it
                                 if(success5)
                                 {
-                                    Cycle_ReinforceLink(&seq_op_cur, &postcondition); //<(A &/ op) =/> B>
+                                    Cycle_ReinforceLink(&seq_op_cur, &postcondition, currentTime); //<(A &/ op) =/> B>
                                 }
                             }
                         }
@@ -445,10 +445,10 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             if(!op_id && !op_id2)
                             {
-                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>, <A =|> B>
+                                Cycle_ReinforceLink(&c->belief_spike, &postcondition, currentTime); //<A =/> B>, <A =|> B>
                                 if(c->belief_spike.occurrenceTime == postcondition.occurrenceTime)
                                 {
-                                    Cycle_ReinforceLink(&postcondition, &c->belief_spike); //<B =|> A>
+                                    Cycle_ReinforceLink(&postcondition, &c->belief_spike, currentTime); //<B =|> A>
                                 }
                             }
                             int sequence_len = 0;
