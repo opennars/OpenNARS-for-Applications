@@ -202,5 +202,7 @@
 #define FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_RESTRICTION true
 //Functional equivalence nontemporal restriction truth expectation threshold
 #define FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP 0.5
+//Whether functional equivalence should simplify sequences taking out common conditions
+#define FUNCTIONAL_EQUIVALENCE_SIMPLIFY false
 
 #endif
