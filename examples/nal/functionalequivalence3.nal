@@ -22,4 +22,5 @@ G! :|:
 <(<(left * Y) --> shape> &/ ^pick) =/> H>.
 <(left * Z) --> shape>. :|:
 H! :|:
-//expected: ^pick executed with args
+//--expected: ^pick executed with args
+//ONLY WITH Config.h with #define FUNCTIONAL_EQUIVALENCE_SIMPLIFY true
