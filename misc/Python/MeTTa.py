@@ -7,7 +7,7 @@ import sys
 NAR.AddInput("*motorbabbling=false")
 
 def NAR_Cycle(n):
-    NAR.AddInput(str(n))
+    return NAR.AddInput(str(n))
 
 def toMeTTa(term):
     if term.startswith("dt="):
@@ -52,8 +52,9 @@ def NAR_AddInput(metta):
         truthMeTTa = ""
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + toMeTTa(x["term"]) + " " + truthMeTTa + ")"
+        x["metta"] = "(" + punctuation + ": (" + toMeTTa(x["term"]) + " " + truthMeTTa + "))"
         print("!(" + prefix + " ("  + "" + punctuation + " " + x["metta"] + " " + x["occurrenceTime"]+ "))")
+    return ret
 
 if "shell" in sys.argv:
     while True:
