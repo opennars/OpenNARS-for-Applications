@@ -23,22 +23,21 @@ def NAR_NarseseToMeTTa(term):
 
 def NAR_AddInput(metta):
     global NAR_useNarsese
-    if(NAR_useNarsese):
-        return NAR.AddInput(metta)
     print("//" + metta)
     truth = ""
-    if metta.startswith("!(AddBeliefEvent "):
-        truth = " " + (" ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
-        metta = " ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[:-2]) + ". :|:"
-    if metta.startswith("!(AddGoalEvent "):
-        truth = " " + (" ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
-        metta = " ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[:-2]) + "! :|:"
-    if metta.startswith("!(EventQuestion "):
-        metta = metta.split("!(EventQuestion ")[1][:-1] + "? :|:"
-    if metta.startswith("!(EternalQuestion "):
-        metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
-    metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
-    metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
+    if not NAR_useNarsese:
+        if metta.startswith("!(AddBeliefEvent "):
+            truth = " " + (" ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
+            metta = " ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[:-2]) + ". :|:"
+        if metta.startswith("!(AddGoalEvent "):
+            truth = " " + (" ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
+            metta = " ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[:-2]) + "! :|:"
+        if metta.startswith("!(EventQuestion "):
+            metta = metta.split("!(EventQuestion ")[1][:-1] + "? :|:"
+        if metta.startswith("!(EternalQuestion "):
+            metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
+        metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
+        metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
     ret = NAR.AddInput(metta + truth)
     results = ret["input"] + ret["derivations"]
     All = []
