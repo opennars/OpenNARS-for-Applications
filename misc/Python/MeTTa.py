@@ -14,7 +14,7 @@ def NAR_SetUseNarsese(flag):
 def NAR_Cycle(n):
     return NAR.AddInput(str(n))
 
-def NAR_toMeTTa(term):
+def NAR_NarseseToMeTTa(term):
     if term.startswith("dt="):
         term = " ".join(term.split(" ")[1:])
     term = re.sub(r"\^([a-zA-Z0-9]*)", r"(^ \1)", term)
@@ -60,7 +60,7 @@ def NAR_AddInput(metta):
         truthMeTTa = ""
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + punctuation + ": (" + NAR_toMeTTa(x["term"]) + " " + truthMeTTa + "))"
+        x["metta"] = "(" + punctuation + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
         print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
     return ret
 
