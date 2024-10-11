@@ -5,11 +5,16 @@ import random
 import sys
 
 NAR.AddInput("*motorbabbling=false")
+NAR_useNarsese = False
+
+def NAR_SetUseNarsese(flag):
+    global NAR_useNarsese
+    NAR_useNarsese = flag
 
 def NAR_Cycle(n):
     return NAR.AddInput(str(n))
 
-def toMeTTa(term):
+def NAR_toMeTTa(term):
     if term.startswith("dt="):
         term = " ".join(term.split(" ")[1:])
     term = re.sub(r"\^([a-zA-Z0-9]*)", r"(^ \1)", term)
@@ -17,6 +22,9 @@ def toMeTTa(term):
     return term.replace("<", "(").replace(">", ")").replace("--)", "-->").replace("=)", "=>").replace("(=", "<=").replace("/)", "/>").replace("(-)", "-")
 
 def NAR_AddInput(metta):
+    global NAR_useNarsese
+    if(NAR_useNarsese):
+        return NAR.AddInput(metta)
     print("//" + metta)
     truth = ""
     if metta.startswith("!(AddBeliefEvent "):
@@ -52,8 +60,8 @@ def NAR_AddInput(metta):
         truthMeTTa = ""
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + punctuation + ": (" + toMeTTa(x["term"]) + " " + truthMeTTa + "))"
-        print("!(" + prefix + " ("  + "" + punctuation + " " + x["metta"] + " " + x["occurrenceTime"]+ "))")
+        x["metta"] = "(" + punctuation + ": (" + NAR_toMeTTa(x["term"]) + " " + truthMeTTa + "))"
+        print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
     return ret
 
 if "shell" in sys.argv:
