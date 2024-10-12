@@ -26,6 +26,7 @@ def NAR_AddInput(metta):
     print("//" + metta)
     truth = ""
     if not NAR_useNarsese:
+        metta = metta.replace(" x ", " * ")
         if metta.startswith("!(AddBeliefEvent "):
             truth = " " + (" ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
             metta = " ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[:-2]) + ". :|:"
