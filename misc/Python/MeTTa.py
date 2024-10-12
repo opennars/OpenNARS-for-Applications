@@ -44,13 +44,13 @@ def NAR_AddInput(metta):
     Answers = set([])
     for x in results:
         All += [x]
-        if x["punctuation"] != "!":
+        if x["punctuation"] != "!" and x["punctuation"] != "?":
             ret2 = NAR.AddInput(x["term"] + "?")
             All += [ret2["answers"][0]]
             Answers.add(str(ret2["answers"][0]))
     for x in All:
         prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
-        punctuation = "." if x["punctuation"] == "." else "!"
+        punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
         if str(x) in Answers:
             prefix = "MeTTa-OUT"
             punctuation = "@"
