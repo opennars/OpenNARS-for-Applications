@@ -653,7 +653,10 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                         c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &result, currentTime, NULL);
                                         if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
                                         {
-                                            Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
+                                            if(SEMANTIC_INFERENCE_NAL_LEVEL == 0)
+                                            {
+                                                Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
+                                            }
                                         }
                                     }
                                     else
