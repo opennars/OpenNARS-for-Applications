@@ -45,6 +45,8 @@
 #define EXIT_STATS true
 //Whether input should be printed
 #define PRINT_INPUT_INITIAL true
+//Whether predictions should be printed as derivations
+#define PRINT_PREDICTIONS_AS_DERIVATIONS false
 //Whether derivations should be printed
 #define PRINT_DERIVATIONS_INITIAL false
 //Whether control information should be printed
