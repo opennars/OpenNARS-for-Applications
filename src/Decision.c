@@ -556,33 +556,41 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
 void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
+    bool temporal = false;
+    USE_LINKS:
     for(int j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = (Concept*) concepts.items[j].address;
         Implication valid_implications[TABLE_SIZE*2] = {0};
-        int k;
-        for(k=0; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
+        int k=0;
+        if(temporal)
         {
-            if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[k]))
+            for(; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
             {
-                Table_Remove(&postc->precondition_beliefs[operationID], k);
-                k--;
-                continue;
+                if(!Memory_ImplicationValid(&postc->precondition_beliefs[operationID].array[k]))
+                {
+                    Table_Remove(&postc->precondition_beliefs[operationID], k);
+                    k--;
+                    continue;
+                }
+                Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
+                valid_implications[k] = imp;
             }
-            Implication imp = postc->precondition_beliefs[operationID].array[k]; //(&/,a,op) =/> b.
-            valid_implications[k] = imp;
         }
-        for(int h=0; operationID == 0 && h<postc->implication_links.itemsAmount; h++, k++)
+        else
+        if(operationID == 0)
         {
-            if(!Memory_ImplicationValid(&postc->implication_links.array[h]))
+            for(; k<postc->implication_links.itemsAmount; k++)
             {
-                Table_Remove(&postc->implication_links, h);
-                h--;
-                k--;
-                continue;
+                if(!Memory_ImplicationValid(&postc->implication_links.array[k]))
+                {
+                    Table_Remove(&postc->implication_links, k);
+                    k--;
+                    continue;
+                }
+                Implication imp = postc->implication_links.array[k]; //a ==> b.
+                valid_implications[k] = imp;
             }
-            Implication imp = postc->implication_links.array[h]; //a ==> b.
-            valid_implications[k] = imp;
         }
         for(int h=0; h<k; h++)
         {
@@ -665,6 +673,11 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                 }
             }
         }
+    }
+    if(!temporal)
+    {
+        temporal = true;
+        goto USE_LINKS;
     }
 }
 

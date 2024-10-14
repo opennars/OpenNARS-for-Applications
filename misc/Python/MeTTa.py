@@ -5,11 +5,16 @@ import random
 import sys
 
 NAR.AddInput("*motorbabbling=false")
+NAR_useNarsese = False
+
+def NAR_SetUseNarsese(flag):
+    global NAR_useNarsese
+    NAR_useNarsese = flag
 
 def NAR_Cycle(n):
-    NAR.AddInput(str(n))
+    return NAR.AddInput(str(n))
 
-def toMeTTa(term):
+def NAR_NarseseToMeTTa(term):
     if term.startswith("dt="):
         term = " ".join(term.split(" ")[1:])
     term = re.sub(r"\^([a-zA-Z0-9]*)", r"(^ \1)", term)
@@ -17,33 +22,36 @@ def toMeTTa(term):
     return term.replace("<", "(").replace(">", ")").replace("--)", "-->").replace("=)", "=>").replace("(=", "<=").replace("/)", "/>").replace("(-)", "-")
 
 def NAR_AddInput(metta):
+    global NAR_useNarsese
     print("//" + metta)
     truth = ""
-    if metta.startswith("!(AddBeliefEvent "):
-        truth = " " + (" ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
-        metta = " ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[:-2]) + ". :|:"
-    if metta.startswith("!(AddGoalEvent "):
-        truth = " " + (" ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
-        metta = " ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[:-2]) + "! :|:"
-    if metta.startswith("!(EventQuestion "):
-        metta = metta.split("!(EventQuestion ")[1][:-1] + "? :|:"
-    if metta.startswith("!(EternalQuestion "):
-        metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
-    metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
-    metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
+    if not NAR_useNarsese:
+        metta = metta.replace(" x ", " * ")
+        if metta.startswith("!(AddBeliefEvent "):
+            truth = " " + (" ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
+            metta = " ".join(metta.split("!(AddBeliefEvent (")[1].split(" ")[:-2]) + ". :|:"
+        if metta.startswith("!(AddGoalEvent "):
+            truth = " " + (" ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
+            metta = " ".join(metta.split("!(AddGoalEvent (")[1].split(" ")[:-2]) + "! :|:"
+        if metta.startswith("!(EventQuestion "):
+            metta = metta.split("!(EventQuestion ")[1][:-1] + "? :|:"
+        if metta.startswith("!(EternalQuestion "):
+            metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
+        metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
+        metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
     ret = NAR.AddInput(metta + truth)
     results = ret["input"] + ret["derivations"]
     All = []
     Answers = set([])
     for x in results:
         All += [x]
-        if x["punctuation"] != "!":
+        if x["punctuation"] != "!" and x["punctuation"] != "?":
             ret2 = NAR.AddInput(x["term"] + "?")
             All += [ret2["answers"][0]]
             Answers.add(str(ret2["answers"][0]))
     for x in All:
         prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
-        punctuation = "." if x["punctuation"] == "." else "!"
+        punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
         if str(x) in Answers:
             prefix = "MeTTa-OUT"
             punctuation = "@"
@@ -52,8 +60,9 @@ def NAR_AddInput(metta):
         truthMeTTa = ""
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + toMeTTa(x["term"]) + " " + truthMeTTa + ")"
-        print("!(" + prefix + " ("  + "" + punctuation + " " + x["metta"] + " " + x["occurrenceTime"]+ "))")
+        x["metta"] = "(" + punctuation + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+        print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
+    return ret
 
 if "shell" in sys.argv:
     while True:

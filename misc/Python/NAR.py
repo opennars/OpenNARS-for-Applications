@@ -52,7 +52,8 @@ def parseReason(sraw):
 def parseExecution(e):
     if "args " not in e:
         return {"operator" : e.split(" ")[0], "arguments" : []}
-    return {"operator" : e.split(" ")[0], "arguments" : e.split("args ")[1].split("{SELF} * ")[1][:-1]}
+    opname = e.split(" ")[0]
+    return {"operator": opname, "arguments": e.split("args ")[1].split("{SELF} * ")[1][:-1], 'metta': '(^ ' + opname[1:] + ')'}
 
 def GetRawOutput(usedNAR):
     usedNAR.stdin.write("0\n")
