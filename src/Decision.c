@@ -553,7 +553,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
-void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
+void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     bool temporal = false;
@@ -663,10 +663,13 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
                                     {
                                         Truth oldTruth = c->belief_spike.truth;
                                         long oldOccurrenceTime = c->belief_spike.occurrenceTime;
-                                        c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
-                                        if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
+                                        if(!Stamp_Equal(&c->belief_spike.stamp, &result.stamp))
                                         {
-                                            Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
+                                            c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &result, currentTime, NULL);
+                                            if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
+                                            {
+                                                Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
+                                            }
                                         }
                                     }
                                 }
@@ -677,7 +680,7 @@ void Decision_Anticipate(int operationID, Term opTerm, long currentTime)
             }
         }
     }
-    if(!temporal)
+    if(!temporal && !declarative)
     {
         temporal = true;
         goto USE_LINKS;
