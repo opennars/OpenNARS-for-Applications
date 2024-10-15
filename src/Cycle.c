@@ -561,7 +561,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                 }
                                 if(is_op_seq && selectedBeliefsPriority[h] >= 1.0)
                                 {
-                                    Decision_Anticipate(op_id, seq.term, currentTime); //collection of negative evidence, new way
+                                    Decision_Anticipate(op_id, seq.term, false, currentTime); //collection of negative evidence, new way
                                 }
                             }
                         }
@@ -570,7 +570,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
             }
             if(selectedBeliefsPriority[h] >= 1.0) //only if input has been received
             {
-                Decision_Anticipate(op_id, op_term, currentTime); //collection of negative evidence, new way
+                Decision_Anticipate(op_id, op_term, false, currentTime); //collection of negative evidence, new way
             }
         }
     }
@@ -789,8 +789,14 @@ void Cycle_Perform(long currentTime)
         //2b. Process incoming goal events, propagating subgoals according to implications, triggering decisions when above decision threshold
         Cycle_ProcessAndInferGoalEvents(currentTime, layer);
     }
-    //4. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
+    //4a. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
+    //4b. Declarative inference new way in each cycle
+    if(DECLARATIVE_IMPLICATIONS_CYCLE_PROCESS)
+    {
+        Term not_used = {0};
+        Decision_Anticipate(0, not_used, true, currentTime);
+    }
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }
