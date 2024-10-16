@@ -6,6 +6,7 @@ import sys
 
 NAR.AddInput("*motorbabbling=false")
 NAR_useNarsese = False
+NAR_printInMeTTa = False
 
 def NAR_SetUseNarsese(flag):
     global NAR_useNarsese
@@ -13,6 +14,10 @@ def NAR_SetUseNarsese(flag):
 
 def NAR_Cycle(n):
     return NAR.AddInput(str(n))
+
+def NAR_PrintInMetta():
+    global NAR_printInMeTTa
+    NAR_printInMeTTa = True
 
 def NAR_NarseseToMeTTa(term):
     if term.startswith("dt="):
@@ -41,27 +46,35 @@ def NAR_AddInput(metta):
         metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
     ret = NAR.AddInput(metta + truth)
     results = ret["input"] + ret["derivations"]
-    All = []
-    Answers = set([])
     for x in results:
-        All += [x]
-        if x["punctuation"] != "!" and x["punctuation"] != "?":
-            ret2 = NAR.AddInput(x["term"] + "?")
-            All += [ret2["answers"][0]]
-            Answers.add(str(ret2["answers"][0]))
-    for x in All:
-        prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
-        punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
-        if str(x) in Answers:
-            prefix = "MeTTa-OUT"
-            punctuation = "@"
         if x["term"] == "None":
             continue
         truthMeTTa = ""
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + punctuation + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
-        print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
+        x["metta"] = "(" + x["punctuation"] + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+    if NAR_printInMeTTa:
+        All = []
+        Answers = set([])
+        for x in results:
+            All += [x]
+            if x["punctuation"] != "!" and x["punctuation"] != "?":
+                ret2 = NAR.AddInput(x["term"] + "?")
+                All += [ret2["answers"][0]]
+                Answers.add(str(ret2["answers"][0]))
+        for x in All:
+            prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
+            punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
+            if str(x) in Answers:
+                prefix = "MeTTa-OUT"
+                punctuation = "@"
+            if x["term"] == "None":
+                continue
+            truthMeTTa = ""
+            if "truth" in x:
+                truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
+            x["metta"] = "(" + punctuation + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+            print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
     return ret
 
 if "shell" in sys.argv:
