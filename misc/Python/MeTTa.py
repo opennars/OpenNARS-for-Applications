@@ -13,7 +13,18 @@ def NAR_SetUseNarsese(flag):
     NAR_useNarsese = flag
 
 def NAR_Cycle(n):
-    return NAR.AddInput(str(n))
+    return NAR_AddMeTTa(NAR.AddInput(str(n)))
+
+def NAR_AddMeTTa(ret):
+    results = ret["input"] + ret["derivations"]
+    for x in results:
+        if x["term"] == "None":
+            continue
+        truthMeTTa = ""
+        if "truth" in x:
+            truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
+        x["metta"] = "(" + x["punctuation"] + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+    return ret
 
 def NAR_PrintInMetta():
     global NAR_printInMeTTa
@@ -44,15 +55,7 @@ def NAR_AddInput(metta):
             metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
         metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
         metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
-    ret = NAR.AddInput(metta + truth)
-    results = ret["input"] + ret["derivations"]
-    for x in results:
-        if x["term"] == "None":
-            continue
-        truthMeTTa = ""
-        if "truth" in x:
-            truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-        x["metta"] = "(" + x["punctuation"] + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+    ret = NAR_AddMeTTa(NAR.AddInput(metta + truth))
     if NAR_printInMeTTa:
         All = []
         Answers = set([])
@@ -70,10 +73,6 @@ def NAR_AddInput(metta):
                 punctuation = "@"
             if x["term"] == "None":
                 continue
-            truthMeTTa = ""
-            if "truth" in x:
-                truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
-            x["metta"] = "(" + punctuation + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
             print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
     return ret
 
