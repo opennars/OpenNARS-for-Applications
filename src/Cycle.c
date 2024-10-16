@@ -334,6 +334,34 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                         }
                     }
                 }
+                if(DECLARATIVE_IMPLICATIONS_SUBGOALING)
+                {
+                    for(int j=0; j<c->implication_links.itemsAmount; j++)
+                    {
+                        Implication *imp = &c->implication_links.array[j];
+                        if(!Memory_ImplicationValid(imp))
+                        {
+                            Table_Remove(&c->implication_links, j);
+                            j--;
+                            continue;
+                        }
+                        Term postcondition = Term_ExtractSubterm(&imp->term, 2);
+                        Substitution subs = Variable_Unify(&postcondition, &c->goal_spike.term);
+                        if(subs.success)
+                        {
+                            Implication updated_imp = *imp;
+                            bool success;
+                            updated_imp.term = Variable_ApplySubstitute(updated_imp.term, subs, &success);
+                            if(success)
+                            {
+                                Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
+                                Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
+                                IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                            }
+                        }
+                    }
+                }
             }
         })
     }

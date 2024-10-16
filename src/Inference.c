@@ -98,7 +98,7 @@ Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 //{Event b!, Implication <a =/> b>.} |- Event a!
 Event Inference_GoalDeduction(Event *component, Implication *compound, long currentTime)
 {
-    assert(Narsese_copulaEquals(compound->term.atoms[0],TEMPORAL_IMPLICATION), "Not a valid temporal implication term!");
+    assert(Narsese_copulaEquals(compound->term.atoms[0],TEMPORAL_IMPLICATION) || Narsese_copulaEquals(compound->term.atoms[0],IMPLICATION), "Not a valid implication term!");
     DERIVATION_STAMP(component,compound)
     Term precondition = Term_ExtractSubterm(&compound->term, 1);
     //extract precondition: (plus unification once vars are there)
