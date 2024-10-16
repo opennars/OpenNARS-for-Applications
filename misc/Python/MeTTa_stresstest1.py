@@ -10,6 +10,7 @@ print("""
           (%void% (add-atom &MeTTaBeliefs ($MeTTaTerm $newTruth))))))
 """)
 
+NAR_PrintInMetta()
 for step in range(100):
     if step % 10 == 0: # a periodic mission knowledge reminder
         NAR_AddInput('!(AddBeliefEvent ((((trash --> (IntSet see)) &/ (^ pick)) =/> G) (1.0 0.9)))')
