@@ -556,14 +556,12 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
 void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
-    bool temporal = false;
-    USE_LINKS:
     for(int j=0; j<concepts.itemsAmount; j++)
     {
         Concept *postc = concepts.items[j].address;
         Implication valid_implications[TABLE_SIZE*2] = {0};
         int k=0;
-        if(temporal)
+        if(!declarative)
         {
             for(; k<postc->precondition_beliefs[operationID].itemsAmount; k++)
             {
@@ -620,15 +618,15 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                     }
                 }
                 assert(precondition->occurrenceTime != OCCURRENCE_ETERNAL, "Precondition should not be eternal!");
-                Event updated_precondition = Inference_EventUpdate(precondition, currentTime);
+                Event updated_precondition = *precondition; //Inference_EventUpdate(precondition, currentTime);
                 Event op = { .type = EVENT_TYPE_BELIEF,
-                             .truth = (Truth) { .frequency = 1.0, .confidence = operationID == 0 ? 1.0 : 0.9 },
+                             .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
                              .occurrenceTime = currentTime };
                 bool success;
                 Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
                 if(success)
                 {
-                    Event result = Inference_BeliefDeduction(&seqop, &imp); //b. :/:
+                    Event result = Inference_BeliefDeduction(operationID == 0 ? precondition : &seqop, &imp); //b. :/:
                     if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(result.truth) > ANTICIPATION_THRESHOLD || (result.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && result.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
                     {
                         if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
@@ -679,11 +677,6 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 }
             }
         }
-    }
-    if(!temporal && !declarative)
-    {
-        temporal = true;
-        goto USE_LINKS;
     }
 }
 
