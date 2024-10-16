@@ -781,6 +781,12 @@ void Cycle_Perform(long currentTime)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);
     //2a. Process incoming belief events from FIFO, building implications utilizing input sequences
     Cycle_ProcessBeliefEvents(currentTime);
+    //2c. Declarative inference new way in each cycle
+    if(DECLARATIVE_IMPLICATIONS_CYCLE_PROCESS)
+    {
+        Term not_used = {0};
+        Decision_Anticipate(0, not_used, true, currentTime);
+    }
     for(int layer=0; layer<CYCLING_GOAL_EVENTS_LAYERS; layer++)
     {
         //1b. Retrieve BELIEF/GOAL_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
@@ -790,12 +796,6 @@ void Cycle_Perform(long currentTime)
     }
     //4a. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
     Cycle_Inference(currentTime);
-    //4b. Declarative inference new way in each cycle
-    if(DECLARATIVE_IMPLICATIONS_CYCLE_PROCESS)
-    {
-        Term not_used = {0};
-        Decision_Anticipate(0, not_used, true, currentTime);
-    }
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }
