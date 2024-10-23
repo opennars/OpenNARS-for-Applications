@@ -131,6 +131,10 @@ int Shell_ProcessInput(char *line)
         {
             InvertedAtomIndex_Print();
         }
+        if(!strcmp(line,"*occurrence_time_index"))
+        {
+            OccurrenceTimeIndex_Print(&occurrenceTimeIndex);
+        }
         else
         if(!strcmp(line,"*opconfig"))
         {
