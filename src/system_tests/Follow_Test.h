@@ -23,14 +23,14 @@
  */
 
 bool NAR_Follow_Test_Left_executed = false;
-Feedback NAR_Follow_Test_Left()
+Feedback NAR_Follow_Test_Left(Term args)
 {
     puts("left executed by NAR");
     NAR_Follow_Test_Left_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Follow_Test_Right_executed = false;
-Feedback NAR_Follow_Test_Right()
+Feedback NAR_Follow_Test_Right(Term args)
 {
     puts("right executed by NAR");
     NAR_Follow_Test_Right_executed = true;
