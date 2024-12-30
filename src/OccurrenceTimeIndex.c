@@ -54,3 +54,13 @@ Concept* OccurrenceTimeIndex_GetKthNewestElement(OccurrenceTimeIndex *fifo, int 
     return fifo->array[OccurrenceTimeIndex_Index(fifo, k)];
 }
 
+void OccurrenceTimeIndex_Print(OccurrenceTimeIndex *fifo) {
+    puts("printing occurrence time index content:");
+    for (int k = 0; k < fifo->itemsAmount; k++) {
+        Concept* elem = OccurrenceTimeIndex_GetKthNewestElement(fifo, k);
+        printf("%d: ", k);
+        Narsese_PrintTerm(&elem->term);
+        puts("");
+    }
+    puts("index print finish");
+}
