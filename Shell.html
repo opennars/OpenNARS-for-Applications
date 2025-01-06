@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenNARS for Applications</title>
+</head>
+<body>
+    <textarea id="output" rows="30" style="width: 100%"></textarea>
+    <script>
+    //the prior textarea element where the final output will show up
+    var element = document.getElementById('output');
+    var writeindex = 0;
+    var readindex = -1;
+    var framearray = [];
+    var frame = ""
+    function outputProcess(text)
+    {
+        if(text.includes("\033[1;1H\033[2J"))
+        {
+            framearray[writeindex++] = frame;
+            frame = "";
+        }
+        text = text.replace("\033[1;1H\033[2J","")
+        const ansiEscape = /\x1B\[\d+(;\d+)*m/g;
+        text = text.replace(ansiEscape, '');
+        console.log(text);
+        frame += text + "\n";
+        element.value += text + "\n";
+        readindex = 0;
+    }
+    //which parameter to pass to ONA
+    function getParams()
+    {
+        if(window.location.search == "")
+        {
+            return [];
+        }
+        return window.location.search.substring(1).split("&");
+    }
+    var Module = {
+      arguments: getParams(),
+      'print': function(text) { outputProcess(text); },
+      'printErr': function(text) { outputProcess(text) },
+    };
+    var interval = setInterval(function(){
+     if(readindex != -1 && readindex < framearray.length){
+        element.value = framearray[readindex++];
+     }
+    }, 50)
+    </script>
+    <script src="NAR.js"></script>
+</body>
+</html>
