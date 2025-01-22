@@ -49,10 +49,10 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 
 static void Decision_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2) //Stamp stamp,
 {
-    if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
+    /*if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
         return; //stamp overlap
-    }
+    }*/
     Stamp st = *stamp1;
     if(stamp2 != NULL)
     {
@@ -875,12 +875,101 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                 Atom var2 = imp.term.atoms[16];
                                 Atom var3 = imp.term.atoms[19];
                                 Atom var4 = imp.term.atoms[20];
+                                
+                                Term matchTerm = cP->belief.term;
+                                //TRIED PRECON: <(A1 * C1) --> (ocr * ocr)>
+                                //<(A1 * C1) --> (ocr1 * ocr2)>
+                                //--> * * A1 C1 ocr1  ocr2
+                                //1   2 3 4  5  6    7
+                                //0   1 2 3  4  5    6
+                                if(Narsese_copulaEquals(matchTerm.atoms[0], INHERITANCE) && 
+                                   Narsese_copulaEquals(matchTerm.atoms[1], PRODUCT) && 
+                                   Narsese_copulaEquals(matchTerm.atoms[2], PRODUCT))
+                                {
+                                    Term A1 = Term_ExtractSubterm(&matchTerm, 3);
+                                    Term C1 = Term_ExtractSubterm(&matchTerm, 4);
+                                    Term ocr1_ = Term_ExtractSubterm(&matchTerm, 5);
+                                    Term ocr2_ = Term_ExtractSubterm(&matchTerm, 6);
+                                    Term LOC1 = {0};
+                                    Term LOC2 = {0};
+                                    if(Term_Equal(&ocr1_, &ocr2_) && Term_Equal(&ocr1_, &ocr1) && Term_Equal(&ocr2_, &ocr2) &&
+                                       Term_Equal(&loc1, &loc2))
+                                    {
+                                        // search for: <(LOC1 * A1) --> (loc * ocr)>
+                                        // search for: <(LOC2 * C1) --> (loc * ocr)>
+                                        for(int w=0; w<concepts.itemsAmount; w++) //todo use occurrence time index instead
+                                        {
+                                            Concept *cLoc = concepts.items[w].address;
+                                            if(cLoc->belief_spike.occurrenceTime > currentTime-EVENT_BELIEF_DISTANCE)
+                                            {
+                                                Term candidate = cLoc->belief_spike.term;
+                                                if(Narsese_copulaEquals(candidate.atoms[0], INHERITANCE) && 
+                                                   Narsese_copulaEquals(candidate.atoms[1], PRODUCT) && 
+                                                   Narsese_copulaEquals(candidate.atoms[2], PRODUCT))
+                                                {
+                                                    //<(LOC1 * A1) --> (loc * ocr)>
+                                                    //--> * * LOC1 A1 loc  ocr
+                                                    //1   2 3 4    5  6    7
+                                                    //0   1 2 3    4  5    6
+                                                    Term LOC1_temp = Term_ExtractSubterm(&candidate, 3); //obtained if the rest matches
+                                                    Term potentially_A1 = Term_ExtractSubterm(&candidate, 4);
+                                                    Term potentially_loc = Term_ExtractSubterm(&candidate, 5);
+                                                    Term potentially_ocr = Term_ExtractSubterm(&candidate, 6);
+                                                    if(Term_Equal(&potentially_loc, &loc1) &&
+                                                       Term_Equal(&potentially_ocr, &ocr1) && 
+                                                       Term_Equal(&potentially_A1, &A1))
+                                                    {
+                                                        //we have LOC1 now
+                                                        LOC1 = LOC1_temp;
+                                                    }
+                                                    
+                                                    //<(LOC2 * C1) --> (loc * ocr)>
+                                                    //--> * * LOC2 C1 loc  ocr
+                                                    //1   2 3 4    5  6    7
+                                                    //0   1 2 3    4  5    6
+                                                    Term LOC2_temp = Term_ExtractSubterm(&candidate, 3); //obtained if the rest matches
+                                                    Term potentially_C1 = Term_ExtractSubterm(&candidate, 4);
+                                                    //Term potentially_loc = Term_ExtractSubterm(&candidate, 5);
+                                                    //Term potentially_ocr = Term_ExtractSubterm(&candidate, 6);
+                                                    if(Term_Equal(&potentially_loc, &loc1) &&
+                                                       Term_Equal(&potentially_ocr, &ocr1) && 
+                                                       Term_Equal(&potentially_C1, &C1))
+                                                    {
+                                                        //we have LOC1 now
+                                                        LOC2 = LOC2_temp;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if(LOC1.atoms[0] && LOC2.atoms[0]) //both terms got found
+                                        {
+                                            Substitution subs1 = { .success = true };
+                                            subs1.map[var1] = LOC1;
+                                            subs1.map[var2] = LOC2;
+                                            subs1.map[var3] = A1;
+                                            subs1.map[var4] = C1;
+                                            bool success1;
+                                            Term version1 = Variable_ApplySubstitute(imp.term, subs1, &success1);
+                                            if(success1)
+                                            {
+                                                Term newcontingency = Term_ExtractSubterm(&version1, 2);
+                                                fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
+                                                Decision_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                //exit(0);
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                                
+                                
+                                
                                 //TRIED PRECON: <(sample * A1) --> (loc * ocr)>
                                 // --> *  *  sample A1  loc ocr
                                 // 1   2  3  4       5  6   7
                                 // 0   1  2  3       4  5   6
                                 //puts("A");
-                                Term matchTerm = cP->belief.term;
+                                /*Term matchTerm = cP->belief.term;
                                 if(Narsese_copulaEquals(matchTerm.atoms[0], INHERITANCE) &&
                                    Narsese_copulaEquals(matchTerm.atoms[1], PRODUCT) &&
                                    Narsese_copulaEquals(matchTerm.atoms[2], PRODUCT))
@@ -939,22 +1028,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                     }
-                                    
-                                   /* if(!Variable_isVariable(var1) && !Variable_isVariable(var3))
-                                    {
-                                        
-                                    }
-                                    if(!Variable_isVariable(var2) && !Variable_isVariable(var4))
-                                    {
-                                        
-                                    }*/
-                                    
-                                    
-                                    
-        
-                                    
-                                }
-                                
+                                }*/
                             }
                         }
                     }
