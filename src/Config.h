@@ -117,7 +117,7 @@
 /* Space parameters */
 /*------------------*/
 //Maximum amount of concepts
-#define CONCEPTS_MAX 16384
+#define CONCEPTS_MAX 8192
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
@@ -133,7 +133,7 @@
 //Maximum Implication table size
 #define TABLE_SIZE 20
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 64
+#define COMPOUND_TERM_SIZE_MAX 128
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap

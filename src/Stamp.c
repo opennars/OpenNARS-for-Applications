@@ -71,6 +71,23 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
     return ret;
 }
 
+bool Stamp_hasDuplicate(Stamp *a)
+{
+    for(int i=0;i<STAMP_SIZE;i++)
+    {
+        for(int j=0;j<STAMP_SIZE;j++)
+        {
+            if(a->evidentialBase[i] != STAMP_FREE &&
+               a->evidentialBase[j] != STAMP_FREE &&
+               i != j && a->evidentialBase[i] == a->evidentialBase[i])
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
     for(int i=0;i<STAMP_SIZE;i++)

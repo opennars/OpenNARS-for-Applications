@@ -60,5 +60,7 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b);
 bool Stamp_Equal(Stamp *a, Stamp *b);
 //print stamp
 void Stamp_print(Stamp *stamp);
+//duplicate in ev base?
+bool Stamp_hasDuplicate(Stamp *a);
 
 #endif
