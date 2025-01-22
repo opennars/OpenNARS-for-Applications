@@ -843,6 +843,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                             precondition = &cP->belief;
                             additionalSubstApplied = true;
                             additionalSubst = additionalSubstTemp;
+                            //fputs("RESOLVED", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                         }
                         else
                         {
@@ -892,21 +893,36 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     Term ocr2_ = Term_ExtractSubterm(&matchTerm, 6);
                                     Term LOC1 = {0};
                                     Term LOC2 = {0};
+                                    Term CTerm1 = {0};
+                                    Term CTerm2 = {0};
+                                    Term potentially_A1_used = {0};
+                                    Term potentially_C1_used = {0};
+                                    //fputs("PRE-SEARCH", stdout); Narsese_PrintTerm(&matchTerm); puts("");
                                     if(Term_Equal(&ocr1_, &ocr2_) && Term_Equal(&ocr1_, &ocr1) && Term_Equal(&ocr2_, &ocr2) &&
                                        Term_Equal(&loc1, &loc2))
                                     {
+                                        
+                                        fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                        
                                         // search for: <(LOC1 * A1) --> (loc * ocr)>
                                         // search for: <(LOC2 * C1) --> (loc * ocr)>
                                         for(int w=0; w<concepts.itemsAmount; w++) //todo use occurrence time index instead
                                         {
                                             Concept *cLoc = concepts.items[w].address;
+                                            if(Variable_hasVariable(&cLoc->term, true, true, true))
+                                            {
+                                                continue;
+                                            }
                                             if(cLoc->belief_spike.occurrenceTime > currentTime-EVENT_BELIEF_DISTANCE)
                                             {
                                                 Term candidate = cLoc->belief_spike.term;
+                                                
                                                 if(Narsese_copulaEquals(candidate.atoms[0], INHERITANCE) && 
                                                    Narsese_copulaEquals(candidate.atoms[1], PRODUCT) && 
                                                    Narsese_copulaEquals(candidate.atoms[2], PRODUCT))
                                                 {
+                                                    //fputs("POTENTIAL ", stdout); Narsese_PrintTerm(&candidate); puts("");// exit(0);
+                                                    bool C1_and_A1_is_same_variable = Variable_isIndependentVariable(C1.atoms[0]) && Variable_isIndependentVariable(A1.atoms[0]) && C1.atoms[0] == A1.atoms[0];
                                                     //<(LOC1 * A1) --> (loc * ocr)>
                                                     //--> * * LOC1 A1 loc  ocr
                                                     //1   2 3 4    5  6    7
@@ -915,12 +931,31 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                     Term potentially_A1 = Term_ExtractSubterm(&candidate, 4);
                                                     Term potentially_loc = Term_ExtractSubterm(&candidate, 5);
                                                     Term potentially_ocr = Term_ExtractSubterm(&candidate, 6);
+                                                    
+                                                    //fputs("A ", stdout); Narsese_PrintTerm(&potentially_loc); fputs(" === ", stdout); Narsese_PrintTerm(&loc1); puts("");
+                                                    //fputs("B ", stdout); Narsese_PrintTerm(&potentially_ocr); fputs(" === ", stdout); Narsese_PrintTerm(&ocr1); puts("");
+                                                    //fputs("C ", stdout); Narsese_PrintTerm(&A1); fputs(" === ", stdout); Narsese_PrintTerm(&potentially_A1); puts("");
+                                                    //fputs("POTENTIAL ", stdout); Narsese_PrintTerm(&potentially_loc); fputs(" === ", stdout); Narsese_PrintTerm(&loc1); puts("");
+                                                    
                                                     if(Term_Equal(&potentially_loc, &loc1) &&
                                                        Term_Equal(&potentially_ocr, &ocr1) && 
-                                                       Term_Equal(&potentially_A1, &A1))
+                                                       //Term_Equal(&potentially_A1, &A1))
+                                                       Variable_Unify(&A1, &potentially_A1).success)
                                                     {
-                                                        //we have LOC1 now
-                                                        LOC1 = LOC1_temp;
+                                                        //puts("UNIFIED 1");
+                                                        if(!LOC1.atoms[0] && (!LOC2.atoms[0] || !Term_Equal(&cLoc->term, &CTerm2))) //already have a LOC2 term found, don't use the same concept!
+                                                        {
+                                                            //puts("UNIFIED 2");
+                                                            //fputs("Z1 ", stdout); Narsese_PrintTerm(&LOC1_temp); fputs(" === ", stdout); Narsese_PrintTerm(&LOC2); puts("");
+                                                            if(!C1_and_A1_is_same_variable || !LOC2.atoms[0] || Term_Equal(&potentially_A1, &potentially_C1_used))
+                                                            {
+                                                            //we have LOC1 now
+                                                            LOC1 = LOC1_temp;
+                                                            CTerm1 = cLoc->term;
+                                                            fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                            potentially_A1_used = potentially_A1;
+                                                            }
+                                                        }
                                                     }
                                                     
                                                     //<(LOC2 * C1) --> (loc * ocr)>
@@ -933,16 +968,36 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                     //Term potentially_ocr = Term_ExtractSubterm(&candidate, 6);
                                                     if(Term_Equal(&potentially_loc, &loc1) &&
                                                        Term_Equal(&potentially_ocr, &ocr1) && 
-                                                       Term_Equal(&potentially_C1, &C1))
+                                                       //Term_Equal(&potentially_C1, &C1))// &&
+                                                       Variable_Unify(&C1, &potentially_C1).success)
+                                                      // !Term_Equal(&LOC1, &LOC2_temp)) //TODO reflexivity issue
                                                     {
+                                                        //puts("UNIFIED 3");
+                                                        //puts("UNIFIED2");
+                                                        //Narsese_PrintTerm(&cLoc->term); fputs(" === ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
                                                         //we have LOC1 now
-                                                        LOC2 = LOC2_temp;
+                                                        if(!LOC2.atoms[0] && (!LOC1.atoms[0] || !Term_Equal(&cLoc->term, &CTerm1))) //already have a LOC1 term found, don't use the same concept!
+                                                        {
+                                                            //puts("UNIFIED 4");
+                                                            //puts("UNIFIED2 SUCESS");
+                                                            //printf("TEST: %d %d\n", (int) C1_and_A1_is_same_variable, (int) Term_Equal(&LOC2_temp, &LOC1));
+                                                            //Narsese_PrintTerm(&LOC2_temp);  fputs(" === ", stdout); Narsese_PrintTerm(&LOC1); puts("");
+                                                            //fputs("Z2 ", stdout); Narsese_PrintTerm(&potentially_C1); fputs(" === ", stdout); Narsese_PrintTerm(&potentially_A1_used); puts("");
+                                                            if(!C1_and_A1_is_same_variable || !LOC1.atoms[0] || Term_Equal(&potentially_C1, &potentially_A1_used))
+                                                            {
+                                                            LOC2 = LOC2_temp;
+                                                            CTerm2 = cLoc->term;
+                                                            fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                            potentially_C1_used = potentially_C1;
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                         if(LOC1.atoms[0] && LOC2.atoms[0]) //both terms got found
                                         {
+                                            //puts("BOTH TERMS FOUND"); exit(0);
                                             Substitution subs1 = { .success = true };
                                             subs1.map[var1] = LOC1;
                                             subs1.map[var2] = LOC2;
@@ -950,6 +1005,11 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             subs1.map[var4] = C1;
                                             bool success1;
                                             Term version1 = Variable_ApplySubstitute(imp.term, subs1, &success1);
+                                            /*fputs("$1: ", stdout); Narsese_PrintTerm(&LOC1); puts("");
+                                            fputs("$2: ", stdout); Narsese_PrintTerm(&LOC2); puts("");
+                                            fputs("$3: ", stdout); Narsese_PrintTerm(&A1); puts("");
+                                            fputs("$4: ", stdout); Narsese_PrintTerm(&C1); puts("");
+                                            fputs("SUBS INTO: ", stdout); Narsese_PrintTerm(&imp.term); puts("");*/
                                             if(success1)
                                             {
                                                 Term newcontingency = Term_ExtractSubterm(&version1, 2);

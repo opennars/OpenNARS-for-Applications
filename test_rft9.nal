@@ -1,0 +1,24 @@
+//*volume=0
+*setopname 1 ^match
+*motorbabbling=false
+//<(a * b) --> R>.
+//<(b * a) --> R>.
+
+
+<((<(sample * $1) --> (loc * ocr)> &/ <(left * $1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+
+<(sample * X1) --> (loc * ocr)>. :|:
+<(left   * X1) --> (loc * ocr)>. :|:
+<(right  * X2) --> (loc * ocr)>. :|:
+
+G! :|:
+//<(<($1 * $2) --> (loc * loc)> && <($3 * $3) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $3) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
+100
+//<(A1 * A1) --> (ocr * ocr)>. :|:
+<(sample * A1) --> (loc * ocr)>. :|:
+<(left   * A2) --> (loc * ocr)>. :|:
+<(right  * A1) --> (loc * ocr)>. :|:
+
+z. :|:
+G! :|:
+
