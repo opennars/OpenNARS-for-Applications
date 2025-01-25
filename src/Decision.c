@@ -81,57 +81,55 @@ void Decision_Execute(long currentTime, Decision *decision)
                                                Term_Equal(&loc1, &loc2);
     if(proceed)
     {
-    
-    // ->
-    // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
-    // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
-    // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
-    // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
-    Term conjunction = {0};
-    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
-    conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
-    conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
-    conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
-    conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
-    conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
-    conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
-    bool success = true;
-    success &= Term_OverrideSubterm(&conjunction, 7, &sample);
-    success &= Term_OverrideSubterm(&conjunction, 8, &left);
-    success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
-    success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
-    success &= Term_OverrideSubterm(&conjunction, 11, &X1);
-    success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
-    success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
-    success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
-    //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
-    Term implication = {0};
-    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
-    success &= Term_OverrideSubterm(&implication, 1, &conjunction);
-    success &= Term_OverrideSubterm(&implication, 2, &contingency);
-    if(success)
-    {
-        //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
-        Truth implication_truth = Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
-        bool success2;
-        Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
-        if(success2)
+        // ->
+        // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
+        // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
+        // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
+        // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
+        Term conjunction = {0};
+        conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+        conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
+        conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
+        conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
+        conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
+        conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
+        conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
+        bool success = true;
+        success &= Term_OverrideSubterm(&conjunction, 7, &sample);
+        success &= Term_OverrideSubterm(&conjunction, 8, &left);
+        success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
+        success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
+        success &= Term_OverrideSubterm(&conjunction, 11, &X1);
+        success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
+        success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
+        success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
+        //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
+        Term implication = {0};
+        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+        success &= Term_OverrideSubterm(&implication, 2, &contingency);
+        if(success)
         {
-            //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
-            //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
-            Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp);
+            //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
+            Truth implication_truth = Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
+            bool success2;
+            Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
+            if(success2)
+            {
+                //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
+                Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp);
+                //extract the individual statements
+                Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
+                Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
+                fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
+                fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL);
+                //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+                Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL);
+            }
             
-            //extract the individual statements
-            Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
-            Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
-            fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
-            fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
-            Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL);
-            //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
-            Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL);
         }
-        
-    }
     }
     //end
     if(FUNCTIONAL_EQUIVALENCE && decision->specific_implication.term.atoms[0] && !Variable_hasVariable(&decision->specific_implication.term, true, true, false))
