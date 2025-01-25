@@ -6,7 +6,12 @@
 100
 
 <(sample * Y1) --> (loc * ocr)>. :|:
+<(sample * Z1) --> (loc * ocr)>. :|:
+
+100
+
 <(sample * X1) --> (loc * ocr)>. :|:
+<(sample * Z1) --> (loc * ocr)>. :|:
 
 100
 
@@ -19,9 +24,18 @@ G! :|:
 
 100
 
+<((<(sample * Y1) --> (loc * ocr)> &/ <(right * Z1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>.
+
 <(sample * Y1) --> (loc * ocr)>. :|:
-<(left * X2) --> (loc * ocr)>. :|:
-<(right * X1) --> (loc * ocr)>. :|:
+<(left * Z1) --> (loc * ocr)>. :|:
+<(right * Z2) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<(sample * X1) --> (loc * ocr)>. :|:
+<(left * Z1) --> (loc * ocr)>. :|:
+<(right * Z2) --> (loc * ocr)>. :|:
 
 G! :|:
-//^match executed with args ({SELF} * (sample * right))
+//^match executed with args ({SELF} * (sample * left))
