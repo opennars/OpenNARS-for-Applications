@@ -51,6 +51,61 @@ double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
+void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2) //Stamp stamp,
+{
+    /*if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
+    {
+        return; //stamp overlap
+    }*/
+    Stamp st = *stamp1;
+    if(stamp2 != NULL)
+    {
+        st = Stamp_make(stamp1, stamp2);
+    }
+    
+    //<(C &/ Operation) =/> G>. 
+    //       \_______/
+    // =/> &/   C  Operation
+    // 1   2  3 4  5
+    // 0   1  2 3  4
+    /*if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION)) //todo restriction specialized for match-to-sample
+    {
+        Term operation = Term_ExtractSubterm(term, 4);
+        //<({SELF} * (sample * right)) --> ^match>
+        //--> * ^operator
+        //1   2 3         4 5 6 7 8       9
+        //0   1 2         3 4 5 6 7       8
+        //                *       sample
+        if(Narsese_isOperation(&operation))
+        {
+            Term potentially_sample = Term_ExtractSubterm(&operation, 7);
+            Term sample = Narsese_AtomicTerm("sample");
+            if(!Term_Equal(&potentially_sample, &sample))
+            {
+                return;
+            }
+        }
+    }*/
+    
+    
+    /*if(Stamp_hasDuplicate(&st) || Stamp_hasDuplicate(&st))
+    {
+        return; //stamp has dup
+    }*/
+    Event ev = { .term = *term,
+                 .type = EVENT_TYPE_BELIEF, 
+                 .truth = truth, 
+                 .stamp = st,
+                 .occurrenceTime = currentTime,
+                 .occurrenceTimeOffset = 0,
+                 .creationTime = currentTime,
+                 .input = false };
+    //Event ev = Event_InputEvent(*term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
+    ev.stamp = st;
+    ev.occurrenceTime = OCCURRENCE_ETERNAL; 
+    Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
+}
+
 static void Memory_ResetEvents()
 {
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);

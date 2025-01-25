@@ -1,0 +1,21 @@
+*setopname 1 ^select
+*motorbabbling=false
+
+<(<(sample * red) --> (loc * color)> &/ <({SELF} * left) --> ^select>) =/> G>.
+<(<(sample * blue) --> (loc * color)> &/ <({SELF} * left) --> ^select>) =/> G>.
+
+
+<(sample * red) --> (loc * color)>. :|:
+//<({SELF} * left) --> ^select>. :|:
+G! :|:
+
+100
+
+<(sample * blue) --> (loc * color)>. :|:
+G! :|:
+
+//<<($1 * red) --> (loc * color)> <=> <($1 * blue) --> (loc * color)>>
+
+//(<(sample * sample) --> (loc * loc)> && <(red * blue) --> (color * color)>). :|:
+
+

@@ -47,60 +47,7 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
     }
 }
 
-static void Decision_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2) //Stamp stamp,
-{
-    /*if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
-    {
-        return; //stamp overlap
-    }*/
-    Stamp st = *stamp1;
-    if(stamp2 != NULL)
-    {
-        st = Stamp_make(stamp1, stamp2);
-    }
-    
-    //<(C &/ Operation) =/> G>. 
-    //       \_______/
-    // =/> &/   C  Operation
-    // 1   2  3 4  5
-    // 0   1  2 3  4
-    /*if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION)) //todo restriction specialized for match-to-sample
-    {
-        Term operation = Term_ExtractSubterm(term, 4);
-        //<({SELF} * (sample * right)) --> ^match>
-        //--> * ^operator
-        //1   2 3         4 5 6 7 8       9
-        //0   1 2         3 4 5 6 7       8
-        //                *       sample
-        if(Narsese_isOperation(&operation))
-        {
-            Term potentially_sample = Term_ExtractSubterm(&operation, 7);
-            Term sample = Narsese_AtomicTerm("sample");
-            if(!Term_Equal(&potentially_sample, &sample))
-            {
-                return;
-            }
-        }
-    }*/
-    
-    
-    /*if(Stamp_hasDuplicate(&st) || Stamp_hasDuplicate(&st))
-    {
-        return; //stamp has dup
-    }*/
-    Event ev = { .term = *term,
-                 .type = EVENT_TYPE_BELIEF, 
-                 .truth = truth, 
-                 .stamp = st,
-                 .occurrenceTime = currentTime,
-                 .occurrenceTimeOffset = 0,
-                 .creationTime = currentTime,
-                 .input = false };
-    //Event ev = Event_InputEvent(*term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
-    ev.stamp = st;
-    ev.occurrenceTime = OCCURRENCE_ETERNAL; 
-    Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
-}
+
 
 //Inject action event after execution or babbling
 void Decision_Execute(long currentTime, Decision *decision)
@@ -123,6 +70,18 @@ void Decision_Execute(long currentTime, Decision *decision)
     Term Y1 =     Term_ExtractSubterm(&precondition, 12);
     Term loc2 =   Term_ExtractSubterm(&precondition, 13);
     Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
+    
+    bool proceed = Narsese_copulaEquals(precondition.atoms[0], SEQUENCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[4], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
+                                               Term_Equal(&loc1, &loc2);
+    if(proceed)
+    {
+    
     // ->
     // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
     // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
@@ -159,19 +118,20 @@ void Decision_Execute(long currentTime, Decision *decision)
         if(success2)
         {
             //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
-            //Decision_AddMemoryHelper(currentTime, &implication, implication_truth);
-            Decision_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp);
+            //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
+            Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp);
             
             //extract the individual statements
             Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
             Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
             fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
             fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
-            Decision_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL);
-            //Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
-            Decision_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL);
+            Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL);
+            //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+            Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL);
         }
         
+    }
     }
     //end
     if(FUNCTIONAL_EQUIVALENCE && decision->specific_implication.term.atoms[0] && !Variable_hasVariable(&decision->specific_implication.term, true, true, false))
@@ -1014,7 +974,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             {
                                                 Term newcontingency = Term_ExtractSubterm(&version1, 2);
                                                 fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
-                                                Decision_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
                                                 //exit(0);
                                             
                                         }
@@ -1054,14 +1014,14 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             //fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&version1); puts("");
                                             if(Variable_hasVariable(&version1, true, false, false))
                                             {
-                                                Decision_AddMemoryHelper(currentTime, &version1, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                Memory_AddMemoryHelper(currentTime, &version1, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
                                             }
                                             else
                                             {
                                                 Term newcontingency = Term_ExtractSubterm(&version1, 2);
-                                                Decision_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
                                             }
-                                            //Decision_AddMemoryHelper(long currentTime, Term* term, Truth truth)
+                                            //Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth)
                                            // fflush(stdout); exit(0);
                                         }
                                     }
@@ -1079,12 +1039,12 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             //fputs("TEST RESULT 2: ", stdout); Narsese_PrintTerm(&version2); puts("");
                                             if(Variable_hasVariable(&version2, true, false, false))
                                             {
-                                                Decision_AddMemoryHelper(currentTime, &version2, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                Memory_AddMemoryHelper(currentTime, &version2, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
                                             }
                                             else
                                             {
                                                 Term newcontingency = Term_ExtractSubterm(&version2, 2);
-                                                Decision_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
+                                                Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp);
                                             }
                                         }
                                     }

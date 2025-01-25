@@ -109,5 +109,7 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 int Memory_getOperationID(Term *term);
 //Get temporal link truth value
 Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
+//helper to add content to memory
+void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2);
 
 #endif
