@@ -79,6 +79,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                                                Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
                                                Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
                                                Term_Equal(&loc1, &loc2);
+    bool acquired_rel = false;
     if(proceed)
     {
         // ->
@@ -127,6 +128,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                 Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL);
                 //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
                 Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL);
+                acquired_rel = true; //gets in the way of functional equ as we would acquire a relation yet again from the functional equ
             }
             
         }
@@ -240,6 +242,91 @@ void Decision_Execute(long currentTime, Decision *decision)
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
                             {
                                 Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
+                                Term contingency = e_imp.term; //decision->usedContingency.term;
+                                //Term preconditon_with_op = Term_ExtractSubterm(&contingency, 1); //(0 copula, 1 subject, 2 predicate)
+                                Term precondition = contingency; //Narsese_GetPreconditionWithoutOp(&preconditon_with_op);
+                                //TODO ENSURE COPULA STRUCTURE IS IN TERM
+                                // (<(sample * X1) --> (loc1 * ocr1)> =/> <(left * Y1) --> (loc2 * ocr2)>)
+                                // =/> --> -->  *  *  *  * sample X1 loc1 ocr1 left Y1 loc2 ocr2
+                                // 1   2   3    4  5  6  7 8      9  10   11   12   13 14   15
+                                // 0   1   2    3  4  5  6 7      8  9    10   11   12 13   14
+                                Term sample = Term_ExtractSubterm(&precondition, 7);
+                                Term X1 =     Term_ExtractSubterm(&precondition, 8);
+                                Term loc1 =   Term_ExtractSubterm(&precondition, 9);
+                                Term ocr1 =   Term_ExtractSubterm(&precondition, 10);
+                                Term left =   Term_ExtractSubterm(&precondition, 11);
+                                Term Y1 =     Term_ExtractSubterm(&precondition, 12);
+                                Term loc2 =   Term_ExtractSubterm(&precondition, 13);
+                                Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
+                                bool proceed = Narsese_copulaEquals(precondition.atoms[0], IMPLICATION) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[4], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
+                                                                           Term_Equal(&loc1, &loc2);
+                                proceed = !acquired_rel && //whether we already acquired a rel
+                                           proceed && Term_Equal(&left, &sample); //location need to match in addition
+                                /*if(!proceed)
+                                {
+                                    fputs("TERM: ", stdout); Narsese_PrintTerm(&precondition); puts("");
+                                }*/
+                                if(proceed)
+                                {
+                                    fputs("EIMP: ", stdout); Narsese_PrintTerm(&e_imp.term); puts("");
+                                    // puts("PROCEED");
+                                    // ->
+                                    // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
+                                    // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
+                                    // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
+                                    // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
+                                    Term conjunction = {0};
+                                    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                                    conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
+                                    bool success = true;
+                                    success &= Term_OverrideSubterm(&conjunction, 7, &sample);
+                                    success &= Term_OverrideSubterm(&conjunction, 8, &left);
+                                    success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
+                                    success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
+                                    success &= Term_OverrideSubterm(&conjunction, 11, &X1);
+                                    success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
+                                    success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
+                                    success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
+                                    //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
+                                    Term implication = {0};
+                                    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                                    success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+                                    success &= Term_OverrideSubterm(&implication, 2, &contingency);
+                                    if(success)
+                                    {
+                                        //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
+                                        Truth implication_truth = e_imp.truth; //Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
+                                        bool success2;
+                                        Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                                        if(success2)
+                                        {
+                                            //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                                            //Decision_AddMemoryHelper(currentTime, &implication, implication_truth);
+                                            Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &e_imp.stamp, NULL); //&decision->reason->stamp, &decision->usedContingency.stamp);
+                                            //extract the individual statements
+                                            Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
+                                            Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
+                                            fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
+                                            fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                                            Memory_AddMemoryHelper(currentTime, &conjunction, e_imp.truth, &e_imp.stamp, NULL);
+                                            //--//Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+                                            Memory_AddMemoryHelper(currentTime, &ocr_ocr, e_imp.truth, &e_imp.stamp, NULL);
+                                            //exit(0);
+                                        }
+
+                                    }
+                                }
                             }
                             Event e_imp2 = e_imp;
                             bool intro_success2;
@@ -814,7 +901,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                             //<(<(sample * $2) --> (loc * loc)> && <(A1 * $4) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
                             //<(<($1 * sample) --> (loc * loc)> && <($3 * A1) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
                             if(Narsese_copulaEquals(imp.term.atoms[1], CONJUNCTION) &&
-                               Narsese_copulaEquals(imp.term.atoms[2], TEMPORAL_IMPLICATION) &&
+                               (Narsese_copulaEquals(imp.term.atoms[2], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(imp.term.atoms[2], IMPLICATION)) && //DOES NOT HAVE TO BE A TEMPORAL IMPLICATION
                                Narsese_copulaEquals(imp.term.atoms[3], INHERITANCE) &&
                                Narsese_copulaEquals(imp.term.atoms[4], INHERITANCE) &&
                                Narsese_copulaEquals(imp.term.atoms[7], PRODUCT) &&
@@ -860,7 +947,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                        Term_Equal(&loc1, &loc2))
                                     {
                                         
-                                        fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                       //-- fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                       //-- fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
                                         
                                         // search for: <(LOC1 * A1) --> (loc * ocr)>
                                         // search for: <(LOC2 * C1) --> (loc * ocr)>
@@ -910,7 +998,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                             //we have LOC1 now
                                                             LOC1 = LOC1_temp;
                                                             CTerm1 = cLoc->term;
-                                                            fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                            //--fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
                                                             potentially_A1_used = potentially_A1;
                                                             }
                                                         }
@@ -945,7 +1033,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                             {
                                                             LOC2 = LOC2_temp;
                                                             CTerm2 = cLoc->term;
-                                                            fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                            //--fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
                                                             potentially_C1_used = potentially_C1;
                                                             }
                                                         }
@@ -955,6 +1043,11 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                         }
                                         if(LOC1.atoms[0] && LOC2.atoms[0]) //both terms got found
                                         {
+                                            //print all only when found
+                                            fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                            fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                            fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                            fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
                                             //puts("BOTH TERMS FOUND"); exit(0);
                                             Substitution subs1 = { .success = true };
                                             subs1.map[var1] = LOC1;
