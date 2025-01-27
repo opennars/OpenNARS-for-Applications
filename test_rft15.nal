@@ -1,0 +1,25 @@
+*volume=100
+*setopname 1 ^match
+*motorbabbling=false
+<(sample * A1) --> (loc * ocr)>. :|:
+<(sample * G1) --> (loc * ocr)>. :|:
+<(sample * B1) --> (loc * ocr)>. :|:
+
+100
+
+<(sample * X1) --> (loc * ocr)>. :|:
+//<(sample * G1) --> (loc * ocr)>. :|:
+<(sample * Y1) --> (loc * ocr)>. :|:
+
+100
+<((<(sample * B1) --> (loc * ocr)> &/ <(left * A1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+<(sample * B1) --> (loc * ocr)>. :|:
+<(left * A1) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<(sample * Y1) --> (loc * ocr)>. :|:
+<(left * X1) --> (loc * ocr)>. :|:
+<(right * X2) --> (loc * ocr)>. :|:
+G! :|:
