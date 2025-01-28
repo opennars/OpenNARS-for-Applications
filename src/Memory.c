@@ -51,8 +51,12 @@ double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
-void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2) //Stamp stamp,
+void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool raisePriority) //Stamp stamp,
 {
+    if(raisePriority) //Narsese_copulaEquals(term->atoms[0], INHERITANCE))
+    {
+        truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
+    }
     /*if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
         return; //stamp overlap
@@ -104,6 +108,16 @@ void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     ev.stamp = st;
     ev.occurrenceTime = OCCURRENCE_ETERNAL; 
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
+    /*if(raisePriority)
+    {
+        Concept *c = Memory_FindConceptByTerm(&ev.term);
+        fputs("RAISE PRIORITY: ", stdout); Narsese_PrintTerm(&ev.term); puts("");
+        if(c != NULL)
+        {
+            c->priority = 1.0;
+            c->usage = Usage_use(c->usage, currentTime, true);
+        }
+    }*/
 }
 
 static void Memory_ResetEvents()
