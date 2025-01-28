@@ -51,16 +51,20 @@ double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
-void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool raisePriority) //Stamp stamp,
+bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool raisePriority) //Stamp stamp,
 {
-    if(raisePriority) //Narsese_copulaEquals(term->atoms[0], INHERITANCE))
+    if(Narsese_copulaEquals(term->atoms[0], INHERITANCE) && Variable_hasVariable(term, true, true, false))
+    {
+        return false;
+    }
+    if(raisePriority) //
     {
         truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
     }
-    /*if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
+    if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
-        return; //stamp overlap
-    }*/
+        return false; //stamp overlap
+    }
     Stamp st = *stamp1;
     if(stamp2 != NULL)
     {
@@ -110,7 +114,7 @@ void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     Concept* potentially_existing = Memory_FindConceptByTerm(&ev.term);
     if(potentially_existing != NULL && Stamp_Equal(&potentially_existing->belief.stamp, &ev.stamp))
     {
-        return;
+        return false;
     }
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
     /*if(raisePriority)
@@ -123,6 +127,7 @@ void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
             c->usage = Usage_use(c->usage, currentTime, true);
         }
     }*/
+    return true;
 }
 
 static void Memory_ResetEvents()

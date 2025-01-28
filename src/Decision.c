@@ -1010,6 +1010,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     Term CTerm2 = {0};
                                     Term potentially_A1_used = {0};
                                     Term potentially_C1_used = {0};
+                                    Stamp stamp1 = {0};
+                                    Stamp stamp2 = {0};
                                     //fputs("PRE-SEARCH", stdout); Narsese_PrintTerm(&matchTerm); puts("");
                                     if(Term_Equal(&ocr1_, &ocr2_) && Term_Equal(&ocr1_, &ocr1) && Term_Equal(&ocr2_, &ocr2) &&
                                        Term_Equal(&loc1, &loc2))
@@ -1065,6 +1067,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                             {
                                                             //we have LOC1 now
                                                             LOC1 = LOC1_temp;
+                                                            stamp1 = cLoc->belief_spike.stamp;
                                                             CTerm1 = cLoc->term;
                                                             //--fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
                                                             potentially_A1_used = potentially_A1;
@@ -1100,6 +1103,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                             if(!C1_and_A1_is_same_variable || !LOC1.atoms[0] || Term_Equal(&potentially_C1, &potentially_A1_used))
                                                             {
                                                             LOC2 = LOC2_temp;
+                                                            stamp2 = cLoc->belief_spike.stamp;
                                                             CTerm2 = cLoc->term;
                                                             //--fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
                                                             potentially_C1_used = potentially_C1;
@@ -1111,11 +1115,6 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                         }
                                         if(LOC1.atoms[0] && LOC2.atoms[0]) //both terms got found
                                         {
-                                            //print all only when found
-                                            fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
-                                            fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
-                                            fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
-                                            fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
                                             //puts("BOTH TERMS FOUND"); exit(0);
                                             Substitution subs1 = { .success = true };
                                             subs1.map[var1] = LOC1;
@@ -1129,11 +1128,20 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             fputs("$3: ", stdout); Narsese_PrintTerm(&A1); puts("");
                                             fputs("$4: ", stdout); Narsese_PrintTerm(&C1); puts("");
                                             fputs("SUBS INTO: ", stdout); Narsese_PrintTerm(&imp.term); puts("");*/
+                                            Stamp combinedStamp = Stamp_make(&stamp1, &stamp2);
                                             if(success1)
                                             {
                                                 Term newcontingency = Term_ExtractSubterm(&version1, 2);
-                                                fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
-                                                Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &cP->belief.stamp, false);
+                                                bool added = Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &combinedStamp, false);
+                                                if(added)
+                                                {
+                                                    //print all only when added
+                                                    fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                                    fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                                    fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                    fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                    fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
+                                                }
                                                 //exit(0);
                                             
                                             }

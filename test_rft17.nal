@@ -1,5 +1,5 @@
 *setopname 1 ^match
-*volume=0
+*volume=100
 *motorbabbling=false
 
 <((<(sample * X1) --> (loc * ocr)> &/ <(left * Y1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
