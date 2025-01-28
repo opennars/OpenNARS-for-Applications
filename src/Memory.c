@@ -106,7 +106,12 @@ void Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                  .input = false };
     //Event ev = Event_InputEvent(*term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
     ev.stamp = st;
-    ev.occurrenceTime = OCCURRENCE_ETERNAL; 
+    ev.occurrenceTime = OCCURRENCE_ETERNAL;
+    Concept* potentially_existing = Memory_FindConceptByTerm(&ev.term);
+    if(potentially_existing != NULL && Stamp_Equal(&potentially_existing->belief.stamp, &ev.stamp))
+    {
+        return;
+    }
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
     /*if(raisePriority)
     {
