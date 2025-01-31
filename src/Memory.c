@@ -51,13 +51,42 @@ double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
-bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool raisePriority) //Stamp stamp,
+Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
+{
+    //<(a * b) --> (CAT1 * CAT2)>
+    //--> * * a b CAT1 CAT2
+    //1   2 3 4 5 6    7
+    //0   1 2 3 4 5    6
+    Term term = ev->term;
+    Relation ret = {0};
+    if(ev->type == EVENT_TYPE_DELETED)
+    {
+        return ret;
+    }
+    if(Narsese_copulaEquals(term.atoms[0], INHERITANCE) &&
+       Narsese_copulaEquals(term.atoms[1], PRODUCT) &&
+       Narsese_copulaEquals(term.atoms[2], PRODUCT))
+    {
+        Term a = Term_ExtractSubterm(&term, 3);
+        Term b = Term_ExtractSubterm(&term, 4);
+        ret = (Relation) { .a = Term_ExtractSubterm(&term, 3),
+                           .b = Term_ExtractSubterm(&term, 4),
+                           .R = Term_ExtractSubterm(&term, 2),
+                           .isRelation = true,
+                           .term = term,
+                           .truth = ev->truth,
+                           .stamp = ev->stamp };
+    }
+    return ret;
+}
+
+bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation) //Stamp stamp,
 {
     if(Narsese_copulaEquals(term->atoms[0], INHERITANCE) && Variable_hasVariable(term, true, true, false))
     {
         return false;
     }
-    if(raisePriority) //
+    if(acquiredRelation) //
     {
         truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
     }
@@ -70,32 +99,6 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     {
         st = Stamp_make(stamp1, stamp2);
     }
-    
-    //<(C &/ Operation) =/> G>. 
-    //       \_______/
-    // =/> &/   C  Operation
-    // 1   2  3 4  5
-    // 0   1  2 3  4
-    /*if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION)) //todo restriction specialized for match-to-sample
-    {
-        Term operation = Term_ExtractSubterm(term, 4);
-        //<({SELF} * (sample * right)) --> ^match>
-        //--> * ^operator
-        //1   2 3         4 5 6 7 8       9
-        //0   1 2         3 4 5 6 7       8
-        //                *       sample
-        if(Narsese_isOperation(&operation))
-        {
-            Term potentially_sample = Term_ExtractSubterm(&operation, 7);
-            Term sample = Narsese_AtomicTerm("sample");
-            if(!Term_Equal(&potentially_sample, &sample))
-            {
-                return;
-            }
-        }
-    }*/
-    
-    
     /*if(Stamp_hasDuplicate(&st) || Stamp_hasDuplicate(&st))
     {
         return; //stamp has dup
@@ -117,16 +120,54 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
         return false;
     }
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
-    /*if(raisePriority)
+    if(acquiredRelation)
     {
-        Concept *c = Memory_FindConceptByTerm(&ev.term);
-        fputs("RAISE PRIORITY: ", stdout); Narsese_PrintTerm(&ev.term); puts("");
-        if(c != NULL)
+        Relation rel = Memory_relationOfBelief(&ev);
+        if(rel.isRelation)
         {
-            c->priority = 1.0;
-            c->usage = Usage_use(c->usage, currentTime, true);
+            //1 way to complete a symmetry pattern:
+            Relation A_B_rel = rel;
+            //<(A * B) --> rel> <(B * A) --> rel>
+            for(int i=0; i<concepts.itemsAmount; i++)
+            {
+                Concept *c = concepts.items[i].address;
+                Relation B_A_rel = Memory_relationOfBelief(&c->belief);
+                if(B_A_rel.isRelation && Term_Equal(&B_A_rel.a, &A_B_rel.b) && Term_Equal(&B_A_rel.b, &A_B_rel.a))
+                {
+                    Term implication = {0};
+                    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                    bool success = true;
+                    success &= Term_OverrideSubterm(&implication, 1, &A_B_rel.term);
+                    success &= Term_OverrideSubterm(&implication, 2, &B_A_rel.term);
+                    if(success)
+                    {
+                        bool success2;
+                        Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                        if(success2)
+                        {
+                            Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B_rel.truth, B_A_rel.truth), &A_B_rel.stamp, &B_A_rel.stamp, false);
+                        }
+                    }
+                }
+            }
+            //3 ways to complete a transitive pattern:
+            {
+                Relation A_B_rel = rel;
+                //<(A * B) --> rel>,                   <(B * ?C) --> rel>,
+                //                  <(A * ?C) --> rel>
+            }
+            {
+                Relation A_C_rel = rel;
+                //<(A * ?B) --> rel>,                   <(?B * C) --> rel>,
+                //                  <(A * C) --> rel>
+            }
+            {
+                Relation B_C_rel = rel;
+                //<(?A * B) --> rel>,                   <(B * C) --> rel>,
+                //                  <(?A * C) --> rel>
+            }
         }
-    }*/
+    }
     return true;
 }
 

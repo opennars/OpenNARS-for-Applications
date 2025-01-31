@@ -907,7 +907,7 @@ void Cycle_Perform(long currentTime)
         Cycle_ProcessAndInferGoalEvents(currentTime, layer);
     }
     //4a. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
-    Cycle_Inference(currentTime);
+    //Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }
