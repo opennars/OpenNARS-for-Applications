@@ -69,8 +69,8 @@ typedef struct
 }Operation;
 typedef struct
 {
-    Term a; //subterm
-    Term b; //subterm
+    Term arg1; //subterm
+    Term arg2; //subterm
     Term R; //subterm
     bool isRelation; //true if of this format:
     Term term; //<(a * b) --> R>

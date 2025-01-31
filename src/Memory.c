@@ -69,8 +69,8 @@ Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
     {
         Term a = Term_ExtractSubterm(&term, 3);
         Term b = Term_ExtractSubterm(&term, 4);
-        ret = (Relation) { .a = Term_ExtractSubterm(&term, 3),
-                           .b = Term_ExtractSubterm(&term, 4),
+        ret = (Relation) { .arg1 = Term_ExtractSubterm(&term, 3),
+                           .arg2 = Term_ExtractSubterm(&term, 4),
                            .R = Term_ExtractSubterm(&term, 2),
                            .isRelation = true,
                            .term = term,
@@ -80,9 +80,36 @@ Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
     return ret;
 }
 
+void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation *B_C, Relation *A_C)
+{
+    Term conjunction = {0};
+    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+    bool success = true;
+    success &= Term_OverrideSubterm(&conjunction, 1, &A_B->term);
+    success &= Term_OverrideSubterm(&conjunction, 2, &B_C->term);
+    if(success && !Stamp_checkOverlap(&A_B->stamp, &B_C->stamp))
+    {
+        Stamp conjunction_stamp = Stamp_make(&A_B->stamp, &B_C->stamp);
+        Truth conjunction_truth = Truth_Intersection(A_B->truth, B_C->truth);
+        Term implication = {0};
+        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+        success &= Term_OverrideSubterm(&implication, 2, &A_C->term);
+        if(success)
+        {
+            bool success2;
+            Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
+            if(success2)
+            {
+                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(conjunction_truth, A_C->truth), &conjunction_stamp, &A_C->stamp, false);
+            }
+        }
+    }
+}
+
 bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation) //Stamp stamp,
 {
-    if(Narsese_copulaEquals(term->atoms[0], INHERITANCE) && Variable_hasVariable(term, true, true, false))
+    if((Narsese_copulaEquals(term->atoms[0], INHERITANCE) || Narsese_copulaEquals(term->atoms[0], CONJUNCTION)) && Variable_hasVariable(term, true, true, false))
     {
         return false;
     }
@@ -119,6 +146,11 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     {
         return false;
     }
+    //TODO also avoid re-deriving ==> by checking postcondition concept implications table entry to equal stamp equal term
+    //if(Narsese_copulaEquals(&ev.term.atoms[0], IMPLICATION))
+    //{
+    //    Term cons = Term_ExtractSubterm(&ev.term
+    //}
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
     if(acquiredRelation)
     {
@@ -126,45 +158,101 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
         if(rel.isRelation)
         {
             //1 way to complete a symmetry pattern:
-            Relation A_B_rel = rel;
-            //<(A * B) --> rel> <(B * A) --> rel>
-            for(int i=0; i<concepts.itemsAmount; i++)
             {
-                Concept *c = concepts.items[i].address;
-                Relation B_A_rel = Memory_relationOfBelief(&c->belief);
-                if(B_A_rel.isRelation && Term_Equal(&B_A_rel.a, &A_B_rel.b) && Term_Equal(&B_A_rel.b, &A_B_rel.a))
+                Relation A_B = rel;
+                //<(A * B) --> rel> <(B * A) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
                 {
-                    Term implication = {0};
-                    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
-                    bool success = true;
-                    success &= Term_OverrideSubterm(&implication, 1, &A_B_rel.term);
-                    success &= Term_OverrideSubterm(&implication, 2, &B_A_rel.term);
-                    if(success)
+                    Concept *c = concepts.items[i].address;
+                    Relation B_A = Memory_relationOfBelief(&c->belief);
+                    if(B_A.isRelation && Term_Equal(&B_A.arg1, &A_B.arg2) && Term_Equal(&B_A.arg2, &A_B.arg1))
                     {
-                        bool success2;
-                        Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
-                        if(success2)
+                        Term implication = {0};
+                        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                        bool success = true;
+                        success &= Term_OverrideSubterm(&implication, 1, &A_B.term);
+                        success &= Term_OverrideSubterm(&implication, 2, &B_A.term);
+                        if(success)
                         {
-                            Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B_rel.truth, B_A_rel.truth), &A_B_rel.stamp, &B_A_rel.stamp, false);
+                            bool success2;
+                            Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                            if(success2)
+                            {
+                                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
+                            }
                         }
                     }
                 }
             }
             //3 ways to complete a transitive pattern:
             {
-                Relation A_B_rel = rel;
+                Relation A_B = rel;
                 //<(A * B) --> rel>,                   <(B * ?C) --> rel>,
                 //                  <(A * ?C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    Relation B_C = Memory_relationOfBelief(&c->belief);
+                    if(B_C.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            Relation A_C = Memory_relationOfBelief(&d->belief);
+                            if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
             }
             {
-                Relation A_C_rel = rel;
+                Relation A_C = rel;
                 //<(A * ?B) --> rel>,                   <(?B * C) --> rel>,
                 //                  <(A * C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    Relation A_B = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isRelation && Term_Equal(&A_B.arg1, &A_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            Relation B_C = Memory_relationOfBelief(&d->belief);
+                            if(B_C.isRelation && Term_Equal(&B_C.arg1, &A_B.arg2) && Term_Equal(&B_C.arg2, &A_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
             }
             {
-                Relation B_C_rel = rel;
+                Relation B_C = rel;
                 //<(?A * B) --> rel>,                   <(B * C) --> rel>,
                 //                  <(?A * C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    Relation A_B = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            Relation A_C = Memory_relationOfBelief(&d->belief);
+                            if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -55,7 +55,7 @@ void Decision_Execute(long currentTime, Decision *decision)
     //begin code to handle forming of acquired relations
     Term contingency = decision->usedContingency.term;
     Term preconditon_with_op = Term_ExtractSubterm(&contingency, 1); //(0 copula, 1 subject, 2 predicate)
-    Term precondition = Narsese_GetPreconditionWithoutOp(&preconditon_with_op);
+    Term precondition = decision->reason->term; //Narsese_GetPreconditionWithoutOp(&preconditon_with_op);
     //fputs("PRECONDITION without op: ", stdout); Narsese_PrintTerm(&precondition); puts("");
     //TODO ENSURE COPULA STRUCTURE IS IN TERM
     // (<(sample * X1) --> (loc1 * ocr1)> &/ <(left * Y1) --> (loc2 * ocr2)>)
@@ -123,11 +123,14 @@ void Decision_Execute(long currentTime, Decision *decision)
                 //extract the individual statements
                 Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
                 Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
-                fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
-                fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
                 Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL, false);
                 //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
-                Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL, true);
+                bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL, true);
+                //if(added)
+                {
+                    fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
+                    fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                }
                 acquired_rel = true; //gets in the way of functional equ as we would acquire a relation yet again from the functional equ
             }
             

@@ -1,6 +1,7 @@
 //*volume=0
 *setopname 1 ^match
 *motorbabbling=false
+*volume=0
 //<(a * b) --> R>.
 //<(b * a) --> R>.
 
@@ -68,9 +69,8 @@ G! :|:
 <(right  * C1) --> (loc * ocr)>. :|:
 <((<(sample * A1) --> (loc * ocr)> &/ <(right * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
 //10
-z. :|:
+1
 G! :|:
-
 //<(sample * left) --> (loc * loc)>?
 //<((<(sample * A1) --> (loc * ocr)> &/ <(left * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>?
 //<((<(sample * A1) --> (loc * ocr)> &/ <(right * C2) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
