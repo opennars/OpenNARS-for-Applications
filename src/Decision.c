@@ -243,7 +243,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                                             .truth = Truth_Abduction(decision->specific_implication.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
-                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
+                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC && functional_equivalence_active)
                             {
                                 if(functional_equivalence_active)
                                 {
