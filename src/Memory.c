@@ -7,7 +7,7 @@
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * copies of the Software, and tof permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
@@ -90,8 +90,11 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     {
         return; //restrict for now to same relation
     }
-    fputs("TRANSITIVE: ", stdout); Narsese_PrintTerm(&A_B->arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_C->arg1);
-    fputs(" :: ", stdout); Narsese_PrintTerm(&A_C->arg2); puts("");
+    IN_DEBUGNEW
+    (
+        fputs("TRANSITIVE: ", stdout); Narsese_PrintTerm(&A_B->arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_C->arg1);
+        fputs(" :: ", stdout); Narsese_PrintTerm(&A_C->arg2); puts("");
+    )
     Term conjunction = {0};
     conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
     bool success = true;
@@ -205,11 +208,17 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                             {
                                 if(Term_Equal(&A_B.arg1, &B_A.arg1))
                                 {
-                                    fputs("REFLEXIVE: ", stdout); Narsese_PrintTerm(&A_B.arg1); puts("");
+                                    IN_DEBUGNEW
+                                    (
+                                        fputs("REFLEXIVE: ", stdout); Narsese_PrintTerm(&A_B.arg1); puts("");
+                                    )
                                 }
                                 else
                                 {
-                                    fputs("SYMMETRIC: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
+                                    IN_DEBUGNEW
+                                    (
+                                        fputs("SYMMETRIC: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
+                                    )
                                 }
                                 Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
                             }

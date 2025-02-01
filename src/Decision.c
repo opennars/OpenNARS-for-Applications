@@ -128,8 +128,8 @@ void Decision_Execute(long currentTime, Decision *decision)
                 bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->reason->truth, &decision->reason->stamp, NULL, true);
                 //if(added)
                 {
-                    fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
-                    fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                    IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                    IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
                 }
                 acquired_rel = true; //gets in the way of functional equ as we would acquire a relation yet again from the functional equ
             }
@@ -281,7 +281,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                                 }*/
                                 if(proceed)
                                 {
-                                    fputs("EIMP: ", stdout); Narsese_PrintTerm(&e_imp.term); puts("");
+                                    IN_DEBUGNEW( fputs("EIMP: ", stdout); Narsese_PrintTerm(&e_imp.term); puts(""); )
                                     // puts("PROCEED");
                                     // ->
                                     // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
@@ -324,8 +324,8 @@ void Decision_Execute(long currentTime, Decision *decision)
                                             //extract the individual statements
                                             Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
                                             Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
-                                            fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
-                                            fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                                            IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                                            IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
                                             //Memory_AddMemoryHelper(currentTime, &conjunction, e_imp.truth, &e_imp.stamp, NULL, false);
                                             //--//Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
                                             Memory_AddMemoryHelper(currentTime, &ocr_ocr, e_imp.truth, &e_imp.stamp, NULL, true);
@@ -1131,13 +1131,13 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                             //fputs("Z1 ", stdout); Narsese_PrintTerm(&LOC1_temp); fputs(" === ", stdout); Narsese_PrintTerm(&LOC2); puts("");
                                                             if(!C1_and_A1_is_same_variable || !LOC2.atoms[0] || Term_Equal(&potentially_A1, &potentially_C1_used))
                                                             {
-                                                            substA1 = substA1temp;
-                                                            //we have LOC1 now
-                                                            LOC1 = LOC1_temp;
-                                                            stamp1 = cLoc->belief_spike.stamp;
-                                                            CTerm1 = cLoc->term;
-                                                            //--fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
-                                                            potentially_A1_used = potentially_A1;
+                                                                substA1 = substA1temp;
+                                                                //we have LOC1 now
+                                                                LOC1 = LOC1_temp;
+                                                                stamp1 = cLoc->belief_spike.stamp;
+                                                                CTerm1 = cLoc->term;
+                                                                //--fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                                potentially_A1_used = potentially_A1;
                                                             }
                                                         }
                                                     }
@@ -1209,11 +1209,14 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                     if(added)
                                                     {
                                                         //print all only when added
-                                                        fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
-                                                        fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
-                                                        fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
-                                                        fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
-                                                        fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
+                                                        IN_DEBUGNEW
+                                                        (
+                                                            fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                                            fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                                            fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                            fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                            fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
+                                                        )
                                                     }
                                                 }
                                                 //exit(0);

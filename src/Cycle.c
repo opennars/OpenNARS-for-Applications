@@ -548,8 +548,11 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             //extract the individual statements
                                             Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
                                             Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
-                                            fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
-                                            fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                                            IN_DEBUGNEW
+                                            (
+                                                fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
+                                                fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                                            )
                                             //Memory_AddMemoryHelper(currentTime, &conjunction, c->belief_spike.truth, &c->belief_spike.stamp, NULL, false);
                                             //--//Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
                                             Memory_AddMemoryHelper(currentTime, &ocr_ocr, c->belief_spike.truth, &c->belief_spike.stamp, NULL, true);
