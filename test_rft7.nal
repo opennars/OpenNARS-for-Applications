@@ -46,7 +46,6 @@ G! :|:
 <(left   * A2) --> (loc * ocr)>. :|:
 <(right  * A1) --> (loc * ocr)>. :|:
 <((<(sample * B1) --> (loc * ocr)> &/ <(right * A1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
-//10
 G! :|:
 
 //<(sample * left) --> (loc * loc)>?

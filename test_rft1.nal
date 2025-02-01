@@ -70,7 +70,6 @@ G! :|:
 <(right  * C1) --> (loc * ocr)>. :|:
 <((<(sample * A1) --> (loc * ocr)> &/ <(right * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
 //10
-z. :|:
 G! :|:
 //<(sample * left) --> (loc * loc)>?
 //<((<(sample * A1) --> (loc * ocr)> &/ <(left * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>?
