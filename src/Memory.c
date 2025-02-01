@@ -122,6 +122,10 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
 
 bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation) //Stamp stamp,
 {
+    if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION) && Variable_hasVariable(term, true, true, false))
+    {
+        return false;
+    }
     if((Narsese_copulaEquals(term->atoms[0], INHERITANCE) || Narsese_copulaEquals(term->atoms[0], CONJUNCTION)) && Variable_hasVariable(term, true, true, false))
     {
         //return false;
