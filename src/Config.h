@@ -87,7 +87,7 @@
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
 //If var intro should be allowed at all (includes sensorimotor!)
-#define ALLOW_VAR_INTRO true
+#define ALLOW_VAR_INTRO false
 //Numeric term similarity distance scale (everything beyond distance leads to conf 0 analogy!)
 #define SIMILARITY_DISTANCE 1.0
 //Whether numeric term similarity is allowed to be used (allows conditioning results on absolute value to transfer to similar values)
