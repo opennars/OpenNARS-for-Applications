@@ -199,7 +199,14 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                             Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
                             if(success2)
                             {
-                                fputs("SYMMETRY: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
+                                if(Term_Equal(&A_B.arg1, &B_A.arg1))
+                                {
+                                    fputs("REFLEXIVE: ", stdout); Narsese_PrintTerm(&A_B.arg1); puts("");
+                                }
+                                else
+                                {
+                                    fputs("SYMMETRIC: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
+                                }
                                 Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
                             }
                         }
