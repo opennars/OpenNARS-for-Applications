@@ -82,6 +82,16 @@ Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
 
 void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation *B_C, Relation *A_C)
 {
+    if(Term_Equal(&A_B->arg1, &A_C->arg2))
+    {
+        return; //transitivity with same start and endpoint
+    }
+    if(!Term_Equal(&A_B->R, &B_C->R) || !Term_Equal(&B_C->R, &A_C->R))
+    {
+        return; //restrict for now to same relation
+    }
+    fputs("TRANSITIVE: ", stdout); Narsese_PrintTerm(&A_B->arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_C->arg1);
+    fputs(" :: ", stdout); Narsese_PrintTerm(&A_C->arg2); puts("");
     Term conjunction = {0};
     conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
     bool success = true;
@@ -89,6 +99,7 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     success &= Term_OverrideSubterm(&conjunction, 2, &B_C->term);
     if(success && !Stamp_checkOverlap(&A_B->stamp, &B_C->stamp))
     {
+        //puts("SUCCESS!!!");
         Stamp conjunction_stamp = Stamp_make(&A_B->stamp, &B_C->stamp);
         Truth conjunction_truth = Truth_Intersection(A_B->truth, B_C->truth);
         Term implication = {0};
@@ -97,10 +108,12 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
         success &= Term_OverrideSubterm(&implication, 2, &A_C->term);
         if(success)
         {
+            //puts("SUCCESS2!!!");
             bool success2;
             Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
             if(success2)
             {
+                //puts("SUCCESS3!!!");
                 Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(conjunction_truth, A_C->truth), &conjunction_stamp, &A_C->stamp, false);
             }
         }
@@ -111,14 +124,20 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
 {
     if((Narsese_copulaEquals(term->atoms[0], INHERITANCE) || Narsese_copulaEquals(term->atoms[0], CONJUNCTION)) && Variable_hasVariable(term, true, true, false))
     {
-        return false;
+        //return false;
     }
+    Event dummy = {0};
     if(acquiredRelation) //
     {
+        Term dummy_term = {0};
+        dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
         truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
+        stamp1 = &dummy.stamp;
+        stamp2 = NULL;
     }
     if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
+        //puts("FAIL1");
         return false; //stamp overlap
     }
     Stamp st = *stamp1;
@@ -144,6 +163,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     Concept* potentially_existing = Memory_FindConceptByTerm(&ev.term);
     if(potentially_existing != NULL && Stamp_Equal(&potentially_existing->belief.stamp, &ev.stamp))
     {
+        //puts("FAIL2");
         return false;
     }
     //TODO also avoid re-deriving ==> by checking postcondition concept implications table entry to equal stamp equal term
@@ -151,6 +171,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     //{
     //    Term cons = Term_ExtractSubterm(&ev.term
     //}
+    //puts("SUCCESS4!"); Narsese_PrintTerm(&ev.term); puts("");
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0);
     if(acquiredRelation)
     {
@@ -178,6 +199,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                             Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
                             if(success2)
                             {
+                                fputs("SYMMETRY: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
                                 Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
                             }
                         }

@@ -77,17 +77,9 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL == 5
-//!Higher-order decomposition in Cycle_SpecialInferences (with var elimination in Cycle_SpecialInferences)
-R2( A, (A ==> B), |-, B, Truth_Deduction )
-R2( A, ((A && B) ==> C), |-, (B ==> C), Truth_Deduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
-//!Relation symmetry, asymmetry, and transitivity:
-R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
-R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
-R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
-//!Variable elimination in Cycle_SpecialInferences
 #endif
 
 //Mandatory NAL7/8 is not optional and handled by sensorimotor inference, see Inference.h!

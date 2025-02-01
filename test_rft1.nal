@@ -1,7 +1,7 @@
 //*volume=0
 *setopname 1 ^match
 *motorbabbling=false
-*volume=0
+*volume=100
 //<(a * b) --> R>.
 //<(b * a) --> R>.
 
@@ -49,9 +49,10 @@ G! :|:
 <(sample * B1) --> (loc * ocr)>. :|:
 <(left   * C1) --> (loc * ocr)>. :|:
 <(right  * C2) --> (loc * ocr)>. :|:
+*volume=100
 G! :|:
 
-1000
+100
 
 //(<(left * sample) --> (loc * loc)> && <(C1 * B1) --> (ocr * ocr)>)?
 
@@ -63,14 +64,21 @@ G! :|:
 <(<($1 * #1) --> (ocr * ocr)> && <(#1 * $2) --> (ocr * ocr)>) ==> <($1 * $2) --> (ocr * ocr)>>?
 <(A1  * C1) --> (ocr * ocr)>?
 //100
-//*volume=0
+*volume=100
 <(sample * A1) --> (loc * ocr)>. :|:
 <(left   * C2) --> (loc * ocr)>. :|:
 <(right  * C1) --> (loc * ocr)>. :|:
 <((<(sample * A1) --> (loc * ocr)> &/ <(right * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
 //10
-1
+z. :|:
 G! :|:
 //<(sample * left) --> (loc * loc)>?
 //<((<(sample * A1) --> (loc * ocr)> &/ <(left * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>?
 //<((<(sample * A1) --> (loc * ocr)> &/ <(right * C2) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>?
+<(X1 * Y1) --> (ocr * ocr)>?
+<(Y1 * Z1) --> (ocr * ocr)>?
+<(X1 * Z1) --> (ocr * ocr)>?
+
+<(A1 * B1) --> (ocr * ocr)>?
+<(B1 * C1) --> (ocr * ocr)>?
+<(A1 * C1) --> (ocr * ocr)>?

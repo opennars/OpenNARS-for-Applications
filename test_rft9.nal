@@ -18,7 +18,6 @@ G! :|:
 <(sample * A1) --> (loc * ocr)>. :|:
 <(left   * A2) --> (loc * ocr)>. :|:
 <(right  * A1) --> (loc * ocr)>. :|:
-
 z. :|:
 G! :|:
 
