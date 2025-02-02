@@ -84,10 +84,27 @@ Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
+    
+        Truth T = Truth_Revision(a->truth, b->truth);
+    Stamp S = conclusionStamp;
+    if(Stamp_checkOverlap(&a->stamp, &b->stamp))
+    {
+        if(a->truth.confidence > b->truth.confidence)
+        {
+            T = a->truth;
+            S = a->stamp;
+        }
+        else
+        {
+            T = b->truth;
+            S = b->stamp;
+        }
+    }
+    
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     return (Implication) { .term = a->term,
-                           .truth = Truth_Revision(a->truth, b->truth),
-                           .stamp = conclusionStamp, 
+                           .truth = T, //Narsese_copulaEquals(a->term.atoms[0], IMPLICATION) ? T : Truth_Revision(a->truth, b->truth),
+                           .stamp = S, //Narsese_copulaEquals(a->term.atoms[0], IMPLICATION) ? S : conclusionStamp, 
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
                            .sourceConceptId = a->sourceConceptId,

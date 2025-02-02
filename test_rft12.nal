@@ -1,0 +1,17 @@
+*volume=100
+<(sample * X1) --> (loc * ocr)>. :|:
+<(sample * Y1) --> (loc * ocr)>. :|:
+
+100
+
+<(sample * Y1) --> (loc * ocr)>. :|:
+<(sample * X1) --> (loc * ocr)>. :|:
+
+100
+
+<(sample * A1) --> (loc * ocr)>. :|:
+<(sample * B1) --> (loc * ocr)>. :|:
+
+
+<<(sample * B1) --> (loc * ocr)> =/> <(sample * A1) --> (loc * ocr)>>?
+//expected: Answer: <<(sample * B1) --> (loc * ocr)> =/> <(sample * A1) --> (loc * ocr)>>. creationTime=212 Stamp=[1,5,5,3,3,1,6,2,4] Truth: frequency=1.000000, confidence=0.265955

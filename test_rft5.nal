@@ -1,0 +1,7 @@
+*setopname 1 ^match
+<(<($1 * $2) --> (loc * loc)> && <($3 * $4) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
+<(sample * A1) --> (loc * ocr)>. :|:
+//<(left * C1) --> (loc * ocr)>. :|:
+//<(right * C1) --> (loc * ocr)>. :|:
+<(left * D1) --> (loc * ocr)>. :|:
+G! :|:
