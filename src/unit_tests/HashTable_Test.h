@@ -40,7 +40,7 @@ void HashTable_Test()
     assert(HTtest.VMStack.stackpointer == HASHTABLE_TEST_STRUCTURE_SIZE-1, "One item should be taken off of the stack");
     assert(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE] != NULL, "Item didn't go in right place");
     //Return it
-    Concept *c1_returned = HashTable_Get(&HTtest, &term1);
+    Concept *c1_returned = (Concept*) HashTable_Get(&HTtest, &term1);
     assert(c1_returned != NULL, "Returned item is null (1)");
     assert(Term_Equal(&c1.term, &c1_returned->term), "Hashtable Get led to different term than we put into (1)");
     //insert another with the same hash:
@@ -49,7 +49,7 @@ void HashTable_Test()
     Concept c2 = { .id = 2, .term = term2 }; //use different term but same hash, hash collision!
     HashTable_Set(&HTtest, &term2, &c2);
     //get first one:
-    Concept *c1_returned_again = HashTable_Get(&HTtest, &term1);
+    Concept *c1_returned_again = (Concept*) HashTable_Get(&HTtest, &term1);
     assert(c1_returned_again != NULL, "Returned item is null (2)");
     assert(Term_Equal(&c1.term, &c1_returned_again->term), "Hashtable Get led to different term than we put into (2)");
     Term term3 = Narsese_Term("<e --> f>");
@@ -57,17 +57,17 @@ void HashTable_Test()
     Concept c3 = { .id = 3, .term = term3 }; //use different term but same hash, hash collision!
     HashTable_Set(&HTtest, &term3, &c3);
     //there should be a chain of 3 concepts now at the hash position:
-    assert(Term_Equal(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (1)");
-    assert(Term_Equal(((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->key, &c2.term), "c2 not there! (1)");
-    assert(Term_Equal(((VMItem*)((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->next)->key, &c3.term), "c3 not there! (1)");
+    assert(Term_Equal((Term*) HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (1)");
+    assert(Term_Equal((Term*) ((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->key, &c2.term), "c2 not there! (1)");
+    assert(Term_Equal((Term*) ((VMItem*)((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->next)->key, &c3.term), "c3 not there! (1)");
     //Delete the middle one, c2
     HashTable_Delete(&HTtest, &term2);
     assert(((Concept*)((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->value)->id == 3, "c3 not there according to id! (2)");
-    assert(Term_Equal(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (2)");
-    assert(Term_Equal(((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->key, &c3.term), "c3 not there! (2)");
+    assert(Term_Equal((Term*) HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (2)");
+    assert(Term_Equal((Term*) ((VMItem*)HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->next)->key, &c3.term), "c3 not there! (2)");
     //Delete the last one, c3
     HashTable_Delete(&HTtest, &term3);
-    assert(Term_Equal(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (3)");
+    assert(Term_Equal((Term*) HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (3)");
     //Delete the first one, which is the last one left, c1
     HashTable_Delete(&HTtest, &term1);
     assert(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE] == NULL, "Hash table at hash position must be null");

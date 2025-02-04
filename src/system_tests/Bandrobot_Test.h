@@ -39,13 +39,13 @@ Feedback NAR_Bandrobot_Right(Term args)
     return (Feedback) {0};
 }
 bool NAR_Bandrobot_Pick_executed = false;
-Feedback NAR_Bandrobot_Pick()
+Feedback NAR_Bandrobot_Pick(Term args)
 {
     NAR_Bandrobot_Pick_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Bandrobot_Drop_executed = false;
-Feedback NAR_Bandrobot_Drop()
+Feedback NAR_Bandrobot_Drop(Term args)
 {
     NAR_Bandrobot_Drop_executed = true;
     return (Feedback) {0};
