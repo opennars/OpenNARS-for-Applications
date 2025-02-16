@@ -995,11 +995,11 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                         }
                                         Term conj = {0};
                                         conj.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
-                                        Term_OverrideSubterm(&conj, 1, &c1->term);
-                                        Term_OverrideSubterm(&conj, 2, &c2->term);
+                                        bool success1 = Term_OverrideSubterm(&conj, 1, &c1->term);
+                                        bool success2 = Term_OverrideSubterm(&conj, 2, &c2->term);
                                         //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
                                         Substitution subst = Variable_Unify(&conj_general, &conj);
-                                        if(subst.success && c1->belief.type != EVENT_TYPE_DELETED && c2->belief.type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&c1->belief.stamp, &c2->belief.stamp))
+                                        if(success1 && success2 && subst.success && c1->belief.type != EVENT_TYPE_DELETED && c2->belief.type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&c1->belief.stamp, &c2->belief.stamp))
                                         {
                                             //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
                                             Stamp stamp_conj = Stamp_make(&c1->belief.stamp, &c2->belief.stamp);
