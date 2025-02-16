@@ -932,7 +932,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             {
                                                 //puts("A");
                                                 Concept *c = Memory_Conceptualize(&result.term, currentTime);
-                                                if(c != NULL && !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
+                                                if(c != NULL )//&& !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                                 {
                                                     //puts("B");
                                                     c->usage = Usage_use(c->usage, currentTime, false);
