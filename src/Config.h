@@ -34,6 +34,10 @@
 #define ANTICIPATION_CONFIDENCE_INITIAL 0.01
 //Anticipate for concrete yet unexperienced outcomes derived from generals
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
+//Use top-k implication links only (the others can grow / accumulate evidence)
+#define TOP_K_DECLARATIVE_IMPLICATIONS 1
+//When a concept belief was last updated to be used for declarative implication deduction
+#define BELIEF_LAST_USED_TOLERANCE 5
 
 /*---------------------*/
 /* Decision parameters */
@@ -117,7 +121,7 @@
 /* Space parameters */
 /*------------------*/
 //Maximum amount of concepts
-#define CONCEPTS_MAX 16384
+#define CONCEPTS_MAX 4096
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
