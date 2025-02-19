@@ -17,7 +17,7 @@
 <3 --> targetpos>. :|:
 10
 <(sourcepos * targetpos) --> smaller>? :|:
-//expected: Answer: <(sourcepos * targetpos) --> smaller>. :|: occurrenceTime=10 Truth: frequency=1.000000, confidence=0.221937
+//--expected: Answer: <(sourcepos * targetpos) --> smaller>. :|: occurrenceTime=10 Truth: frequency=1.000000, confidence=0.221937
 G! :|:
-//expected: ^left executed with args
+//--expected: ^left executed with args
 10

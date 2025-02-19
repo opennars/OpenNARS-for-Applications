@@ -102,9 +102,9 @@ void NAR_Alien(long iterations)
             defenderX = MIN(1.0, defenderX+0.1);
         }
         //visualize:
-        int batX = defenderX*10;
+        int batX = defenderX*20;
         int ballY = 5;
-        int ballX = alien0X*10;
+        int ballX = alien0X*20;
         if(t++ > iterations && iterations != -1)
         {
             break;
