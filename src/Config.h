@@ -36,8 +36,8 @@
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 //Use top-k implication links only (the others can grow / accumulate evidence)
 #define TOP_K_DECLARATIVE_IMPLICATIONS 1
-//Use top-k temporal implication links only (the others can grow / accumulate evidence)
-#define TOP_K_TEMPORAL_IMPLICATIONS 20
+//When a concept belief was last updated to be used for declarative implication deduction
+#define BELIEF_LAST_USED_TOLERANCE 5
 
 /*---------------------*/
 /* Decision parameters */

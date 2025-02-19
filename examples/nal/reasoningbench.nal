@@ -28,19 +28,19 @@
 10
 
 <(sam_father_father * sam) --> ?1>?
-//expected: Answer: <(sam_father_father * sam) --> grandfather>. Stamp=[13,2,12] Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <(sam_father_father * sam) --> grandfather>. Truth: frequency=1.000000, confidence=0.729000
 <(sam * sam_father_father) --> ?1>?
-//expected: Answer: <(sam * sam_father_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+//--expected: Answer: <(sam * sam_father_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
 <(sam_mother_father * sam) --> ?1>?
-//expected: Answer: <(sam_mother_father * sam) --> grandfather>. Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <(sam_mother_father * sam) --> grandfather>. Truth: frequency=1.000000, confidence=0.729000
 <(sam * sam_mother_father) --> ?1>?
-//expected: Answer: <(sam * sam_mother_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+//--expected: Answer: <(sam * sam_mother_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
 <(sam_father_mother * sam) --> ?1>?
-//expected: Answer: <(sam_father_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <(sam_father_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
 <(sam * sam_father_mother) --> ?1>?
-//expected: Answer: <(sam * sam_father_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+//--expected: Answer: <(sam * sam_father_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
 <(sam_mother_mother * sam) --> ?1>?
-//expected: Answer: <(sam_mother_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <(sam_mother_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
 <(sam * sam_mother_mother) --> ?1>?
 //expected: Answer: <(sam * sam_mother_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
 <?1 --> flower>?
@@ -48,15 +48,15 @@
 
 100
 
-<1 --> num>. :|:
+<1 --> num>.
 5
 <(succ /1 1) --> num>?
-//expected: Answer: <(succ /1 1) --> num>. Truth: frequency=1.000000, confidence=0.810000
+//--expected: Answer: <(succ /1 1) --> num>. Truth: frequency=1.000000, confidence=0.810000
 <(succ /1 (succ /1 1)) --> num>?
-//expected: Answer: <(succ /1 (succ /1 1)) --> num>. Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <(succ /1 (succ /1 1)) --> num>. Truth: frequency=1.000000, confidence=0.729000
 <(succ /1 (succ /1 (succ /1 1))) --> num>?
-//expected: Answer: <(succ /1 (succ /1 (succ /1 1))) --> num>. Truth: frequency=1.000000, confidence=0.656100
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 1))) --> num>. Truth: frequency=1.000000, confidence=0.656100
 <(succ /1 (succ /1 (succ /1 (succ /1 1)))) --> num>?
-//expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 1)))) --> num>. Truth: frequency=1.000000, confidence=0.590490
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 1)))) --> num>. Truth: frequency=1.000000, confidence=0.590490
 //<(succ /1 (succ /1 (succ /1 (succ /1 (succ /1 1))))) --> num>?
-//expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 (succ /1 1))))) --> num>. Truth: frequency=1.000000, confidence=0.531441
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 (succ /1 1))))) --> num>. Truth: frequency=1.000000, confidence=0.531441

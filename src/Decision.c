@@ -590,25 +590,17 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 valid_implications[k] = imp;
             }
         }
-        int handled_temporal_implications = 0, handled_declarative_implications = 0;
+        int handled_declarative_implications = 0;
         for(int h=0; h<k; h++)
         {
             Implication imp = valid_implications[h]; //(&/,a,op) =/> b.
             if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
             {
                 handled_declarative_implications++;
-            }
-            if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
-            {
-                handled_temporal_implications++;
-            }
-            if(handled_declarative_implications > TOP_K_DECLARATIVE_IMPLICATIONS)
-            {
-                continue;
-            }
-            if(handled_temporal_implications > TOP_K_TEMPORAL_IMPLICATIONS)
-            {
-                continue;
+                if(handled_declarative_implications > TOP_K_DECLARATIVE_IMPLICATIONS)
+                {
+                    continue;
+                }
             }
             Concept *current_prec = imp.sourceConcept;
             Event *precondition = &current_prec->belief;
@@ -621,6 +613,10 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 if(!declarative)
                 {
                     cP = current_prec;
+                }
+                if(declarative && cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE)
+                {
+                    continue;
                 }
                 if(cP->belief.type != EVENT_TYPE_DELETED)
                 {
@@ -667,6 +663,13 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                 Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
                                 if(subs.success)
                                 {
+                                    if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(resultevent.truth) > ANTICIPATION_THRESHOLD || (resultevent.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && resultevent.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
+                                    {
+                                        if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        {
+                                            Decision_AddNegativeConfirmation(&updated_precondition, imp, operationID, postc);
+                                        }
+                                    }
                                     bool success2;
                                     resulteternal.term = Variable_ApplySubstitute(resulteternal.term, subs, &success2);
                                     if(success2)
@@ -678,13 +681,6 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     }
                                     if(success2)
                                     {
-                                        if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(resultevent.truth) > ANTICIPATION_THRESHOLD || (resultevent.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && resultevent.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
-                                        {
-                                            if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
-                                            {
-                                                Decision_AddNegativeConfirmation(precondition, imp, operationID, postc);
-                                            }
-                                        }
                                         Concept *c = Memory_Conceptualize(&resulteternal.term, currentTime);
                                         if(c != NULL )//&& !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
                                         {

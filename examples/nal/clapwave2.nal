@@ -1,4 +1,4 @@
-*volume=100
+*volume=0
 *motorbabbling=false
 *setopname 1 ^clap
 *setopname 2 ^wave
@@ -19,7 +19,7 @@
 (<#1 --> [seen]> && <(#1 * C1) --> same>). :|:
 10
 G! :|:
-//expected: ^clap executed with args
+//--expected: ^clap executed with args
 
 10
 
