@@ -172,7 +172,7 @@ Event Inference_RevisionAndChoice(Event *existing_potential, Event *incoming_spi
                 }
                 return revised_spike;
             }
-            assert(false, "Revision outcome can't be lower in confidence than existing event");
+            return *existing_potential;
         }
     }
     return *existing_potential;

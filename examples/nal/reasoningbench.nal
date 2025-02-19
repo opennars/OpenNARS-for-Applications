@@ -1,0 +1,62 @@
+*volume=0
+//crisp version:
+//<(<$1 --> [green]> && <$1 --> [red]>) ==> <$1 --> flower>>.
+//fluid version:
+<<$1 --> [green]> ==> <$1 --> flower>>.
+<<$1 --> [red]> ==> <$1 --> flower>>.
+<(<($1 * #2) --> father> && <(#2 * $3) --> father>) ==> <($1 * $3) --> grandfather>>.
+<(<($1 * #2) --> father> && <(#2 * $3) --> mother>) ==> <($1 * $3) --> grandfather>>.
+<(<($1 * #2) --> mother> && <(#2 * $3) --> father>) ==> <($1 * $3) --> grandmother>>.
+<(<($1 * #2) --> mother> && <(#2 * $3) --> mother>) ==> <($1 * $3) --> grandmother>>.
+<<($1 * $2) --> grandfather> ==> <($2 * $1) --> grandchild>>.
+<<($1 * $2) --> grandmother> ==> <($2 * $1) --> grandchild>>.
+<<$1 --> num> ==> <(succ /1 $1) --> num>>.
+
+1000
+
+<{rose} --> [green]>.
+<{rose} --> [red]>.
+<{grass} --> [green]>.
+
+<(sam_father * sam) --> father>.
+<(sam_father_father * sam_father) --> father>.
+<(sam_father_mother * sam_father) --> mother>.
+<(sam_mother * sam) --> mother>.
+<(sam_mother_mother * sam_mother) --> mother>.
+<(sam_mother_father * sam_mother) --> father>.
+
+10
+
+<(sam_father_father * sam) --> ?1>?
+//--expected: Answer: <(sam_father_father * sam) --> grandfather>. Truth: frequency=1.000000, confidence=0.729000
+<(sam * sam_father_father) --> ?1>?
+//--expected: Answer: <(sam * sam_father_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+<(sam_mother_father * sam) --> ?1>?
+//--expected: Answer: <(sam_mother_father * sam) --> grandfather>. Truth: frequency=1.000000, confidence=0.729000
+<(sam * sam_mother_father) --> ?1>?
+//--expected: Answer: <(sam * sam_mother_father) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+<(sam_father_mother * sam) --> ?1>?
+//--expected: Answer: <(sam_father_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
+<(sam * sam_father_mother) --> ?1>?
+//--expected: Answer: <(sam * sam_father_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+<(sam_mother_mother * sam) --> ?1>?
+//--expected: Answer: <(sam_mother_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
+<(sam * sam_mother_mother) --> ?1>?
+//expected: Answer: <(sam * sam_mother_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+<?1 --> flower>?
+//expected: Answer: <{rose} --> flower>. Truth: frequency=1.000000, confidence=0.729000
+
+100
+
+<1 --> num>.
+5
+<(succ /1 1) --> num>?
+//--expected: Answer: <(succ /1 1) --> num>. Truth: frequency=1.000000, confidence=0.810000
+<(succ /1 (succ /1 1)) --> num>?
+//--expected: Answer: <(succ /1 (succ /1 1)) --> num>. Truth: frequency=1.000000, confidence=0.729000
+<(succ /1 (succ /1 (succ /1 1))) --> num>?
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 1))) --> num>. Truth: frequency=1.000000, confidence=0.656100
+<(succ /1 (succ /1 (succ /1 (succ /1 1)))) --> num>?
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 1)))) --> num>. Truth: frequency=1.000000, confidence=0.590490
+//<(succ /1 (succ /1 (succ /1 (succ /1 (succ /1 1))))) --> num>?
+//--expected: Answer: <(succ /1 (succ /1 (succ /1 (succ /1 (succ /1 1))))) --> num>. Truth: frequency=1.000000, confidence=0.531441
