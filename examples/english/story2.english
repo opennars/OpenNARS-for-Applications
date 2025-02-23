@@ -8,4 +8,4 @@ the person is satisfied
 100
 the burger is in the oven
 the person takes what?
-//expected: Answer: <(person * burger) --> take>. :|: occurrenceTime=106 Truth: frequency=1.000000, confidence=0.228606
+//--expected: Answer: <(person * burger) --> take>. :|: occurrenceTime=106 Truth: frequency=1.000000, confidence=0.228606
