@@ -97,7 +97,7 @@ Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer);
+void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize);
 void Memory_AddInputEvent(Event *event, long currentTime);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
