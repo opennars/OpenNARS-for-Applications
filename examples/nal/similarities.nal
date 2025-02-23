@@ -17,11 +17,11 @@ G. :|:
 <{t1} --> [yellow]>. :|:
 5
 G! :|:
-//expected: ^pick executed with args
+//--expected: ^pick executed with args
 G. :|:
 5
 <(<{t1} --> [quacks]> &/ ^pick) =/> G>?
-//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.991204, confidence=0.242972
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=1.000000, confidence=0.241351
 
 100
 
@@ -33,5 +33,5 @@ G! :|:
 G. :|:
 5
 <(<{t1} --> [quacks]> &/ ^pick) =/> G>?
-//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.979320, confidence=0.294230
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.985997, confidence=0.292821
 
