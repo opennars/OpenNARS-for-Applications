@@ -106,7 +106,7 @@ static void NAL_GenerateRule(char *premise1, char *premise2, char* conclusion, c
     {
         printf("Truth conclusionTruth = %s(truth1,truth2);\n", truthFunction);
     }
-    printf("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, %d, false);}\n", VarIntro);
+    printf("NAL_DerivedEvent(RuleTable_Reduce(conclusion), conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, %d, false, eternalize);}\n", VarIntro);
 }
 
 static void NAL_GenerateReduction(char *premise1, char* conclusion)
@@ -118,7 +118,7 @@ static void NAL_GenerateReduction(char *premise1, char* conclusion)
 void NAL_GenerateRuleTable()
 {
     puts("#include \"RuleTable.h\"");
-    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)\n{\ngoto RULE_0;");
+    puts("void RuleTable_Apply(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid, bool eternalize)\n{\ngoto RULE_0;");
 #define H_NAL_RULES
 #include "NAL.h"
 #undef H_NAL_RULES
@@ -368,7 +368,7 @@ static bool DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(T
     return false;
 }
 
-void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars)
+void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conclusionTruth, Stamp stamp, long currentTime, double parentPriority, double conceptPriority, double occurrenceTimeOffset, Concept *validation_concept, long validation_cid, bool varIntro, bool allowOnlyExtVarIntroAndTwoIndependentVars, bool eternalize)
 {
     if(varIntro && (Narsese_copulaEquals(conclusionTerm.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], IMPLICATION) || Narsese_copulaEquals(conclusionTerm.atoms[0], EQUIVALENCE)))
     {
@@ -390,7 +390,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
             {
                 if(ALLOW_VAR_INTRO)
                 {
-                    NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                    NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
                 }
             }
         }
@@ -402,7 +402,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
             {
                 if(ALLOW_VAR_INTRO)
                 {
-                    NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                    NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
                 }
             }
         }
@@ -419,7 +419,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(ALLOW_VAR_INTRO)
             {
-                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                NAL_DerivedEvent(conclusionTermWithVarExt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
             }
         }
         bool success2;
@@ -428,7 +428,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(ALLOW_VAR_INTRO)
             {
-                NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                NAL_DerivedEvent(conclusionTermWithVarInt, conclusionOccurrence, conclusionTruth, stamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
             }
         }
         return;
@@ -446,7 +446,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
         {
             if(!NAL_AtomAppearsTwice(&conclusionTerm) && !NAL_NestedHOLStatement(&conclusionTerm) && !NAL_InhOrSimHasDepVar(&conclusionTerm) && !NAL_JunctionNotRightNested(&conclusionTerm) && !InvalidSetOp(&conclusionTerm, conclusionTruth) && !NAL_IndepOrDepVariableAppearsOnce(&conclusionTerm) && !DeclarativeImplicationWithLefthandConjunctionWithLefthandOperation(&conclusionTerm, false))
             {
-                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, 0);
+                Memory_AddEvent(&e, currentTime, conceptPriority*parentPriority*Truth_Expectation(conclusionTruth), false, true, false, 0, eternalize);
             }
         }
     }

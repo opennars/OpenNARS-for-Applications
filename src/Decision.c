@@ -125,7 +125,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
                             {
-                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
                             }
                             Event e_imp2 = e_imp;
                             bool intro_success2;
@@ -133,7 +133,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                             if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false))
                             {
                                 Te_imp2 = e_imp2.term;
-                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0, true);
                             }
                             Event e_imp3 = e_imp;
                             bool intro_success3;
@@ -141,7 +141,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                             if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false))
                             {
                                 Te_imp3 = e_imp3.term;
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0, true);
                             }
                         }
                         Term equTerm2 = {0};
@@ -157,21 +157,21 @@ void Decision_Execute(long currentTime, Decision *decision)
                                             .occurrenceTime = currentTime };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
                             {
-                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
                             }
                             Event e_imp2 = e_imp;
                             bool intro_success2;
                             e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
                             if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false) && !Term_Equal(&Te_imp2, &e_imp2.term))
                             {
-                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0, true);
                             }
                             Event e_imp3 = e_imp;
                             bool intro_success3;
                             e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
                             if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false) && !Term_Equal(&Te_imp3, &e_imp3.term))
                             {
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0);
+                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0, true);
                             }
                         }
                     }
@@ -618,15 +618,25 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 {
                     continue;
                 }
-                if(cP->belief.type != EVENT_TYPE_DELETED)
+                bool no_eternal_belief = cP->belief.type == EVENT_TYPE_DELETED;
+                Term compareTerm = cP->belief.term;
+                if(no_eternal_belief && cP->belief_spike.type != EVENT_TYPE_DELETED)
+                {
+                    compareTerm = cP->belief_spike.term;
+                }
+                if(cP->belief.type != EVENT_TYPE_DELETED || cP->belief_spike.type != EVENT_TYPE_DELETED)
                 {
                     //fputs("TRIED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
-                    Substitution additionalSubst = Variable_Unify(&ImpPrecon, &cP->belief.term);
+                    Substitution additionalSubst = Variable_Unify(&ImpPrecon, &compareTerm);
                     if(additionalSubst.success)
                     {
                         //fputs("MATCHED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                         current_prec = cP;
                         precondition = &cP->belief;
+                        if(no_eternal_belief)
+                        {
+                            precondition = &cP->belief_spike;
+                        }
                         //fputs("TESTED IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
                         if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
                         {
@@ -686,7 +696,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                         {
                                             //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
                                             //ETERNAL BELIEF UPDATE:
-                                            if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                            if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && !no_eternal_belief)
                                             {
                                                 Truth oldTruth = c->belief.truth;
                                                 if(!Stamp_Equal(&c->belief.stamp, &resulteternal.stamp))

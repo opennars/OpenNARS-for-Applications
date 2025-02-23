@@ -6,7 +6,6 @@
 <(<door1 --> [unlocked closed]> &/ ^open) =/> <door1 --> [open]>>.
 
 <door1 --> [unlocked]>. :|:
-1000
 //door1 is closed
 <door1 --> [closed]>. :|:
 //it should be open

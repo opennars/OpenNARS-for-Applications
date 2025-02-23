@@ -262,7 +262,7 @@ bool Cycle_GoalSequenceDecomposition(Event *selectedGoal, double selectedGoalPri
         newGoal.term = componentGoalsTerm[i];
         newGoal.truth = Truth_StructuralDeduction(newGoal.truth, newGoal.truth);
     }
-    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, layer);
+    Memory_AddEvent(&newGoal, currentTime, selectedGoalPriority * Truth_Expectation(newGoal.truth), false, true, false, layer, false);
     return true;
 }
 
@@ -329,7 +329,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                                 Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                                 Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                                 IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer, false);
                             }
                         }
                     }
@@ -357,7 +357,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                                 Event newGoal = Inference_GoalDeduction(&c->goal_spike, &updated_imp, currentTime);
                                 Event newGoalUpdated = Inference_EventUpdate(&newGoal, currentTime);
                                 IN_DEBUG( fputs("derived goal ", stdout); Narsese_PrintTerm(&newGoalUpdated.term); puts(""); )
-                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer);
+                                Memory_AddEvent(&newGoalUpdated, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, layer, false);
                             }
                         }
                     }
@@ -388,7 +388,7 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false);
+                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, true);
                     return precondition_implication;
                 }
             }
@@ -583,7 +583,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                                             }
                                             Event seq_rel = seq;
                                             seq_rel.term = TrelationWithContext;
-                                            Memory_AddEvent(&seq_rel, currentTime, 1.0, false, true, false, 0); //complexity penalized
+                                            Memory_AddEvent(&seq_rel, currentTime, 1.0, false, true, false, 0, false); //complexity penalized
                                         }
                                     }
                                 }
@@ -609,7 +609,7 @@ void Cycle_ProcessBeliefEvents(long currentTime)
 //B, <A ==> B> |- A (Abduction)
 //A, (A && B) |- B  with dep var elim (Anonymous Analogy)
 void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2, long conclusionOccurrence, double occurrenceTimeOffset, Stamp conclusionStamp, 
-                       long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid)
+                       long currentTime, double parentPriority, double conceptPriority, bool doublePremise, Concept *validation_concept, long validation_cid, bool eternalize)
 {
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
     bool IsImpl = Narsese_copulaEquals(term2.atoms[0], IMPLICATION);
@@ -626,7 +626,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Deduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
             }
         }
         //Deduction with remaining condition
@@ -654,7 +654,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
                     Truth conclusionTruth = Truth_Deduction(truth2, truth1);
                     if(success)
                     {
-                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                        NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
                     }
                 }
             }
@@ -668,7 +668,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = IsImpl ? Truth_Abduction(truth2, truth1) : Truth_Analogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
             }
         }
     }
@@ -685,7 +685,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             Truth conclusionTruth = Truth_AnonymousAnalogy(truth2, truth1);
             if(success)
             {
-                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false);
+                NAL_DerivedEvent(conclusionTerm, conclusionOccurrence, conclusionTruth, conclusionStamp, currentTime, parentPriority, conceptPriority, occurrenceTimeOffset, validation_concept, validation_cid, false, false, eternalize);
             }
         }
     }
@@ -716,7 +716,7 @@ void Cycle_Inference(long currentTime)
             double priority = selectedBeliefsPriority[i];
             Term dummy_term = {0};
             Truth dummy_truth = {0};
-            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0);
+            RuleTable_Apply(e->term, dummy_term, e->truth, dummy_truth, e->occurrenceTime, 0, e->stamp, currentTime, priority, 1, false, NULL, 0, e->occurrenceTime == OCCURRENCE_ETERNAL);
             RELATED_CONCEPTS_FOREACH(&e->term, c,
             {
                 long validation_cid = c->id; //allows for lockfree rule table application (only adding to memory is locked)
@@ -727,36 +727,47 @@ void Cycle_Inference(long currentTime)
                 countConceptsMatchedNew++;
                 countConceptsMatched++;
                 Stats_countConceptsMatchedTotal++;
-                if(c->belief.type != EVENT_TYPE_DELETED && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
+                if((c->belief.type != EVENT_TYPE_DELETED || c->belief_spike.type != EVENT_TYPE_DELETED) && countConceptsMatched <= BELIEF_CONCEPT_MATCH_TARGET)
                 {
                     //use eternal belief as belief
                     Event* belief = &c->belief;
                     //unless there is an actual belief which falls into the event's window
                     Event project_belief = c->belief_spike;
-                    if(e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
+                    bool eternalize = true;
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED &&
+                       e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
                        labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                     {
                         project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
                         project_belief.occurrenceTime = e->occurrenceTime;
                         belief = &project_belief;
+                        eternalize = false;
+                    }
+                    Event belief_eventified = c->belief;
+                    belief_eventified.occurrenceTime = currentTime;
+                    Event *e_ = e;
+                    if(e->occurrenceTime == OCCURRENCE_ETERNAL && c->belief.type == EVENT_TYPE_DELETED && c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        belief = e;
+                        e_ = &c->belief_spike;
                     }
                     //Check for overlap and apply inference rules
-                    if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
+                    if(!Stamp_checkOverlap(&e_->stamp, &belief->stamp))
                     {
                         c->usage = Usage_use(c->usage, currentTime, false);
-                        Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                        Stamp stamp = Stamp_make(&e_->stamp, &belief->stamp);
                         if(PRINT_CONTROL_INFO)
                         {
                             fputs("Apply rule table on ", stdout);
-                            Narsese_PrintTerm(&e->term);
+                            Narsese_PrintTerm(&e_->term);
                             printf(" Priority=%f\n", priority);
                             fputs(" and ", stdout);
                             Narsese_PrintTerm(&c->term);
                             puts("");
                         }
-                        RuleTable_Apply(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                        Cycle_SpecialInferences(e->term, c->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
-                        Cycle_SpecialInferences(c->term, e->term, belief->truth, e->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid);
+                        RuleTable_Apply(e_->term, belief->term, e_->truth, belief->truth, e_->occurrenceTime, e_->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid, eternalize);
+                        Cycle_SpecialInferences(e_->term, belief->term, e_->truth, belief->truth, e_->occurrenceTime, e_->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid, eternalize);
+                        Cycle_SpecialInferences(c->term, e_->term, belief->truth, e_->truth, e_->occurrenceTime, e_->occurrenceTimeOffset, stamp, currentTime, priority, c->priority, true, c, validation_cid, eternalize);
                     }
                 }
             })
