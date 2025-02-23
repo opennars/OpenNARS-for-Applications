@@ -73,13 +73,13 @@ Stamp Stamp_make(Stamp *stamp1, Stamp *stamp2)
 
 bool Stamp_checkOverlap(Stamp *a, Stamp *b)
 {
-    for(int i=0;i<STAMP_SIZE;i++)
+    for(int i=0; i<STAMP_SIZE; i++)
     {
         if(a->evidentialBase[i] == STAMP_FREE)
         {
             break;
         }
-        for(int j=0;j<STAMP_SIZE;j++)
+        for(int j=0; j<STAMP_SIZE; j++)
         {
             if(b->evidentialBase[j] == STAMP_FREE)
             {
@@ -94,22 +94,40 @@ bool Stamp_checkOverlap(Stamp *a, Stamp *b)
     return false;
 }
 
+bool Stamp_hasDuplicate(Stamp *a)
+{
+    for(int i=0; i<STAMP_SIZE; i++)
+    {
+        for(int j=0; j<STAMP_SIZE; j++)
+        {
+            if(i != j && a->evidentialBase[i] != STAMP_FREE && a->evidentialBase[j] != STAMP_FREE)
+            {
+                if(a->evidentialBase[i] == a->evidentialBase[j])
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 bool Stamp_Equal(Stamp *a, Stamp *b)
 {
-    for (int i=0;i<STAMP_SIZE;i++)
+    for(int i=0; i<STAMP_SIZE; i++)
     {
-        if (a->evidentialBase[i] == STAMP_FREE)
+        if(a->evidentialBase[i] == STAMP_FREE)
         {
             return b->evidentialBase[i] == STAMP_FREE;
         }
         bool contained = false;
-        for (int j=0;j<STAMP_SIZE;j++)
+        for(int j=0; j<STAMP_SIZE; j++)
         {
-            if (b->evidentialBase[j] == STAMP_FREE)
+            if(b->evidentialBase[j] == STAMP_FREE)
             {
                 return a->evidentialBase[i] == STAMP_FREE;
             }
-            if (a->evidentialBase[i] == b->evidentialBase[j])
+            if(a->evidentialBase[i] == b->evidentialBase[j])
             {
                 contained = true;
                 break;

@@ -752,7 +752,9 @@ void Cycle_Inference(long currentTime)
                         e_ = &c->belief_spike;
                     }
                     //Check for overlap and apply inference rules
-                    if(!Stamp_checkOverlap(&e_->stamp, &belief->stamp))
+                    if(!Stamp_checkOverlap(&e_->stamp, &belief->stamp) &&
+                       !Stamp_hasDuplicate(&e_->stamp) &&
+                       !Stamp_hasDuplicate(&belief->stamp))
                     {
                         c->usage = Usage_use(c->usage, currentTime, false);
                         Stamp stamp = Stamp_make(&e_->stamp, &belief->stamp);

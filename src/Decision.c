@@ -673,9 +673,17 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                 {
                                     resulteternal.term = Variable_ApplySubstitute(resulteternal.term, subseternal, &success2eternal);
                                 }
+                                else
+                                {
+                                    success2eternal = false;
+                                }
                                 if(subsevent.success)
                                 {
                                     resultevent.term = Variable_ApplySubstitute(resultevent.term, subsevent, &success2event);
+                                }
+                                else
+                                {
+                                    success2event = false;
                                 }
                                 if(success2eternal || success2event)
                                 {
