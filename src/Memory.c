@@ -277,7 +277,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 {
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
-    if(Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION))
+    if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
     {
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
