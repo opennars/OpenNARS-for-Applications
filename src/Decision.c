@@ -603,7 +603,6 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 }
             }
             Concept *current_prec = imp.sourceConcept;
-            Event *precondition = &current_prec->belief;
             Term ImpPreconWithOp = Term_ExtractSubterm(&imp.term, 1);
             Term ImpPrecon = Narsese_GetPreconditionWithoutOp(&ImpPreconWithOp);
             //fputs("TRIED IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
@@ -618,121 +617,124 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 {
                     continue;
                 }
-                bool no_eternal_belief = cP->belief.type == EVENT_TYPE_DELETED;
-                Term compareTerm = cP->belief.term;
-                if(no_eternal_belief && cP->belief_spike.type != EVENT_TYPE_DELETED)
-                {
-                    compareTerm = cP->belief_spike.term;
-                }
-                if(cP->belief.type != EVENT_TYPE_DELETED || cP->belief_spike.type != EVENT_TYPE_DELETED)
+                Event *prec_eternal = &cP->belief;
+                Event *prec_event = &cP->belief_spike;
+                if(prec_eternal->type != EVENT_TYPE_DELETED || prec_event->type != EVENT_TYPE_DELETED)
                 {
                     //fputs("TRIED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
-                    Substitution additionalSubst = Variable_Unify(&ImpPrecon, &compareTerm);
-                    if(additionalSubst.success)
+                    Substitution additionalSubstEternal = Variable_Unify(&ImpPrecon, &prec_eternal->term);
+                    Substitution additionalSubstEvent = Variable_Unify(&ImpPrecon, &prec_event->term);
+                    if(additionalSubstEternal.success || additionalSubstEvent.success)
                     {
                         //fputs("MATCHED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                         current_prec = cP;
-                        precondition = &cP->belief;
-                        if(no_eternal_belief)
+                        if(operationID > 0) //it's a real operation, check if the link's operation is the same
                         {
-                            precondition = &cP->belief_spike;
-                        }
-                        //fputs("TESTED IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
-                        if(precondition != NULL && precondition->type != EVENT_TYPE_DELETED)
-                        {
-                            if(operationID > 0) //it's a real operation, check if the link's operation is the same
+                            Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
+                            Term a_term_nop = Narsese_GetPreconditionWithoutOp(&imp_subject);
+                            Term operation = Narsese_getOperationTerm(&imp_subject);
+                            Substitution subs = Variable_Unify(&a_term_nop, &prec_event->term);
+                            if(subs.success)
                             {
-                                Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
-                                Term a_term_nop = Narsese_GetPreconditionWithoutOp(&imp_subject);
-                                Term operation = Narsese_getOperationTerm(&imp_subject);
-                                Substitution subs = Variable_Unify(&a_term_nop, &precondition->term);
-                                if(subs.success)
+                                bool success2;
+                                Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
+                                if(!success2 || !Variable_Unify(&specificOp, &opTerm).success)
                                 {
-                                    bool success2;
-                                    Term specificOp = Variable_ApplySubstitute(operation, subs, &success2);
-                                    if(!success2 || !Variable_Unify(&specificOp, &opTerm).success)
-                                    {
-                                        continue; //same op id but different op args
-                                    }
-                                }
-                                else
-                                {
-                                    continue; //unification failed
+                                    continue; //same op id but different op args
                                 }
                             }
-                            Event updated_precondition = cP->belief_spike; //Inference_EventUpdate(precondition, currentTime);
-                            Event op = { .type = EVENT_TYPE_BELIEF,
-                                         .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
-                                         .occurrenceTime = currentTime };
-                            bool success;
-                            Event seqop = Inference_BeliefIntersection(&updated_precondition, &op, &success);
-                            if(success || operationID == 0)
+                            else
                             {
-                                Event resulteternal = Inference_BeliefDeduction(precondition, &imp); //b. :/:
-                                Event resultevent = Inference_BeliefDeduction(operationID == 0 ? &updated_precondition : &seqop, &imp); //b. :/:
-                                Substitution subs = Variable_Unify(&current_prec->term, &precondition->term);
-                                if(subs.success)
+                                continue; //unification failed
+                            }
+                        }
+                        Event op = { .type = EVENT_TYPE_BELIEF,
+                                     .truth = (Truth) { .frequency = 1.0, .confidence = 0.9 },
+                                     .occurrenceTime = currentTime };
+                        bool success;
+                        Event seqop = Inference_BeliefIntersection(prec_event, &op, &success);
+                        if(success || operationID == 0)
+                        {
+                            Event resulteternal = Inference_BeliefDeduction(prec_eternal, &imp); //b. :/:
+                            Event resultevent = Inference_BeliefDeduction(operationID == 0 ? prec_event : &seqop, &imp); //b. :/:
+                            Substitution subsevent = Variable_Unify(&current_prec->term, &prec_event->term);
+                            Substitution subseternal = Variable_Unify(&current_prec->term, &prec_eternal->term);
+                            if(subsevent.success || subseternal.success)
+                            {
+                                if(subsevent.success && (Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(resultevent.truth) > ANTICIPATION_THRESHOLD || (resultevent.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && resultevent.truth.frequency == 0.0))) //also allow for failing derived implications to subsume
                                 {
-                                    if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(resultevent.truth) > ANTICIPATION_THRESHOLD || (resultevent.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && resultevent.truth.frequency == 0.0)) //also allow for failing derived implications to subsume
+                                    if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
                                     {
-                                        if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        Decision_AddNegativeConfirmation(prec_event, imp, operationID, postc);
+                                    }
+                                }
+                                bool success2eternal, success2event;
+                                if(subseternal.success)
+                                {
+                                    resulteternal.term = Variable_ApplySubstitute(resulteternal.term, subseternal, &success2eternal);
+                                }
+                                if(subsevent.success)
+                                {
+                                    resultevent.term = Variable_ApplySubstitute(resultevent.term, subsevent, &success2event);
+                                }
+                                if(success2eternal || success2event)
+                                {
+                                    bool success3eternal, success3event;
+                                    if(additionalSubstEternal.success)
+                                    {
+                                        resulteternal.term = Variable_ApplySubstitute(resulteternal.term, additionalSubstEternal, &success3eternal);
+                                    }
+                                    if(additionalSubstEvent.success)
+                                    {
+                                        resultevent.term = Variable_ApplySubstitute(resultevent.term, additionalSubstEvent, &success3event);
+                                    }
+                                    success2eternal = success2eternal && success3eternal && subseternal.success && additionalSubstEternal.success;
+                                    success2event = success2event && success3event && subsevent.success && additionalSubstEvent.success;
+                                }
+                                if(success2eternal || success2event)
+                                {
+                                    Concept *c = Memory_Conceptualize(&resulteternal.term, currentTime);
+                                    if(c != NULL )//&& !Stamp_checkOverlap(&precondition_event->stamp, &imp.stamp))
+                                    {
+                                        //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
+                                        //ETERNAL BELIEF UPDATE:
+                                        if(success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
                                         {
-                                            Decision_AddNegativeConfirmation(&updated_precondition, imp, operationID, postc);
+                                            Truth oldTruth = c->belief.truth;
+                                            if(!Stamp_Equal(&c->belief.stamp, &resulteternal.stamp))
+                                            {
+                                                c->belief = Inference_RevisionAndChoice(&c->belief, &resulteternal, currentTime, NULL); //concept can be generic!
+                                                if(!Truth_Equal(&c->belief.truth, &oldTruth))
+                                                {
+                                                     Memory_printAddedEvent(&c->belief.stamp, &c->belief, 1.0, false, true, false, true, false);
+                                                }
+                                            }
                                         }
-                                    }
-                                    bool success2;
-                                    resulteternal.term = Variable_ApplySubstitute(resulteternal.term, subs, &success2);
-                                    if(success2)
-                                    {
-                                        bool success3;
-                                        resulteternal.term = Variable_ApplySubstitute(resulteternal.term, additionalSubst, &success3);
-                                        resultevent.term = resulteternal.term;
-                                        success2 = success2 && success3;
-                                    }
-                                    if(success2)
-                                    {
-                                        Concept *c = Memory_Conceptualize(&resulteternal.term, currentTime);
-                                        if(c != NULL )//&& !Stamp_checkOverlap(&precondition->stamp, &imp.stamp))
+                                        //BELIEF EVENTS UPDATE:
+                                        if(success2event && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
                                         {
-                                            //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
-                                            //ETERNAL BELIEF UPDATE:
-                                            if(Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && !no_eternal_belief)
+                                            Truth oldTruth = c->predicted_belief.truth;
+                                            long oldOccurrenceTime = c->predicted_belief.occurrenceTime;
+                                            c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &resultevent, currentTime, NULL);
+                                            if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
                                             {
-                                                Truth oldTruth = c->belief.truth;
-                                                if(!Stamp_Equal(&c->belief.stamp, &resulteternal.stamp))
+                                                if(PRINT_PREDICTIONS_AS_DERIVATIONS)
                                                 {
-                                                    c->belief = Inference_RevisionAndChoice(&c->belief, &resulteternal, currentTime, NULL); //concept can be generic!
-                                                    if(!Truth_Equal(&c->belief.truth, &oldTruth))
-                                                    {
-                                                         Memory_printAddedEvent(&c->belief.stamp, &c->belief, 1.0, false, true, false, true, false);
-                                                    }
+                                                    Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
                                                 }
                                             }
-                                            //BELIEF EVENTS UPDATE:
-                                            if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        }
+                                        else
+                                        if(success2event)
+                                        {
+                                            Truth oldTruth = c->belief_spike.truth;
+                                            long oldOccurrenceTime = c->belief_spike.occurrenceTime;
+                                            //if(!Stamp_Equal(&c->belief_spike.stamp, &resultevent.stamp))
                                             {
-                                                Truth oldTruth = c->predicted_belief.truth;
-                                                long oldOccurrenceTime = c->predicted_belief.occurrenceTime;
-                                                c->predicted_belief = Inference_RevisionAndChoice(&c->predicted_belief, &resultevent, currentTime, NULL);
-                                                if(!Truth_Equal(&c->predicted_belief.truth, &oldTruth) || c->predicted_belief.occurrenceTime != oldOccurrenceTime)
+                                                c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &resultevent, currentTime, NULL);
+                                                if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
                                                 {
-                                                    if(PRINT_PREDICTIONS_AS_DERIVATIONS)
-                                                    {
-                                                        Memory_printAddedEvent(&c->predicted_belief.stamp, &c->predicted_belief, 1.0, false, true, false, true, false);
-                                                    }
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Truth oldTruth = c->belief_spike.truth;
-                                                long oldOccurrenceTime = c->belief_spike.occurrenceTime;
-                                                //if(!Stamp_Equal(&c->belief_spike.stamp, &resultevent.stamp))
-                                                {
-                                                    c->belief_spike = Inference_RevisionAndChoice(&c->belief_spike, &resultevent, currentTime, NULL);
-                                                    if(!Truth_Equal(&c->belief_spike.truth, &oldTruth) || c->belief_spike.occurrenceTime != oldOccurrenceTime)
-                                                    {
-                                                        Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
-                                                    }
+                                                    Memory_printAddedEvent(&c->belief_spike.stamp, &c->belief_spike, 1.0, false, true, false, true, false);
                                                 }
                                             }
                                         }
