@@ -50,6 +50,14 @@ Truth Truth_Revision(Truth v1, Truth v2)
     double w2 = Truth_c2w(c2);
     double w = w1 + w2;
     //in case that MAX_CONFIDENCE is set to 1.0, we allow an exception for axiomatic object-level knowledge:
+    if(v1.confidence == 0.0) //just in case (a case that could happen due to numeric rounding)
+    {
+        return v2;
+    }
+    if(v2.confidence == 0.0) //just in case (a case that could happen due to numeric rounding)
+    {
+        return v1;
+    }
     if(MAX_CONFIDENCE == 1.0)
     {
         if(v1.confidence == 1.0)

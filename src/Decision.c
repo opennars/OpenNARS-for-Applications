@@ -553,6 +553,18 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
     return decision;
 }
 
+//TODO move and unify with NAL term filters
+static bool FilterOut(Term *term)
+{
+    if(Narsese_copulaEquals(term->atoms[0], INHERITANCE) || Narsese_copulaEquals(term->atoms[0], INHERITANCE))
+    {
+        Term S = Term_ExtractSubterm(term, 1);
+        Term P = Term_ExtractSubterm(term, 2);
+        return Term_Equal(&S, &P);
+    }
+    return false;
+}
+
 void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long currentTime)
 {
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
@@ -715,7 +727,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     {
                                         //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
                                         //ETERNAL BELIEF UPDATE:
-                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && !FilterOut(&resulteternal.term))
                                         {
                                             Truth oldTruth = c_eternal->belief.truth;
                                             if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -723,12 +735,13 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
                                                 if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
                                                 {
-                                                     Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                     //Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
                                                 }
                                             }
                                         }
                                         //BELIEF EVENTS UPDATE:
-                                        if(c_event != NULL && success2event && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        bool filterevent = FilterOut(&resultevent.term);
+                                        if(c_event != NULL && success2event && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION) && !filterevent)
                                         {
                                             Truth oldTruth = c_event->predicted_belief.truth;
                                             long oldOccurrenceTime = c_event->predicted_belief.occurrenceTime;
@@ -742,7 +755,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                         else
-                                        if(c_event != NULL && success2event)
+                                        if(c_event != NULL && success2event && !filterevent)
                                         {
                                             Truth oldTruth = c_event->belief_spike.truth;
                                             long oldOccurrenceTime = c_event->belief_spike.occurrenceTime;
@@ -754,7 +767,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 c_event->belief.creationTime = currentTime; //for metrics
                                                 if(!Truth_Equal(&c_event->belief_spike.truth, &oldTruth) || c_event->belief_spike.occurrenceTime != oldOccurrenceTime)
                                                 {
-                                                    Memory_printAddedEvent(&c_event->belief_spike.stamp, &c_event->belief_spike, 1.0, false, true, false, true, false);
+                                                    //Memory_printAddedEvent(&c_event->belief_spike.stamp, &c_event->belief_spike, 1.0, false, true, false, true, false);
                                                 }
                                             }
                                         }
