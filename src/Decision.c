@@ -715,7 +715,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     {
                                         //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
                                         //ETERNAL BELIEF UPDATE:
-                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                        if(c_eternal != NULL && success2eternal && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
                                         {
                                             Truth oldTruth = c_eternal->belief.truth;
                                             if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -728,7 +728,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                         //BELIEF EVENTS UPDATE:
-                                        if(c_event != NULL && success2event && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        if(c_event != NULL && success2event && !Stamp_checkOverlap(&c_event->belief_spike.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
                                         {
                                             Truth oldTruth = c_event->predicted_belief.truth;
                                             long oldOccurrenceTime = c_event->predicted_belief.occurrenceTime;
@@ -742,7 +742,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                         else
-                                        if(c_event != NULL && success2event)
+                                        if(c_event != NULL && success2event && !Stamp_checkOverlap(&c_event->belief_spike.stamp, &imp.stamp))
                                         {
                                             Truth oldTruth = c_event->belief_spike.truth;
                                             long oldOccurrenceTime = c_event->belief_spike.occurrenceTime;

@@ -42,9 +42,9 @@
 <(sam_mother_mother * sam) --> ?1>?
 //--expected: Answer: <(sam_mother_mother * sam) --> grandmother>. Truth: frequency=1.000000, confidence=0.729000
 <(sam * sam_mother_mother) --> ?1>?
-//expected: Answer: <(sam * sam_mother_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
+//--expected: Answer: <(sam * sam_mother_mother) --> grandchild>. Truth: frequency=1.000000, confidence=0.656100
 <?1 --> flower>?
-//expected: Answer: <{rose} --> flower>. Truth: frequency=1.000000, confidence=0.729000
+//--expected: Answer: <{rose} --> flower>. Truth: frequency=1.000000, confidence=0.729000
 
 100
 

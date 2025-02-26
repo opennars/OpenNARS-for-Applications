@@ -35,7 +35,7 @@
 //Anticipate for concrete yet unexperienced outcomes derived from generals
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 //Use top-k implication links only (the others can grow / accumulate evidence)
-#define TOP_K_DECLARATIVE_IMPLICATIONS 1
+#define TOP_K_DECLARATIVE_IMPLICATIONS 20
 //When a concept belief was last updated to be used for declarative implication deduction
 #define BELIEF_LAST_USED_TOLERANCE 5
 
