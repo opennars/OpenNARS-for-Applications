@@ -279,67 +279,6 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     {
         return;
     }
-    if(false && input && Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) && eternalize && !Stamp_hasDuplicate(&event->stamp))
-    {
-        Event cpy = *event;
-        //--> S P
-        //1   2 3
-        //0   1 2
-        Term S = Term_ExtractSubterm(&cpy.term, 1);
-        Term P = Term_ExtractSubterm(&cpy.term, 2);
-        Term termtemplate = {0};
-        termtemplate.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
-        termtemplate.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
-        termtemplate.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
-        Atom var_independent = Narsese_AtomicTermIndex("$1");
-        //<<$1 --> S> ==> <$1 --> P>> (DIRECT)
-        //==> --> --> $1 S $1 P
-        //1   2   3   4  5 6  7
-        //0   1   2   3  4 5  6
-        Term T1 = termtemplate;
-        T1.atoms[3] = var_independent;
-        Term_OverrideSubterm(&T1, 4, &S);
-        T1.atoms[5] = var_independent;
-        Term_OverrideSubterm(&T1, 6, &P);
-        cpy.term = T1;
-        Memory_ProcessNewBeliefEvent(&cpy, currentTime, 0, false, eternalize); //no priority
-        //<<P --> $1> ==> <S --> $1>>  (DIRECT)
-        //==> --> --> P $1 S $1
-        //1   2   3   4 5  6 7
-        //0   1   2   3 4  5 6
-        Term T2 = termtemplate;
-        Term_OverrideSubterm(&T2, 3, &P);
-        T2.atoms[4] = var_independent;
-        Term_OverrideSubterm(&T2, 5, &S);
-        T2.atoms[6] = var_independent;
-        cpy.term = T2;
-        Memory_ProcessNewBeliefEvent(&cpy, currentTime, 0, false, eternalize); //no priority
-        //CONVERSION:
-        Truth dummy = {0};
-        cpy.truth = Truth_Conversion(cpy.truth, dummy);
-        //<<$1 --> P> ==> <$1 --> S>> (EXEMPLIFICATION)
-        //==> --> --> $1 P $1 S
-        //1   2   3   4  5 6  7
-        //0   1   2   3  4 5  6
-        Term T1R = termtemplate;
-        T1R.atoms[3] = var_independent;
-        Term_OverrideSubterm(&T1R, 4, &P);
-        T1R.atoms[5] = var_independent;
-        Term_OverrideSubterm(&T1R, 6, &S);
-        cpy.term = T1R;
-        Memory_ProcessNewBeliefEvent(&cpy, currentTime, 0, false, eternalize); //no priority
-        //<<S --> $1> ==> <P --> $1>>  (EXEMPLIFICATION)
-        //==> --> --> S $1 P $1
-        //1   2   3   4 5  6 7
-        //0   1   2   3 4  5 6
-        Term T2R = termtemplate;
-        Term_OverrideSubterm(&T2R, 3, &S);
-        T2R.atoms[4] = var_independent;
-        Term_OverrideSubterm(&T2R, 5, &P);
-        T2R.atoms[6] = var_independent;
-        cpy.term = T2R;
-        Memory_ProcessNewBeliefEvent(&cpy, currentTime, 0, false, eternalize); //no priority
-    }
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
     if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
