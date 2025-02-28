@@ -347,7 +347,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                         }
                         Term postcondition = Term_ExtractSubterm(&imp->term, 2);
                         Substitution subs = Variable_Unify(&postcondition, &c->goal_spike.term);
-                        if(subs.success)
+                        if(subs.success && !Stamp_checkOverlap(&c->goal_spike.stamp, &imp->stamp))
                         {
                             Implication updated_imp = *imp;
                             bool success;
@@ -361,6 +361,184 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                             }
                         }
                     }
+                }
+            }
+            //four sylllogistic inferences:
+            //Goal <X --> Y>
+                //1.
+                //Belief <Z --> X> |-
+                   //<Z --> $1> ==> <X --> $1> //YES  |- <Z --> Y> (DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                //2.
+                //Belief <X --> Z> |-
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                   //<<<
+                   //<Z --> $1> ==> <X --> $1> //YES  |- <Z --> Y> (CONVERSION-DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                //3.
+                //Belief <Y --> Z> |-
+                   //<Z --> $1> ==> <Y --> $1> //NOPE
+                   //<$1 --> Y> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<Y --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> Y> //YES  |- <X --> Z> (CONVERSION-DEDUCTION)
+                //4.
+                //Belief <Z --> Y> |-
+                    //<Y --> $1> ==> <Z --> $1> //NOPE
+                    //<$1 --> Z> ==> <$1 --> Y> //YES |- <X --> Z> (DEDUCTION)
+                    //<<<
+                    //<Z --> $1> ==> <Y --> $1> //NOPE
+                    //<$1 --> Y> ==> <$1 --> Z> //NOPE
+            if(DECLARATIVE_INHERITANCE_SUBGOALING &&
+               c->belief.type != EVENT_TYPE_DELETED &&
+               Narsese_copulaEquals(goal->term.atoms[0], INHERITANCE) &&
+               Narsese_copulaEquals(c->belief.term.atoms[0], INHERITANCE) &&
+               !Stamp_checkOverlap(&goal->stamp, &c->belief.stamp) &&
+               !Stamp_hasDuplicate(&goal->stamp) &&
+               !Stamp_hasDuplicate(&c->belief.stamp))
+            {
+                Term subject_goal = Term_ExtractSubterm(&goal->term, 1); //X
+                Term predicate_goal = Term_ExtractSubterm(&goal->term, 2); //Y
+                Term subject_belief = Term_ExtractSubterm(&c->belief.term, 1);
+                Term predicate_belief = Term_ExtractSubterm(&c->belief.term, 2);
+                Term *X = &subject_goal;
+                Term *Y = &predicate_goal;
+                Stamp conclusionStamp = Stamp_make(&c->belief.stamp, &goal->stamp);
+                Truth Tdummy = {0};
+                Truth conclusionTruth = {0};
+                Term conclusionTerm = {0};
+                conclusionTerm.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                bool success = false;
+                //1.
+                if(Term_Equal(&subject_goal, &predicate_belief))
+                {
+                    Term *Z = &subject_belief;
+                    success = Term_OverrideSubterm(&conclusionTerm, 1, Z);
+                    success &= Term_OverrideSubterm(&conclusionTerm, 2, Y);
+                    conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                }
+                else
+                //2.
+                if(Term_Equal(&subject_goal, &subject_belief))
+                {
+                    Term *Z = &predicate_belief;
+                    success = Term_OverrideSubterm(&conclusionTerm, 1, Z);
+                    success &= Term_OverrideSubterm(&conclusionTerm, 2, Y);
+                    conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                }
+                else
+                //3.
+                if(Term_Equal(&predicate_goal, &subject_belief))
+                {
+                    Term *Z = &predicate_belief;
+                    success = Term_OverrideSubterm(&conclusionTerm, 1, X);
+                    success &= Term_OverrideSubterm(&conclusionTerm, 2, Z);
+                    conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                }
+                else
+                //4.
+                if(Term_Equal(&predicate_goal, &predicate_belief))
+                {
+                    Term *Z = &subject_belief;
+                    success = Term_OverrideSubterm(&conclusionTerm, 1, X);
+                    success &= Term_OverrideSubterm(&conclusionTerm, 2, Z);
+                    conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                }
+                //Goal <(X * Y) --> W> // <X --> (W /1 Y)> // <Y --> (W /2 X)>
+                //A.
+                //Belief <Z --> X> |-
+                   //<Z --> $1> ==> <X --> $1> //YES |- <(Z * Y) --> W> (DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                //B.
+                //Belief <X --> Z> |-
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                   //<<<
+                   //<Z --> $1> ==> <X --> $1> //YES |- <(Z * Y) --> W> (CONVERSION-DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                //C.
+                //Belief <Y --> Z> |-
+                   //<Z --> $1> ==> <Y --> $1> //YES |- <(X * Z) --> W> (DEDUCTION)
+                   //<$1 --> Y> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<Y --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> Y> //NOPE
+                //D.
+                //Belief <Z --> Y> |-
+                    //<Y --> $1> ==> <Z --> $1> //NOPE
+                    //<$1 --> Z> ==> <$1 --> Y> //NOPE
+                    //<<<
+                    //<Z --> $1> ==> <Y --> $1> //YES |- <(X * Z) --> W> (CONVERSION-DEDUCTION)
+                    //<$1 --> Y> ==> <$1 --> Z> //NOPE
+                else
+                if(Narsese_copulaEquals(subject_goal.atoms[0], PRODUCT))
+                {
+                    conclusionTerm.atoms[1] = Narsese_CopulaIndex(PRODUCT);
+                    //<(X * Y) --> W>
+                    //--> *  W  X  Y
+                    //1   2  3  4  5
+                    //0   1  2  3  4
+                    Term X_ = Term_ExtractSubterm(&subject_goal, 1);
+                    Term Y_ = Term_ExtractSubterm(&subject_goal, 2);
+                    Term *W = &predicate_goal;
+                    //A.
+                    if(Term_Equal(&X_, &predicate_belief))
+                    {
+                        Term *Z = &subject_belief;
+                        success = Term_OverrideSubterm(&conclusionTerm, 2, W);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 3, Z);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 4, &Y_);
+                        conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                    }
+                    else
+                    //B.
+                    if(Term_Equal(&X_, &subject_belief))
+                    {
+                        Term *Z = &predicate_belief;
+                        success = Term_OverrideSubterm(&conclusionTerm, 2, W);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 3, Z);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 4, &Y_);
+                        conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                    }
+                    else
+                    //C.
+                    if(Term_Equal(&Y_, &subject_belief))
+                    {
+                        Term *Z = &predicate_belief;
+                        success = Term_OverrideSubterm(&conclusionTerm, 2, W);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 3, &X_);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 4, Z);
+                        conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                    }
+                    else
+                    //D.
+                    if(Term_Equal(&Y_, &predicate_belief))
+                    {
+                        Term *Z = &subject_belief;
+                        success = Term_OverrideSubterm(&conclusionTerm, 2, W);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 3, &X_);
+                        success &= Term_OverrideSubterm(&conclusionTerm, 4, Z);
+                        conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                    }
+                }
+                if(success)
+                {
+                    Event conclusionEvent = {0}; //TODO investigate why gcc is allergic to struct initialization here
+                    conclusionEvent.term = conclusionTerm;
+                    conclusionEvent.truth = conclusionTruth;
+                    conclusionEvent.type = EVENT_TYPE_GOAL;
+                    conclusionEvent.stamp = conclusionStamp;
+                    conclusionEvent.occurrenceTime = goal->occurrenceTime;
+                    conclusionEvent.creationTime = currentTime;
+                    Event newGoalUpdated = Inference_EventUpdate(&conclusionEvent, currentTime);
+                    Memory_AddEvent(&conclusionEvent, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, 0, false);
                 }
             }
         })
@@ -672,7 +850,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             }
         }
     }
-    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION)) //conj
+    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION))
     {
         Term conj_subject = Term_ExtractSubterm(&term2, 1);
         Term conj_predicate = Term_ExtractSubterm(&term2, 2);

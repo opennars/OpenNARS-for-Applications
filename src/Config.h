@@ -212,5 +212,7 @@
 #define DECLARATIVE_IMPLICATIONS_CYCLE_PROCESS true
 //Declarative implications allow subgoaling
 #define DECLARATIVE_IMPLICATIONS_SUBGOALING true
+//Declarative inheritance allow subgoaling
+#define DECLARATIVE_INHERITANCE_SUBGOALING true
 
 #endif
