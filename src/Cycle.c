@@ -347,7 +347,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                         }
                         Term postcondition = Term_ExtractSubterm(&imp->term, 2);
                         Substitution subs = Variable_Unify(&postcondition, &c->goal_spike.term);
-                        if(subs.success)
+                        if(subs.success && !Stamp_checkOverlap(&c->goal_spike.stamp, &imp->stamp))
                         {
                             Implication updated_imp = *imp;
                             bool success;
@@ -393,9 +393,13 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                     //<<<
                     //<Z --> $1> ==> <Y --> $1> //NOPE
                     //<$1 --> Y> ==> <$1 --> Z> //NOPE
-            if(c->belief.type != EVENT_TYPE_DELETED &&
+            if(DECLARATIVE_INHERITANCE_SUBGOALING &&
+               c->belief.type != EVENT_TYPE_DELETED &&
                Narsese_copulaEquals(goal->term.atoms[0], INHERITANCE) &&
-               Narsese_copulaEquals(c->belief.term.atoms[0], INHERITANCE))
+               Narsese_copulaEquals(c->belief.term.atoms[0], INHERITANCE) &&
+               !Stamp_checkOverlap(&goal->stamp, &c->belief.stamp) &&
+               !Stamp_hasDuplicate(&goal->stamp) &&
+               !Stamp_hasDuplicate(&c->belief.stamp))
             {
                 Term subject_goal = Term_ExtractSubterm(&goal->term, 1); //X
                 Term predicate_goal = Term_ExtractSubterm(&goal->term, 2); //Y
@@ -846,7 +850,7 @@ void Cycle_SpecialInferences(Term term1, Term term2, Truth truth1, Truth truth2,
             }
         }
     }
-    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION)) //conj
+    if(Narsese_copulaEquals(term2.atoms[0], CONJUNCTION))
     {
         Term conj_subject = Term_ExtractSubterm(&term2, 1);
         Term conj_predicate = Term_ExtractSubterm(&term2, 2);
