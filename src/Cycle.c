@@ -363,6 +363,99 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
                     }
                 }
             }
+            //four sylllogistic inferences:
+            //Goal <X --> Y>
+                //1.
+                //Belief <Z --> X> |-
+                   //<Z --> $1> ==> <X --> $1> //YES  |- <Z --> Y> (DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                //2.
+                //Belief <X --> Z> |-
+                   //<X --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> X> //NOPE
+                   //<<<
+                   //<Z --> $1> ==> <X --> $1> //YES  |- <Z --> Y> (CONVERSION-DEDUCTION)
+                   //<$1 --> X> ==> <$1 --> Z> //NOPE
+                //3.
+                //Belief <Y --> Z> |-
+                   //<Z --> $1> ==> <Y --> $1> //NOPE
+                   //<$1 --> Y> ==> <$1 --> Z> //NOPE
+                   //<<<
+                   //<Y --> $1> ==> <Z --> $1> //NOPE
+                   //<$1 --> Z> ==> <$1 --> Y> //YES  |- <X --> Z> (CONVERSION-DEDUCTION)
+                //4.
+                //Belief <Z --> Y> |-
+                    //<Y --> $1> ==> <Z --> $1> //NOPE
+                    //<$1 --> Z> ==> <$1 --> Y> //YES |- <X --> Z> (DEDUCTION)
+                    //<<<
+                    //<Z --> $1> ==> <Y --> $1> //NOPE
+                    //<$1 --> Y> ==> <$1 --> Z> //NOPE
+            if(c->belief.type != EVENT_TYPE_DELETED &&
+               Narsese_copulaEquals(goal->term.atoms[0], INHERITANCE) &&
+               Narsese_copulaEquals(c->belief.term.atoms[0], INHERITANCE))
+            {
+                Term subject_goal = Term_ExtractSubterm(&goal->term, 1); //X
+                Term predicate_goal = Term_ExtractSubterm(&goal->term, 2); //Y
+                Term subject_belief = Term_ExtractSubterm(&c->belief.term, 1);
+                Term predicate_belief = Term_ExtractSubterm(&c->belief.term, 2);
+                Term *X = &subject_goal;
+                Term *Y = &predicate_goal;
+                Stamp conclusionStamp = Stamp_make(&c->belief.stamp, &goal->stamp);
+                Truth Tdummy = {0};
+                Truth conclusionTruth = {0};
+                Term conclusionTerm = {0};
+                //1.
+                if(Term_Equal(&subject_goal, &predicate_belief))
+                {
+                    Term *Z = &subject_belief;
+                    conclusionTerm.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                    Term_OverrideSubterm(&conclusionTerm, 1, Z);
+                    Term_OverrideSubterm(&conclusionTerm, 2, Y);
+                    conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                }
+                //2.
+                if(Term_Equal(&subject_goal, &subject_belief))
+                {
+                    Term *Z = &predicate_belief;
+                    conclusionTerm.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                    Term_OverrideSubterm(&conclusionTerm, 1, Z);
+                    Term_OverrideSubterm(&conclusionTerm, 2, Y);
+                    conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                }
+                //3.
+                if(Term_Equal(&predicate_goal, &subject_belief))
+                {
+                    Term *Z = &predicate_belief;
+                    conclusionTerm.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                    Term_OverrideSubterm(&conclusionTerm, 1, X);
+                    Term_OverrideSubterm(&conclusionTerm, 2, Z);
+                    conclusionTruth = Truth_Deduction(goal->truth, Truth_Conversion(c->belief.truth, Tdummy));
+                }
+                //4.
+                if(Term_Equal(&predicate_goal, &predicate_belief))
+                {
+                    Term *Z = &subject_belief;
+                    conclusionTerm.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                    Term_OverrideSubterm(&conclusionTerm, 1, X);
+                    Term_OverrideSubterm(&conclusionTerm, 2, Z);
+                    conclusionTruth = Truth_Deduction(goal->truth, c->belief.truth);
+                }
+                if(conclusionTerm.atoms[0])
+                {
+                    Event conclusionEvent = {0}; //TODO investigate why gcc is allergic to struct initialization here
+                    conclusionEvent.term = conclusionTerm;
+                    conclusionEvent.truth = conclusionTruth;
+                    conclusionEvent.type = EVENT_TYPE_GOAL;
+                    conclusionEvent.stamp = conclusionStamp;
+                    conclusionEvent.occurrenceTime = goal->occurrenceTime;
+                    conclusionEvent.creationTime = currentTime;
+                    Event newGoalUpdated = Inference_EventUpdate(&conclusionEvent, currentTime);
+                    Memory_AddEvent(&conclusionEvent, currentTime, selectedGoalsPriority[i] * Truth_Expectation(newGoalUpdated.truth), false, true, false, 0, false);
+                }
+            }
         })
     }
 }
