@@ -45,6 +45,14 @@ double Truth_Expectation(Truth v)
 
 Truth Truth_Revision(Truth v1, Truth v2)
 {
+    if(v1.confidence == 0.0) //just in case (a case that could happen due to numeric rounding)
+    {
+        return v2;
+    }
+    if(v2.confidence == 0.0) //just in case (a case that could happen due to numeric rounding)
+    {
+        return v1;
+    }
     TruthValues(v1,v2, f1,c1, f2,c2);
     double w1 = Truth_c2w(c1);
     double w2 = Truth_c2w(c2);

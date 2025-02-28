@@ -23,4 +23,4 @@
 (<#1 --> [seen]> && <(#1 * C2) --> opposite>). :|:
 10
 G! :|:
-//expected: ^clap executed with args
+//--expected: ^clap executed with args
