@@ -275,6 +275,10 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
+    if(event->truth.confidence < MIN_CONFIDENCE)
+    {
+        return;
+    }
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
     if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
