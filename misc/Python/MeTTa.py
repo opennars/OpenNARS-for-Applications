@@ -16,7 +16,7 @@ def NAR_Cycle(n):
     return NAR_AddMeTTa(NAR.AddInput(str(n)))
 
 def NAR_AddMeTTa(ret):
-    results = ret["input"] + ret["derivations"]
+    results = ret["input"] + ret["derivations"] + ret["answers"]
     for x in results:
         if x["term"] == "None":
             continue
