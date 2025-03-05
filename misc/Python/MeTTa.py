@@ -24,6 +24,26 @@ def NAR_AddMeTTa(ret):
         if "truth" in x:
             truthMeTTa = "(" + x["truth"]["frequency"] + " " + x["truth"]["confidence"] + ")"
         x["metta"] = "(" + x["punctuation"] + ": (" + NAR_NarseseToMeTTa(x["term"]) + " " + truthMeTTa + "))"
+    if NAR_printInMeTTa:
+        All = []
+        Answers = set([])
+        for x in results:
+            All += [x]
+            if x["punctuation"] != "!" and x["punctuation"] != "?":
+                ret2 = NAR.AddInput(x["term"] + "?")
+                All += [ret2["answers"][0]]
+                Answers.add(str(ret2["answers"][0]))
+        for x in All:
+            if "metta" not in x:
+                continue
+            prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
+            punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
+            if str(x) in Answers:
+                prefix = "MeTTa-OUT"
+                punctuation = "@"
+            if x["term"] == "None":
+                continue
+            print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
     return ret
 
 def NAR_PrintInMetta():
@@ -56,27 +76,19 @@ def NAR_AddInput(metta):
             metta = metta.split("!(EventQuestion ")[1][:-1] + "? :|:"
         if metta.startswith("!(EternalQuestion "):
             metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
+        Query = False
+        threshold = 0.0
+        if metta.startswith("!(EternalQuestionMultiple "):
+            threshold = metta.split(" ")[1]
+            metta = " ".join(metta.split(" ")[2:])[:-1] + "?"
+            Query = True
+        if metta.startswith("!(EventQuestionMultiple"):
+            threshold = metta.split(" ")[1]
+            metta = " ".join(metta.split(" ")[2:])[:-1] + "? :|:"
+            Query = True
         metta = metta.replace("IntSet", "'").replace("ExtSet", '"').replace(r"(^ \s*)", r"^")
         metta = re.sub(r"\(\^\s([a-zA-Z0-9]*)\)", r"^\1", metta) #operator format of MeTTa-NARS
-    ret = NAR_AddMeTTa(NAR.AddInput(metta + truth))
-    if NAR_printInMeTTa:
-        All = []
-        Answers = set([])
-        for x in results:
-            All += [x]
-            if x["punctuation"] != "!" and x["punctuation"] != "?":
-                ret2 = NAR.AddInput(x["term"] + "?")
-                All += [ret2["answers"][0]]
-                Answers.add(str(ret2["answers"][0]))
-        for x in All:
-            prefix = "MeTTa-IN" if x in ret["input"] else "MeTTa-OUT"
-            punctuation = "." if x["punctuation"] == "." else "!" if x["punctuation"] == "!" else "?"
-            if str(x) in Answers:
-                prefix = "MeTTa-OUT"
-                punctuation = "@"
-            if x["term"] == "None":
-                continue
-            print("!(" + prefix + " " + "(" + x["metta"] + " " + x["occurrenceTime"]+ ")")
+    ret = NAR_AddMeTTa(NAR.AddInput((f"*query {threshold} " if Query else "") + metta + truth))
     return ret
 
 if "shell" in sys.argv:
