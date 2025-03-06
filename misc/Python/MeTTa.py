@@ -78,11 +78,11 @@ def NAR_AddInput(metta):
             metta = metta.split("!(EternalQuestion ")[1][:-1] + "?"
         Query = False
         threshold = 0.0
-        if metta.startswith("!((EternalQuestionMultiple "):
+        if metta.startswith("!((EternalQuestionAboveExpectation "):
             threshold = metta.split(" ")[1].split(")")[0]
             metta = " ".join(metta.split(" ")[2:])[:-1] + "?"
             Query = True
-        if metta.startswith("!((EventQuestionMultiple"):
+        if metta.startswith("!((EventQuestionAboveExpectation"):
             threshold = metta.split(" ")[1]
             metta = " ".join(metta.split(" ")[2:])[:-1] + "? :|:"
             Query = True
