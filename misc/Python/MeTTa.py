@@ -63,6 +63,12 @@ def NAR_AddInput(metta):
     truth = ""
     if not NAR_useNarsese:
         metta = metta.replace(" x ", " * ")
+        if metta.startswith("!(Cycles "):
+            cycles = metta.split("!(Cycles ")[1].split(")")[0]
+            return NAR_AddMeTTa(NAR.AddInput(cycles))
+        if metta.startswith("!(Command "):
+            command = metta.split("!(Command ")[1][:-1]
+            return NAR_AddMeTTa(NAR.AddInput("*" + command))
         if metta.startswith("!(AddBeliefEternal "):
             truth = " " + (" ".join(metta.split("!(AddBeliefEternal (")[1].split(" ")[-2:]))[:-2].replace("(", "{").replace(")", "}")
             metta = " ".join(metta.split("!(AddBeliefEternal (")[1].split(" ")[:-2]) + "."
