@@ -306,7 +306,7 @@ static Decision Decision_MotorBabbling()
     return decision;
 }
 
-static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
+static Decision Decision_ConsiderNegativeOutcomes(Decision decision, long currentTime)
 {
     Event OpGoalImmediateOutcomes = {0};
     //1. discount decision based on negative outcomes via revision
@@ -408,7 +408,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
             i++;
         }
     }
-    return Decision_ConsiderNegativeOutcomes(decision);
+    return Decision_ConsiderNegativeOutcomes(decision, currentTime);
 }
 
 Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentTime)
