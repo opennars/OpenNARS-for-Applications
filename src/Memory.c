@@ -397,6 +397,15 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
+    if(Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) || Narsese_copulaEquals(event->term.atoms[0], SIMILARITY))
+    { //TODO maybe NAL term filter should go here?
+        Term subject = Term_ExtractSubterm(&event->term, 1);
+        Term predicate = Term_ExtractSubterm(&event->term, 2);
+        if(Term_Equal(&subject, &predicate))
+        {
+            return;
+        }
+    }
     if(RESTRICTED_CONCEPT_CREATION && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && Memory_FindConceptByTerm(&event->term) == NULL)
     {
         return;
