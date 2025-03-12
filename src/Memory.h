@@ -67,6 +67,16 @@ typedef struct
     Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
     bool stdinOutput;
 }Operation;
+typedef struct
+{
+    Term arg1; //subterm
+    Term arg2; //subterm
+    Term R; //subterm
+    bool isRelation; //true if of this format:
+    Term term; //<(a * b) --> R>
+    Truth truth;
+    Stamp stamp;
+}Relation;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern int beliefsSelectedCnt;
@@ -109,5 +119,7 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 int Memory_getOperationID(Term *term);
 //Get temporal link truth value
 Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
+//helper to add content to memory
+bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation);
 
 #endif

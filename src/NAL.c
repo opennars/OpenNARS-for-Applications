@@ -395,7 +395,7 @@ void NAL_DerivedEvent(Term conclusionTerm, long conclusionOccurrence, Truth conc
                 }
             }
         }
-        if(!allowOnlyExtVarIntroAndTwoIndependentVars) //todo rename var to something else
+        if(false && !allowOnlyExtVarIntroAndTwoIndependentVars) //todo rename var to something else
         {
             bool success2;
             Term conclusionTermWithVarInt = Variable_IntroduceImplicationVariables(conclusionTerm, &success2, false);

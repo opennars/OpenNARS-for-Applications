@@ -1,0 +1,8 @@
+<(<($1 * $2) --> (loc * loc)> && <($3 * $4) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
+//derived:
+<(A1  * C1) --> (ocr * ocr)>.
+//
+<(sample * A1) --> (loc * ocr)>. :|:
+//extracted "sample" for A1
+//TODO same for C1, extract "left":
+<(left * C1) --> (loc * ocr)>. :|:

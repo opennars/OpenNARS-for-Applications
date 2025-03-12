@@ -91,7 +91,7 @@
 //Unification depth, 2^(n+1)-1, n=2 levels lead to value 7
 #define UNIFICATION_DEPTH 31
 //If var intro should be allowed at all (includes sensorimotor!)
-#define ALLOW_VAR_INTRO true
+#define ALLOW_VAR_INTRO false
 //Numeric term similarity distance scale (everything beyond distance leads to conf 0 analogy!)
 #define SIMILARITY_DISTANCE 1.0
 //Whether numeric term similarity is allowed to be used (allows conditioning results on absolute value to transfer to similar values)
@@ -121,7 +121,7 @@
 /* Space parameters */
 /*------------------*/
 //Maximum amount of concepts
-#define CONCEPTS_MAX 4096
+#define CONCEPTS_MAX 1024
 //Amount of buckets for concept hashmap
 #define CONCEPTS_HASHTABLE_BUCKETS CONCEPTS_MAX
 //Maximum amount of belief events attention buffer holds
@@ -135,15 +135,15 @@
 //Maximum size of the stamp in terms of evidential base id's
 #define STAMP_SIZE 10
 //Maximum Implication table size
-#define TABLE_SIZE 20
+#define TABLE_SIZE 400
 //Maximum compound term size
-#define COMPOUND_TERM_SIZE_MAX 64
+#define COMPOUND_TERM_SIZE_MAX 128
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
 #define ATOMS_MAX 65536
 //Amount of buckets for atoms hashmap
 #define ATOMS_HASHTABLE_BUCKETS ATOMS_MAX
 //The type of an atom
-#define Atom unsigned short
+#define Atom unsigned char
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
