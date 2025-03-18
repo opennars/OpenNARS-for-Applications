@@ -53,6 +53,7 @@ void Cycle_INIT()
 }
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
+Decision Cycle_lastDecision = {0};
 static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
@@ -64,6 +65,30 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
         {
             c->belief_spike = *e;
+        }
+        //NEW FEEDBACK MECHANISM FOR RELATIONS:
+        //IF Cycle_lastDecision is existing then check if e = postcondition of Cycle_lastDecision.specific_implication
+        if(Cycle_lastDecision.specific_implication.term.atoms[0])
+        {
+            Term postcondition = Term_ExtractSubterm(&Cycle_lastDecision.specific_implication.term, 2);
+            if(Term_Equal(&postcondition, &e->term))
+            {
+                //if e truth exp > 0.5: nothing to do, if it is confirmed it will be reinforced automatically
+                //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
+                if(Truth_Expectation(e->truth) < 0.5)
+                {
+                    Concept* relationC = Memory_FindConceptByTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term);
+                    if(relationC != NULL)
+                    {
+                        relationC->belief = Cycle_lastDecision.lastActedOnRelationBelief;
+                        Event negBelief = relationC->belief;
+                        negBelief.truth = Truth_Revision(relationC->belief.truth, (Truth) { .frequency = 0.0, .confidence = 0.9 });
+                        relationC->belief = negBelief;
+                    }
+                }
+                //last remove last decision
+                Cycle_lastDecision = (Decision) {0};
+            }
         }
     }
     else
@@ -558,6 +583,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
         goalsSelectedCnt = 0;
         //execute decision
         Decision_Execute(currentTime, &best_decision);
+        Cycle_lastDecision = best_decision;
     }
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)

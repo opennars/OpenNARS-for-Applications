@@ -123,6 +123,7 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     }
 }
 
+//Event previous_belief = {0};
 bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation) //Stamp stamp,
 {
     if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION) && Variable_hasVariable(term, true, true, false))

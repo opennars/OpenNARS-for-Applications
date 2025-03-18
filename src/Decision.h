@@ -78,6 +78,7 @@ typedef struct
     Implication usedContingency;
     Event *reason;
     int tableIndex;
+    Event lastActedOnRelationBelief;
 }Decision;
 
 //Methods//
