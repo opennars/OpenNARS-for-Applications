@@ -161,7 +161,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                  .type = EVENT_TYPE_BELIEF, 
                  .truth = truth, 
                  .stamp = st,
-                 .occurrenceTime = currentTime,
+                 .occurrenceTime = OCCURRENCE_ETERNAL,
                  .occurrenceTimeOffset = 0,
                  .creationTime = currentTime,
                  .input = false };

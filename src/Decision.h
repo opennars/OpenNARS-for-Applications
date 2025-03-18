@@ -79,6 +79,8 @@ typedef struct
     Event *reason;
     int tableIndex;
     Event lastActedOnRelationBelief;
+    long invokedTime;
+    Stamp produceStamp;
 }Decision;
 
 //Methods//

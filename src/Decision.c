@@ -113,7 +113,33 @@ void Decision_Execute(long currentTime, Decision *decision)
             Truth implication_truth = Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
             bool success2;
             Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
-            if(success2)
+            
+            
+            
+            //SAMPLE AND LEFT NEEDS TO MATCH THE decision->arguments[i] ({SELF} * (left * right))
+            bool spatial_constraint_fulfilled = false;
+            if(decision->arguments[0].atoms[0] > 0)
+            {
+                Term SELF_and_args = decision->arguments[0];
+                if(Narsese_copulaEquals(SELF_and_args.atoms[0], PRODUCT))
+                {
+                    Term args = Term_ExtractSubterm(&SELF_and_args, 2);
+                    if(Narsese_copulaEquals(args.atoms[0], PRODUCT))
+                    {
+                        Term arg1 = Term_ExtractSubterm(&args, 1);
+                        Term arg2 = Term_ExtractSubterm(&args, 2);
+                        if(Term_Equal(&arg1, &sample) && Term_Equal(&arg2, &left))
+                        {
+                            spatial_constraint_fulfilled =  true;
+                        }
+                    }
+                }
+            }
+                
+            printf("FULFILLED CONSTRAINT? %d\n", (int) spatial_constraint_fulfilled);
+
+                
+            if(success2 && spatial_constraint_fulfilled)
             {
                 //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
                 //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
@@ -127,6 +153,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                 if(clastActedOnRelationBelief != NULL)
                 {
                     decision->lastActedOnRelationBelief = clastActedOnRelationBelief->belief;
+                    decision->produceStamp = decision->reason->stamp;
                 }
                 else //create empty belief
                 {
@@ -134,13 +161,13 @@ void Decision_Execute(long currentTime, Decision *decision)
                                          .type = EVENT_TYPE_BELIEF, 
                                          .truth = (Truth) { .frequency = 0.5, .confidence = 0.0 }, 
                                          .stamp = (Stamp) {0},
-                                         .occurrenceTime = currentTime,
+                                         .occurrenceTime = OCCURRENCE_ETERNAL,
                                          .occurrenceTimeOffset = 0,
                                          .creationTime = currentTime,
                                          .input = false };
                     decision->lastActedOnRelationBelief = ev;
                 }
-                bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true);
+                bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
                 //if(added)
                 {
                     IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
@@ -245,10 +272,31 @@ void Decision_Execute(long currentTime, Decision *decision)
                                 Term loc1 =   Term_ExtractSubterm(&precondition, 9);
                                 Term ocr1 =   Term_ExtractSubterm(&precondition, 10);
                                 Term left =   Term_ExtractSubterm(&precondition, 11);
+                                
+                                //SAMPLE AND LEFT NEEDS TO MATCH THE decision->arguments[i] ({SELF} * (left * right))
+                                bool spatial_constraint_fulfilled = false;
+                                if(decision->arguments[0].atoms[0] > 0)
+                                {
+                                    Term SELF_and_args = decision->arguments[0];
+                                    if(Narsese_copulaEquals(SELF_and_args.atoms[0], PRODUCT))
+                                    {
+                                        Term args = Term_ExtractSubterm(&SELF_and_args, 2);
+                                        if(Narsese_copulaEquals(args.atoms[0], PRODUCT))
+                                        {
+                                            Term arg1 = Term_ExtractSubterm(&args, 1);
+                                            Term arg2 = Term_ExtractSubterm(&args, 2);
+                                            if(Term_Equal(&arg1, &sample) && Term_Equal(&arg2, &left))
+                                            {
+                                                spatial_constraint_fulfilled =  true;
+                                            }
+                                        }
+                                    }
+                                }
+                                printf("FULFILLED CONSTRAINT? %d\n", (int) spatial_constraint_fulfilled);
                                 Term Y1 =     Term_ExtractSubterm(&precondition, 12);
                                 Term loc2 =   Term_ExtractSubterm(&precondition, 13);
                                 Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
-                                bool proceed = Narsese_copulaEquals(precondition.atoms[0], IMPLICATION) &&
+                                bool proceed = Narsese_copulaEquals(precondition.atoms[0], IMPLICATION) && spatial_constraint_fulfilled &&
                                                                            Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
                                                                            Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
                                                                            Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&

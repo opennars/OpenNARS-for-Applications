@@ -68,15 +68,29 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         }
         //NEW FEEDBACK MECHANISM FOR RELATIONS:
         //IF Cycle_lastDecision is existing then check if e = postcondition of Cycle_lastDecision.specific_implication
-        if(Cycle_lastDecision.specific_implication.term.atoms[0])
+        if(Cycle_lastDecision.specific_implication.term.atoms[0] && Cycle_lastDecision.lastActedOnRelationBelief.term.atoms[0])
         {
             Term postcondition = Term_ExtractSubterm(&Cycle_lastDecision.specific_implication.term, 2);
             if(Term_Equal(&postcondition, &e->term))
             {
                 //if e truth exp > 0.5: nothing to do, if it is confirmed it will be reinforced automatically
-                //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
-                if(Truth_Expectation(e->truth) < 0.5)
+                if(Truth_Expectation(e->truth) > 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
                 {
+                    Concept* relationC = Memory_Conceptualize(&Cycle_lastDecision.lastActedOnRelationBelief.term, currentTime);
+                    if(relationC != NULL)
+                    {
+                        printf("POS REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
+                        /*relationC->belief = Cycle_lastDecision.lastActedOnRelationBelief;
+                        Event posBelief = relationC->belief;
+                        posBelief.truth = Truth_Revision(relationC->belief.truth, (Truth) { .frequency = 1.0, .confidence = 0.9 });
+                        posBelief.stamp = Stamp_make(&posBelief.stamp, &decision.produceStamp);
+                        relationC->belief = posBelief;*/
+                    }
+                } //--
+                //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
+                if(Truth_Expectation(e->truth) < 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
+                {
+                    printf("NEG REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
                     Concept* relationC = Memory_FindConceptByTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term);
                     if(relationC != NULL)
                     {
@@ -584,6 +598,7 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
         //execute decision
         Decision_Execute(currentTime, &best_decision);
         Cycle_lastDecision = best_decision;
+        Cycle_lastDecision.invokedTime = currentTime;
     }
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
