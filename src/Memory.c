@@ -86,10 +86,10 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     {
         return; //transitivity with same start and endpoint
     }
-    if(!Term_Equal(&A_B->R, &B_C->R) || !Term_Equal(&B_C->R, &A_C->R))
+    /*if(!Term_Equal(&A_B->R, &B_C->R) || !Term_Equal(&B_C->R, &A_C->R))
     {
         return; //restrict for now to same relation
-    }
+    }*/
     if(!Term_Equal(&A_B->R, &A_C->R) && !Term_Equal(&B_C->R, &A_C->R) && !Term_Equal(&A_B->R, &B_C->R))
     {
         return;
@@ -252,12 +252,20 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        continue;
+                    }
                     Relation B_C = Memory_relationOfBelief(&c->belief);
                     if(B_C.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
                     {
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
+                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            {
+                                continue;
+                            }
                             Relation A_C = Memory_relationOfBelief(&d->belief);
                             if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
                             {
@@ -275,12 +283,20 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        continue;
+                    }
                     Relation A_B = Memory_relationOfBelief(&c->belief);
                     if(A_B.isRelation && Term_Equal(&A_B.arg1, &A_C.arg1))
                     {
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
+                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            {
+                                continue;
+                            }
                             Relation B_C = Memory_relationOfBelief(&d->belief);
                             if(B_C.isRelation && Term_Equal(&B_C.arg1, &A_B.arg2) && Term_Equal(&B_C.arg2, &A_C.arg2))
                             {
@@ -298,12 +314,20 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        continue;
+                    }
                     Relation A_B = Memory_relationOfBelief(&c->belief);
                     if(A_B.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
                     {
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
+                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            {
+                                continue;
+                            }
                             Relation A_C = Memory_relationOfBelief(&d->belief);
                             if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
                             {
