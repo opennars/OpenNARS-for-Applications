@@ -64,8 +64,8 @@ Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
         return ret;
     }
     if(Narsese_copulaEquals(term.atoms[0], INHERITANCE) &&
-       Narsese_copulaEquals(term.atoms[1], PRODUCT) &&
-       Narsese_copulaEquals(term.atoms[2], PRODUCT))
+       Narsese_copulaEquals(term.atoms[1], PRODUCT) //&&
+       /*Narsese_copulaEquals(term.atoms[2], PRODUCT)*/) //can be a named relation
     {
         Term a = Term_ExtractSubterm(&term, 3);
         Term b = Term_ExtractSubterm(&term, 4);
@@ -89,6 +89,10 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     if(!Term_Equal(&A_B->R, &B_C->R) || !Term_Equal(&B_C->R, &A_C->R))
     {
         return; //restrict for now to same relation
+    }
+    if(!Term_Equal(&A_B->R, &A_C->R) && !Term_Equal(&B_C->R, &A_C->R) && !Term_Equal(&A_B->R, &B_C->R))
+    {
+        return;
     }
     IN_DEBUGNEW
     (
@@ -193,19 +197,31 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
+                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    {
+                        continue;
+                    }
                     Relation B_A = Memory_relationOfBelief(&c->belief);
-                    if(B_A.isRelation && Term_Equal(&B_A.arg1, &A_B.arg2) && Term_Equal(&B_A.arg2, &A_B.arg1))
+                    if(B_A.isRelation && ((Term_Equal(&B_A.arg1, &A_B.arg2) && Term_Equal(&B_A.arg2, &A_B.arg1)) || 
+                                          (!Term_Equal(&A_B.R, &B_A.R) && Term_Equal(&B_A.arg1, &A_B.arg1) && Term_Equal(&B_A.arg2, &A_B.arg2))))
                     {
                         Term implication = {0};
                         implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
                         bool success = true;
                         success &= Term_OverrideSubterm(&implication, 1, &A_B.term);
                         success &= Term_OverrideSubterm(&implication, 2, &B_A.term);
-                        if(success)
+                        Term implication2 = {0};
+                        implication2.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                        bool success_ = true;
+                        success_ &= Term_OverrideSubterm(&implication2, 2, &A_B.term);
+                        success_ &= Term_OverrideSubterm(&implication2, 1, &B_A.term);
+                        if(success && success_)
                         {
                             bool success2;
                             Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
-                            if(success2)
+                            bool success2_;
+                            Term imp_general2 = Variable_IntroduceImplicationVariables(implication2, &success2_, true);
+                            if(success2 && success2_)
                             {
                                 if(Term_Equal(&A_B.arg1, &B_A.arg1))
                                 {
@@ -222,6 +238,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                                     )
                                 }
                                 Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
+                                Memory_AddMemoryHelper(currentTime, &imp_general2, Truth_Induction(B_A.truth, A_B.truth), &A_B.stamp, &B_A.stamp, false);
                             }
                         }
                     }
