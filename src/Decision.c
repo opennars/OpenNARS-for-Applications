@@ -183,22 +183,24 @@ void Decision_Execute(long currentTime, Decision *decision)
                 }
                 else //create empty belief
                 {
+                    Stamp stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp);
                     Event ev = (Event) { .term = ocr_ocr,
                                          .type = EVENT_TYPE_BELIEF, 
                                          .truth = (Truth) { .frequency = 0.5, .confidence = 0.0 }, 
-                                         .stamp = (Stamp) {0},
+                                         .stamp = stamp, //(Stamp) {0},
                                          .occurrenceTime = OCCURRENCE_ETERNAL,
                                          .occurrenceTimeOffset = 0,
                                          .creationTime = currentTime,
                                          .input = false };
                     decision->lastActedOnRelationBelief = ev;
                 }
-                bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
-                //if(added)
+                /*bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
+                if(added)
                 {
-                    IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
-                    IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
-                }
+                    //IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                    //IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
+                    fputs("ACQUIRED REL: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                }*/
                 acquired_rel = true; //gets in the way of functional equ as we would acquire a relation yet again from the functional equ
             }
             
@@ -1010,7 +1012,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
             for(int u=0; u<concepts.itemsAmount && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && declarative; u++)
             {
                 Concept *cP = concepts.items[u].address;
-                if(Variable_hasVariable(&cP->term, true, true, true) || cP->belief_spike.type != EVENT_TYPE_DELETED)
+                if(Variable_hasVariable(&cP->term, true, true, true) || cP->belief_spike.type != EVENT_TYPE_DELETED ||
+                   cP->belief.truth.frequency <= 0.5)
                 {
                     continue;
                 }
@@ -1030,7 +1033,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                         Concept *cP2 = concepts.items[v].address;
                         bool boost_skip = cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP2->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
                         if(Variable_hasVariable(&cP2->term, true, true, true) || !Narsese_copulaEquals(cP2->belief.term.atoms[0], INHERITANCE) || 
-                           boost_skip || cP2->belief_spike.type != EVENT_TYPE_DELETED)
+                           boost_skip || cP2->belief_spike.type != EVENT_TYPE_DELETED || cP2->belief.truth.frequency <= 0.5)
                         {
                             continue;
                         }
@@ -1041,11 +1044,11 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                         //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
                         Substitution subst = Variable_Unify(&conj_general, &conj);
                         if(success1 && success2 && subst.success && cP->belief.type != EVENT_TYPE_DELETED && cP2->belief.type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
-                        {
+                        { //TODO
                             //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
                             Stamp stamp_conj = Stamp_make(&cP->belief.stamp, &cP2->belief.stamp);
                             Truth truth_conj = Truth_Intersection(cP->belief.truth, cP2->belief.truth);
-                            if(!Stamp_checkOverlap(&stamp_conj, &imp.stamp))
+                            if(!Stamp_checkOverlap(&stamp_conj, &imp.stamp)) //TODO
                             {
                                 Truth truth_cons = Truth_Deduction(imp.truth, truth_conj);
                                 //Stamp stamp_full = Stamp_make(&imp.stamp, &stamp_conj);
@@ -1054,10 +1057,13 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                 cons = Variable_ApplySubstitute(cons, subst, &success);
                                 if(success)
                                 {
-                                    //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); fputs(" cons: ", stdout); Narsese_PrintTerm(&cons); puts("");
                                     //Stamp resstamp = Stamp_make(&imp.stamp, &stamp_conj);
                                     //Stamp_print(&stamp_conj); puts("");
-                                    Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &imp.stamp, false);
+                                    Stamp stamp = imp.stamp;// Stamp_make(&stamp_conj, &imp.stamp); //imp.stamp;
+                                    if(Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &stamp, false))
+                                    {
+                                        fputs("DERIVED RELATION", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&cons); puts("");
+                                    }
                                 }
                             }
                         }

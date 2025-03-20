@@ -143,7 +143,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     {
         Term dummy_term = {0};
         dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
-        truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
+        //truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
         stamp1 = &dummy.stamp;
         stamp2 = NULL;
     }
@@ -185,9 +185,18 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     //}
     //puts("SUCCESS4!"); Narsese_PrintTerm(&ev.term); puts("");
     Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0, true);
+    Concept *c_again = Memory_FindConceptByTerm(&ev.term);
+    if(c_again == NULL)
+    {
+        return false;
+    }
+    Relation rel = Memory_relationOfBelief(&ev);
+    if(rel.isRelation)
+    {
+        c_again->isRelation = true;
+    }
     if(acquiredRelation)
     {
-        Relation rel = Memory_relationOfBelief(&ev);
         if(rel.isRelation)
         {
             //1 way to complete a symmetry pattern:
@@ -197,7 +206,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    if(c_again == c || !c->isRelation)
                     {
                         continue;
                     }
@@ -252,7 +261,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    if(c_again == c || !c->isRelation)
                     {
                         continue;
                     }
@@ -262,7 +271,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
-                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            if(c_again == d || c == d || !d->isRelation)
                             {
                                 continue;
                             }
@@ -283,7 +292,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    if(c_again == c || !c->isRelation)
                     {
                         continue;
                     }
@@ -293,7 +302,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
-                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            if(c_again == d || c == d || !d->isRelation)
                             {
                                 continue;
                             }
@@ -314,7 +323,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                 for(int i=0; i<concepts.itemsAmount; i++)
                 {
                     Concept *c = concepts.items[i].address;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED)
+                    if(c_again == c || !c->isRelation)
                     {
                         continue;
                     }
@@ -324,7 +333,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                         for(int j=0; j<concepts.itemsAmount; j++)
                         {
                             Concept *d = concepts.items[j].address;
-                            if(d->belief_spike.type != EVENT_TYPE_DELETED)
+                            if(c_again == d || c == d || !d->isRelation)
                             {
                                 continue;
                             }
