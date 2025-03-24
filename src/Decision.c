@@ -1012,7 +1012,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
             for(int u=0; u<concepts.itemsAmount && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && declarative; u++)
             {
                 Concept *cP = concepts.items[u].address;
-                if(Variable_hasVariable(&cP->term, true, true, true) || cP->belief_spike.type != EVENT_TYPE_DELETED ||
+                if(Variable_hasVariable(&cP->term, true, true, true) ||
                    cP->belief.truth.frequency <= 0.5)
                 {
                     continue;
@@ -1023,7 +1023,6 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 //0   1   2
                 if(Narsese_copulaEquals(imp.term.atoms[1], CONJUNCTION) && //only declarative iterates
                    Narsese_copulaEquals(imp.term.atoms[2], INHERITANCE) &&
-                   cP->belief.type != EVENT_TYPE_DELETED &&
                    Narsese_copulaEquals(cP->belief.term.atoms[0], INHERITANCE))
                 {
                     //try to satisfy both with the same variable mapping
@@ -1033,7 +1032,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                         Concept *cP2 = concepts.items[v].address;
                         bool boost_skip = cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP2->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
                         if(Variable_hasVariable(&cP2->term, true, true, true) || !Narsese_copulaEquals(cP2->belief.term.atoms[0], INHERITANCE) || 
-                           boost_skip || cP2->belief_spike.type != EVENT_TYPE_DELETED || cP2->belief.truth.frequency <= 0.5)
+                           boost_skip || cP2->belief.truth.frequency <= 0.5)
                         {
                             continue;
                         }
