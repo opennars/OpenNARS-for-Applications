@@ -121,5 +121,6 @@ int Memory_getOperationID(Term *term);
 Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
 //helper to add content to memory
 bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation);
+Relation Memory_relationOfBelief(Event *ev);
 
 #endif

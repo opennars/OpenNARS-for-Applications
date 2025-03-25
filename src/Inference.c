@@ -35,7 +35,21 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 {
     return (a1*w1+a2*w2)/(w1+w2);
 }
-                
+  
+//{Event a., Event b.} |- Event (&&,a,b).
+Event Inference_BeliefConjunction(Event *a, Event *b, bool *success)
+{
+    DERIVATION_STAMP_AND_TIME(a,b)
+    Term conclusionTerm = Narsese_Conjunction(&a->term, &b->term, success);
+    return *success ? (Event) { .term = conclusionTerm,
+                                .type = EVENT_TYPE_BELIEF,
+                                .truth = Truth_Intersection(truthA, truthB),
+                                .stamp = conclusionStamp, 
+                                .occurrenceTime = conclusionTime,
+                                .creationTime = creationTime }
+                    : (Event) {0};
+}
+
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {

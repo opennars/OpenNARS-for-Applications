@@ -195,7 +195,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     {
         c_again->isRelation = true;
     }
-    if(acquiredRelation)
+    //if(acquiredRelation)
     {
         if(rel.isRelation)
         {

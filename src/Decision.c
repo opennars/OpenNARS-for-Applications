@@ -961,8 +961,14 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
                                                 if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
                                                 {
-                                                     Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
-                                                     Memory_AddMemoryHelper(currentTime, &resulteternal.term, resulteternal.truth, &resulteternal.stamp, NULL, false);
+                                                    Relation rel = Memory_relationOfBelief(&c_eternal->belief);
+                                                    if(rel.isRelation)
+                                                    {
+                                                        c_eternal->isRelation = true;
+                                                        fputs("DERIVED", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&resulteternal.term); puts("");
+                                                    }
+                                                    Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                    Memory_AddMemoryHelper(currentTime, &resulteternal.term, resulteternal.truth, &resulteternal.stamp, NULL, false);
                                                 }
                                             }
                                         }
@@ -1036,32 +1042,50 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                         {
                             continue;
                         }
-                        Term conj = {0};
-                        conj.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
-                        bool success1 = Term_OverrideSubterm(&conj, 1, &cP->term);
-                        bool success2 = Term_OverrideSubterm(&conj, 2, &cP2->term);
-                        //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
-                        Substitution subst = Variable_Unify(&conj_general, &conj);
-                        if(success1 && success2 && subst.success && cP->belief.type != EVENT_TYPE_DELETED && cP2->belief.type != EVENT_TYPE_DELETED && !Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
-                        { //TODO
+                        //Term conj = {0};
+                        //conj.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                        //bool success1 = Term_OverrideSubterm(&conj, 1, &cP->term);
+                        //bool success2 = Term_OverrideSubterm(&conj, 2, &cP2->term);
+                        bool successOfConj;
+                        Event prec_eternal = Inference_BeliefConjunction(&cP->belief, &cP2->belief, &successOfConj);
+                        if(successOfConj)
+                        {
                             //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
-                            Stamp stamp_conj = Stamp_make(&cP->belief.stamp, &cP2->belief.stamp);
-                            Truth truth_conj = Truth_Intersection(cP->belief.truth, cP2->belief.truth);
-                            if(!Stamp_checkOverlap(&stamp_conj, &imp.stamp)) //TODO
+                            Substitution subst = Variable_Unify(&conj_general, &prec_eternal.term);
+                            Implication imp_w_subst = imp;
+                            bool success;
+                            if(subst.success)
                             {
-                                Truth truth_cons = Truth_Deduction(imp.truth, truth_conj);
-                                //Stamp stamp_full = Stamp_make(&imp.stamp, &stamp_conj);
-                                Term cons = Term_ExtractSubterm(&imp.term, 2);
-                                bool success;
-                                cons = Variable_ApplySubstitute(cons, subst, &success);
-                                if(success)
-                                {
+                                imp_w_subst.term = Variable_ApplySubstitute(imp.term, subst, &success);
+                                if(success)// && !Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
+                                { //TODO
+                                    Event resulteternal = Inference_BeliefDeduction(&prec_eternal, &imp_w_subst); //b. :/:
                                     //Stamp resstamp = Stamp_make(&imp.stamp, &stamp_conj);
                                     //Stamp_print(&stamp_conj); puts("");
-                                    Stamp stamp = imp.stamp;// Stamp_make(&stamp_conj, &imp.stamp); //imp.stamp;
-                                    if(Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &stamp, false))
+                                    //Stamp stamp = imp.stamp;// Stamp_make(&stamp_conj, &imp.stamp); //imp.stamp;
+                                    /*if(Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &stamp, false))
                                     {
                                         fputs("DERIVED RELATION", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&cons); puts("");
+                                    }*/
+                                    Concept *c_eternal = Memory_Conceptualize(&resulteternal.term, currentTime);
+                                    if(c_eternal != NULL)// && !Stamp_checkOverlap(&prec_eternal.stamp, &imp.stamp))
+                                    {
+                                        Truth oldTruth = c_eternal->belief.truth;
+                                        if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
+                                        {
+                                            c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
+                                            if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
+                                            {
+                                                Relation rel = Memory_relationOfBelief(&c_eternal->belief);
+                                                if(rel.isRelation)
+                                                {
+                                                    c_eternal->isRelation = true;
+                                                    fputs("DERIVED", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&resulteternal.term); puts("");
+                                                }
+                                                Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                Memory_AddMemoryHelper(currentTime, &resulteternal.term, resulteternal.truth, &resulteternal.stamp, NULL, false);
+                                            }
+                                        }
                                     }
                                 }
                             }
