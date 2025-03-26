@@ -74,31 +74,29 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
             if(Term_Equal(&postcondition, &e->term))
             {
                 //if e truth exp > 0.5: nothing to do, if it is confirmed it will be reinforced automatically
+                Term term = Cycle_lastDecision.lastActedOnRelationBelief.term;
+                Stamp stamp = Cycle_lastDecision.lastActedOnRelationBelief.stamp;
                 if(Truth_Expectation(e->truth) > 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
                 {
-                    Concept* relationC = Memory_Conceptualize(&Cycle_lastDecision.lastActedOnRelationBelief.term, currentTime);
+                    Concept* relationC = Memory_Conceptualize(&term, currentTime);
                     if(relationC != NULL)
                     {
-                        printf("POS REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
-                        /*relationC->belief = Cycle_lastDecision.lastActedOnRelationBelief;
-                        Event posBelief = relationC->belief;
-                        posBelief.truth = Truth_Revision(relationC->belief.truth, (Truth) { .frequency = 1.0, .confidence = 0.9 });
-                        posBelief.stamp = Stamp_make(&posBelief.stamp, &decision.produceStamp);
-                        relationC->belief = posBelief;*/
+                        printf("POS REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&term); puts("");
+                        //bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
+                        //if(added)
+                        //{
+                        //    //IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                        //    //IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
+                        //    fputs("ACQUIRED REL: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                        //}
+                        Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 1.0, .confidence = 0.9 }, &stamp, NULL, true);
                     }
                 } //--
                 //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
                 if(Truth_Expectation(e->truth) < 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
                 {
                     printf("NEG REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
-                    Concept* relationC = Memory_FindConceptByTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term);
-                    if(relationC != NULL)
-                    {
-                        relationC->belief = Cycle_lastDecision.lastActedOnRelationBelief;
-                        Event negBelief = relationC->belief;
-                        negBelief.truth = Truth_Revision(relationC->belief.truth, (Truth) { .frequency = 0.0, .confidence = 0.9 });
-                        relationC->belief = negBelief;
-                    }
+                    Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 0.0, .confidence = 0.9 }, &stamp, NULL, true);
                 }
                 //last remove last decision
                 Cycle_lastDecision = (Decision) {0};
