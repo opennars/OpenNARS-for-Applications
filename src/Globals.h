@@ -34,7 +34,8 @@
 //////////////
 #include <stdbool.h>
 #include <string.h>
-#include <ctype.h> 
+#include <ctype.h>
+#include <math.h>
 
 //Macros//
 //////////
@@ -73,5 +74,9 @@ void mysrand(unsigned int seed);
 //Stringification macro:
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
+double mylog2(double n);
+#ifndef log2
+#define log2 mylog2
+#endif
 
 #endif
