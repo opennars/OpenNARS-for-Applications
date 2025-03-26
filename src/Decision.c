@@ -167,9 +167,13 @@ void Decision_Execute(long currentTime, Decision *decision)
             //printf("FULFILLED CONSTRAINT? %d\n", (int) spatial_constraint_fulfilled);
             if(success2 && spatial_constraint_fulfilled)
             {
-                //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
                 //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
-                Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp, false);
+                //Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp, false);
+                Term dummy_term = {0};
+                Event dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, (Truth) { .frequency = 0.5, .confidence = 0.0 }, 0, currentTime);
+                //dummy.stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp); //decision->usedContingency.stamp;
+                Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &dummy.stamp, NULL, false);
                 //extract the individual statements
                 Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
                 Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
@@ -179,15 +183,15 @@ void Decision_Execute(long currentTime, Decision *decision)
                 if(clastActedOnRelationBelief != NULL)
                 {
                     decision->lastActedOnRelationBelief = clastActedOnRelationBelief->belief;
-                    decision->produceStamp = decision->reason->stamp;
+                    decision->lastActedOnRelationBelief.stamp = dummy.stamp;
                 }
                 else //create empty belief
                 {
-                    Stamp stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp);
+                    //Stamp stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp);
                     Event ev = (Event) { .term = ocr_ocr,
                                          .type = EVENT_TYPE_BELIEF, 
                                          .truth = (Truth) { .frequency = 0.5, .confidence = 0.0 }, 
-                                         .stamp = stamp, //(Stamp) {0},
+                                         .stamp = dummy.stamp, //stamp, //(Stamp) {0},
                                          .occurrenceTime = OCCURRENCE_ETERNAL,
                                          .occurrenceTimeOffset = 0,
                                          .creationTime = currentTime,
@@ -952,8 +956,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     //if(c != NULL )//&& !Stamp_checkOverlap(&precondition_event->stamp, &imp.stamp))
                                     {
                                         //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
-                                        //ETERNAL BELIEF UPDATE:
-                                        if(c_eternal != NULL && success2eternal && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                        //ETERNAL BELIEF UPDATE: //-- TODO STAMP
+                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))// && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp))
                                         {
                                             Truth oldTruth = c_eternal->belief.truth;
                                             if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -1057,8 +1061,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                             if(subst.success)
                             {
                                 imp_w_subst.term = Variable_ApplySubstitute(imp.term, subst, &success);
-                                if(success)// && !Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
-                                { //TODO
+                                //if(!Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
+                                { //TODO STAMP //--
                                     Event resulteternal = Inference_BeliefDeduction(&prec_eternal, &imp_w_subst); //b. :/:
                                     //Stamp resstamp = Stamp_make(&imp.stamp, &stamp_conj);
                                     //Stamp_print(&stamp_conj); puts("");
@@ -1068,7 +1072,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                         fputs("DERIVED RELATION", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&cons); puts("");
                                     }*/
                                     Concept *c_eternal = Memory_Conceptualize(&resulteternal.term, currentTime);
-                                    if(c_eternal != NULL)// && !Stamp_checkOverlap(&prec_eternal.stamp, &imp.stamp))
+                                    if(c_eternal != NULL) // && !Stamp_checkOverlap(&prec_eternal.stamp, &imp.stamp)) //-- TODO STAMP
                                     {
                                         Truth oldTruth = c_eternal->belief.truth;
                                         if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -1129,7 +1133,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                     //--> * * A1 C1 ocr1  ocr2
                     //1   2 3 4  5  6    7
                     //0   1 2 3  4  5    6
-                    if(//cP->belief.truth.frequency > 0.5 &&
+                    if(cP->belief.truth.frequency > 0.5 &&
                        Narsese_copulaEquals(matchTerm.atoms[0], INHERITANCE) && 
                        Narsese_copulaEquals(matchTerm.atoms[1], PRODUCT) //&& 
                        /*Narsese_copulaEquals(matchTerm.atoms[2], PRODUCT)*/)

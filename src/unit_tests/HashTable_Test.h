@@ -24,6 +24,7 @@
 
 
 #define HASHTABLE_TEST_STRUCTURE_SIZE 10
+Concept c1, c2, c3; //can be too huge for stack!
 void HashTable_Test()
 {
     HashTable HTtest;
@@ -35,7 +36,7 @@ void HashTable_Test()
     assert(HTtest.VMStack.stackpointer == HASHTABLE_TEST_STRUCTURE_SIZE, "The stack should be full!");
     //Insert a first concept:
     Term term1 = Narsese_Term("<a --> b>");
-    Concept c1 = { .id = 1, .term = term1 };
+    c1 = (Concept) { .id = 1, .term = term1 };
     HashTable_Set(&HTtest, &term1, &c1);
     assert(HTtest.VMStack.stackpointer == HASHTABLE_TEST_STRUCTURE_SIZE-1, "One item should be taken off of the stack");
     assert(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE] != NULL, "Item didn't go in right place");
@@ -46,7 +47,7 @@ void HashTable_Test()
     //insert another with the same hash:
     Term term2 = Narsese_Term("<c --> d>");
     term2.hash = c1.term.hash;
-    Concept c2 = { .id = 2, .term = term2 }; //use different term but same hash, hash collision!
+    c2 = (Concept) { .id = 2, .term = term2 }; //use different term but same hash, hash collision!
     HashTable_Set(&HTtest, &term2, &c2);
     //get first one:
     Concept *c1_returned_again = HashTable_Get(&HTtest, &term1);
@@ -54,7 +55,7 @@ void HashTable_Test()
     assert(Term_Equal(&c1.term, &c1_returned_again->term), "Hashtable Get led to different term than we put into (2)");
     Term term3 = Narsese_Term("<e --> f>");
     term3.hash = c1.term.hash;
-    Concept c3 = { .id = 3, .term = term3 }; //use different term but same hash, hash collision!
+    c3 = (Concept) { .id = 3, .term = term3 }; //use different term but same hash, hash collision!
     HashTable_Set(&HTtest, &term3, &c3);
     //there should be a chain of 3 concepts now at the hash position:
     assert(Term_Equal(HTtest.HT[c1.term.hash % HASHTABLE_TEST_STRUCTURE_SIZE]->key, &c1.term), "c1 not there! (1)");

@@ -76,6 +76,7 @@ typedef struct
     Term term; //<(a * b) --> R>
     Truth truth;
     Stamp stamp;
+    bool isNamed;
 }Relation;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global

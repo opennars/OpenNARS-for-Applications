@@ -80,7 +80,6 @@ typedef struct
     int tableIndex;
     Event lastActedOnRelationBelief;
     long invokedTime;
-    Stamp produceStamp;
 }Decision;
 
 //Methods//

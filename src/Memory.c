@@ -75,13 +75,18 @@ Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
                            .isRelation = true,
                            .term = term,
                            .truth = ev->truth,
-                           .stamp = ev->stamp };
+                           .stamp = ev->stamp,
+                           .isNamed = !Narsese_copulaEquals(term.atoms[2], PRODUCT) };
     }
     return ret;
 }
 
 void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation *B_C, Relation *A_C)
 {
+    if(A_B->isNamed != B_C->isNamed || B_C->isNamed != A_C->isNamed || A_B->isNamed != A_C->isNamed)
+    {
+        return;
+    }
     if(Term_Equal(&A_B->arg1, &A_C->arg2))
     {
         return; //transitivity with same start and endpoint
@@ -139,14 +144,17 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
         //return false;
     }
     Event dummy = {0};
-    if(acquiredRelation) //
+    //Stamp stampmade = {0};
+    /*if(acquiredRelation) //
     {
         Term dummy_term = {0};
         dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
         //truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
+        //stampmade = Stamp_make(&dummy.stamp, stamp1);
+        //stamp1 = &stampmade;
         stamp1 = &dummy.stamp;
         stamp2 = NULL;
-    }
+    }*/
     if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
         //puts("FAIL1");
@@ -211,6 +219,10 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                         continue;
                     }
                     Relation B_A = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isNamed != B_A.isNamed)
+                    {
+                        continue;
+                    }
                     if(B_A.isRelation && ((Term_Equal(&B_A.arg1, &A_B.arg2) && Term_Equal(&B_A.arg2, &A_B.arg1)) || 
                                           (!Term_Equal(&A_B.R, &B_A.R) && Term_Equal(&B_A.arg1, &A_B.arg1) && Term_Equal(&B_A.arg2, &A_B.arg2))))
                     {
