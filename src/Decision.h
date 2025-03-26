@@ -78,6 +78,9 @@ typedef struct
     Implication usedContingency;
     Event *reason;
     int tableIndex;
+    Event lastActedOnRelationBelief;
+    long invokedTime;
+    Stamp produceStamp;
 }Decision;
 
 //Methods//

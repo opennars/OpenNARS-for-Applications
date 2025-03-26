@@ -1,0 +1,31 @@
+*setopname 1 ^match
+*volume=100
+*motorbabbling=false
+
+<(<(left * A) --> (loc * ocr)> &/ <({SELF} * B) --> ^match>) =/> G>.
+
+<(<(left * a) --> (loc * ocr)> &/ <({SELF} * B) --> ^match>) =/> G>.
+
+100
+
+<(left * a) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<(left * A) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+
+<(left * x) --> (loc * ocr)>. :|:
+<(left * X) --> (loc * ocr)>. :|:
+
+100
+
+<(<(left * X) --> (loc * ocr)> &/ <({SELF} * Y) --> ^match>) =/> G>.
+
+<(left * x) --> (loc * ocr)>. :|:
+G! :|:
+//^match executed with args ({SELF} * Y)

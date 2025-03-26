@@ -1,0 +1,61 @@
+*setopname 1 ^match
+*volume=0
+*motorbabbling=false
+
+<((<(sample * X1) --> (loc * ocr)> &/ <(left * Y1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+<((<(sample * Y1) --> (loc * ocr)> &/ <(right * Z1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>.
+<((<(sample * X1) --> (loc * ocr)> &/ <(left * Z1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+
+
+<(sample * X1) --> (loc * ocr)>. :|:
+<(left * Y1) --> (loc * ocr)>. :|:
+<(right * Y2) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+
+<(sample * Y1) --> (loc * ocr)>. :|:
+<(left * Z2) --> (loc * ocr)>. :|:
+<(right * Z1) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<(sample * X1) --> (loc * ocr)>. :|:
+<(left * Z1) --> (loc * ocr)>. :|:
+<(right * Z2) --> (loc * ocr)>. :|:
+G! :|:
+//Derived: <(<($1 * #1) --> (ocr * ocr)> && <(#1 * $2) --> (ocr * ocr)>) ==> <($1 * $2) --> (ocr * ocr)>>.
+
+100
+
+<((<(sample * A1) --> (loc * ocr)> &/ <(left * B1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+
+<(sample * A1) --> (loc * ocr)>. :|:
+<(left * B1) --> (loc * ocr)>. :|:
+<(right * B2) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<((<(sample * B1) --> (loc * ocr)> &/ <(left * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * left)) --> ^match>) =/> G>.
+
+<(sample * B1) --> (loc * ocr)>. :|:
+<(left * C1) --> (loc * ocr)>. :|:
+<(right * C2) --> (loc * ocr)>. :|:
+G! :|:
+
+100
+
+<(sample * A1) --> (loc * ocr)>. :|:
+<(left * C2) --> (loc * ocr)>. :|:
+<(right * C1) --> (loc * ocr)>. :|:
+G! :|:
+//decision expectation=0.510322 implication: <((<(sample * A1) --> (loc * ocr)> &/ <(right * C1) --> (loc * ocr)>) &/ <({SELF} * (sample * right)) --> ^match>) =/> G>. Stamp=[4,26,26,14,20,20,25,9,14,27] Truth: frequency=1.000000 confidence=0.055307 dt=0.000000 precondition: (<(sample * A1) --> (loc * ocr)> &/ <(right * C1) --> (loc * ocr)>). :|: Stamp=[31,33] Truth: frequency=1.000000 confidence=0.518400 occurrenceTime=549
+
+
+
+
+
+
