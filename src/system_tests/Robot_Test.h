@@ -37,7 +37,7 @@ char direction = DIRECTION_RIGHT; //right, right down, down, left down, left, le
 bool allowAction = false;
 
 //Angle transition via ^left operator
-Feedback NAR_Robot_Left()
+Feedback NAR_Robot_Left(Term args)
 {
     if(!allowAction)
         return (Feedback) {0};
@@ -69,7 +69,7 @@ Feedback NAR_Robot_Left()
 }
 
 //Angle transition via ^right operator
-Feedback NAR_Robot_Right()
+Feedback NAR_Robot_Right(Term args)
 {
     if(!allowAction)
         return (Feedback) {0};
@@ -413,7 +413,7 @@ int eaten = 0;
 int moves = 0;
 
 //Forward move
-Feedback NAR_Robot_Forward()
+Feedback NAR_Robot_Forward(Term args)
 {
     if(!allowAction)
         return (Feedback) {0};

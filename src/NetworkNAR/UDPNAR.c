@@ -43,7 +43,8 @@ void* Reasoner_Thread_Run(void* timestep_address)
         pthread_mutex_unlock(&nar_mutex);
         if(timestep >= 0)
         {
-            nanosleep((struct timespec[]){{0, timestep}}, NULL); //POSIX sleep for timestep nanoseconds
+            struct timespec ts = {0, timestep};
+            nanosleep(&ts, NULL); //wait another timestep
         }
     }
     return NULL;
