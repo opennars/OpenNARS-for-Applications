@@ -76,6 +76,7 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
                 //if e truth exp > 0.5: nothing to do, if it is confirmed it will be reinforced automatically
                 Term term = Cycle_lastDecision.lastActedOnRelationBelief.term;
                 Stamp stamp = Cycle_lastDecision.lastActedOnRelationBelief.stamp;
+                Term impterm = Cycle_lastDecision.lastActedOnRelationImplication;
                 if(Truth_Expectation(e->truth) > 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
                 {
                     Concept* relationC = Memory_Conceptualize(&term, currentTime);
@@ -90,6 +91,12 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
                         //    fputs("ACQUIRED REL: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
                         //}
                         Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 1.0, .confidence = 0.9 }, &stamp, NULL, true);
+                        Concept* Crel = Memory_FindConceptByTerm(&term);
+                        if(Crel != NULL)
+                        {
+                            Truth implication_truth = Crel->belief.truth;
+                            Memory_AddMemoryHelper(currentTime, &impterm, implication_truth, &stamp, NULL, false);
+                        }
                     }
                 } //--
                 //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
@@ -97,6 +104,12 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
                 {
                     printf("NEG REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
                     Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 0.0, .confidence = 0.9 }, &stamp, NULL, true);
+                    Concept* Crel = Memory_FindConceptByTerm(&term);
+                    if(Crel != NULL)
+                    {
+                        Truth implication_truth = Crel->belief.truth;
+                        Memory_AddMemoryHelper(currentTime, &impterm, implication_truth, &stamp, NULL, false);
+                    }
                 }
                 //last remove last decision
                 Cycle_lastDecision = (Decision) {0};
@@ -663,7 +676,9 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, true);
+                    //fputs("!!!:::", stdout); Narsese_PrintTerm(&precondition_implication.term); puts("");
+                    Implication *ret = NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, true);
+                    ret->observed = true;
                     return precondition_implication;
                 }
             }

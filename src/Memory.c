@@ -109,7 +109,7 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
     bool success = true;
     success &= Term_OverrideSubterm(&conjunction, 1, &A_B->term);
     success &= Term_OverrideSubterm(&conjunction, 2, &B_C->term);
-    if(success && !Stamp_checkOverlap(&A_B->stamp, &B_C->stamp))
+    if(success)// && !Stamp_checkOverlap(&A_B->stamp, &B_C->stamp))
     {
         //puts("SUCCESS!!!");
         Stamp conjunction_stamp = Stamp_make(&A_B->stamp, &B_C->stamp);
@@ -126,7 +126,7 @@ void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation 
             if(success2)
             {
                 //puts("SUCCESS3!!!");
-                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(conjunction_truth, A_C->truth), &conjunction_stamp, &A_C->stamp, false);
+                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_C->truth, conjunction_truth), &conjunction_stamp, &A_C->stamp, false);
             }
         }
     }
@@ -158,7 +158,7 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
     {
         //puts("FAIL1");
-        return false; //stamp overlap
+        //return false; //stamp overlap
     }
     Stamp st = *stamp1;
     if(stamp2 != NULL)
@@ -185,6 +185,23 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
     {
         //puts("FAIL2");
         return false;
+    }
+    if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION))
+    {
+        Term postcon = Term_ExtractSubterm(term, 2);
+        Concept* potentially_existing = Memory_FindConceptByTerm(&postcon);
+        Term op = Narsese_getOperationTerm(term);
+        if(op.atoms[0] && potentially_existing != NULL)
+        {
+            int opi = Memory_getOperationID(&op);
+            for(int i=0; i<potentially_existing->precondition_beliefs[opi].itemsAmount; i++)
+            {
+                if(potentially_existing->precondition_beliefs[opi].array[i].observed && Term_Equal(&potentially_existing->precondition_beliefs[opi].array[i].term, term))
+                {
+                    return false;
+                }
+            }
+        }
     }
     //TODO also avoid re-deriving ==> by checking postcondition concept implications table entry to equal stamp equal term
     //if(Narsese_copulaEquals(&ev.term.atoms[0], IMPLICATION))
@@ -258,8 +275,8 @@ bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* st
                                         fputs("SYMMETRIC: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
                                     )
                                 }
-                                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
-                                Memory_AddMemoryHelper(currentTime, &imp_general2, Truth_Induction(B_A.truth, A_B.truth), &A_B.stamp, &B_A.stamp, false);
+                                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(B_A.truth, A_B.truth), &A_B.stamp, &B_A.stamp, false);
+                                Memory_AddMemoryHelper(currentTime, &imp_general2, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
                             }
                         }
                     }
@@ -587,12 +604,13 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
     Memory_printAddedKnowledge(stamp, implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
+Implication *Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
     if(event->truth.confidence < MIN_CONFIDENCE)
     {
-        return;
+        return NULL;
     }
+    Implication *ret = NULL;
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
     if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
@@ -618,7 +636,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 {
                     if(!Narsese_isExecutableOperation(&potential_op))
                     {
-                        return; //we can't store proc. knowledge of other agents
+                        return NULL; //we can't store proc. knowledge of other agents
                     }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Narsese_GetPreconditionWithoutOp(&subject); //gets rid of op as MSC links cannot use it
@@ -639,7 +657,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
+                //fputs("!!!:::", stdout); Narsese_PrintTerm(&event->term); puts("");
                 Implication *revised = Table_AddAndRevise(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) ? &target_concept->implication_links : &target_concept->precondition_beliefs[opi], &imp);
+                ret = revised;
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
@@ -707,9 +727,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
+    return ret;
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
+Implication* Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
     if(Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) || Narsese_copulaEquals(event->term.atoms[0], SIMILARITY))
     { //TODO maybe NAL term filter should go here?
@@ -717,12 +738,12 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         Term predicate = Term_ExtractSubterm(&event->term, 2);
         if(Term_Equal(&subject, &predicate))
         {
-            return;
+            return NULL;
         }
     }
     if(RESTRICTED_CONCEPT_CREATION && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && Memory_FindConceptByTerm(&event->term) == NULL)
     {
-        return;
+        return NULL;
     }
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -731,12 +752,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
-        return;
+        return NULL;
     }
     if(input && event->type == EVENT_TYPE_GOAL)
     {
         Memory_printAddedEvent(&event->stamp, event, priority, input, false, false, true, false);
     }
+    Implication *ret = NULL;
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
@@ -750,7 +772,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                 }
             }
         }
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, eternalize);
+        ret = Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, eternalize);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
@@ -762,6 +784,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         Memory_printAddedEvent(&event->stamp, event, priority, input, derived, revised, true, false);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Erroneous event type");
+    return ret;
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)

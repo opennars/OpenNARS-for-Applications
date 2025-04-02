@@ -51,6 +51,7 @@ typedef struct {
     void *sourceConcept;
     long sourceConceptId; //to check whether it's still the same
     long creationTime;
+    bool observed; //whether it was observed already or just derived
 } Implication;
 
 #endif

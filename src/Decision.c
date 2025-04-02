@@ -173,7 +173,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                 Term dummy_term = {0};
                 Event dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, (Truth) { .frequency = 0.5, .confidence = 0.0 }, 0, currentTime);
                 //dummy.stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp); //decision->usedContingency.stamp;
-                Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &dummy.stamp, NULL, false);
+                //--Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &dummy.stamp, NULL, false);
                 //extract the individual statements
                 Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
                 Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
@@ -184,6 +184,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                 {
                     decision->lastActedOnRelationBelief = clastActedOnRelationBelief->belief;
                     decision->lastActedOnRelationBelief.stamp = dummy.stamp;
+                    decision->lastActedOnRelationImplication = generalized_implication;
                 }
                 else //create empty belief
                 {
@@ -197,6 +198,7 @@ void Decision_Execute(long currentTime, Decision *decision)
                                          .creationTime = currentTime,
                                          .input = false };
                     decision->lastActedOnRelationBelief = ev;
+                    decision->lastActedOnRelationImplication = generalized_implication;
                 }
                 /*bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
                 if(added)

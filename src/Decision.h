@@ -79,6 +79,7 @@ typedef struct
     Event *reason;
     int tableIndex;
     Event lastActedOnRelationBelief;
+    Term lastActedOnRelationImplication; //<A ==> ((a &/ op) =/> b)>
     long invokedTime;
 }Decision;
 
