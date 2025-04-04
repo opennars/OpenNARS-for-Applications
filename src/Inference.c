@@ -35,7 +35,7 @@ static double weighted_average(double a1, double a2, double w1, double w2)
 {
     return (a1*w1+a2*w2)/(w1+w2);
 }
-                
+
 //{Event a., Event b.} |- Event (&/,a,b).
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success)
 {
@@ -84,10 +84,25 @@ Event Inference_EventRevision(Event *a, Event *b)
 Implication Inference_ImplicationRevision(Implication *a, Implication *b)
 {
     DERIVATION_STAMP(a,b)
+    Truth T = Truth_Revision(a->truth, b->truth);
+    Stamp S = conclusionStamp;
+    if(Stamp_checkOverlap(&a->stamp, &b->stamp))
+    {
+        if(a->truth.confidence > b->truth.confidence)
+        {
+            T = a->truth;
+            S = a->stamp;
+        }
+        else
+        {
+            T = b->truth;
+            S = b->stamp;
+        }
+    }
     double occurrenceTimeOffsetAvg = weighted_average(a->occurrenceTimeOffset, b->occurrenceTimeOffset, Truth_c2w(a->truth.confidence), Truth_c2w(b->truth.confidence));
     return (Implication) { .term = a->term,
-                           .truth = Truth_Revision(a->truth, b->truth),
-                           .stamp = conclusionStamp, 
+                           .truth = Narsese_copulaEquals(a->term.atoms[0], IMPLICATION) ? T : Truth_Revision(a->truth, b->truth),
+                           .stamp = Narsese_copulaEquals(a->term.atoms[0], IMPLICATION) ? S : conclusionStamp,
                            .occurrenceTimeOffset = occurrenceTimeOffsetAvg,
                            .sourceConcept = a->sourceConcept,
                            .sourceConceptId = a->sourceConceptId,
