@@ -52,9 +52,17 @@ void Stats_Print(long currentTime)
     }
     Stats_averageConceptPriority /= (double) CONCEPTS_MAX;
     double Stats_averageConceptUsefulness = 0.0;
+    int max_temporal_implication_table_items = 0;
+    int max_declarative_implication_table_items = 0;
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Stats_averageConceptUsefulness += concepts.items[i].priority;
+        Concept *c = concepts.items[i].address;
+        max_declarative_implication_table_items = MAX(max_declarative_implication_table_items, c->implication_links.itemsAmount);
+        for(int opi=0; opi<=OPERATIONS_MAX; opi++)
+        {
+            max_temporal_implication_table_items = MAX(max_temporal_implication_table_items, c->precondition_beliefs[opi].itemsAmount);
+        }
     }
     Stats_averageConceptUsefulness /= (double) CONCEPTS_MAX;
     puts("Statistics\n----------");
@@ -64,6 +72,8 @@ void Stats_Print(long currentTime)
     printf("countConceptsMatchedAverage:\t%ld\n", countConceptsMatchedAverage);
     printf("currentTime:\t\t\t%ld\n", currentTime);
     printf("total concepts:\t\t\t%d\n", concepts.itemsAmount);
+    printf("DeclarativeImplicationTableMaxItems:\t%d\n", max_declarative_implication_table_items);
+    printf("TemporalImplicationTableMaxItems:\t%d\n", max_temporal_implication_table_items);
     printf("current average concept priority:\t%f\n", Stats_averageConceptPriority);
     printf("current average concept usefulness:\t%f\n", Stats_averageConceptUsefulness);
     printf("current belief events cnt:\t\t%d\n", cycling_belief_events.itemsAmount);
