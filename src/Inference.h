@@ -48,8 +48,6 @@
 Event Inference_EventUpdate(Event *ev, long targetTime);
 //{Event a., Event b.} |- Event (a &/ b). Truth_Intersection (after projecting a to b)
 Event Inference_BeliefIntersection(Event *a, Event *b, bool *success);
-//{Eternal a., Eternal b.} |- Event (&&,a,b). Truth_Intersection
-Event Inference_BeliefConjunction(Event *a, Event *b, bool *success);
 //{Event a., Event b.} |- Implication <a =/> b>. Truth_Eternalize(Truth_Induction) (after projecting a to b)
 Implication Inference_BeliefInduction(Event *a, Event *b, bool *success);
 //{Implication <a =/> b>., <a =/> b>.} |- Implication <a =/> b>. Truth_Revision

@@ -134,7 +134,5 @@ bool Narsese_hasAtomValue(Atom atom);
 double Narsese_getAtomValue(Atom atom);
 //Sequence length
 int Narsese_SequenceLength(Term *sequence);
-//Build conjunction term
-Term Narsese_Conjunction(Term *a, Term *b, bool *success);
 
 #endif

@@ -455,14 +455,6 @@ Term Narsese_Sequence(Term *a, Term *b, bool *success)
     return *success ? ret : (Term) {0};
 }
 
-Term Narsese_Conjunction(Term *a, Term *b, bool *success)
-{
-    Term ret = {0};
-    ret.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
-    *success = Term_OverrideSubterm(&ret,1,a) && Term_OverrideSubterm(&ret,2,b);
-    return *success ? ret : (Term) {0};
-}
-
 Term Narsese_AtomicTerm(char *name)
 {
     int number = Narsese_AtomicTermIndex(name);
