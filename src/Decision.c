@@ -609,14 +609,15 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
             for(int u=0; u<concepts.itemsAmount; u++)
             {
                 Concept *cP = concepts.items[u].address;
+                if(Variable_hasVariable(&cP->term, true, true, true))
+                {
+                    continue;
+                }
                 if(!declarative)
                 {
                     cP = current_prec;
                 }
-                if(declarative && cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP->belief_spike.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE)
-                {
-                    continue;
-                }
+                bool declarative_boost_skip = declarative && cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP->belief_spike.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
                 Event *prec_eternal = &cP->belief;
                 Event *prec_event = &cP->belief_spike;
                 if(prec_eternal->type != EVENT_TYPE_DELETED || prec_event->type != EVENT_TYPE_DELETED)
@@ -624,7 +625,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                     //fputs("TRIED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                     Substitution additionalSubstEternal = Variable_Unify(&ImpPrecon, &prec_eternal->term);
                     Substitution additionalSubstEvent = Variable_Unify(&ImpPrecon, &prec_event->term);
-                    if(additionalSubstEternal.success || additionalSubstEvent.success)
+                    if(!declarative_boost_skip && (additionalSubstEternal.success || additionalSubstEvent.success))
                     {
                         //fputs("MATCHED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                         current_prec = cP;
@@ -714,8 +715,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     //if(c != NULL )//&& !Stamp_checkOverlap(&precondition_event->stamp, &imp.stamp))
                                     {
                                         //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
-                                        //ETERNAL BELIEF UPDATE:
-                                        if(c_eternal != NULL && success2eternal && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                        //ETERNAL BELIEF UPDATE: //-- TODO STAMP
+                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))// && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp))
                                         {
                                             Truth oldTruth = c_eternal->belief.truth;
                                             if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -723,7 +724,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
                                                 if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
                                                 {
-                                                     Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                    Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
                                                 }
                                             }
                                         }
@@ -768,6 +769,75 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 if(!declarative)
                 {
                     break;
+                }
+            }
+            for(int u=0; u<concepts.itemsAmount && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && declarative; u++)
+            {
+                Concept *cP = concepts.items[u].address;
+                if(Variable_hasVariable(&cP->term, true, true, true))
+                {
+                    continue;
+                }
+                //<(<($1 * #1) --> (ocr * ocr)> && <(#1 * $2) --> (ocr * ocr)>) ==> <($1 * $2) --> (ocr * ocr)>>
+                //==> &&  cons
+                //1   2   3
+                //0   1   2
+                if(Narsese_copulaEquals(imp.term.atoms[1], CONJUNCTION) && //only declarative iterates
+                   Narsese_copulaEquals(imp.term.atoms[2], INHERITANCE) &&
+                   Narsese_copulaEquals(cP->belief.term.atoms[0], INHERITANCE))
+                {
+                    //try to satisfy both with the same variable mapping
+                    Term conj_general = Term_ExtractSubterm(&imp.term, 1);
+                    for(int v=0; v<concepts.itemsAmount; v++) //todo use occurrence time index instead
+                    {
+                        Concept *cP2 = concepts.items[v].address;
+                        bool boost_skip = cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP2->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
+                        if(Variable_hasVariable(&cP2->term, true, true, true) || !Narsese_copulaEquals(cP2->belief.term.atoms[0], INHERITANCE) || boost_skip)
+                        {
+                            continue;
+                        }
+                        //Term conj = {0};
+                        //conj.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                        //bool success1 = Term_OverrideSubterm(&conj, 1, &cP->term);
+                        //bool success2 = Term_OverrideSubterm(&conj, 2, &cP2->term);
+                        bool successOfConj;
+                        Event prec_eternal = Inference_BeliefConjunction(&cP->belief, &cP2->belief, &successOfConj);
+                        if(successOfConj)
+                        {
+                            //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
+                            Substitution subst = Variable_Unify(&conj_general, &prec_eternal.term);
+                            Implication imp_w_subst = imp;
+                            bool success;
+                            if(subst.success)
+                            {
+                                imp_w_subst.term = Variable_ApplySubstitute(imp.term, subst, &success);
+                                //if(!Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
+                                { //TODO STAMP //--
+                                    Event resulteternal = Inference_BeliefDeduction(&prec_eternal, &imp_w_subst); //b. :/:
+                                    //Stamp resstamp = Stamp_make(&imp.stamp, &stamp_conj);
+                                    //Stamp_print(&stamp_conj); puts("");
+                                    //Stamp stamp = imp.stamp;// Stamp_make(&stamp_conj, &imp.stamp); //imp.stamp;
+                                    /*if(Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &stamp, false))
+                                    {
+                                        fputs("DERIVED RELATION", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&cons); puts("");
+                                    }*/
+                                    Concept *c_eternal = Memory_Conceptualize(&resulteternal.term, currentTime);
+                                    if(c_eternal != NULL) // && !Stamp_checkOverlap(&prec_eternal.stamp, &imp.stamp)) //-- TODO STAMP
+                                    {
+                                        Truth oldTruth = c_eternal->belief.truth;
+                                        if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
+                                        {
+                                            c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
+                                            if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
+                                            {
+                                                Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
