@@ -57,7 +57,7 @@ void Stats_Print(long currentTime)
     for(int i=0; i<concepts.itemsAmount; i++)
     {
         Stats_averageConceptUsefulness += concepts.items[i].priority;
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         max_declarative_implication_table_items = MAX(max_declarative_implication_table_items, c->implication_links.itemsAmount);
         for(int opi=0; opi<=OPERATIONS_MAX; opi++)
         {
