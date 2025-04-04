@@ -156,13 +156,16 @@ if not NoTermlinks:
 #Add implication links:
 for line in inlines:
     print(line)
-    if (line.startswith("<") or line.startswith("dt=")) and " =/> " in line:
+    IMP = " =/> "
+    if " ==> " in line:
+        IMP = " ==> "
+    if (line.startswith("<") or line.startswith("dt=")) and IMP in line:
         term = line.split(". {")[0]
         if term.startswith("dt="):
             timing = float(term.split("dt=")[1].split(" ")[0])
             term = " ".join(term.split(" ")[1:])
-        left = term.split(" =/> ")[0][1:]
-        right = term.split(" =/> ")[1][:-1]
+        left = term.split(IMP)[0][1:]
+        right = term.split(IMP)[1][:-1]
         operator = ""
         if " &/ " in left:
             operator = left.split(" &/ ")[-1][:-1]

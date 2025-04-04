@@ -134,14 +134,24 @@ static int atomsCounter = 1; //allows to avoid memset
 static int atomsAppeared[ATOMS_MAX] = {0};
 static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
 {
+    //mandatory part of the filter: (same subject and predicate of implication of equivalence)
+    if(Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION))
+    {
+        Term t1 = Term_ExtractSubterm(conclusionTerm, 1);
+        Term t2 = Term_ExtractSubterm(conclusionTerm, 2);
+        if(Term_Equal(&t1, &t2))
+        {
+            return true;
+        }
+    }
     if(!ATOM_APPEARS_TWICE_FILTER)
         return false;
     if(Narsese_copulaEquals(conclusionTerm->atoms[0], INHERITANCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], SIMILARITY)) //similarity or inheritance
     {
-        //<((A * B) * (C * D)) --> r>.
+        //<(A * B) --> r>.
         //0   1  2 3 4
-        //--> *    * *
-        if(!(Narsese_copulaEquals(conclusionTerm->atoms[1], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[3], PRODUCT) && Narsese_copulaEquals(conclusionTerm->atoms[4], PRODUCT))) //relational statements with products as arguments can have atoms mentioned more than once
+        //--> *  r A B
+        if(!(Narsese_copulaEquals(conclusionTerm->atoms[1], PRODUCT) && Narsese_IsSimpleAtom(conclusionTerm->atoms[2]))) //relational statements can have atoms mentioned more than once
         {
             atomsCounter++;
             for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
@@ -156,15 +166,6 @@ static bool NAL_AtomAppearsTwice(Term *conclusionTerm)
                     atomsAppeared[atom] = atomsCounter;
                 }
             }
-        }
-    }
-    if(Narsese_copulaEquals(conclusionTerm->atoms[0], EQUIVALENCE) || Narsese_copulaEquals(conclusionTerm->atoms[0], IMPLICATION))
-    {
-        Term t1 = Term_ExtractSubterm(conclusionTerm, 1);
-        Term t2 = Term_ExtractSubterm(conclusionTerm, 2);
-        if(Term_Equal(&t1, &t2))
-        {
-            return true;
         }
     }
     return false;
