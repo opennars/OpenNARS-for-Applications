@@ -209,6 +209,11 @@ int Shell_ProcessInput(char *line)
                         Memory_printAddedImplication(&imp->stamp, &imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
                     }
                 }
+                for(int h=0; h<c->implication_links.itemsAmount; h++)
+                {
+                    Implication *imp = &c->implication_links.array[h];
+                    Memory_printAddedImplication(&imp->stamp, &imp->term, &imp->truth, imp->occurrenceTimeOffset, 1, true, false, false);
+                }
             }
             puts("//*done");
         }
