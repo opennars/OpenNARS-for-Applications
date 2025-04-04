@@ -53,6 +53,7 @@ void Cycle_INIT()
 }
 
 //doing inference within the matched concept, returning whether decisionMaking should continue
+Decision Cycle_lastDecision = {0};
 static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long currentTime)
 {
     Decision decision = {0};
@@ -64,6 +65,55 @@ static Decision Cycle_ActivateSensorimotorConcept(Concept *c, Event *e, long cur
         if(c->belief_spike.type == EVENT_TYPE_DELETED || e->occurrenceTime > c->belief_spike.occurrenceTime)
         {
             c->belief_spike = *e;
+        }
+        //NEW FEEDBACK MECHANISM FOR RELATIONS:
+        //IF Cycle_lastDecision is existing then check if e = postcondition of Cycle_lastDecision.specific_implication
+        if(Cycle_lastDecision.specific_implication.term.atoms[0] && Cycle_lastDecision.lastActedOnRelationBelief.term.atoms[0])
+        {
+            Term postcondition = Term_ExtractSubterm(&Cycle_lastDecision.specific_implication.term, 2);
+            if(Term_Equal(&postcondition, &e->term))
+            {
+                //if e truth exp > 0.5: nothing to do, if it is confirmed it will be reinforced automatically
+                Term term = Cycle_lastDecision.lastActedOnRelationBelief.term;
+                Stamp stamp = Cycle_lastDecision.lastActedOnRelationBelief.stamp;
+                Term impterm = Cycle_lastDecision.lastActedOnRelationImplication;
+                if(Truth_Expectation(e->truth) > 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
+                {
+                    Concept* relationC = Memory_Conceptualize(&term, currentTime);
+                    if(relationC != NULL)
+                    {
+                        printf("POS REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&term); puts("");
+                        //bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
+                        //if(added)
+                        //{
+                        //    //IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                        //    //IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
+                        //    fputs("ACQUIRED REL: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                        //}
+                        Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 1.0, .confidence = 0.9 }, &stamp, NULL, true);
+                        Concept* Crel = Memory_FindConceptByTerm(&term);
+                        if(Crel != NULL)
+                        {
+                            Truth implication_truth = Crel->belief.truth;
+                            Memory_AddMemoryHelper(currentTime, &impterm, implication_truth, &stamp, NULL, false);
+                        }
+                    }
+                } //--
+                //if e truth exp < 0.5: lastActedOnRelationBelief is the belief prior to when it was reinforced, use it and revise it with neg evidence
+                if(Truth_Expectation(e->truth) < 0.5 && Cycle_lastDecision.invokedTime > currentTime - EVENT_BELIEF_DISTANCE)
+                {
+                    printf("NEG REL d=%ld, ", currentTime - Cycle_lastDecision.invokedTime); Narsese_PrintTerm(&Cycle_lastDecision.lastActedOnRelationBelief.term); puts("");
+                    Memory_AddMemoryHelper(currentTime, &term, (Truth) { .frequency = 0.0, .confidence = 0.9 }, &stamp, NULL, true);
+                    Concept* Crel = Memory_FindConceptByTerm(&term);
+                    if(Crel != NULL)
+                    {
+                        Truth implication_truth = Crel->belief.truth;
+                        Memory_AddMemoryHelper(currentTime, &impterm, implication_truth, &stamp, NULL, false);
+                    }
+                }
+                //last remove last decision
+                Cycle_lastDecision = (Decision) {0};
+            }
         }
     }
     else
@@ -558,6 +608,8 @@ static void Cycle_ProcessAndInferGoalEvents(long currentTime, int layer)
         goalsSelectedCnt = 0;
         //execute decision
         Decision_Execute(currentTime, &best_decision);
+        Cycle_lastDecision = best_decision;
+        Cycle_lastDecision.invokedTime = currentTime;
     }
     //pass goal spikes on to the next
     for(int i=0; i<goalsSelectedCnt && !best_decision.execute; i++)
@@ -624,7 +676,9 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
             {
                 if(precondition_implication.truth.confidence >= MIN_CONFIDENCE)
                 {
-                    NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, true);
+                    //fputs("!!!:::", stdout); Narsese_PrintTerm(&precondition_implication.term); puts("");
+                    Implication *ret = NAL_DerivedEvent(precondition_implication.term, currentTime, precondition_implication.truth, precondition_implication.stamp, currentTime, 1, 1, precondition_implication.occurrenceTimeOffset, NULL, 0, true, false, true);
+                    ret->observed = true;
                     return precondition_implication;
                 }
             }
@@ -709,7 +763,93 @@ void Cycle_ProcessBeliefEvents(long currentTime)
                         {
                             if(!op_id && !op_id2)
                             {
-                                Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>, <A =|> B>
+                                Implication ret = Cycle_ReinforceLink(&c->belief_spike, &postcondition); //<A =/> B>, <A =|> B>
+                                //begin code to handle forming of acquired relations
+                                Term contingency = ret.term; //decision->usedContingency.term;
+                                //Term preconditon_with_op = Term_ExtractSubterm(&contingency, 1); //(0 copula, 1 subject, 2 predicate)
+                                Term precondition = contingency; //Narsese_GetPreconditionWithoutOp(&preconditon_with_op);
+                                //TODO ENSURE COPULA STRUCTURE IS IN TERM
+                                // (<(sample * X1) --> (loc1 * ocr1)> =/> <(left * Y1) --> (loc2 * ocr2)>)
+                                // =/> --> -->  *  *  *  * sample X1 loc1 ocr1 left Y1 loc2 ocr2
+                                // 1   2   3    4  5  6  7 8      9  10   11   12   13 14   15  
+                                // 0   1   2    3  4  5  6 7      8  9    10   11   12 13   14  
+                                Term sample = Term_ExtractSubterm(&precondition, 7);
+                                Term X1 =     Term_ExtractSubterm(&precondition, 8);
+                                Term loc1 =   Term_ExtractSubterm(&precondition, 9);
+                                Term ocr1 =   Term_ExtractSubterm(&precondition, 10);
+                                Term left =   Term_ExtractSubterm(&precondition, 11);
+                                Term Y1 =     Term_ExtractSubterm(&precondition, 12);
+                                Term loc2 =   Term_ExtractSubterm(&precondition, 13);
+                                Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
+                                bool proceed = Narsese_copulaEquals(precondition.atoms[0], TEMPORAL_IMPLICATION) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[4], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
+                                                                           Term_Equal(&loc1, &loc2);
+                                proceed = proceed && Term_Equal(&left, &sample); //location need to match in addition
+                                /*if(!proceed)
+                                {
+                                    fputs("TERM: ", stdout); Narsese_PrintTerm(&precondition); puts("");
+                                }*/
+                                if(proceed)
+                                {
+                                    // puts("PROCEED");
+                                    // ->
+                                    // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
+                                    // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
+                                    // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
+                                    // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
+                                    Term conjunction = {0};
+                                    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                                    conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
+                                    bool success = true;
+                                    success &= Term_OverrideSubterm(&conjunction, 7, &sample);
+                                    success &= Term_OverrideSubterm(&conjunction, 8, &left);
+                                    success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
+                                    success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
+                                    success &= Term_OverrideSubterm(&conjunction, 11, &X1);
+                                    success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
+                                    success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
+                                    success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
+                                    //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
+                                    Term implication = {0};
+                                    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                                    success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+                                    success &= Term_OverrideSubterm(&implication, 2, &contingency);
+                                    if(success)
+                                    {
+                                        //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
+                                        Truth implication_truth = ret.truth; //Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
+                                        bool success2;
+                                        Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                                        if(success2)
+                                        {
+                                            //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                                            //Decision_AddMemoryHelper(currentTime, &implication, implication_truth);
+                                            Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &ret.stamp, NULL, false); //&decision->reason->stamp, &decision->usedContingency.stamp);
+                                            //extract the individual statements
+                                            Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
+                                            Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
+                                            IN_DEBUGNEW
+                                            (
+                                                fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts("");
+                                                fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                                            )
+                                            //Memory_AddMemoryHelper(currentTime, &conjunction, c->belief_spike.truth, &c->belief_spike.stamp, NULL, false);
+                                            //--//Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+                                            Memory_AddMemoryHelper(currentTime, &ocr_ocr, c->belief_spike.truth, &c->belief_spike.stamp, NULL, true);
+                                        }
+
+                                    }
+                                }
                                 if(c->belief_spike.occurrenceTime == postcondition.occurrenceTime)
                                 {
                                     Cycle_ReinforceLink(&postcondition, &c->belief_spike); //<B =|> A>
@@ -1073,7 +1213,7 @@ void Cycle_Perform(long currentTime)
         Cycle_ProcessAndInferGoalEvents(currentTime, layer);
     }
     //4a. Perform inference between in 1. retrieved events and semantically/temporally related, high-priority concepts to derive and process new events
-    Cycle_Inference(currentTime);
+    //Cycle_Inference(currentTime);
     //5. Apply relative forgetting for concepts according to CONCEPT_DURABILITY and events according to BELIEF_EVENT_DURABILITY
     Cycle_RelativeForgetting(currentTime);
 }

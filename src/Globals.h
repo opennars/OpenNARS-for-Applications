@@ -40,6 +40,7 @@
 //////////
 //Whether debug mode should be on
 #define DEBUG false
+#define DEBUGNEW false
 //Exit with stats output
 #define EXIT_STATS true
 //Whether input should be printed
@@ -56,6 +57,7 @@
 #define PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL 0.0
 //Debug macros, debug printing, assert:
 #define IN_DEBUG(x) {if(DEBUG){ x } }
+#define IN_DEBUGNEW(x) {if(DEBUGNEW){ x } }
 //assert, printing message and exiting if b=false
 void Globals_assert(bool b, char* message);
 #define assert Globals_assert

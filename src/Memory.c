@@ -51,6 +51,337 @@ double conceptPriorityThreshold = 0.0;
 //Priority threshold for printing derivations
 double PRINT_EVENTS_PRIORITY_THRESHOLD = PRINT_EVENTS_PRIORITY_THRESHOLD_INITIAL;
 
+Relation Memory_relationOfBelief(Event *ev) //TODO maybe should be part of Term
+{
+    //<(a * b) --> (CAT1 * CAT2)>
+    //--> * * a b CAT1 CAT2
+    //1   2 3 4 5 6    7
+    //0   1 2 3 4 5    6
+    Term term = ev->term;
+    Relation ret = {0};
+    if(ev->type == EVENT_TYPE_DELETED)
+    {
+        return ret;
+    }
+    if(Narsese_copulaEquals(term.atoms[0], INHERITANCE) &&
+       Narsese_copulaEquals(term.atoms[1], PRODUCT) //&&
+       /*Narsese_copulaEquals(term.atoms[2], PRODUCT)*/) //can be a named relation
+    {
+        Term a = Term_ExtractSubterm(&term, 3);
+        Term b = Term_ExtractSubterm(&term, 4);
+        ret = (Relation) { .arg1 = Term_ExtractSubterm(&term, 3),
+                           .arg2 = Term_ExtractSubterm(&term, 4),
+                           .R = Term_ExtractSubterm(&term, 2),
+                           .isRelation = true,
+                           .term = term,
+                           .truth = ev->truth,
+                           .stamp = ev->stamp,
+                           .isNamed = !Narsese_copulaEquals(term.atoms[2], PRODUCT) };
+    }
+    return ret;
+}
+
+void Memory_CompleteTransitivePattern(long currentTime, Relation *A_B, Relation *B_C, Relation *A_C)
+{
+    if(A_B->isNamed != B_C->isNamed || B_C->isNamed != A_C->isNamed || A_B->isNamed != A_C->isNamed)
+    {
+        return;
+    }
+    if(Term_Equal(&A_B->arg1, &A_C->arg2))
+    {
+        return; //transitivity with same start and endpoint
+    }
+    /*if(!Term_Equal(&A_B->R, &B_C->R) || !Term_Equal(&B_C->R, &A_C->R))
+    {
+        return; //restrict for now to same relation
+    }*/
+    if(!Term_Equal(&A_B->R, &A_C->R) && !Term_Equal(&B_C->R, &A_C->R) && !Term_Equal(&A_B->R, &B_C->R))
+    {
+        return;
+    }
+    IN_DEBUGNEW
+    (
+        fputs("TRANSITIVE: ", stdout); Narsese_PrintTerm(&A_B->arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_C->arg1);
+        fputs(" :: ", stdout); Narsese_PrintTerm(&A_C->arg2); puts("");
+    )
+    Term conjunction = {0};
+    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+    bool success = true;
+    success &= Term_OverrideSubterm(&conjunction, 1, &A_B->term);
+    success &= Term_OverrideSubterm(&conjunction, 2, &B_C->term);
+    if(success)// && !Stamp_checkOverlap(&A_B->stamp, &B_C->stamp))
+    {
+        //puts("SUCCESS!!!");
+        Stamp conjunction_stamp = Stamp_make(&A_B->stamp, &B_C->stamp);
+        Truth conjunction_truth = Truth_Intersection(A_B->truth, B_C->truth);
+        Term implication = {0};
+        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+        success &= Term_OverrideSubterm(&implication, 2, &A_C->term);
+        if(success)
+        {
+            //puts("SUCCESS2!!!");
+            bool success2;
+            Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
+            if(success2)
+            {
+                //puts("SUCCESS3!!!");
+                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(A_C->truth, conjunction_truth), &conjunction_stamp, &A_C->stamp, false);
+            }
+        }
+    }
+}
+
+//Event previous_belief = {0};
+bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation) //Stamp stamp,
+{
+    if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION) && Variable_hasVariable(term, true, true, false))
+    {
+        return false;
+    }
+    if((Narsese_copulaEquals(term->atoms[0], INHERITANCE) || Narsese_copulaEquals(term->atoms[0], CONJUNCTION)) && Variable_hasVariable(term, true, true, false))
+    {
+        //return false;
+    }
+    Event dummy = {0};
+    //Stamp stampmade = {0};
+    /*if(acquiredRelation) //
+    {
+        Term dummy_term = {0};
+        dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
+        //truth = (Truth) { .frequency = 1.0, .confidence = 0.9 };
+        //stampmade = Stamp_make(&dummy.stamp, stamp1);
+        //stamp1 = &stampmade;
+        stamp1 = &dummy.stamp;
+        stamp2 = NULL;
+    }*/
+    if(stamp2 != NULL && Stamp_checkOverlap(stamp1, stamp2))
+    {
+        //puts("FAIL1");
+        //return false; //stamp overlap
+    }
+    Stamp st = *stamp1;
+    if(stamp2 != NULL)
+    {
+        st = Stamp_make(stamp1, stamp2);
+    }
+    /*if(Stamp_hasDuplicate(&st) || Stamp_hasDuplicate(&st))
+    {
+        return; //stamp has dup
+    }*/
+    Event ev = { .term = *term,
+                 .type = EVENT_TYPE_BELIEF, 
+                 .truth = truth, 
+                 .stamp = st,
+                 .occurrenceTime = OCCURRENCE_ETERNAL,
+                 .occurrenceTimeOffset = 0,
+                 .creationTime = currentTime,
+                 .input = false };
+    //Event ev = Event_InputEvent(*term, EVENT_TYPE_BELIEF, truth, 0, currentTime);
+    ev.stamp = st;
+    ev.occurrenceTime = OCCURRENCE_ETERNAL;
+    Concept* potentially_existing = Memory_FindConceptByTerm(&ev.term);
+    if(potentially_existing != NULL && Stamp_Equal(&potentially_existing->belief.stamp, &ev.stamp))
+    {
+        //puts("FAIL2");
+        return false;
+    }
+    if(Narsese_copulaEquals(term->atoms[0], TEMPORAL_IMPLICATION))
+    {
+        Term postcon = Term_ExtractSubterm(term, 2);
+        Concept* potentially_existing = Memory_FindConceptByTerm(&postcon);
+        Term op = Narsese_getOperationTerm(term);
+        if(op.atoms[0] && potentially_existing != NULL)
+        {
+            int opi = Memory_getOperationID(&op);
+            for(int i=0; i<potentially_existing->precondition_beliefs[opi].itemsAmount; i++)
+            {
+                if(potentially_existing->precondition_beliefs[opi].array[i].observed && Term_Equal(&potentially_existing->precondition_beliefs[opi].array[i].term, term))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    //TODO also avoid re-deriving ==> by checking postcondition concept implications table entry to equal stamp equal term
+    //if(Narsese_copulaEquals(&ev.term.atoms[0], IMPLICATION))
+    //{
+    //    Term cons = Term_ExtractSubterm(&ev.term
+    //}
+    //puts("SUCCESS4!"); Narsese_PrintTerm(&ev.term); puts("");
+    Memory_AddEvent(&ev, currentTime, 1, false, true, false, 0, true);
+    Concept *c_again = Memory_FindConceptByTerm(&ev.term);
+    if(c_again == NULL)
+    {
+        return false;
+    }
+    Relation rel = Memory_relationOfBelief(&ev);
+    if(rel.isRelation)
+    {
+        c_again->isRelation = true;
+    }
+    //if(acquiredRelation)
+    {
+        if(rel.isRelation)
+        {
+            //1 way to complete a symmetry pattern:
+            {
+                Relation A_B = rel;
+                //<(A * B) --> rel> <(B * A) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    if(c_again == c || !c->isRelation)
+                    {
+                        continue;
+                    }
+                    Relation B_A = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isNamed != B_A.isNamed)
+                    {
+                        continue;
+                    }
+                    if(B_A.isRelation && ((Term_Equal(&B_A.arg1, &A_B.arg2) && Term_Equal(&B_A.arg2, &A_B.arg1)) || 
+                                          (!Term_Equal(&A_B.R, &B_A.R) && Term_Equal(&B_A.arg1, &A_B.arg1) && Term_Equal(&B_A.arg2, &A_B.arg2))))
+                    {
+                        Term implication = {0};
+                        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                        bool success = true;
+                        success &= Term_OverrideSubterm(&implication, 1, &A_B.term);
+                        success &= Term_OverrideSubterm(&implication, 2, &B_A.term);
+                        Term implication2 = {0};
+                        implication2.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                        bool success_ = true;
+                        success_ &= Term_OverrideSubterm(&implication2, 2, &A_B.term);
+                        success_ &= Term_OverrideSubterm(&implication2, 1, &B_A.term);
+                        if(success && success_)
+                        {
+                            bool success2;
+                            Term imp_general = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                            bool success2_;
+                            Term imp_general2 = Variable_IntroduceImplicationVariables(implication2, &success2_, true);
+                            if(success2 && success2_)
+                            {
+                                if(Term_Equal(&A_B.arg1, &B_A.arg1))
+                                {
+                                    IN_DEBUGNEW
+                                    (
+                                        fputs("REFLEXIVE: ", stdout); Narsese_PrintTerm(&A_B.arg1); puts("");
+                                    )
+                                }
+                                else
+                                {
+                                    IN_DEBUGNEW
+                                    (
+                                        fputs("SYMMETRIC: ", stdout); Narsese_PrintTerm(&A_B.arg1); fputs(" :: ", stdout); Narsese_PrintTerm(&B_A.arg1); puts("");
+                                    )
+                                }
+                                Memory_AddMemoryHelper(currentTime, &imp_general, Truth_Induction(B_A.truth, A_B.truth), &A_B.stamp, &B_A.stamp, false);
+                                Memory_AddMemoryHelper(currentTime, &imp_general2, Truth_Induction(A_B.truth, B_A.truth), &A_B.stamp, &B_A.stamp, false);
+                            }
+                        }
+                    }
+                }
+            }
+            //3 ways to complete a transitive pattern:
+            {
+                Relation A_B = rel;
+                //<(A * B) --> rel>,                   <(B * ?C) --> rel>,
+                //                  <(A * ?C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    if(c_again == c || !c->isRelation)
+                    {
+                        continue;
+                    }
+                    Relation B_C = Memory_relationOfBelief(&c->belief);
+                    if(B_C.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            if(c_again == d || c == d || !d->isRelation)
+                            {
+                                continue;
+                            }
+                            Relation A_C = Memory_relationOfBelief(&d->belief);
+                            if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
+            }
+            {
+                Relation A_C = rel;
+                //<(A * ?B) --> rel>,                   <(?B * C) --> rel>,
+                //                  <(A * C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    if(c_again == c || !c->isRelation)
+                    {
+                        continue;
+                    }
+                    Relation A_B = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isRelation && Term_Equal(&A_B.arg1, &A_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            if(c_again == d || c == d || !d->isRelation)
+                            {
+                                continue;
+                            }
+                            Relation B_C = Memory_relationOfBelief(&d->belief);
+                            if(B_C.isRelation && Term_Equal(&B_C.arg1, &A_B.arg2) && Term_Equal(&B_C.arg2, &A_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
+            }
+            {
+                Relation B_C = rel;
+                //<(?A * B) --> rel>,                   <(B * C) --> rel>,
+                //                  <(?A * C) --> rel>
+                for(int i=0; i<concepts.itemsAmount; i++)
+                {
+                    Concept *c = concepts.items[i].address;
+                    if(c_again == c || !c->isRelation)
+                    {
+                        continue;
+                    }
+                    Relation A_B = Memory_relationOfBelief(&c->belief);
+                    if(A_B.isRelation && Term_Equal(&A_B.arg2, &B_C.arg1))
+                    {
+                        for(int j=0; j<concepts.itemsAmount; j++)
+                        {
+                            Concept *d = concepts.items[j].address;
+                            if(c_again == d || c == d || !d->isRelation)
+                            {
+                                continue;
+                            }
+                            Relation A_C = Memory_relationOfBelief(&d->belief);
+                            if(A_C.isRelation && Term_Equal(&A_C.arg1, &A_B.arg1) && Term_Equal(&A_C.arg2, &B_C.arg2))
+                            {
+                                //it completes the transitive pattern
+                                Memory_CompleteTransitivePattern(currentTime, &A_B, &B_C, &A_C);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
 static void Memory_ResetEvents()
 {
     PriorityQueue_INIT(&cycling_belief_events, cycling_belief_event_items_storage, CYCLING_BELIEF_EVENTS_MAX);
@@ -273,12 +604,13 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
     Memory_printAddedKnowledge(stamp, implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
+Implication *Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
     if(event->truth.confidence < MIN_CONFIDENCE)
     {
-        return;
+        return NULL;
     }
+    Implication *ret = NULL;
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
     if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
@@ -304,7 +636,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 {
                     if(!Narsese_isExecutableOperation(&potential_op))
                     {
-                        return; //we can't store proc. knowledge of other agents
+                        return NULL; //we can't store proc. knowledge of other agents
                     }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Narsese_GetPreconditionWithoutOp(&subject); //gets rid of op as MSC links cannot use it
@@ -325,7 +657,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 imp.sourceConceptId = source_concept->id;
                 imp.sourceConcept = source_concept;
                 imp.term = event->term;
+                //fputs("!!!:::", stdout); Narsese_PrintTerm(&event->term); puts("");
                 Implication *revised = Table_AddAndRevise(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) ? &target_concept->implication_links : &target_concept->precondition_beliefs[opi], &imp);
+                ret = revised;
                 if(revised != NULL)
                 {
                     bool wasRevised = revised->truth.confidence > event->truth.confidence || revised->truth.confidence == MAX_CONFIDENCE;
@@ -393,9 +727,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
+    return ret;
 }
 
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
+Implication* Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
     if(Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) || Narsese_copulaEquals(event->term.atoms[0], SIMILARITY))
     { //TODO maybe NAL term filter should go here?
@@ -403,12 +738,12 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         Term predicate = Term_ExtractSubterm(&event->term, 2);
         if(Term_Equal(&subject, &predicate))
         {
-            return;
+            return NULL;
         }
     }
     if(RESTRICTED_CONCEPT_CREATION && !input && !Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && Memory_FindConceptByTerm(&event->term) == NULL)
     {
-        return;
+        return NULL;
     }
     if(!revised && !input) //derivations get penalized by complexity as well, but revised ones not as they already come from an input or derivation
     {
@@ -417,12 +752,13 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     }
     if(event->truth.confidence < MIN_CONFIDENCE || priority <= MIN_PRIORITY || priority == 0.0)
     {
-        return;
+        return NULL;
     }
     if(input && event->type == EVENT_TYPE_GOAL)
     {
         Memory_printAddedEvent(&event->stamp, event, priority, input, false, false, true, false);
     }
+    Implication *ret = NULL;
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
@@ -436,7 +772,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                 }
             }
         }
-        Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, eternalize);
+        ret = Memory_ProcessNewBeliefEvent(event, currentTime, priority, input, eternalize);
     }
     if(event->type == EVENT_TYPE_GOAL)
     {
@@ -448,6 +784,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
         Memory_printAddedEvent(&event->stamp, event, priority, input, derived, revised, true, false);
     }
     assert(event->type == EVENT_TYPE_BELIEF || event->type == EVENT_TYPE_GOAL, "Erroneous event type");
+    return ret;
 }
 
 void Memory_AddInputEvent(Event *event, long currentTime)

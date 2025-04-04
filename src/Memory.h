@@ -67,6 +67,17 @@ typedef struct
     Term arguments[OPERATIONS_BABBLE_ARGS_MAX];
     bool stdinOutput;
 }Operation;
+typedef struct
+{
+    Term arg1; //subterm
+    Term arg2; //subterm
+    Term R; //subterm
+    bool isRelation; //true if of this format:
+    Term term; //<(a * b) --> R>
+    Truth truth;
+    Stamp stamp;
+    bool isNamed;
+}Relation;
 extern Event selectedBeliefs[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern double selectedBeliefsPriority[BELIEF_EVENT_SELECTIONS]; //better to be global
 extern int beliefsSelectedCnt;
@@ -97,7 +108,7 @@ Concept *Memory_FindConceptByTerm(Term *term);
 //Create a new concept
 Concept* Memory_Conceptualize(Term *term, long currentTime);
 //Add event to memory
-void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize);
+Implication* Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize);
 void Memory_AddInputEvent(Event *event, long currentTime);
 //check if implication is still valid (source concept might be forgotten)
 bool Memory_ImplicationValid(Implication *imp);
@@ -109,5 +120,8 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 int Memory_getOperationID(Term *term);
 //Get temporal link truth value
 Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
+//helper to add content to memory
+bool Memory_AddMemoryHelper(long currentTime, Term* term, Truth truth, Stamp* stamp1, Stamp* stamp2, bool acquiredRelation);
+Relation Memory_relationOfBelief(Event *ev);
 
 #endif

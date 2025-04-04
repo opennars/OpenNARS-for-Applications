@@ -50,6 +50,170 @@ static void Decision_AddNegativeConfirmation(Event *precondition, Implication im
 //Inject action event after execution or babbling
 void Decision_Execute(long currentTime, Decision *decision)
 {
+    //begin code to handle forming of acquired relations
+    Term contingency = decision->usedContingency.term;
+    Term preconditon_with_op = Term_ExtractSubterm(&contingency, 1); //(0 copula, 1 subject, 2 predicate)
+    Term precondition = Narsese_GetPreconditionWithoutOp(&preconditon_with_op);//decision->reason->term;
+    //it can be a 3-element-sequence, assume the first is relational queue
+    //(this is still general as the sequence can be derived in multiple directions instead of doing this here!)
+    Term relationName = {0};
+    if(Narsese_copulaEquals(precondition.atoms[0], SEQUENCE))
+    {
+        Term leftside = Term_ExtractSubterm(&precondition, 1);
+        Term rightside = Term_ExtractSubterm(&precondition, 2);
+        Term element3 = rightside;
+        if(Narsese_copulaEquals(leftside.atoms[0], SEQUENCE))
+        {
+            Term element1 = Term_ExtractSubterm(&leftside, 1);
+            Term element2 = Term_ExtractSubterm(&leftside, 2);
+            if(Narsese_copulaEquals(element1.atoms[0], INHERITANCE) && 
+               Narsese_copulaEquals(element1.atoms[1], PRODUCT))
+            {
+                Term prod = Term_ExtractSubterm(&element1, 1); //(loc1 * ocr1)
+                relationName = Term_ExtractSubterm(&prod, 2); //ocr1
+                Term newSequence = {0};
+                newSequence.atoms[0] = Narsese_CopulaIndex(SEQUENCE);
+                Term_OverrideSubterm(&newSequence, 1, &element2);
+                Term_OverrideSubterm(&newSequence, 2, &element3);
+                precondition = newSequence;
+            }
+        }
+    }
+    //fputs("PRECONDITION without op: ", stdout); Narsese_PrintTerm(&precondition); puts("");
+    //TODO ENSURE COPULA STRUCTURE IS IN TERM
+    // (<(sample * X1) --> (loc1 * ocr1)> &/ <(left * Y1) --> (loc2 * ocr2)>)
+    // &/ --> -->  *  *  *  * sample X1 loc1 ocr1 left Y1 loc2 ocr2
+    // 1  2   3    4  5  6  7 8      9  10   11   12   13 14   15  
+    // 0  1   2    3  4  5  6 7      8  9    10   11   12 13   14  
+    Term sample = Term_ExtractSubterm(&precondition, 7);
+    Term X1 =     Term_ExtractSubterm(&precondition, 8);
+    Term loc1 =   Term_ExtractSubterm(&precondition, 9);
+    Term ocr1 =   Term_ExtractSubterm(&precondition, 10);
+    Term left =   Term_ExtractSubterm(&precondition, 11);
+    Term Y1 =     Term_ExtractSubterm(&precondition, 12);
+    Term loc2 =   Term_ExtractSubterm(&precondition, 13);
+    Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
+    
+    bool proceed = Narsese_copulaEquals(precondition.atoms[0], SEQUENCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
+                                               Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[4], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
+                                               Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
+                                               Term_Equal(&loc1, &loc2);
+    bool acquired_rel = false;
+    if(proceed)
+    {
+        //                                                        relationName
+        // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
+        // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
+        // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
+        // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
+        Term conjunction = {0};
+        conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+        conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
+        conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
+        conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
+        conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
+        conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
+        bool success = true;
+        success &= Term_OverrideSubterm(&conjunction, 7, &sample);
+        success &= Term_OverrideSubterm(&conjunction, 8, &left);
+        success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
+        success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
+        success &= Term_OverrideSubterm(&conjunction, 11, &X1);
+        success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
+        if(relationName.atoms[0])
+        {
+            Term_OverrideSubterm(&conjunction, 6, &relationName);
+        }
+        else
+        {
+            conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
+            success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
+            success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
+        }
+        //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
+        Term implication = {0};
+        implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+        success &= Term_OverrideSubterm(&implication, 2, &contingency);
+        if(success)
+        {
+            //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
+            Truth implication_truth = Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
+            bool success2;
+            Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
+            //SAMPLE AND LEFT NEEDS TO MATCH THE decision->arguments[i] ({SELF} * (left * right))
+            bool spatial_constraint_fulfilled = false;
+            if(decision->arguments[0].atoms[0] > 0)
+            {
+                Term SELF_and_args = decision->arguments[0];
+                if(Narsese_copulaEquals(SELF_and_args.atoms[0], PRODUCT))
+                {
+                    Term args = Term_ExtractSubterm(&SELF_and_args, 2);
+                    if(Narsese_copulaEquals(args.atoms[0], PRODUCT))
+                    {
+                        Term arg1 = Term_ExtractSubterm(&args, 1);
+                        Term arg2 = Term_ExtractSubterm(&args, 2);
+                        if(Term_Equal(&arg1, &sample) && Term_Equal(&arg2, &left))
+                        {
+                            spatial_constraint_fulfilled =  true;
+                        }
+                    }
+                }
+            }
+            //printf("FULFILLED CONSTRAINT? %d\n", (int) spatial_constraint_fulfilled);
+            if(success2 && spatial_constraint_fulfilled)
+            {
+                fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                //Memory_AddMemoryHelper(currentTime, &implication, implication_truth);
+                //Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &decision->reason->stamp, &decision->usedContingency.stamp, false);
+                Term dummy_term = {0};
+                Event dummy = Event_InputEvent(dummy_term, EVENT_TYPE_BELIEF, (Truth) { .frequency = 0.5, .confidence = 0.0 }, 0, currentTime);
+                //dummy.stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp); //decision->usedContingency.stamp;
+                //--Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &dummy.stamp, NULL, false);
+                //extract the individual statements
+                Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
+                Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
+                //Memory_AddMemoryHelper(currentTime, &conjunction, decision->reason->truth, &decision->reason->stamp, NULL, false);
+                //Memory_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+                Concept *clastActedOnRelationBelief = Memory_FindConceptByTerm(&ocr_ocr);
+                if(clastActedOnRelationBelief != NULL)
+                {
+                    decision->lastActedOnRelationBelief = clastActedOnRelationBelief->belief;
+                    decision->lastActedOnRelationBelief.stamp = dummy.stamp;
+                    decision->lastActedOnRelationImplication = generalized_implication;
+                }
+                else //create empty belief
+                {
+                    //Stamp stamp = Stamp_make(&decision->reason->stamp, &decision->usedContingency.stamp);
+                    Event ev = (Event) { .term = ocr_ocr,
+                                         .type = EVENT_TYPE_BELIEF, 
+                                         .truth = (Truth) { .frequency = 0.5, .confidence = 0.0 }, 
+                                         .stamp = dummy.stamp, //stamp, //(Stamp) {0},
+                                         .occurrenceTime = OCCURRENCE_ETERNAL,
+                                         .occurrenceTimeOffset = 0,
+                                         .creationTime = currentTime,
+                                         .input = false };
+                    decision->lastActedOnRelationBelief = ev;
+                    decision->lastActedOnRelationImplication = generalized_implication;
+                }
+                /*bool added = Memory_AddMemoryHelper(currentTime, &ocr_ocr, decision->specific_implication.truth, &decision->reason->stamp, NULL, true); //--
+                if(added)
+                {
+                    //IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                    //IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
+                    fputs("ACQUIRED REL: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts("");
+                }*/
+                acquired_rel = true; //gets in the way of functional equ as we would acquire a relation yet again from the functional equ
+            }
+            
+        }
+    }
+    //end
+    bool functional_equivalence_active = false;
     if(FUNCTIONAL_EQUIVALENCE && decision->specific_implication.term.atoms[0] && !Variable_hasVariable(&decision->specific_implication.term, true, true, false))
     {
         Term cons1 = Term_ExtractSubterm(&decision->specific_implication.term, 2);
@@ -116,65 +280,144 @@ void Decision_Execute(long currentTime, Decision *decision)
                         bool success2 = Term_OverrideSubterm(&equTerm1, 2, &prec2);
                         Term Te_imp2 = {0};
                         Term Te_imp3 = {0};
-                        if(success1 && success2 && Truth_Expectation(Memory_getTemporalLinkTruth(&prec1, &prec2)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP && Truth_Expectation(Memory_getTemporalLinkTruth(&prec2, &prec1)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP)
+                        if(functional_equivalence_active && success1 && success2 && Truth_Expectation(Memory_getTemporalLinkTruth(&prec1, &prec2)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP && Truth_Expectation(Memory_getTemporalLinkTruth(&prec2, &prec1)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP)
                         {
                             Event e_imp = { .term = equTerm1,
                                             .type = EVENT_TYPE_BELIEF,
                                             .truth = Truth_Induction(decision->specific_implication.truth, comparedImp.truth),
                                             .stamp = equStamp,
                                             .occurrenceTime = currentTime };
-                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
-                            {
-                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                            Event e_imp2 = e_imp;
-                            bool intro_success2;
-                            e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
-                            if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false))
-                            {
-                                Te_imp2 = e_imp2.term;
-                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                            Event e_imp3 = e_imp;
-                            bool intro_success3;
-                            e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
-                            if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false))
-                            {
-                                Te_imp3 = e_imp3.term;
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                        }
-                        Term equTerm2 = {0};
-                        equTerm2.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
-                        bool success3 = Term_OverrideSubterm(&equTerm2, 1, &prec2);
-                        bool success4 = Term_OverrideSubterm(&equTerm2, 2, &prec1);
-                        if(success3 && success4 && Truth_Expectation(Memory_getTemporalLinkTruth(&prec2, &prec1)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP && Truth_Expectation(Memory_getTemporalLinkTruth(&prec1, &prec2)) <= FUNCTIONAL_EQUIVALENCE_NONTEMPORAL_EXP)
-                        {
-                            Event e_imp = { .term = equTerm2,
-                                            .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Abduction(decision->specific_implication.truth, comparedImp.truth),
-                                            .stamp = equStamp,
-                                            .occurrenceTime = currentTime };
-                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
-                            {
-                                Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                            Event e_imp2 = e_imp;
-                            bool intro_success2;
-                            e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
-                            if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false) && !Term_Equal(&Te_imp2, &e_imp2.term))
-                            {
-                                Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                            Event e_imp3 = e_imp;
-                            bool intro_success3;
-                            e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
-                            if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false) && !Term_Equal(&Te_imp3, &e_imp3.term))
-                            {
-                                Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0, true);
-                            }
-                        }
-                    }
+                            if(FUNCTIONAL_EQUIVALENCE_SPECIFIC && functional_equivalence_active)
+                             {
+                                if(functional_equivalence_active)
+                                {
+                                    Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
+                                }
+                                Term contingency = e_imp.term; //decision->usedContingency.term;
+                                //Term preconditon_with_op = Term_ExtractSubterm(&contingency, 1); //(0 copula, 1 subject, 2 predicate)
+                                Term precondition = contingency; //Narsese_GetPreconditionWithoutOp(&preconditon_with_op);
+                                //TODO ENSURE COPULA STRUCTURE IS IN TERM
+                                // (<(sample * X1) --> (loc1 * ocr1)> =/> <(left * Y1) --> (loc2 * ocr2)>)
+                                // =/> --> -->  *  *  *  * sample X1 loc1 ocr1 left Y1 loc2 ocr2
+                                // 1   2   3    4  5  6  7 8      9  10   11   12   13 14   15
+                                // 0   1   2    3  4  5  6 7      8  9    10   11   12 13   14
+                                Term sample = Term_ExtractSubterm(&precondition, 7);
+                                Term X1 =     Term_ExtractSubterm(&precondition, 8);
+                                Term loc1 =   Term_ExtractSubterm(&precondition, 9);
+                                Term ocr1 =   Term_ExtractSubterm(&precondition, 10);
+                                Term left =   Term_ExtractSubterm(&precondition, 11);
+                                
+                                //SAMPLE AND LEFT NEEDS TO MATCH THE decision->arguments[i] ({SELF} * (left * right))
+                                bool spatial_constraint_fulfilled = false;
+                                if(decision->arguments[0].atoms[0] > 0)
+                                {
+                                    Term SELF_and_args = decision->arguments[0];
+                                    if(Narsese_copulaEquals(SELF_and_args.atoms[0], PRODUCT))
+                                    {
+                                        Term args = Term_ExtractSubterm(&SELF_and_args, 2);
+                                        if(Narsese_copulaEquals(args.atoms[0], PRODUCT))
+                                        {
+                                            Term arg1 = Term_ExtractSubterm(&args, 1);
+                                            Term arg2 = Term_ExtractSubterm(&args, 2);
+                                            if(Term_Equal(&arg1, &sample) && Term_Equal(&arg2, &left))
+                                            {
+                                                spatial_constraint_fulfilled =  true;
+                                            }
+                                        }
+                                    }
+                                }
+                                printf("FULFILLED CONSTRAINT? %d\n", (int) spatial_constraint_fulfilled);
+                                Term Y1 =     Term_ExtractSubterm(&precondition, 12);
+                                Term loc2 =   Term_ExtractSubterm(&precondition, 13);
+                                Term ocr2 =   Term_ExtractSubterm(&precondition, 14);
+                                bool proceed = Narsese_copulaEquals(precondition.atoms[0], IMPLICATION) && spatial_constraint_fulfilled &&
+                                                                           Narsese_copulaEquals(precondition.atoms[1], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[2], INHERITANCE) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[3], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[4], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[5], PRODUCT) &&
+                                                                           Narsese_copulaEquals(precondition.atoms[6], PRODUCT) &&
+                                                                           Term_Equal(&loc1, &loc2);
+                                proceed = !acquired_rel && //whether we already acquired a rel
+                                           proceed && Term_Equal(&left, &sample); //location need to match in addition
+                                /*if(!proceed)
+                                {
+                                    fputs("TERM: ", stdout); Narsese_PrintTerm(&precondition); puts("");
+                                }*/
+                                if(proceed)
+                                {
+                                    IN_DEBUGNEW( fputs("EIMP: ", stdout); Narsese_PrintTerm(&e_imp.term); puts(""); )
+                                    // puts("PROCEED");
+                                    // ->
+                                    // (<(sample * left) --> (loc1 * loc2)> && <(X1 * Y1) --> (ocr1 * ocr2)>)
+                                    // && --> -->  *  *  *  * sample left  loc1 loc2 X1 Y1 ocr1 ocr2
+                                    // 1  2   3    4  5  6  7 8      9     10   11   12 13 14  15
+                                    // 0  1   2    3  4  5  6 7      8     9    10   11 12 13  14
+                                    Term conjunction = {0};
+                                    conjunction.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                                    conjunction.atoms[1] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[2] = Narsese_CopulaIndex(INHERITANCE);
+                                    conjunction.atoms[3] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[4] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[5] = Narsese_CopulaIndex(PRODUCT);
+                                    conjunction.atoms[6] = Narsese_CopulaIndex(PRODUCT);
+                                    bool success = true;
+                                    success &= Term_OverrideSubterm(&conjunction, 7, &sample);
+                                    success &= Term_OverrideSubterm(&conjunction, 8, &left);
+                                    success &= Term_OverrideSubterm(&conjunction, 9, &loc1);
+                                    success &= Term_OverrideSubterm(&conjunction, 10, &loc2);
+                                    success &= Term_OverrideSubterm(&conjunction, 11, &X1);
+                                    success &= Term_OverrideSubterm(&conjunction, 12, &Y1);
+                                    success &= Term_OverrideSubterm(&conjunction, 13, &ocr1);
+                                    success &= Term_OverrideSubterm(&conjunction, 14, &ocr2);
+                                    //fputs("ACQUIRED RELATION: ", stdout); Narsese_PrintTerm(&conjunction); puts("");
+                                    Term implication = {0};
+                                    implication.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+                                    success &= Term_OverrideSubterm(&implication, 1, &conjunction);
+                                    success &= Term_OverrideSubterm(&implication, 2, &contingency);
+                                    if(success)
+                                    {
+                                        //fputs("IMPLICATION: ", stdout); Narsese_PrintTerm(&implication); puts("");
+                                        Truth implication_truth = e_imp.truth; //Truth_Induction(decision->reason->truth, decision->usedContingency.truth); //preconditoon truth
+                                        bool success2;
+                                        Term generalized_implication = Variable_IntroduceImplicationVariables(implication, &success2, true);
+                                        if(success2)
+                                        {
+                                            //fputs("GENERALIZED IMPLICATION: ", stdout); Narsese_PrintTerm(&generalized_implication); puts("");
+                                            //Decision_AddMemoryHelper(currentTime, &implication, implication_truth);
+                                            Memory_AddMemoryHelper(currentTime, &generalized_implication, implication_truth, &e_imp.stamp, NULL, false); //&decision->reason->stamp, &decision->usedContingency.stamp);
+                                            //extract the individual statements
+                                            Term loc_loc = Term_ExtractSubterm(&conjunction, 1);
+                                            Term ocr_ocr = Term_ExtractSubterm(&conjunction, 2);
+                                            IN_DEBUGNEW( fputs("ACQUIRED REL1: ", stdout); Narsese_PrintTerm(&loc_loc); puts(""); )
+                                            IN_DEBUGNEW( fputs("ACQUIRED REL2: ", stdout); Narsese_PrintTerm(&ocr_ocr); puts(""); )
+                                            //Memory_AddMemoryHelper(currentTime, &conjunction, e_imp.truth, &e_imp.stamp, NULL, false);
+                                            //--//Decision_AddMemoryHelper(currentTime, &loc_loc, decision->reason->truth);
+                                            Memory_AddMemoryHelper(currentTime, &ocr_ocr, e_imp.truth, &e_imp.stamp, NULL, true);
+                                            //exit(0);
+                                        }
+                                    }
+                                }
+                             }
+                            if(functional_equivalence_active)
+                             {
+                                Event e_imp2 = e_imp;
+                                bool intro_success2;
+                                e_imp2.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success2, true, 2);
+                                if(intro_success2 && Variable_hasVariable(&e_imp2.term, true, true, false) && !Term_Equal(&Te_imp2, &e_imp2.term))
+                                {
+                                    Memory_AddEvent(&e_imp2, currentTime, 1.0, false, true, false, 0, true);
+                                }
+                                Event e_imp3 = e_imp;
+                                bool intro_success3;
+                                e_imp3.term = Variable_IntroduceImplicationVariables2(e_imp.term, &intro_success3, true, 1);
+                                if(intro_success3 && Variable_hasVariable(&e_imp3.term, true, true, false) && !Term_Equal(&Te_imp3, &e_imp3.term))
+                                {
+                                    Memory_AddEvent(&e_imp3, currentTime, 1.0, false, true, false, 0, true);
+                                }
+                             }
+                         }
+                     }
                 }
             }
         }
@@ -609,14 +852,15 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
             for(int u=0; u<concepts.itemsAmount; u++)
             {
                 Concept *cP = concepts.items[u].address;
+                if(Variable_hasVariable(&cP->term, true, true, true))
+                {
+                    continue;
+                }
                 if(!declarative)
                 {
                     cP = current_prec;
                 }
-                if(declarative && cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP->belief_spike.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE)
-                {
-                    continue;
-                }
+                bool declarative_boost_skip = declarative && cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP->belief_spike.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
                 Event *prec_eternal = &cP->belief;
                 Event *prec_event = &cP->belief_spike;
                 if(prec_eternal->type != EVENT_TYPE_DELETED || prec_event->type != EVENT_TYPE_DELETED)
@@ -624,7 +868,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                     //fputs("TRIED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                     Substitution additionalSubstEternal = Variable_Unify(&ImpPrecon, &prec_eternal->term);
                     Substitution additionalSubstEvent = Variable_Unify(&ImpPrecon, &prec_event->term);
-                    if(additionalSubstEternal.success || additionalSubstEvent.success)
+                    if(!declarative_boost_skip && (additionalSubstEternal.success || additionalSubstEvent.success))
                     {
                         //fputs("MATCHED PRECON: ", stdout); Narsese_PrintTerm(&cP->belief.term); puts("");
                         current_prec = cP;
@@ -714,8 +958,8 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                     //if(c != NULL )//&& !Stamp_checkOverlap(&precondition_event->stamp, &imp.stamp))
                                     {
                                         //c->usage = Usage_use(c->usage, currentTime, false); <- destroys plasticity when memory is full (due to overcommitment to current concepts)
-                                        //ETERNAL BELIEF UPDATE:
-                                        if(c_eternal != NULL && success2eternal && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))
+                                        //ETERNAL BELIEF UPDATE: //-- TODO STAMP
+                                        if(c_eternal != NULL && success2eternal && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION))// && !Stamp_checkOverlap(&c_eternal->belief.stamp, &imp.stamp))
                                         {
                                             Truth oldTruth = c_eternal->belief.truth;
                                             if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
@@ -723,7 +967,14 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
                                                 if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
                                                 {
-                                                     Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                    Relation rel = Memory_relationOfBelief(&c_eternal->belief);
+                                                    if(rel.isRelation)
+                                                    {
+                                                        c_eternal->isRelation = true;
+                                                        fputs("DERIVED", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&resulteternal.term); puts("");
+                                                    }
+                                                    Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                    Memory_AddMemoryHelper(currentTime, &resulteternal.term, resulteternal.truth, &resulteternal.stamp, NULL, false);
                                                 }
                                             }
                                         }
@@ -757,7 +1008,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                     Memory_printAddedEvent(&c_event->belief_spike.stamp, &c_event->belief_spike, 1.0, false, true, false, true, false);
                                                 }
                                             }
-                                        }
+                                        }                          
                                     }
                                 }
                             }
@@ -768,6 +1019,257 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                 if(!declarative)
                 {
                     break;
+                }
+            }
+            for(int u=0; u<concepts.itemsAmount && Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) && declarative; u++)
+            {
+                Concept *cP = concepts.items[u].address;
+                if(Variable_hasVariable(&cP->term, true, true, true) ||
+                   cP->belief.truth.frequency <= 0.5)
+                {
+                    continue;
+                }
+                //<(<($1 * #1) --> (ocr * ocr)> && <(#1 * $2) --> (ocr * ocr)>) ==> <($1 * $2) --> (ocr * ocr)>>
+                //==> &&  cons
+                //1   2   3
+                //0   1   2
+                if(Narsese_copulaEquals(imp.term.atoms[1], CONJUNCTION) && //only declarative iterates
+                   Narsese_copulaEquals(imp.term.atoms[2], INHERITANCE) &&
+                   Narsese_copulaEquals(cP->belief.term.atoms[0], INHERITANCE))
+                {
+                    //try to satisfy both with the same variable mapping
+                    Term conj_general = Term_ExtractSubterm(&imp.term, 1);
+                    for(int v=0; v<concepts.itemsAmount; v++) //todo use occurrence time index instead
+                    {
+                        Concept *cP2 = concepts.items[v].address;
+                        bool boost_skip = cP->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE && cP2->belief.creationTime < currentTime-BELIEF_LAST_USED_TOLERANCE;
+                        if(Variable_hasVariable(&cP2->term, true, true, true) || !Narsese_copulaEquals(cP2->belief.term.atoms[0], INHERITANCE) || 
+                           boost_skip || cP2->belief.truth.frequency <= 0.5)
+                        {
+                            continue;
+                        }
+                        //Term conj = {0};
+                        //conj.atoms[0] = Narsese_CopulaIndex(CONJUNCTION);
+                        //bool success1 = Term_OverrideSubterm(&conj, 1, &cP->term);
+                        //bool success2 = Term_OverrideSubterm(&conj, 2, &cP2->term);
+                        bool successOfConj;
+                        Event prec_eternal = Inference_BeliefConjunction(&cP->belief, &cP2->belief, &successOfConj);
+                        if(successOfConj)
+                        {
+                            //fputs("!!!>>> ", stdout); Narsese_PrintTerm(&conj); puts("");
+                            Substitution subst = Variable_Unify(&conj_general, &prec_eternal.term);
+                            Implication imp_w_subst = imp;
+                            bool success;
+                            if(subst.success)
+                            {
+                                imp_w_subst.term = Variable_ApplySubstitute(imp.term, subst, &success);
+                                //if(!Stamp_checkOverlap(&cP->belief.stamp, &cP2->belief.stamp))
+                                { //TODO STAMP //--
+                                    Event resulteternal = Inference_BeliefDeduction(&prec_eternal, &imp_w_subst); //b. :/:
+                                    //Stamp resstamp = Stamp_make(&imp.stamp, &stamp_conj);
+                                    //Stamp_print(&stamp_conj); puts("");
+                                    //Stamp stamp = imp.stamp;// Stamp_make(&stamp_conj, &imp.stamp); //imp.stamp;
+                                    /*if(Memory_AddMemoryHelper(currentTime, &cons, truth_cons, &stamp_conj, &stamp, false))
+                                    {
+                                        fputs("DERIVED RELATION", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&cons); puts("");
+                                    }*/
+                                    Concept *c_eternal = Memory_Conceptualize(&resulteternal.term, currentTime);
+                                    if(c_eternal != NULL) // && !Stamp_checkOverlap(&prec_eternal.stamp, &imp.stamp)) //-- TODO STAMP
+                                    {
+                                        Truth oldTruth = c_eternal->belief.truth;
+                                        if(!Stamp_Equal(&c_eternal->belief.stamp, &resulteternal.stamp))
+                                        {
+                                            c_eternal->belief = Inference_RevisionAndChoice(&c_eternal->belief, &resulteternal, currentTime, NULL); //concept can be generic!
+                                            if(!Truth_Equal(&c_eternal->belief.truth, &oldTruth))
+                                            {
+                                                Relation rel = Memory_relationOfBelief(&c_eternal->belief);
+                                                if(rel.isRelation)
+                                                {
+                                                    c_eternal->isRelation = true;
+                                                    fputs("DERIVED", stdout); Narsese_PrintTerm(&imp.term); fputs(" |- ", stdout); Narsese_PrintTerm(&resulteternal.term); puts("");
+                                                }
+                                                Memory_printAddedEvent(&c_eternal->belief.stamp, &c_eternal->belief, 1.0, false, true, false, true, false);
+                                                Memory_AddMemoryHelper(currentTime, &resulteternal.term, resulteternal.truth, &resulteternal.stamp, NULL, false);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //TRIED IMPL: <(<($1 * $2) --> (loc1 * loc2)> && <($3 * $4) --> (ocr1 * ocr2)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>
+                // ==> &&   =/>  -->  -->      * * *  *              $1 $2  loc1  loc2  $3 $4 ocr1  ocr2
+                // 1   2    3    4    5    6 7 8 9 10 11 12 13 14 15 16 17  18    19    20 21 22    23
+                // 0   1    2    3    4    5 6 7 8  9 10 11 12 13 14 15 16  17    18    19 20 21    22
+                //derive implications:
+                //<(<(sample * $2) --> (loc * loc)> && <(A1 * $4) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
+                //<(<($1 * sample) --> (loc * loc)> && <($3 * A1) --> (ocr * ocr)>) ==> <((<($1 * $3) --> (loc * ocr)> &/ <($2 * $4) --> (loc * ocr)>) &/ <({SELF} * ($1 * $2)) --> ^match>) =/> G>>.
+                //fputs(">>>>", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                if(Narsese_copulaEquals(imp.term.atoms[1], CONJUNCTION) &&
+                   (Narsese_copulaEquals(imp.term.atoms[2], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(imp.term.atoms[2], IMPLICATION)) && //DOES NOT HAVE TO BE A TEMPORAL IMPLICATION
+                   Narsese_copulaEquals(imp.term.atoms[3], INHERITANCE) &&
+                   Narsese_copulaEquals(imp.term.atoms[4], INHERITANCE) &&
+                   Narsese_copulaEquals(imp.term.atoms[7], PRODUCT) &&
+                   Narsese_copulaEquals(imp.term.atoms[8], PRODUCT) &&
+                   Narsese_copulaEquals(imp.term.atoms[9], PRODUCT) //&&
+                   /*Narsese_copulaEquals(imp.term.atoms[10], PRODUCT)*/)// &&  //not needed to be a product, can be any relation
+                   //Variable_isIndependentVariable(imp.term.atoms[15]) &&
+                   //Variable_isIndependentVariable(imp.term.atoms[16]) &&
+                   //Variable_isIndependentVariable(imp.term.atoms[19]) &&
+                   //Variable_isIndependentVariable(imp.term.atoms[20]))
+                {
+                    Term loc1 = Term_ExtractSubterm(&imp.term, 17);
+                    Term loc2 = Term_ExtractSubterm(&imp.term, 18);
+                    Term relprod = Term_ExtractSubterm(&imp.term, 10);
+                    //Term ocr1 = Term_ExtractSubterm(&imp.term, 21); //not needed
+                    //Term ocr2 = Term_ExtractSubterm(&imp.term, 22); //not needed
+                    Atom var1 = imp.term.atoms[15];
+                    Atom var2 = imp.term.atoms[16];
+                    Atom var3 = imp.term.atoms[19];
+                    Atom var4 = imp.term.atoms[20];
+                    Term matchTerm = cP->belief.term;
+                    //fputs(">>>", stdout); Narsese_PrintTerm(&matchTerm); puts("");
+                    //TRIED PRECON: <(A1 * C1) --> (ocr * ocr)>
+                    //<(A1 * C1) --> (ocr1 * ocr2)>
+                    //--> * * A1 C1 ocr1  ocr2
+                    //1   2 3 4  5  6    7
+                    //0   1 2 3  4  5    6
+                    if(cP->belief.truth.frequency > 0.5 &&
+                       Narsese_copulaEquals(matchTerm.atoms[0], INHERITANCE) && 
+                       Narsese_copulaEquals(matchTerm.atoms[1], PRODUCT) //&& 
+                       /*Narsese_copulaEquals(matchTerm.atoms[2], PRODUCT)*/)
+                    {
+                        //printf("USED %f \n", cP->belief.truth.frequency);
+                        Term A1 = Term_ExtractSubterm(&matchTerm, 3);
+                        Term C1 = Term_ExtractSubterm(&matchTerm, 4);
+                        Term relprod_ = Term_ExtractSubterm(&matchTerm, 2);
+                        //Term ocr1_ = Term_ExtractSubterm(&matchTerm, 5);
+                        //Term ocr2_ = Term_ExtractSubterm(&matchTerm, 6);
+                        //fputs("PRE-SEARCH", stdout); Narsese_PrintTerm(&matchTerm); puts("");
+                        if(/*Term_Equal(&ocr1_, &ocr2_) && Term_Equal(&ocr1_, &ocr1) && Term_Equal(&ocr2_, &ocr2) &&*/
+                           Term_Equal(&relprod, &relprod_)  &&
+                           Term_Equal(&loc1, &loc2))
+                        {
+                            //fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts(""); // exit(0);
+                            //fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                            // search for: <(LOC1 * A1) --> (loc * ocr)>
+                            // search for: <(LOC2 * C1) --> (loc * ocr)>
+                            for(int v=0; v<concepts.itemsAmount; v++) //todo use occurrence time index instead
+                            {
+                                Concept *cCand1 = concepts.items[v].address;
+                                if(Variable_hasVariable(&cCand1->term, true, true, true) || cCand1->belief_spike.occurrenceTime < currentTime - EVENT_BELIEF_DISTANCE)
+                                {
+                                    continue;
+                                }
+                                Term candidate = cCand1->belief_spike.term;
+                                if(Narsese_copulaEquals(candidate.atoms[0], INHERITANCE) && 
+                                   Narsese_copulaEquals(candidate.atoms[1], PRODUCT) && 
+                                   Narsese_copulaEquals(candidate.atoms[2], PRODUCT))
+                                {
+                                    //fputs("POTENTIAL ", stdout); Narsese_PrintTerm(&candidate); puts("");// exit(0);
+                                    bool C1_and_A1_is_same_variable = Variable_isIndependentVariable(C1.atoms[0]) && Variable_isIndependentVariable(A1.atoms[0]) && C1.atoms[0] == A1.atoms[0];
+                                    //<(LOC1 * A1) --> (loc * ocr)>
+                                    //--> * * LOC1 A1 loc  ocr
+                                    //1   2 3 4    5  6    7
+                                    //0   1 2 3    4  5    6
+                                    Term LOC1 = Term_ExtractSubterm(&candidate, 3); //obtained if the rest matches
+                                    Term potentially_A1 = Term_ExtractSubterm(&candidate, 4);
+                                    Term potentially_loc = Term_ExtractSubterm(&candidate, 5);
+                                    Term potentially_ocr = Term_ExtractSubterm(&candidate, 6);
+                                    //fputs("A ", stdout); Narsese_PrintTerm(&potentially_loc); fputs(" === ", stdout); Narsese_PrintTerm(&loc1); puts("");
+                                    //fputs("B ", stdout); Narsese_PrintTerm(&potentially_ocr); fputs(" === ", stdout); Narsese_PrintTerm(&ocr1); puts("");
+                                    //fputs("C ", stdout); Narsese_PrintTerm(&A1); fputs(" === ", stdout); Narsese_PrintTerm(&potentially_A1); puts("");
+                                    //fputs("POTENTIAL ", stdout); Narsese_PrintTerm(&potentially_loc); fputs(" === ", stdout); Narsese_PrintTerm(&loc1); puts("");
+                                    Substitution substA1 = Variable_Unify(&A1, &potentially_A1);
+                                    if(Term_Equal(&potentially_loc, &loc1) &&
+                                       //Term_Equal(&potentially_ocr, &ocr1) &&  //--NO
+                                       Term_Equal(&potentially_A1, &A1)) //--
+                                       //substA1.success) //--
+                                    {
+                                        //we have LOC1 now
+                                        Stamp stamp1 = cCand1->belief_spike.stamp;
+                                        long occurrenceTime1 = cCand1->belief_spike.occurrenceTime;
+                                        Term CTerm1 = cCand1->term;
+                                        //fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                        for(int w=0; w<concepts.itemsAmount; w++) //todo use ocCand1urrence time index instead
+                                        {
+                                            Concept *cCand2 = concepts.items[w].address;
+                                            if(w == u || Variable_hasVariable(&cCand2->term, true, true, true) || cCand2->belief_spike.occurrenceTime <= currentTime-EVENT_BELIEF_DISTANCE)
+                                            {
+                                                continue;
+                                            }
+                                            Term candidate2 = cCand2->belief_spike.term;
+                                            //<(LOC2 * C1) --> (loc * ocr)>
+                                            //--> * * LOC2 C1 loc  ocr
+                                            //1   2 3 4    5  6    7
+                                            //0   1 2 3    4  5    6
+                                            Term LOC2 = Term_ExtractSubterm(&candidate2, 3); //obtained if the rest matches
+                                            Term potentially_C1 = Term_ExtractSubterm(&candidate2, 4);
+                                            Substitution substC1 = Variable_Unify(&C1, &potentially_C1);
+                                            assert(!substC1.success || (substC1.success && Term_Equal(&C1, &potentially_C1)), "WHATC");
+                                            assert(!substA1.success || (substA1.success && Term_Equal(&A1, &potentially_A1)), "WHATA");
+                                            if(/*substC1.success &&*/ Term_Equal(&C1, &potentially_C1)) //--
+                                            {
+                                                //Narsese_PrintTerm(&cCand2->term); fputs(" === ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                if(!Term_Equal(&cCand2->term, &CTerm1)) //already have a LOC1 term found, don't use the same concept!
+                                                {
+                                                    //printf("TEST: %d %d\n", (int) C1_and_A1_is_same_variable, (int) Term_Equal(&LOC2, &LOC1));
+                                                    //Narsese_PrintTerm(&LOC2);  fputs(" === ", stdout); Narsese_PrintTerm(&LOC1); puts("");
+                                                    //fputs("Z2 ", stdout); Narsese_PrintTerm(&potentially_C1); fputs(" === ", stdout); Narsese_PrintTerm(&potentially_A1_used); puts("");
+                                                    Stamp stamp2 = cCand2->belief_spike.stamp;
+                                                    long occurrenceTime2 = cCand2->belief_spike.occurrenceTime;
+                                                    Term CTerm2 = cCand2->term;
+                                                    //fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                    if(stamp1.evidentialBase[0] < stamp2.evidentialBase[0]) //both terms got found
+                                                    {
+                                                        //IN_DEBUGNEW( printf("OCCURRENCE TIMES %ld %ld\n", occurrenceTime1, occurrenceTime2); )
+                                                        //puts("BOTH TERMS FOUND"); exit(0);
+                                                        Substitution subs1 = { .success = true };
+                                                        subs1.map[var1] = LOC1;
+                                                        subs1.map[var2] = LOC2;
+                                                        subs1.map[var3] = A1;
+                                                        subs1.map[var4] = C1;
+                                                        bool success1;
+                                                        Term version1 = Variable_ApplySubstitute(imp.term, subs1, &success1);
+                                                        //fputs("$1: ", stdout); Narsese_PrintTerm(&LOC1); puts("");
+                                                        //fputs("$2: ", stdout); Narsese_PrintTerm(&LOC2); puts("");
+                                                        //fputs("$3: ", stdout); Narsese_PrintTerm(&A1); puts("");
+                                                        //fputs("$4: ", stdout); Narsese_PrintTerm(&C1); puts("");
+                                                        //fputs("SUBS INTO: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                                        Stamp combinedStamp = Stamp_make(&stamp1, &stamp2);
+                                                        if(success1)
+                                                        {
+                                                            Term newcontingency = Term_ExtractSubterm(&version1, 2);
+                                                            bool success2;
+                                                            newcontingency = Variable_ApplySubstitute(newcontingency, substA1, &success2);
+                                                            if(success2)
+                                                            {
+                                                                bool added = Memory_AddMemoryHelper(currentTime, &newcontingency, Truth_Deduction(imp.truth, cP->belief.truth), &imp.stamp, &combinedStamp, false);
+                                                                if(added)
+                                                                {
+                                                                    //print all only when added
+                                                                    IN_DEBUGNEW
+                                                                    (
+                                                                        fputs("IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
+                                                                        fputs("SEARCHING FOR", stdout); Narsese_PrintTerm(&matchTerm); puts("");// exit(0);
+                                                                        fputs("TRUTH", stdout); Truth_Print(&cP->belief.truth); puts("");// exit(0);
+                                                                        fputs("FOUND LOC1: ", stdout); Narsese_PrintTerm(&CTerm1); puts("");
+                                                                        fputs("FOUND LOC2: ", stdout); Narsese_PrintTerm(&CTerm2); puts("");
+                                                                        fputs("TEST RESULT 1: ", stdout); Narsese_PrintTerm(&newcontingency); puts("");
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
