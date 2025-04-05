@@ -1,4 +1,4 @@
-*volume=0
+*volume=100
 //NEW EXAMPLE
 //Shape1 is a rectangle
 <{shape1} --> rectangle>. :|:
@@ -502,3 +502,5 @@
 50
 <([filled] & trapezoid) --> (leftOf /1 {?1})>? :|:
 //expected: Answer: <([filled] & trapezoid) --> (leftOf /1 {form912})>. :|:
+<(<{$1} --> [unfilled]> &/ <{$2} --> [unfilled]>) =/> <({$2} * {$1}) --> leftOf>>?
+<triangle --> circle>?
