@@ -1014,7 +1014,10 @@ void Cycle_Inference(long currentTime)
                         project_belief.truth = Truth_Projection(project_belief.truth, project_belief.occurrenceTime, e->occurrenceTime);
                         project_belief.occurrenceTime = e->occurrenceTime;
                         belief = &project_belief;
-                        eternalize = false;
+                        if(ALLOW_ETERNALIZATION != 2)
+                        {
+                            eternalize = false;
+                        }
                     }
                     Event belief_eventified = c->belief;
                     belief_eventified.occurrenceTime = currentTime;
@@ -1023,6 +1026,10 @@ void Cycle_Inference(long currentTime)
                     {
                         belief = e;
                         e_ = &c->belief_spike;
+                    }
+                    if(!ALLOW_ETERNALIZATION && e_->occurrenceTime != OCCURRENCE_ETERNAL || belief->occurrenceTime != OCCURRENCE_ETERNAL)
+                    {
+                        eternalize = false;
                     }
                     //Check for overlap and apply inference rules
                     if(!Stamp_checkOverlap(&e_->stamp, &belief->stamp) &&

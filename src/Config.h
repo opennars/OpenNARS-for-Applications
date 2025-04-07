@@ -216,5 +216,9 @@
 #define DECLARATIVE_INHERITANCE_SUBGOALING true
 //Allow intensional var intro
 #define ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS false
+//Allow declarative implication events, 0 NONE, 1 INPUT, 2 ALL
+#define ALLOW_IMPLICATION_EVENTS 1
+//Eternalization model: 0 None, 1 event-eternal, 2 ALL
+#define ALLOW_ETERNALIZATION 0
 
 #endif

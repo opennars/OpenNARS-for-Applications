@@ -336,7 +336,9 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
-    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
+    bool Exclude = ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 1 && !input) || //only input implications should be events
+                   ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 0); //no implications should be events
+    if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !Exclude)
     {
         Concept *c = Memory_Conceptualize(&event->term, currentTime);
         if(c != NULL)
@@ -426,9 +428,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !(Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) && SEMANTIC_INFERENCE_NAL_LEVEL == 0))
+        if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
         {
-            if(!(Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && (Narsese_copulaEquals(event->term.atoms[2], SIMILARITY) /*TODO, as it is =*/ || Narsese_copulaEquals(event->term.atoms[2], SEQUENCE) /*TODO, as it is +*/)))
+            bool Exclude = ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 1 && !input) || //only input implications should be events
+                           ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 0); //no implications should be events
+            if(!Exclude && !(Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && (Narsese_copulaEquals(event->term.atoms[2], SIMILARITY) /*TODO, as it is =*/ || Narsese_copulaEquals(event->term.atoms[2], SEQUENCE) /*TODO, as it is +*/)))
             {
                 if(!Stamp_hasDuplicate(&event->stamp))
                 {
@@ -452,7 +456,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, event->occurrenceTime == OCCURRENCE_ETERNAL);
+    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, event->occurrenceTime == OCCURRENCE_ETERNAL || ALLOW_ETERNALIZATION == 2);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

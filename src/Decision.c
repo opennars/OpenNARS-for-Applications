@@ -729,7 +729,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                         //BELIEF EVENTS UPDATE:
-                                        if(c_event != NULL && success2event && !Stamp_checkOverlap(&c_event->belief_spike.stamp, &imp.stamp) && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
+                                        if(c_event != NULL && success2event && Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
                                         {
                                             Truth oldTruth = c_event->predicted_belief.truth;
                                             long oldOccurrenceTime = c_event->predicted_belief.occurrenceTime;
@@ -743,7 +743,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                             }
                                         }
                                         else
-                                        if(c_event != NULL && success2event && !Stamp_checkOverlap(&c_event->belief_spike.stamp, &imp.stamp))
+                                        if(c_event != NULL && success2event)
                                         {
                                             Truth oldTruth = c_event->belief_spike.truth;
                                             long oldOccurrenceTime = c_event->belief_spike.occurrenceTime;

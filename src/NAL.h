@@ -179,15 +179,15 @@ R2( (A ==> B), (A ==> C), |-, (C ==> B), Truth_Induction )
 R2( (A ==> C), (B ==> C), |-, (B ==> A), Truth_Abduction )
 R2( (A ==> B), (B ==> C), |-, (C ==> A), Truth_Exemplification )
 //!Conditional composition for conjunction and disjunction:
-//R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Union )
-//R2( (A ==> C), (B ==> C), |-, ((A || B) ==> C), Truth_Intersection )
-//R2( (C ==> A), (C ==> B), |-, (C ==> (A && B)), Truth_Intersection )
-//R2( (C ==> A), (C ==> B), |-, (C ==> (A || B)), Truth_Union )
+R2( (A ==> C), (B ==> C), |-, ((A && B) ==> C), Truth_Union )
+R2( (A ==> C), (B ==> C), |-, ((A || B) ==> C), Truth_Intersection )
+R2( (C ==> A), (C ==> B), |-, (C ==> (A && B)), Truth_Intersection )
+R2( (C ==> A), (C ==> B), |-, (C ==> (A || B)), Truth_Union )
 //!Multi-conditional inference:
 R2( ((S && P) ==> M), (S ==> M), |-, P, Truth_Abduction )
-//R2( ((C && M) ==> P), (S ==> M), |-, ((C && S) ==> P), Truth_Deduction )
-//R2( ((C && P) ==> M), ((C && S) ==> M), |-, (S ==> P), Truth_Abduction )
-//R2( ((C && M) ==> P), (M ==> S), |-, ((C && S) ==> P), Truth_Induction )
+R2( ((C && M) ==> P), (S ==> M), |-, ((C && S) ==> P), Truth_Deduction )
+R2( ((C && P) ==> M), ((C && S) ==> M), |-, (S ==> P), Truth_Abduction )
+R2( ((C && M) ==> P), (M ==> S), |-, ((C && S) ==> P), Truth_Induction )
 //!Rules for equivalence:
 R1( (S <=> P), |-, (P <=> S), Truth_StructuralIntersection )
 R2( (S ==> P), (P ==> S), |-, (S <=> P), Truth_Intersection )
@@ -196,6 +196,9 @@ R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
+//!Convert equivalence into implications
+R1( (M <=> P), |-, (M ==> P), Truth_StructuralDeduction )
+R1( (M <=> P), |-, (P ==> M), Truth_StructuralDeduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL == 5
@@ -234,7 +237,7 @@ R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) <=> (A --> C)), Truth_C
 R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
-R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection ) //needed stepping stone to introduce transitivity
+R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection ) //needed stepping stone to introduce or use transitivity
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!Variable elimination in Cycle_SpecialInferences
 #endif
