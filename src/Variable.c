@@ -375,6 +375,16 @@ Term Variable_IntroduceImplicationVariables2(Term implication, bool *success, bo
 
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
+    if(!extensionally && !ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS)
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_copulaEquals(implication.atoms[i], PRODUCT))
+            {
+                return (Term) {0};
+            }
+        }
+    }
     return Variable_IntroduceImplicationVariables2(implication, success, extensionally, 0);
 }
 

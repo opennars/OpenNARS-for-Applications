@@ -214,5 +214,7 @@
 #define DECLARATIVE_IMPLICATIONS_SUBGOALING true
 //Declarative inheritance allow subgoaling
 #define DECLARATIVE_INHERITANCE_SUBGOALING true
+//Allow intensional var intro
+#define ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS false
 
 #endif

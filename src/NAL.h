@@ -208,10 +208,10 @@ R2( A, (A <=> B), |-, B, Truth_Analogy )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
 //!First var intro step:
-//R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction ) //extensional (captured by --> too without separating extension/intension)
-//R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction ) //intentional (captured by --> too without separating extension/intension)
-//R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison ) //extensional (captured by --> too without separating extension/intension)
-//R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison ) //extenintentionalsional (captured by --> too without separating extension/intension)
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction ) //extensional (captured by --> too without separating extension/intension)
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction ) //intentional (captured by --> too without separating extension/intension)
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison ) //extensional (captured by --> too without separating extension/intension)
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison ) //extenintentionalsional (captured by --> too without separating extension/intension)
 R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) ==> (! (C --> A))), Truth_Induction ) //cannot be expressed in other way
 R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) ==> (! (A --> C))), Truth_Induction ) //cannot be expressed in other way
 R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) <=> (! (C --> A))), Truth_Comparison )
