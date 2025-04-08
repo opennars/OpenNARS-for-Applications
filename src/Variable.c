@@ -392,6 +392,17 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
+    if(!extensionally && !ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS)
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_copulaEquals(conjunction.atoms[i], PRODUCT))
+            {
+                success = false;
+                return (Term) {0};
+            }
+        }
+    }
     HashTable HT_appearing_left;
     VMItem* HT_appearing_left_storageptrs[COMPOUND_TERM_SIZE_MAX];
     VMItem HT_appearing_left_storage[COMPOUND_TERM_SIZE_MAX];
