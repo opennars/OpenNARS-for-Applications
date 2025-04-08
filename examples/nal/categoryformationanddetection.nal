@@ -1,26 +1,26 @@
-*volume=0
+*volume=100
 
 <{instA} --> [yellow quacks]>.
 <{instA} --> duck>.
 <{instA} --> swan>. {0.0 0.9}
 <{instA} --> bird>.
-1000
+200
 <{instB} --> [white quacks]>.
 <{instB} --> swan>.
 <{instB} --> duck>. {0.0 0.9}
 <{instB} --> bird>.
-1000
+200
 <{instC} --> [yellow quacks]>.
 <{instC} --> duck>.
 <{instC} --> swan>. {0.0 0.9}
 <{instC} --> bird>.
-1000
+200
 <{instD} --> [white quacks]>.
 <{instD} --> swan>.
 <{instD} --> duck>. {0.0 0.9}
 <{instD} --> bird>.
 
-1000
+200
 
 *volume=0
 //NEW EXAMPLE
@@ -125,7 +125,7 @@
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape5})>. :|:
 
 //"cooling down":
-1000
+200
 
 <{inst30} --> [yellow quacks]>. :|:
 200
@@ -134,7 +134,7 @@
 <{inst40} --> swan>? :|:
 <{inst30} --> bird>? :|:
 
-1000
+200
 
 <{inst40} --> [white quacks]>. :|:
 200
@@ -143,7 +143,7 @@
 //expected: Answer: <{inst40} --> swan>. :|:
 <{inst40} --> bird>? :|:
 
-1000
+200
 
 <{inst50} --> [yellow quacks]>. :|:
 200
@@ -152,7 +152,7 @@
 <{inst50} --> swan>? :|:
 <{inst50} --> bird>? :|:
 
-1000
+200
 
 <{inst60} --> [white quacks]>. :|:
 200
@@ -161,7 +161,7 @@
 //expected: Answer: <{inst60} --> swan>. :|:
 <{inst60} --> bird>? :|:
 
-1000
+200
 
 <{inst70} --> [yellow quacks]>. :|:
 200
@@ -170,7 +170,7 @@
 <{inst70} --> swan>? :|:
 <{inst70} --> bird>? :|:
 
-1000
+200
 
 <{inst80} --> [white quacks]>. :|:
 200
@@ -181,7 +181,7 @@
 
 //again:
 
-1000
+200
 
 <{inst90} --> [yellow quacks]>. :|:
 200
@@ -190,7 +190,7 @@
 <{inst90} --> swan>? :|:
 <{inst90} --> bird>? :|:
 
-1000
+200
 
 <{inst100} --> [white quacks]>. :|:
 200
@@ -199,7 +199,7 @@
 //expected: Answer: <{inst100} --> swan>. :|:
 <{inst100} --> bird>? :|:
 
-1000
+200
 
 <{inst110} --> [yellow quacks]>. :|:
 200
@@ -208,7 +208,7 @@
 <{inst110} --> swan>? :|:
 <{inst110} --> bird>? :|:
 
-1000
+200
 
 <{inst120} --> [white quacks]>. :|:
 200
@@ -217,7 +217,7 @@
 //expected: Answer: <{inst120} --> swan>. :|:
 <{inst120} --> bird>? :|:
 
-1000
+200
 
 <{inst130} --> [yellow quacks]>. :|:
 200
@@ -226,7 +226,7 @@
 <{inst130} --> swan>? :|:
 <{inst130} --> bird>? :|:
 
-1000
+200
 
 <{inst140} --> [white quacks]>. :|:
 200

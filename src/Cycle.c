@@ -146,6 +146,7 @@ void Cycle_PopEvents(Event *selectionArray, double *selectionPriority, int *sele
         Memory_printAddedEvent(&e->stamp, e, priority, false, false, false, true, true);
         selectionPriority[*selectedCnt] = priority;
         selectionArray[*selectedCnt] = *e; //needs to be copied because will be added in a batch
+        assert(selectionArray[*selectedCnt].term.atoms[0], "No atom");
         (*selectedCnt)++; //that while processing, would make recycled pointers invalid to use
     }
 }

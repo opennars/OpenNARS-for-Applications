@@ -275,7 +275,7 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
-    if(event->truth.confidence < MIN_CONFIDENCE)
+    if(event->truth.confidence < MIN_CONFIDENCE) //TODO find cause for zero term
     {
         return;
     }
@@ -399,6 +399,10 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
+    if(!event->term.atoms[0]) //todo find where it happens
+    {
+        return;
+    }
     if(Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) || Narsese_copulaEquals(event->term.atoms[0], SIMILARITY))
     { //TODO maybe NAL term filter should go here?
         Term subject = Term_ExtractSubterm(&event->term, 1);

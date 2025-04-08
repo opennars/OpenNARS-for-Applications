@@ -381,6 +381,7 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
         {
             if(Narsese_copulaEquals(implication.atoms[i], PRODUCT))
             {
+                success = false;
                 return (Term) {0};
             }
         }
