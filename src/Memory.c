@@ -399,6 +399,24 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
+    for(int i=0; !input && i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE1) ||
+           Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE2) ||
+           Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE1) ||
+           Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE2) ||
+           (i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], EXT_DIFFERENCE) && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
+           (i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], INT_DIFFERENCE) && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
+           Narsese_copulaEquals(event->term.atoms[i], INT_INTERSECTION) ||
+           Narsese_copulaEquals(event->term.atoms[i], EXT_INTERSECTION) ||
+           (Variable_isDependentVariable(event->term.atoms[i]) && Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION)))
+        {
+            if(Memory_FindConceptByTerm(&event->term) == NULL)
+            {
+                return;
+            }
+        }
+    }
     if(!event->term.atoms[0]) //todo find where it happens
     {
         return;
@@ -432,6 +450,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
+        
         if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
         {
             bool Exclude = ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 1 && !input) || //only input implications should be events

@@ -146,6 +146,7 @@ void NAR_AddInputNarsese2(char *narsese_sentence, bool queryCommand, double answ
         fputs("Input: ", stdout);
         Narsese_PrintTerm(&term);
         fputs("?", stdout);
+        Memory_Conceptualize(&term, currentTime);
         puts(tense == 1 ? " :|:" : (tense == 2 ? " :\\:" : (tense == 3 ? " :/:" : ""))); 
         fflush(stdout);
         for(int i=0; i<concepts.itemsAmount; i++)
