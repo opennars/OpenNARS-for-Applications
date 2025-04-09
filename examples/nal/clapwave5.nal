@@ -30,4 +30,4 @@
 <B1 --> [use]>? :|:
 <B2 --> [use]>? :|:
 G! :|:
-//expected: ^wave executed with args
+//--expected: ^wave executed with args
