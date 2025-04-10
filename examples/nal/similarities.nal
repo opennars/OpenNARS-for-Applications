@@ -33,5 +33,5 @@ G! :|:
 G. :|:
 5
 <(<{t1} --> [quacks]> &/ ^pick) =/> G>?
-//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.985997, confidence=0.292821
+//expected: Answer: <(<{t1} --> [quacks]> &/ ^pick) =/> G>. Truth: frequency=0.982101, confidence=0.244673
 

@@ -405,11 +405,14 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
            Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE2) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE1) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE2) ||
-           (i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], EXT_DIFFERENCE) && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
-           (i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], INT_DIFFERENCE) && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
+           Narsese_copulaEquals(event->term.atoms[i], EXT_DIFFERENCE) ||
+           Narsese_copulaEquals(event->term.atoms[i], INT_DIFFERENCE) ||
+           //(i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], EXT_SET) && event->term.atoms[i*2+1] && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
+           //(i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], INT_SET) && event->term.atoms[i*2+1] && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
            Narsese_copulaEquals(event->term.atoms[i], INT_INTERSECTION) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_INTERSECTION) ||
-           (Variable_isDependentVariable(event->term.atoms[i]) && Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION)))
+           ((Variable_isDependentVariable(event->term.atoms[i]) || event->occurrenceTime != OCCURRENCE_ETERNAL) && Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION))
+           )
         {
             if(Memory_FindConceptByTerm(&event->term) == NULL)
             {
@@ -457,7 +460,7 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
                            ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 0); //no implications should be events
             if(!Exclude && !(Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && (Narsese_copulaEquals(event->term.atoms[2], SIMILARITY) /*TODO, as it is =*/ || Narsese_copulaEquals(event->term.atoms[2], SEQUENCE) /*TODO, as it is +*/)))
             {
-                if(!Stamp_hasDuplicate(&event->stamp))
+                if(!Stamp_hasDuplicate(&event->stamp) && (input || !Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION)))
                 {
                     addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
                 }

@@ -1008,7 +1008,7 @@ void Cycle_Inference(long currentTime)
                     //unless there is an actual belief which falls into the event's window
                     Event project_belief = c->belief_spike;
                     bool eternalize = true;
-                    if(c->belief_spike.type != EVENT_TYPE_DELETED &&
+                    if(EVENT_EVENT_DECLARATIVE_INFERENCE && c->belief_spike.type != EVENT_TYPE_DELETED &&
                        e->occurrenceTime != OCCURRENCE_ETERNAL && project_belief.type != EVENT_TYPE_DELETED &&
                        labs(e->occurrenceTime - project_belief.occurrenceTime) < EVENT_BELIEF_DISTANCE) //take event as belief if it's stronger
                     {

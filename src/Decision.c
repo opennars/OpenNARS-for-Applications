@@ -152,9 +152,9 @@ void Decision_Execute(long currentTime, Decision *decision)
                         {
                             Event e_imp = { .term = equTerm2,
                                             .type = EVENT_TYPE_BELIEF,
-                                            .truth = Truth_Abduction(decision->specific_implication.truth, comparedImp.truth),
+                                            .truth = Truth_Eternalize(Truth_Abduction(decision->specific_implication.truth, comparedImp.truth)),
                                             .stamp = equStamp,
-                                            .occurrenceTime = currentTime };
+                                            .occurrenceTime = OCCURRENCE_ETERNAL };
                             if(FUNCTIONAL_EQUIVALENCE_SPECIFIC)
                             {
                                 Memory_AddEvent(&e_imp, currentTime, 1.0, false, true, false, 0, true);
