@@ -1028,7 +1028,7 @@ void Cycle_Inference(long currentTime)
                         belief = e;
                         e_ = &c->belief_spike;
                     }
-                    if(!ALLOW_ETERNALIZATION && e_->occurrenceTime != OCCURRENCE_ETERNAL || belief->occurrenceTime != OCCURRENCE_ETERNAL)
+                    if(!ALLOW_ETERNALIZATION && (e_->occurrenceTime != OCCURRENCE_ETERNAL || belief->occurrenceTime != OCCURRENCE_ETERNAL))
                     {
                         eternalize = false;
                     }
