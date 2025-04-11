@@ -26,4 +26,4 @@ G! :|:
 (<#1 --> [seen]> && <(#1 * C2) --> same>). :|:
 10
 G! :|:
-//expected: ^wave executed with args
+//--expected: ^wave executed with args

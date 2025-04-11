@@ -375,12 +375,34 @@ Term Variable_IntroduceImplicationVariables2(Term implication, bool *success, bo
 
 Term Variable_IntroduceImplicationVariables(Term implication, bool *success, bool extensionally)
 {
+    if(!extensionally && !ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS)
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_copulaEquals(implication.atoms[i], PRODUCT))
+            {
+                *success = false;
+                return (Term) {0};
+            }
+        }
+    }
     return Variable_IntroduceImplicationVariables2(implication, success, extensionally, 0);
 }
 
 Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, bool extensionally)
 {
     assert(Narsese_copulaEquals(conjunction.atoms[0], CONJUNCTION), "A conjunction is expected here!");
+    if(!extensionally && !ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS)
+    {
+        for(int i=0; i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_copulaEquals(conjunction.atoms[i], PRODUCT))
+            {
+                *success = false;
+                return (Term) {0};
+            }
+        }
+    }
     HashTable HT_appearing_left;
     VMItem* HT_appearing_left_storageptrs[COMPOUND_TERM_SIZE_MAX];
     VMItem HT_appearing_left_storage[COMPOUND_TERM_SIZE_MAX];
