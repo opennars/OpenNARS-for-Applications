@@ -31,13 +31,15 @@
 //Truth expectation needed for anticipation
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
-#define ANTICIPATION_CONFIDENCE_INITIAL 0.00
+#define ANTICIPATION_CONFIDENCE_INITIAL 0.01
 //Anticipate for concrete yet unexperienced outcomes derived from generals
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 //Use top-k implication links only (the others can grow / accumulate evidence)
 #define TOP_K_DECLARATIVE_IMPLICATIONS 20
 //When a concept belief was last updated to be used for declarative implication deduction
 #define BELIEF_LAST_USED_TOLERANCE 5
+//Anticipation model (classical anticipation vs. assumption of failure)
+#define CLASSICAL_ANTICIPATION true
 
 /*---------------------*/
 /* Decision parameters */

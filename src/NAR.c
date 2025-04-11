@@ -47,7 +47,7 @@ void NAR_Cycles(int cycles)
     for(int i=0; i<cycles; i++)
     {
         //check any concepts that have predicted beliefs of a past occurrence time
-        for(int j=0; j<concepts.itemsAmount; j++)
+        for(int j=0; CLASSICAL_ANTICIPATION && j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
             if(c->predicted_belief.occurrenceTime == currentTime &&
