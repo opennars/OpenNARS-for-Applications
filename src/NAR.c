@@ -53,7 +53,7 @@ void NAR_Cycles(int cycles)
             if(c->predicted_belief.occurrenceTime == currentTime &&
                c->belief_spike.occurrenceTime < currentTime) //was predicted for now but did not happen now
             {
-                Truth negTruth = (Truth) { .frequency = 0.0, .confidence = 0.9 };
+                Truth negTruth = (Truth) { .frequency = 0.0, .confidence = NAR_DEFAULT_CONFIDENCE };
                 Event ev = Event_InputEvent(c->predicted_belief.term, EVENT_TYPE_BELIEF, negTruth, 0, c->predicted_belief.occurrenceTime);
                 Memory_AddInputEvent(&ev, currentTime);
             }
