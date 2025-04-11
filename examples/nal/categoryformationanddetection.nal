@@ -1,26 +1,26 @@
-*volume=0
+*volume=100
 
 <{instA} --> [yellow quacks]>.
 <{instA} --> duck>.
 <{instA} --> swan>. {0.0 0.9}
 <{instA} --> bird>.
-1000
+20
 <{instB} --> [white quacks]>.
 <{instB} --> swan>.
 <{instB} --> duck>. {0.0 0.9}
 <{instB} --> bird>.
-1000
+20
 <{instC} --> [yellow quacks]>.
 <{instC} --> duck>.
 <{instC} --> swan>. {0.0 0.9}
 <{instC} --> bird>.
-1000
+20
 <{instD} --> [white quacks]>.
 <{instD} --> swan>.
 <{instD} --> duck>. {0.0 0.9}
 <{instD} --> bird>.
 
-1000
+20
 
 *volume=0
 //NEW EXAMPLE
@@ -125,55 +125,55 @@
 //expected: Answer: <([filled] & rectangle) --> (leftOf /1 {shape5})>. :|:
 
 //"cooling down":
-1000
+20
 
 <{inst30} --> [yellow quacks]>. :|:
-200
+20
 <{inst30} --> duck>? :|:
 //expected: Answer: <{inst30} --> duck>. :|:
 <{inst40} --> swan>? :|:
 <{inst30} --> bird>? :|:
 
-1000
+20
 
 <{inst40} --> [white quacks]>. :|:
-200
+20
 <{inst40} --> duck>? :|:
 <{inst40} --> swan>? :|:
 //expected: Answer: <{inst40} --> swan>. :|:
 <{inst40} --> bird>? :|:
 
-1000
+20
 
 <{inst50} --> [yellow quacks]>. :|:
-200
+20
 <{inst50} --> duck>? :|:
 //expected: Answer: <{inst50} --> duck>. :|:
 <{inst50} --> swan>? :|:
 <{inst50} --> bird>? :|:
 
-1000
+20
 
 <{inst60} --> [white quacks]>. :|:
-200
+20
 <{inst60} --> duck>? :|:
 <{inst60} --> swan>? :|:
 //expected: Answer: <{inst60} --> swan>. :|:
 <{inst60} --> bird>? :|:
 
-1000
+20
 
 <{inst70} --> [yellow quacks]>. :|:
-200
+20
 <{inst70} --> duck>? :|:
 //expected: Answer: <{inst70} --> duck>. :|:
 <{inst70} --> swan>? :|:
 <{inst70} --> bird>? :|:
 
-1000
+20
 
 <{inst80} --> [white quacks]>. :|:
-200
+20
 <{inst80} --> duck>? :|:
 <{inst80} --> swan>? :|:
 //expected: Answer: <{inst80} --> swan>. :|:
@@ -181,55 +181,55 @@
 
 //again:
 
-1000
+20
 
 <{inst90} --> [yellow quacks]>. :|:
-200
+20
 <{inst90} --> duck>? :|:
 //expected: Answer: <{inst90} --> duck>. :|:
 <{inst90} --> swan>? :|:
 <{inst90} --> bird>? :|:
 
-1000
+20
 
 <{inst100} --> [white quacks]>. :|:
-200
+20
 <{inst100} --> duck>? :|:
 <{inst100} --> swan>? :|:
 //expected: Answer: <{inst100} --> swan>. :|:
 <{inst100} --> bird>? :|:
 
-1000
+20
 
 <{inst110} --> [yellow quacks]>. :|:
-200
+20
 <{inst110} --> duck>? :|:
 //expected: Answer: <{inst110} --> duck>. :|:
 <{inst110} --> swan>? :|:
 <{inst110} --> bird>? :|:
 
-1000
+20
 
 <{inst120} --> [white quacks]>. :|:
-200
+20
 <{inst120} --> duck>? :|:
 <{inst120} --> swan>? :|:
 //expected: Answer: <{inst120} --> swan>. :|:
 <{inst120} --> bird>? :|:
 
-1000
+20
 
 <{inst130} --> [yellow quacks]>. :|:
-200
+20
 <{inst130} --> duck>? :|:
 //expected: Answer: <{inst130} --> duck>. :|:
 <{inst130} --> swan>? :|:
 <{inst130} --> bird>? :|:
 
-1000
+20
 
 <{inst140} --> [white quacks]>. :|:
-200
+20
 <{inst140} --> duck>? :|:
 <{inst140} --> swan>? :|:
 //expected: Answer: <{inst140} --> swan>. :|:

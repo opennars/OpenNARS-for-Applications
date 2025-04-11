@@ -238,11 +238,13 @@ static bool NAL_HOLStatementComponentHasInvalidInhOrSim(Term *conclusionTerm, bo
         {
             return true;
         }
+        bool SubjectHasProduct = Narsese_copulaEquals(subject.atoms[0], PRODUCT);
+        bool PredicateHasProduct = Narsese_copulaEquals(predicate.atoms[0], PRODUCT);
         bool SubjectIsImage =   Narsese_copulaEquals(  subject.atoms[0], INT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], INT_IMAGE2);
-        bool PredicateIsImage = Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(subject.atoms[0], EXT_IMAGE2);
-        if(TERMS_WITH_VARS_AND_ATOMS_FILTER && !SubjectIsImage && !PredicateIsImage && !Narsese_copulaEquals(subject.atoms[0],   SET_ELEMT) && !Narsese_copulaEquals(predicate.atoms[0], SET_ELEMT) &&
-           ((Variable_hasVariable(&subject,   true, true, false) && Narsese_HasSimpleAtom(&subject)) ||
-            (Variable_hasVariable(&predicate, true, true, false) && Narsese_HasSimpleAtom(&predicate))))
+        bool PredicateIsImage = Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE1) || Narsese_copulaEquals(predicate.atoms[0], EXT_IMAGE2);
+        if(TERMS_WITH_VARS_AND_ATOMS_FILTER  && !SubjectIsImage && !PredicateIsImage && !Narsese_copulaEquals(subject.atoms[0],   SET_ELEMT) && !Narsese_copulaEquals(predicate.atoms[0], SET_ELEMT) &&
+           ((!SubjectHasProduct && Variable_hasVariable(&subject,   true, true, false) && Narsese_HasSimpleAtom(&subject)) ||
+            (!PredicateHasProduct && Variable_hasVariable(&predicate, true, true, false) && Narsese_HasSimpleAtom(&predicate))))
         {
             return true;
         }

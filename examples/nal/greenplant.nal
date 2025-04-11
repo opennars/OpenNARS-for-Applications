@@ -21,4 +21,4 @@
 
 //Plants are greener than the ocean?
 <(plant ~ ocean) --> [green]>?
-//expected: Answer: <(plant ~ ocean) --> [green]>. Truth: frequency=0.675000, confidence=0.276707
+//--expected: Answer: <(plant ~ ocean) --> [green]>. Truth: frequency=0.675000, confidence=0.276707

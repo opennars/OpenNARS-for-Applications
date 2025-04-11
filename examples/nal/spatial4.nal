@@ -3,4 +3,5 @@
 <{a} |-> [posX]>. :|: %0.6%
 <{b} |-> [posX]>. :|: %0.8%
 <({?1} * {?2}) --> (+ posX)>? :|:
-//expected: Answer: <({b} * {a}) --> (+ posX)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.648000
+//--expected: Answer: <({b} * {a}) --> (+ posX)>. :|: occurrenceTime=3 Truth: frequency=1.000000, confidence=0.648000
+//replaced with comparative relations on explicit value terms via "*space 10 P"

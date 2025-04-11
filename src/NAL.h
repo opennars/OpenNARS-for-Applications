@@ -67,8 +67,6 @@ R2( (S --> M), (M --> P), |-, (S --> P), Truth_Deduction )
 R2( (A --> B), (A --> C), |-, (C --> B), Truth_Induction )
 R2( (A --> C), (B --> C), |-, (B --> A), Truth_Abduction )
 R2( (A --> B), (B --> C), |-, (C --> A), Truth_Exemplification )
-R2( S, (S --> P), |-, P, Truth_Deduction )
-R2( P, (S --> P), |-, S, Truth_Abduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 2
@@ -198,6 +196,9 @@ R2( (M ==> P), (M ==> S), |-, (S <=> P), Truth_Comparison )
 R2( (M ==> P), (S <=> M), |-, (S ==> P), Truth_Analogy )
 R2( (P ==> M), (S <=> M), |-, (P ==> S), Truth_Analogy )
 R2( (M <=> P), (S <=> M), |-, (S <=> P), Truth_Resemblance )
+//!Convert equivalence into implications
+R1( (M <=> P), |-, (M ==> P), Truth_StructuralDeduction )
+R1( (M <=> P), |-, (P ==> M), Truth_StructuralDeduction )
 #endif
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL == 5
@@ -210,16 +211,16 @@ R2( A, (A <=> B), |-, B, Truth_Analogy )
 
 #if SEMANTIC_INFERENCE_NAL_LEVEL >= 6
 //!First var intro step:
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction )
-R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction )
-R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison )
-R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison )
-R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) ==> (! (C --> A))), Truth_Induction )
-R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) ==> (! (A --> C))), Truth_Induction )
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) ==> (C --> A)), Truth_Induction ) //extensional (captured by --> too without separating extension/intension)
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) ==> (A --> C)), Truth_Induction ) //intentional (captured by --> too without separating extension/intension)
+R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) <=> (C --> A)), Truth_Comparison ) //extensional (captured by --> too without separating extension/intension)
+R2VarIntro( (A --> C), (B --> C), |-, ((B --> C) <=> (A --> C)), Truth_Comparison ) //extenintentionalsional (captured by --> too without separating extension/intension)
+R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) ==> (! (C --> A))), Truth_Induction ) //cannot be expressed in other way
+R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) ==> (! (A --> C))), Truth_Induction ) //cannot be expressed in other way
 R2VarIntro( (! (C --> A)), (C --> B), |-, ((C --> B) <=> (! (C --> A))), Truth_Comparison )
 R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) <=> (! (A --> C))), Truth_Comparison )
-R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) ==> (C --> A)), Truth_Induction )
-R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) ==> (A --> C)), Truth_Induction )
+R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) ==> (C --> A)), Truth_Induction ) //cannot be expressed in other way
+R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) ==> (A --> C)), Truth_Induction ) //cannot be expressed in other way
 R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) <=> (C --> A)), Truth_Comparison )
 R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) <=> (A --> C)), Truth_Comparison )
 R2VarIntro( (C --> A), (C --> B), |-, ((C --> B) && (C --> A)), Truth_Intersection )
@@ -229,14 +230,14 @@ R2VarIntro( (! (A --> C)), (B --> C), |-, ((B --> C) && (! (A --> C))), Truth_In
 R2VarIntro( (C --> A), (! (C --> B)), |-, ((! (C --> B)) && (C --> A)), Truth_Intersection )
 R2VarIntro( (A --> C), (! (B --> C)), |-, ((! (B --> C)) && (A --> C)), Truth_Intersection )
 //!Second var intro step:
-R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
-R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
-R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
-//!Relation symmetry, asymmetry, and transitivity:
+//R2VarIntro( (<$1 --> B> ==> <$1 --> C>), A, |-, (A && (<$1 --> B> ==> <$1 --> C>)), Truth_Intersection )
+//R2VarIntro( (<#1 --> B> && <#1 --> C>), A, |-, (A ==> (<#1 --> B> && <#1 --> C>)), Truth_Induction )
+//R2VarIntro( (B ==> C), A, |-, ((A && B) ==> C), Truth_Induction )
+//!Relation reflexivity, symmetry, asymmetry, and transitivity: //cannot be expressed in other way
 R2VarIntro( ((A * B) --> R), ((B * A) --> S), |-, (((B * A) --> S) ==> ((A * B) --> R)), Truth_Induction )
 R2VarIntro( (! ((B * A) --> R)), ((A * B) --> S), |-, (((A * B) --> S) ==> (! ((B * A) --> R))), Truth_Induction )
 R2VarIntro( ((B * A) --> R), (! ((A * B) --> S)), |-, ((! ((A * B) --> S)) ==> ((B * A) --> R)), Truth_Induction )
-R2( ((A * B) --> R), ((B * C) --> S), |-, (((A * B) --> R) && ((B * C) --> S)), Truth_Intersection )
+R2( A, B, |-, (A && B), Truth_Intersection ) //needed stepping stone to introduce or use transitivity
 R2VarIntro( ((A * C) --> M), (((A * B) --> R) && ((B * C) --> S)), |-, ((((A * B) --> R) && ((B * C) --> S)) ==> ((A * C) --> M)), Truth_Induction )
 //!Variable elimination in Cycle_SpecialInferences
 #endif

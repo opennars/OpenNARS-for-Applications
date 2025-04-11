@@ -3,7 +3,7 @@
 *volume=0
 
 //door1 can be opened via ^open if it is unlocked
-<(<door1 --> [unlocked closed]> &/ ^open) =/> <door1 --> [open]>>.
+<((<door1 --> [unlocked]> &/ <door1 --> [closed]>) &/ ^open) =/> <door1 --> [open]>>.
 
 <door1 --> [unlocked]>. :|:
 //door1 is closed

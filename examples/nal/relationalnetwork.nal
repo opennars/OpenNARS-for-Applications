@@ -17,10 +17,10 @@
 50
 
 <(*,C1,B1) --> same>?
-//expected: Answer: <(C1 * B1) --> same>. Truth: frequency=1.000000, confidence=0.211980
+//expected: Answer: <(C1 * B1) --> same>. Truth: frequency=1.000000, confidence=0.590490
 <(*,B2,C2) --> same>?
-//expected: Answer: <(B2 * C2) --> same>. Truth: frequency=1.000000, confidence=0.421631
+//expected: Answer: <(B2 * C2) --> same>. Truth: frequency=1.000000, confidence=0.656100
 <(*,B1,C2) --> opposite>?
-//expected: Answer: <(B1 * C2) --> opposite>. Truth: frequency=1.000000, confidence=0.421631
+//expected: Answer: <(B1 * C2) --> opposite>. Truth: frequency=1.000000, confidence=0.656100
 <(*,C1,B2) --> opposite>?
-//expected: Answer: <(C1 * B2) --> opposite>. Truth: frequency=1.000000, confidence=0.421631
+//expected: Answer: <(C1 * B2) --> opposite>. Truth: frequency=1.000000, confidence=0.656100
