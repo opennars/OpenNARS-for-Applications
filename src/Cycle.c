@@ -1103,6 +1103,68 @@ void Cycle_RelativeForgetting(long currentTime)
 
 void Cycle_Perform(long currentTime)
 {   
+    Truth negTruth = (Truth) { .frequency = 0.0, .confidence = NAR_DEFAULT_CONFIDENCE };
+    //check any concepts that have predicted beliefs of a past occurrence time
+    for(int k=0; ANTICIPATION_MODE && k<concepts.itemsAmount; k++)
+    {
+        Concept *c_base = concepts.items[k].address; //P --> Q
+                                                     //Q --> S
+        if(c_base->belief.type != EVENT_TYPE_DELETED && ANTICIPATION_MODE && Narsese_copulaEquals(c_base->term.atoms[0], INHERITANCE))
+        {
+            RELATED_CONCEPTS_FOREACH(&c_base->belief.term, c,
+            {
+                int a = 3;
+                if(c->predicted_belief.occurrenceTime == currentTime && !Variable_hasVariable(&c->predicted_belief.term, true, true, false) &&
+                   c->belief_spike.occurrenceTime < currentTime && Narsese_copulaEquals(c->predicted_belief.term.atoms[0], INHERITANCE)) //was predicted for now but did not happen now
+                {
+                    Event virtual_negative_event = Event_InputEvent(c->predicted_belief.term, EVENT_TYPE_BELIEF, negTruth, 0, c->predicted_belief.occurrenceTime);
+                    Event virtual_negative_belief = Event_Eternalized(&virtual_negative_event);
+                    Event virtual_derived_event = {0};
+                    //S --> Q %0%
+                    //P --> Q but not S --> Q gives negative evidence for P --> S
+                    {
+                        Term P = Term_ExtractSubterm(&c_base->belief.term, 1);
+                        Term Q = Term_ExtractSubterm(&c_base->belief.term, 2);
+                        Term S = Term_ExtractSubterm(&virtual_negative_belief.term, 1);
+                        Term Q2 = Term_ExtractSubterm(&virtual_negative_belief.term, 2);
+                        if(!Term_Equal(&P, &S) && Term_Equal(&Q, &Q2))
+                        {
+                            Term result = (Term) {0};
+                            result.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                            Term_OverrideSubterm(&result, 1, &P);
+                            Term_OverrideSubterm(&result, 1, &S);
+                            virtual_derived_event = Event_InputEvent(result, EVENT_TYPE_BELIEF, Truth_Abduction(c_base->belief.truth, virtual_negative_belief.truth), 0, currentTime);
+                        }
+                    }
+                    //Q --> P %0%
+                    //Q --> S but not Q --> P gives negative evidence for P --> S
+                    {
+                        Term Q = Term_ExtractSubterm(&c_base->belief.term, 1);
+                        Term S = Term_ExtractSubterm(&c_base->belief.term, 2);
+                        Term Q2 = Term_ExtractSubterm(&virtual_negative_belief.term, 1);
+                        Term P = Term_ExtractSubterm(&virtual_negative_belief.term, 2);
+                        if(!Term_Equal(&P, &S) && Term_Equal(&Q, &Q2))
+                        {
+                            Term result = (Term) {0};
+                            result.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+                            Term_OverrideSubterm(&result, 1, &P);
+                            Term_OverrideSubterm(&result, 1, &S);
+                            virtual_derived_event = Event_InputEvent(result, EVENT_TYPE_BELIEF, Truth_Abduction(c_base->belief.truth, virtual_negative_belief.truth), 0, currentTime);
+                        }
+                    }
+                    if(virtual_derived_event.type != EVENT_TYPE_DELETED)
+                    {
+                        virtual_derived_event.occurrenceTime = OCCURRENCE_ETERNAL;
+                        Concept *CtoUpdate = Memory_FindConceptByTerm(&virtual_derived_event.term);
+                        if(CtoUpdate != NULL)
+                        {
+                            CtoUpdate->belief = Inference_RevisionAndChoice(&CtoUpdate->belief, &virtual_derived_event, currentTime, NULL);
+                        }
+                    }
+                }
+            })
+        }
+    }
     Metric_send("NARNode.Cycle", 1);
     //1a. Retrieve BELIEF_EVENT_SELECTIONS events from cyclings events priority queue (which includes both input and derivations)
     Cycle_PopEvents(selectedBeliefs, selectedBeliefsPriority, &beliefsSelectedCnt, &cycling_belief_events, BELIEF_EVENT_SELECTIONS);

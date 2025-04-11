@@ -223,6 +223,6 @@
 //Eternalization model: 0 None, 1 event-eternal, 2 ALL
 #define ALLOW_ETERNALIZATION 2
 //Whether declarative inference should happen on events
-#define EVENT_EVENT_DECLARATIVE_INFERENCE true
+#define EVENT_EVENT_DECLARATIVE_INFERENCE false
 
 #endif
