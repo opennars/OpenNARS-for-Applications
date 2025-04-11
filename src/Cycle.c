@@ -1032,6 +1032,11 @@ void Cycle_Inference(long currentTime)
                     {
                         eternalize = false;
                     }
+                    Concept *event_concept = Memory_FindConceptByTerm(&e_->term);
+                    if(ALLOW_ETERNALIZATION == 3 && e_->occurrenceTime != OCCURRENCE_ETERNAL && (event_concept == NULL || !event_concept->negativeIsObservable))
+                    {
+                        continue;
+                    }
                     //Check for overlap and apply inference rules
                     if(!Stamp_checkOverlap(&e_->stamp, &belief->stamp) &&
                        !Stamp_hasDuplicate(&e_->stamp) &&

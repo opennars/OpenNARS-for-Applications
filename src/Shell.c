@@ -394,6 +394,17 @@ int Shell_ProcessInput(char *line)
             operations[opID - 1].arguments[opArgID-1] = Narsese_Term(argname);
         }
         else
+        if(!strncmp("*fullyobservable ", line, strlen("*fullyobservable ")))
+        {
+            char narsese[NARSESE_LEN_MAX+1] = {0};
+            narsese[NARSESE_LEN_MAX-1] = 0;
+            sscanf(&line[strlen("*fullyobservable ")], "%" STR(NARSESE_LEN_MAX) "[^\n]", (char*) &narsese);
+            Term term = Narsese_Term(narsese);
+            Concept *c = Memory_Conceptualize(&term, currentTime);
+            c->negativeIsObservable = true;
+            
+        }
+        else
         if(!strncmp("*query ", line, strlen("*query ")))
         {
             double threshold;

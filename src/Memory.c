@@ -401,7 +401,8 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 {
     for(int i=0; !input && i<COMPOUND_TERM_SIZE_MAX; i++)
     {
-        if(Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE1) ||
+        if((ALLOW_ETERNALIZATION == 3 && event->occurrenceTime != OCCURRENCE_ETERNAL) ||
+           Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE1) ||
            Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE2) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE1) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE2) ||
@@ -482,7 +483,16 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
 
 void Memory_AddInputEvent(Event *event, long currentTime)
 {
-    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, event->occurrenceTime == OCCURRENCE_ETERNAL || ALLOW_ETERNALIZATION == 2);
+    bool eternalize = event->occurrenceTime == OCCURRENCE_ETERNAL || ALLOW_ETERNALIZATION == 2;
+    if(ALLOW_ETERNALIZATION == 3)
+    {
+        Concept *pre_existing = Memory_FindConceptByTerm(&event->term);
+        if(pre_existing != NULL && pre_existing->negativeIsObservable)
+        {
+            eternalize = true;
+        }
+    }
+    Memory_AddEvent(event, currentTime, 1, true, false, false, 0, eternalize);
 }
 
 bool Memory_ImplicationValid(Implication *imp)

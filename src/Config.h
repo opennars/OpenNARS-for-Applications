@@ -218,9 +218,9 @@
 #define ALLOW_INTENSIONAL_VAR_INTRO_WITH_PRODUCTS false
 //Allow declarative implication events, 0 NONE, 1 INPUT, 2 ALL
 #define ALLOW_IMPLICATION_EVENTS 1
-//Eternalization model: 0 None, 1 event-eternal, 2 ALL
-#define ALLOW_ETERNALIZATION 0
+//Eternalization model: 0 None, 1 event-eternal, 2 ALL, 3 NONE EXCEPT IF NEG EVIDENCE OF EVENT IS OBSERVABLE
+#define ALLOW_ETERNALIZATION 3
 //Whether declarative inference should happen on events
-#define EVENT_EVENT_DECLARATIVE_INFERENCE false
+#define EVENT_EVENT_DECLARATIVE_INFERENCE true
 
 #endif

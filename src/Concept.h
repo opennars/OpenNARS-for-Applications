@@ -61,6 +61,7 @@ typedef struct {
     long processID2; //avoids duplicate processing
     long processID3; //avoids duplicate processing
     long lastSelectionTime; //for selective temporal compounding
+    bool negativeIsObservable; //whether sensorimotor event has seen a negative
 } Concept;
 
 #endif
