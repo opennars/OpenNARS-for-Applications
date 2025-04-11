@@ -400,11 +400,14 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
 static Term term_restriction = {0};
 void Memory_RestrictDerivationsTo(Term *term) //try to derive a certain target term
 {
-    term_restriction = *term;
     IN_DEBUG( fputs("DERIVATION RESTRICTION SET TO ", stdout); Narsese_PrintTerm(term); puts(""); )
     if(term == NULL)
     {
         term_restriction = (Term) {0};
+    }
+    else
+    {
+        term_restriction = *term;
     }
 }
 
