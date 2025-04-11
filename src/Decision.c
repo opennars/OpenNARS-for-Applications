@@ -33,7 +33,7 @@ int BABBLING_OPS = OPERATIONS_MAX;
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
-    if(CLASSICAL_ANTICIPATION)
+    if(ANTICIPATION_MODE == 2 || ANTICIPATION_CONFIDENCE == 0.0)
     {
         return;
     }

@@ -648,6 +648,10 @@ static Implication Cycle_ReinforceLink(Event *a, Event *b)
     {
         return (Implication) {0};
     }
+    if(ANTICIPATION_MODE == 1 && (a->truth.frequency == 0.0 || b->truth.frequency == 0.0))
+    {
+        return (Implication) {0};
+    }
     Term a_term_nop = Narsese_GetPreconditionWithoutOp(&a->term);
     Concept *A = Memory_FindConceptByTerm(&a_term_nop);
     Concept *B = Memory_FindConceptByTerm(&b->term);

@@ -44,16 +44,16 @@ void NAR_INIT()
 void NAR_Cycles(int cycles)
 {
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
+    Truth negTruth = (Truth) { .frequency = 0.0, .confidence = NAR_DEFAULT_CONFIDENCE };
     for(int i=0; i<cycles; i++)
     {
         //check any concepts that have predicted beliefs of a past occurrence time
-        for(int j=0; CLASSICAL_ANTICIPATION && j<concepts.itemsAmount; j++)
+        for(int j=0; ANTICIPATION_MODE && j<concepts.itemsAmount; j++)
         {
             Concept *c = concepts.items[j].address;
-            if(c->predicted_belief.occurrenceTime == currentTime &&
+            if(c->predicted_belief.occurrenceTime == currentTime && !Variable_hasVariable(&c->predicted_belief.term, true, true, false) &&
                c->belief_spike.occurrenceTime < currentTime) //was predicted for now but did not happen now
             {
-                Truth negTruth = (Truth) { .frequency = 0.0, .confidence = NAR_DEFAULT_CONFIDENCE };
                 Event ev = Event_InputEvent(c->predicted_belief.term, EVENT_TYPE_BELIEF, negTruth, 0, c->predicted_belief.occurrenceTime);
                 Memory_AddInputEvent(&ev, currentTime);
             }

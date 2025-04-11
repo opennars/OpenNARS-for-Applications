@@ -38,8 +38,8 @@
 #define TOP_K_DECLARATIVE_IMPLICATIONS 20
 //When a concept belief was last updated to be used for declarative implication deduction
 #define BELIEF_LAST_USED_TOLERANCE 5
-//Anticipation model (classical anticipation vs. assumption of failure)
-#define CLASSICAL_ANTICIPATION true
+//Anticipation model (0 assumption of failure, 1 hybrid, 2 classical anticipation)
+#define ANTICIPATION_MODE 1
 
 /*---------------------*/
 /* Decision parameters */
