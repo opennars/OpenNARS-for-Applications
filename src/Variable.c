@@ -381,7 +381,7 @@ Term Variable_IntroduceImplicationVariables(Term implication, bool *success, boo
         {
             if(Narsese_copulaEquals(implication.atoms[i], PRODUCT))
             {
-                success = false;
+                *success = false;
                 return (Term) {0};
             }
         }
@@ -398,7 +398,7 @@ Term Variable_IntroduceConjunctionVariables(Term conjunction, bool *success, boo
         {
             if(Narsese_copulaEquals(conjunction.atoms[i], PRODUCT))
             {
-                success = false;
+                *success = false;
                 return (Term) {0};
             }
         }
