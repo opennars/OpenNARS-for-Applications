@@ -46,6 +46,18 @@ void NAR_Cycles(int cycles)
     assert(initialized, "NAR not initialized yet, call NAR_INIT first!");
     for(int i=0; i<cycles; i++)
     {
+        //check any concepts that have predicted beliefs of a past occurrence time
+        for(int j=0; j<concepts.itemsAmount; j++)
+        {
+            Concept *c = concepts.items[j].address;
+            if(c->predicted_belief.occurrenceTime == currentTime &&
+               c->belief_spike.occurrenceTime < currentTime) //was predicted for now but did not happen now
+            {
+                Truth negTruth = (Truth) { .frequency = 0.0, .confidence = 0.9 };
+                Event ev = Event_InputEvent(c->predicted_belief.term, EVENT_TYPE_BELIEF, negTruth, 0, c->predicted_belief.occurrenceTime);
+                Memory_AddInputEvent(&ev, currentTime);
+            }
+        }
         IN_DEBUG( puts("\nNew system cycle:\n----------"); )
         Cycle_Perform(currentTime);
         currentTime++;

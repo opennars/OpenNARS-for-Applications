@@ -33,6 +33,10 @@ int BABBLING_OPS = OPERATIONS_MAX;
 
 static void Decision_AddNegativeConfirmation(Event *precondition, Implication imp, int operationID, Concept *postc)
 {
+    if(ANTICIPATION_CONFIDENCE == 0.0)
+    {
+        return;
+    }
     Implication negative_confirmation = imp;
     Truth TNew = { .frequency = 0.0, .confidence = ANTICIPATION_CONFIDENCE };
     Truth TPast = Truth_Projection(precondition->truth, 0, round(imp.occurrenceTimeOffset));

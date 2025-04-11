@@ -31,7 +31,7 @@
 //Truth expectation needed for anticipation
 #define ANTICIPATION_THRESHOLD_INITIAL 0.501
 //Confidence of anticipation failures
-#define ANTICIPATION_CONFIDENCE_INITIAL 0.01
+#define ANTICIPATION_CONFIDENCE_INITIAL 0.00
 //Anticipate for concrete yet unexperienced outcomes derived from generals
 #define ANTICIPATE_FOR_NOT_EXISTING_SPECIFIC_TEMPORAL_IMPLICATION true
 //Use top-k implication links only (the others can grow / accumulate evidence)
@@ -219,8 +219,8 @@
 //Allow declarative implication events, 0 NONE, 1 INPUT, 2 ALL
 #define ALLOW_IMPLICATION_EVENTS 1
 //Eternalization model: 0 None, 1 event-eternal, 2 ALL
-#define ALLOW_ETERNALIZATION 0
+#define ALLOW_ETERNALIZATION 2
 //Whether declarative inference should happen on events
-#define EVENT_EVENT_DECLARATIVE_INFERENCE false
+#define EVENT_EVENT_DECLARATIVE_INFERENCE true
 
 #endif
