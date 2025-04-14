@@ -273,11 +273,25 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
     Memory_printAddedKnowledge(stamp, implication, EVENT_TYPE_BELIEF, truth, OCCURRENCE_ETERNAL, occurrenceTimeOffset, priority, input, true, revised, controlInfo, false);
 }
 
-void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
+static Concept* ConditionalConceptualize(bool input, Event *event, Term* term, long currentTime)
+{
+    Concept *c = NULL;
+    if(input || event->occurrenceTime == OCCURRENCE_ETERNAL || Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], SEQUENCE))
+    {
+        c = Memory_Conceptualize(term, currentTime);
+    }
+    else
+    {
+        c = Memory_FindConceptByTerm(term);
+    }
+    return c;
+}
+
+bool Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
     if(event->truth.confidence < MIN_CONFIDENCE) //TODO find cause for zero term
     {
-        return;
+        return false;
     }
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
@@ -286,7 +300,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
         //get predicate and add the subject to precondition table as an implication
         Term subject = Term_ExtractSubterm(&event->term, 1);
         Term predicate = Term_ExtractSubterm(&event->term, 2);
-        Concept *target_concept = Memory_Conceptualize(&predicate, currentTime);
+        Concept *target_concept = ConditionalConceptualize(input, event, &predicate, currentTime);
         if(target_concept != NULL)
         {
             target_concept->usage = Usage_use(target_concept->usage, currentTime, eternalInput);
@@ -304,7 +318,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 {
                     if(!Narsese_isExecutableOperation(&potential_op))
                     {
-                        return; //we can't store proc. knowledge of other agents
+                        return false; //we can't store proc. knowledge of other agents
                     }
                     opi = Memory_getOperationID(&potential_op); //"<(a * b) --> ^op>" to ^op index
                     sourceConceptTerm = Narsese_GetPreconditionWithoutOp(&subject); //gets rid of op as MSC links cannot use it
@@ -318,7 +332,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             {
                 sourceConceptTerm = subject;
             }
-            Concept *source_concept = Memory_Conceptualize(&sourceConceptTerm, currentTime);
+            Concept *source_concept = ConditionalConceptualize(input, event, &sourceConceptTerm, currentTime);
             if(source_concept != NULL)
             {
                 source_concept->usage = Usage_use(source_concept->usage, currentTime, eternalInput);
@@ -334,13 +348,25 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                         Memory_printAddedImplication(&revised->stamp, &revised->term, &revised->truth, revised->occurrenceTimeOffset, priority, input, true, true);
                 }
             }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
         }
     }
     bool Exclude = ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 1 && !input) || //only input implications should be events
                    ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 0); //no implications should be events
     if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) && !Exclude)
     {
-        Concept *c = Memory_Conceptualize(&event->term, currentTime);
+        Concept *c = ConditionalConceptualize(input, event, &event->term, currentTime);
+        if(c == NULL)
+        {
+            return false;
+        }
         if(c != NULL)
         {
             bool isContinuousPropertyStatement = Narsese_copulaEquals(event->term.atoms[0], HAS_CONTINUOUS_PROPERTY) && !Narsese_copulaEquals(event->term.atoms[1], PRODUCT);
@@ -375,7 +401,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
                 c->predicted_belief.creationTime = currentTime;
             }
             bool revision_happened = false;
-            if(eternalize)
+            if(eternalize)// && (event->occurrenceTime == OCCURRENCE_ETERNAL || c->belief.type != EVENT_TYPE_DELETED))// && (ALLOW_ETERNALIZATION != 1 || c->belief.type != EVENT_TYPE_DELETED))
             {
                 //fputs("!!!", stdout); Narsese_PrintTerm(&c->belief.term); puts("");
                 c->belief = Inference_RevisionAndChoice(&c->belief, &eternal_event, currentTime, &revision_happened);
@@ -395,6 +421,7 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
             }
         }
     }
+    return true;
 }
 
 static Term term_restriction = {0};
@@ -491,7 +518,6 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
     bool addedToCyclingEventsQueue = false;
     if(event->type == EVENT_TYPE_BELIEF)
     {
-        
         if(!Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION))
         {
             bool Exclude = ((Narsese_copulaEquals(event->term.atoms[0], IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], EQUIVALENCE)) && ALLOW_IMPLICATION_EVENTS == 1 && !input) || //only input implications should be events
@@ -500,7 +526,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
             {
                 if(!Stamp_hasDuplicate(&event->stamp) && (input || !Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION)))
                 {
-                    addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+                    Concept *c = Memory_FindConceptByTerm(&event->term);
+                    if(c != NULL || input) //only add if a concept of it had been created
+                    {
+                        addedToCyclingEventsQueue = Memory_addCyclingEvent(event, priority, currentTime, layer);
+                    }
                 }
             }
         }
