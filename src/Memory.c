@@ -397,14 +397,54 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     }
 }
 
+static Term term_restriction = {0};
+void Memory_RestrictDerivationsTo(Term *term) //try to derive a certain target term
+{
+    IN_DEBUG( fputs("DERIVATION RESTRICTION SET TO ", stdout); Narsese_PrintTerm(term); puts(""); )
+    if(term == NULL)
+    {
+        term_restriction = (Term) {0};
+    }
+    else
+    {
+        term_restriction = *term;
+    }
+}
+
 void Memory_AddEvent(Event *event, long currentTime, double priority, bool input, bool derived, bool revised, int layer, bool eternalize)
 {
-    for(int i=0; !input && i<COMPOUND_TERM_SIZE_MAX; i++)
+    if(term_restriction.atoms[0])
     {
-        if(Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE1) ||
-           Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE2) ||
-           Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE1) ||
-           Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE2) ||
+        if(!Variable_Unify(&term_restriction, &event->term).success)
+        {
+            return;
+        }
+        else
+        {
+            IN_DEBUG( fputs("DERIVED CONCRETELY ", stdout); Narsese_PrintTerm(&event->term); puts(""); )
+        }
+    }
+    bool conceptHasToExist = false;
+    if(Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION))
+    {
+        for(int i=0; !input && i<COMPOUND_TERM_SIZE_MAX; i++)
+        {
+            if(Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE1) ||
+               Narsese_copulaEquals(event->term.atoms[i], INT_IMAGE2) ||
+               Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE1) ||
+               Narsese_copulaEquals(event->term.atoms[i], EXT_IMAGE2))
+            {
+                conceptHasToExist = true;
+                break;
+            }
+        }
+    }
+    for(int i=0; !term_restriction.atoms[0] && !input && (event->stamp.evidentialBase[1] != STAMP_FREE || event->occurrenceTime != OCCURRENCE_ETERNAL) && i<COMPOUND_TERM_SIZE_MAX; i++)
+    {
+        if(Narsese_copulaEquals(event->term.atoms[1], INT_IMAGE1) || Narsese_copulaEquals(event->term.atoms[2], INT_IMAGE1) ||
+           Narsese_copulaEquals(event->term.atoms[1], INT_IMAGE2) || Narsese_copulaEquals(event->term.atoms[2], INT_IMAGE2) ||
+           Narsese_copulaEquals(event->term.atoms[1], EXT_IMAGE1) || Narsese_copulaEquals(event->term.atoms[2], EXT_IMAGE1) ||
+           Narsese_copulaEquals(event->term.atoms[1], EXT_IMAGE2) || Narsese_copulaEquals(event->term.atoms[2], EXT_IMAGE2) ||
            Narsese_copulaEquals(event->term.atoms[i], EXT_DIFFERENCE) ||
            Narsese_copulaEquals(event->term.atoms[i], INT_DIFFERENCE) ||
            //(i*2+1 < COMPOUND_TERM_SIZE_MAX && Narsese_copulaEquals(event->term.atoms[i], EXT_SET) && event->term.atoms[i*2+1] && event->term.atoms[i*2+1] != Narsese_CopulaIndex(SET_TERMINATOR)) ||
@@ -414,13 +454,11 @@ void Memory_AddEvent(Event *event, long currentTime, double priority, bool input
            ((Variable_isDependentVariable(event->term.atoms[i]) || event->occurrenceTime != OCCURRENCE_ETERNAL) && Narsese_copulaEquals(event->term.atoms[0], CONJUNCTION))
            )
         {
-            if(Memory_FindConceptByTerm(&event->term) == NULL)
-            {
-                return;
-            }
+            conceptHasToExist = true;
+            break;
         }
     }
-    if(!event->term.atoms[0]) //todo find where it happens
+    if(conceptHasToExist && Memory_FindConceptByTerm(&event->term) == NULL)
     {
         return;
     }
