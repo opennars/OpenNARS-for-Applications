@@ -275,7 +275,7 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 
 void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priority, bool input, bool eternalize)
 {
-    if(event->truth.confidence < MIN_CONFIDENCE) //TODO find cause for zero term
+    if(event->truth.confidence < MIN_CONFIDENCE)
     {
         return;
     }
