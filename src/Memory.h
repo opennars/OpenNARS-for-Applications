@@ -109,5 +109,7 @@ void Memory_printAddedImplication(Stamp *stamp, Term *implication, Truth *truth,
 int Memory_getOperationID(Term *term);
 //Get temporal link truth value
 Truth Memory_getTemporalLinkTruth(Term *precondition, Term *postcondition);
+//Derivations restrictions from goal derivation
+void Memory_RestrictDerivationsTo(Term *term);
 
 #endif
