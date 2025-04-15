@@ -489,7 +489,9 @@ static void Cycle_DeclarativeGoalReasoning(Event *goal, double priority, int lay
                     if(!Stamp_checkOverlap(&e->stamp, &belief->stamp))
                     {
                         Stamp stamp = Stamp_make(&e->stamp, &belief->stamp);
+                        Memory_RestrictDerivationsTo(&goal->term);
                         RuleTable_Apply(e->term, belief->term, e->truth, belief->truth, e->occurrenceTime, e->occurrenceTimeOffset, stamp, currentTime, priority, 1.0, true, c, c->id, true);
+                        Memory_RestrictDerivationsTo(NULL);
                         Concept *conc = Memory_FindConceptByTerm(&goal->term);
                         if(conc != NULL && conc->belief_spike.type != EVENT_TYPE_DELETED &&
                            currentTime - conc->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
