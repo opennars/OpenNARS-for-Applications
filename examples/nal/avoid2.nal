@@ -22,5 +22,5 @@ a. :|:
 a. :|:
 T! :|: {0.0 0.99}
 G! :|:
-//expected: ^right executed with args
+//--expected: ^right executed with args
 
