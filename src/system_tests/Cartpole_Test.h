@@ -81,6 +81,7 @@ void NAR_Cartpole(long iterations)
         else
         if(angle >= 0 && angle <= PI)
         {
+            NAR_AddInputNarsese("good. :|: %0%");
             failures += 1.0;
         }
         char str[20] = {0};

@@ -134,5 +134,7 @@ bool Narsese_hasAtomValue(Atom atom);
 double Narsese_getAtomValue(Atom atom);
 //Sequence length
 int Narsese_SequenceLength(Term *sequence);
+//get atoms utilized
+int Narsese_CountAtomsUsed();
 
 #endif

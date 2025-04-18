@@ -83,6 +83,7 @@ void Stats_Print(long currentTime)
         goal_events_cnt += cycling_goal_events[layer].itemsAmount;
     }
     printf("current goal events cnt:\t\t%d\n", goal_events_cnt);
+    printf("Count atomic terms used:\t\t%d\n", Narsese_CountAtomsUsed());
     printf("current average belief event priority:\t%f\n", Stats_averageBeliefEventPriority);
     printf("current average goal event priority:\t%f\n", Stats_averageGoalEventPriority);
     printf("Maximum chain length in concept hashtable: %d\n", HashTable_MaximumChainLength(&HTconcepts));
