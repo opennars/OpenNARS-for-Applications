@@ -296,6 +296,11 @@ VMItem HTatoms_storage[ATOMS_MAX];
 VMItem* HTatoms_HT[ATOMS_HASHTABLE_BUCKETS];
 int term_index = 0;
 
+int Narsese_CountAtomsUsed()
+{
+    return term_index;
+}
+
 //Returns the memoized index of an already seen atomic term
 int Narsese_AtomicTermIndex(char *name)
 {
