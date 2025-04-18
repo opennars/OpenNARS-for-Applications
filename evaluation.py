@@ -149,8 +149,8 @@ print("\nNarsese integration tests successful!")
 QuestionsTotalGlobalTemp = QuestionsTotalGlobal
 
 #Evaluate tests & performance English examples:
-#for filename in sorted(glob.glob('./examples/english/*.english')):
-#    Test(filename, subprocess.getoutput("python3 english_to_narsese.py EventOutput quiet < " + filename + " | ./NAR shell"))
+for filename in sorted(glob.glob('./examples/english/*.english')):
+    Test(filename, subprocess.getoutput("python3 english_to_narsese.py EventOutput quiet < " + filename + " | ./NAR shell"))
 if QuestionsTotalGlobal == QuestionsTotalGlobalTemp:
     print("\nEnglish integration tests skipped, install python3 and nltk to include them in the evaluation!")
 else:
