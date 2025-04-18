@@ -135,15 +135,15 @@
 //Maximum size of the stamp in terms of evidential base id's
 #define STAMP_SIZE 10
 //Maximum Implication table size
-#define TABLE_SIZE 20
+#define TABLE_SIZE 120
 //Maximum compound term size
 #define COMPOUND_TERM_SIZE_MAX 64
 //Max. amount of atomic terms, must be <= 2^(sizeof(Atom)*8)
-#define ATOMS_MAX 65536
+#define ATOMS_MAX 255
 //Amount of buckets for atoms hashmap
 #define ATOMS_HASHTABLE_BUCKETS ATOMS_MAX
 //The type of an atom
-#define Atom unsigned short
+#define Atom unsigned char
 //Maximum size of atomic terms in terms of characters
 #define ATOMIC_TERM_LEN_MAX 32
 //Maximum size of Narsese input in terms of characters
@@ -197,7 +197,7 @@
 //Filtering sub-statement terms with variables and atoms both like (&, $1, a)
 #define TERMS_WITH_VARS_AND_ATOMS_FILTER true
 //Use functional equivalence
-#define FUNCTIONAL_EQUIVALENCE true
+#define FUNCTIONAL_EQUIVALENCE false
 //Whether to derive functional equivalences without variables too
 #define FUNCTIONAL_EQUIVALENCE_SPECIFIC true
 //Whether functional equivalences can only be dervived between sequences of equal length
