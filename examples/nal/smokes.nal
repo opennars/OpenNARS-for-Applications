@@ -1,0 +1,33 @@
+*volume=0
+
+<<$1 --> [smokes]> ==> <$1 --> [cancerous]>>. %0.6%
+<(<#1 --> [smokes]> && <($1 * #1) --> friend>) ==> <$1 --> [smokes]>>.
+<(<#1 --> [smokes]> && <(#1 * $1) --> friend>) ==> <$1 --> [smokes]>>.
+
+<({Anna} * {Bob}) --> friend>.
+<({Anna} * {Edward}) --> friend>.
+<({Anna} * {Frank}) --> friend>.
+<({Edward} * {Frank}) --> friend>.
+<({Gary} * {Helen}) --> friend>.
+<({Gary} * {Frank}) --> friend>. %0%
+<{Anna} --> [smokes]>.
+<{Edward} --> [smokes]>.
+
+100
+
+<{Edward} --> [cancerous]>?
+//expected: Answer: <{Edward} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.497447
+<{Anna} --> [cancerous]>?
+//expected: Answer: <{Anna} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.489412
+<{Bob} --> [cancerous]>?
+//expected: Answer: <{Bob} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.396423
+<{Frank} --> [cancerous]>?
+//expected: Answer: <{Frank} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.402932
+<{Gary} --> [cancerous]>?
+//expected: Answer: <{Gary} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.200353
+<{Helen} --> [cancerous]>?
+//expected: Answer: <{Helen} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.162286
+100
+
+<?1 --> [cancerous]>?
+//expected: Answer: <{Edward} --> [cancerous]>. Truth: frequency=0.600000, confidence=0.497447
