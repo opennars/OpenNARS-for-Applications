@@ -67,3 +67,8 @@ void mysrand(unsigned int seed)
 {
    next = seed;
 }
+
+double mylog2(double n)
+{
+    return log(n) / log(2);
+}

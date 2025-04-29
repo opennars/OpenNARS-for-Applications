@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include "./../Shell.h"
 
 bool NAR_Bandrobot_Left_executed = false;
 double NAR_Bandrobot_amount;

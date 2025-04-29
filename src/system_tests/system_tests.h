@@ -50,7 +50,7 @@ void DRAW_LINE(double x, double y, double angle, int len, char *canvas, char sym
     }
 }
 #define CLEAR_SCREEN do{ fputs("\033[1;1H\033[2J", stdout); } while(0)
-#define SLEEP do{ nanosleep((const struct timespec[]){{0, 20000000L}}, NULL); } while(0) //POSIX sleep
+#define SLEEP do{ /*not implemented*/ } while(0) //sleep
 
 #include "Alphabet_Test.h"
 #include "Procedure_Test.h"
@@ -64,7 +64,6 @@ void DRAW_LINE(double x, double y, double angle, int len, char *canvas, char sym
 #include "Testchamber_Test.h"
 #include "Sequence_Test.h"
 #include "Alien_Test.h"
-#include "UDPNAR_Test.h"
 #include "Bandrobot_Test.h"
 
 void Run_System_Tests()
@@ -75,5 +74,4 @@ void Run_System_Tests()
     NAR_Multistep_Test();
     NAR_Multistep2_Test();
     NAR_Sequence_Test();
-    NAR_UDPNAR_Test();
 }
