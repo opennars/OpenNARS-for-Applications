@@ -312,13 +312,13 @@ static Decision Decision_ConsiderNegativeOutcomes(Decision decision)
     //1. discount decision based on negative outcomes via revision
     for(int i=0; i<concepts.itemsAmount; i++)
     {
-        Concept *c = concepts.items[i].address;
+        Concept *c = (Concept*) concepts.items[i].address;
         if(c->goal_spike.type != EVENT_TYPE_DELETED && (currentTime - c->goal_spike.occurrenceTime) < NEG_GOAL_AGE_MAX)
         {
             for(int j=0; j<c->precondition_beliefs[decision.operationID[0]].itemsAmount; j++)
             {
                 Implication imp = c->precondition_beliefs[decision.operationID[0]].array[j];
-                Concept *prec = imp.sourceConcept;
+                Concept *prec = (Concept*) imp.sourceConcept;
                 if(prec->belief_spike.type != EVENT_TYPE_DELETED && currentTime - prec->belief_spike.occurrenceTime < EVENT_BELIEF_DISTANCE)
                 {
                     Term imp_subject = Term_ExtractSubterm(&imp.term, 1);
@@ -353,7 +353,7 @@ static Decision Decision_ConsiderImplication(long currentTime, Event *goal, Impl
         puts("");
     )
     //now look at how much the precondition is fulfilled
-    Concept *prec = imp->sourceConcept;
+    Concept *prec = (Concept*) imp->sourceConcept;
     Event *precondition = &prec->belief_spike; //a. :|:
     if(precondition != NULL)
     {
@@ -440,7 +440,7 @@ Decision Decision_BestCandidate(Concept *goalconcept, Event *goal, long currentT
                     Term left_side = Narsese_GetPreconditionWithoutOp(&left_side_with_op); //might be something like <#1 --> a>
                     for(int cmatch_k=0; cmatch_k<concepts.itemsAmount; cmatch_k++)
                     {
-                        Concept *cmatch = concepts.items[cmatch_k].address;
+                        Concept *cmatch = (Concept*) concepts.items[cmatch_k].address;
                         if(!Variable_hasVariable(&cmatch->term, true, true, true) && cmatch->belief_spike.type != EVENT_TYPE_DELETED)
                         {
                             Substitution subs2 = Variable_UnifyWithAnalogy(cmatch->belief_spike.truth, &left_side, &cmatch->term);
@@ -558,7 +558,7 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
     assert(operationID >= 0 && operationID <= OPERATIONS_MAX, "Wrong operation id, did you inject an event manually?");
     for(int j=0; j<concepts.itemsAmount; j++)
     {
-        Concept *postc = concepts.items[j].address;
+        Concept *postc = (Concept*) concepts.items[j].address;
         Implication valid_implications[TABLE_SIZE*2] = {0};
         int k=0;
         if(!declarative)
@@ -602,13 +602,13 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                     continue;
                 }
             }
-            Concept *current_prec = imp.sourceConcept;
+            Concept *current_prec = (Concept*) imp.sourceConcept;
             Term ImpPreconWithOp = Term_ExtractSubterm(&imp.term, 1);
             Term ImpPrecon = Narsese_GetPreconditionWithoutOp(&ImpPreconWithOp);
             //fputs("TRIED IMPL: ", stdout); Narsese_PrintTerm(&imp.term); puts("");
             for(int u=0; u<concepts.itemsAmount; u++)
             {
-                Concept *cP = concepts.items[u].address;
+                Concept *cP = (Concept*) concepts.items[u].address;
                 if(Variable_hasVariable(&cP->term, true, true, true))
                 {
                     continue;
