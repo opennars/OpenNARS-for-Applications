@@ -279,6 +279,84 @@ void Memory_ProcessNewBeliefEvent(Event *event, long currentTime, double priorit
     {
         return;
     }
+    //build implication links from inheritance:
+    //<a --> b>
+    //|-
+    //<<b --> $1> ==> <a --> $1>>
+    //<<$1 --> a> ==> <$1 --> b>>
+    if(Narsese_copulaEquals(event->term.atoms[0], INHERITANCE) && event->occurrenceTime == OCCURRENCE_ETERNAL)
+    {
+        Truth dummy = {0};
+        Term a = Term_ExtractSubterm(&event->term, 1);
+        Term b = Term_ExtractSubterm(&event->term, 2);
+        Term VAR = Narsese_AtomicTerm("$1");
+        bool success = true;
+        //<b --> $1>:
+        Term b_D1 = {0};
+        b_D1.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+        success &= Term_OverrideSubterm(&b_D1, 1, &b);
+        success &= Term_OverrideSubterm(&b_D1, 2, &VAR);
+        //<a --> $1>:
+        Term a_D1 = {0};
+        a_D1.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+        success &= Term_OverrideSubterm(&a_D1, 1, &a);
+        success &= Term_OverrideSubterm(&a_D1, 2, &VAR);
+        //<$1 --> b>:
+        Term D1_b = {0};
+        D1_b.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+        success &= Term_OverrideSubterm(&D1_b, 1, &VAR);
+        success &= Term_OverrideSubterm(&D1_b, 2, &b);
+        //<$1 --> a>:
+        Term D1_a = {0};
+        D1_a.atoms[0] = Narsese_CopulaIndex(INHERITANCE);
+        success &= Term_OverrideSubterm(&D1_a, 1, &VAR);
+        success &= Term_OverrideSubterm(&D1_a, 2, &a);
+        //EXT:
+        Term EXTIMP = {0};
+        EXTIMP.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&EXTIMP, 1, &b_D1);
+        success &= Term_OverrideSubterm(&EXTIMP, 2, &a_D1);
+        Term EXTIMPR = {0};
+        EXTIMPR.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&EXTIMPR, 1, &a_D1);
+        success &= Term_OverrideSubterm(&EXTIMPR, 2, &b_D1);
+        //INT
+        Term INTIMP = {0};
+        INTIMP.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&INTIMP, 1, &D1_a);
+        success &= Term_OverrideSubterm(&INTIMP, 2, &D1_b);
+        Term INTIMPR = {0};
+        INTIMPR.atoms[0] = Narsese_CopulaIndex(IMPLICATION);
+        success &= Term_OverrideSubterm(&INTIMPR, 1, &D1_b);
+        success &= Term_OverrideSubterm(&INTIMPR, 2, &D1_a);
+        //OK derive
+        if(success)
+        {
+            Truth TR = Truth_Conversion(event->truth, dummy);
+            {
+                Event e_EXTIMP = *event;
+                e_EXTIMP.term = EXTIMP;
+                Memory_ProcessNewBeliefEvent(&e_EXTIMP, currentTime, priority, input, eternalize);
+            }
+            {
+                Event e_EXTIMPR = *event;
+                e_EXTIMPR.term = EXTIMPR;
+                e_EXTIMPR.truth = TR;
+                Memory_ProcessNewBeliefEvent(&e_EXTIMPR, currentTime, priority, input, eternalize);
+            }
+            {
+                Event e_INTIMP = *event;
+                e_INTIMP.term = INTIMP;
+                Memory_ProcessNewBeliefEvent(&e_INTIMP, currentTime, priority, input, eternalize);
+            }
+            {
+                Event e_INTIMPR = *event;
+                e_INTIMPR.term = INTIMPR;
+                e_INTIMPR.truth = TR;
+                Memory_ProcessNewBeliefEvent(&e_INTIMPR, currentTime, priority, input, eternalize);
+            }
+        }
+    }
     bool eternalInput = input && event->occurrenceTime == OCCURRENCE_ETERNAL;
     Event eternal_event = Event_Eternalized(event);
     if(eternalize && (Narsese_copulaEquals(event->term.atoms[0], TEMPORAL_IMPLICATION) || Narsese_copulaEquals(event->term.atoms[0], IMPLICATION)))
