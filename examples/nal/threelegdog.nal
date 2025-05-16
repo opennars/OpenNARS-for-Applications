@@ -1,0 +1,19 @@
+<{fido} --> dog>.
+<{snoopy} --> dog>.
+<dog --> animal>.
+<(dog * 4) --> has_leg>.
+<({fido} * 3) --> has_leg>.
+<(chicken * 2) --> has_leg>.
+<chicken --> animal>.
+100
+
+<({fido} * ?1) --> has_leg>?
+//expected: Answer: <({fido} * 3) --> has_leg>. Truth: frequency=1.000000, confidence=0.900000
+<({snoopy} * ?1) --> has_leg>?
+//expected: Answer: <({snoopy} * 4) --> has_leg>. Truth: frequency=1.000000, confidence=0.810000
+<(dog * ?1) --> has_leg>?
+//expected: Answer: <(dog * 4) --> has_leg>. Truth: frequency=1.000000, confidence=0.900000
+<(animal * 2) --> has_leg>?
+//expected: Answer: <(animal * 2) --> has_leg>. Truth: frequency=1.000000, confidence=0.447514
+<(animal * 4) --> has_leg>?
+//expected: Answer: <(animal * 4) --> has_leg>. Truth: frequency=1.000000, confidence=0.447514
