@@ -662,6 +662,11 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                             Substitution subseternal = Variable_Unify(&current_prec->term, &prec_eternal->term);
                             if(subsevent.success || subseternal.success)
                             {
+                                bool negation = false;
+                                goto HANDLE_NONEGATION;
+                                HANDLE_NEGATION:
+                                negation = true;
+                                HANDLE_NONEGATION:
                                 if(subsevent.success && (Narsese_copulaEquals(imp.term.atoms[0], IMPLICATION) || Truth_Expectation(resultevent.truth) > ANTICIPATION_THRESHOLD || (resultevent.truth.confidence < SUBSUMPTION_CONFIDENCE_THRESHOLD && resultevent.truth.frequency == 0.0))) //also allow for failing derived implications to subsume
                                 {
                                     if(Narsese_copulaEquals(imp.term.atoms[0], TEMPORAL_IMPLICATION))
@@ -767,6 +772,29 @@ void Decision_Anticipate(int operationID, Term opTerm, bool declarative, long cu
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                                if(!negation)
+                                {
+                                    bool gotoNegation = false;
+                                    Truth dummy = {0};
+                                    if(Narsese_copulaEquals(resulteternal.term.atoms[0], NEGATION))
+                                    {
+                                        Term negatedTerm = Term_ExtractSubterm(&resulteternal.term, 1);
+                                        resulteternal.term = negatedTerm;
+                                        resulteternal.truth = Truth_Negation(resulteternal.truth, dummy);
+                                        gotoNegation = true;
+                                    }
+                                    if(Narsese_copulaEquals(resultevent.term.atoms[0], NEGATION))
+                                    {
+                                        Term negatedTerm = Term_ExtractSubterm(&resultevent.term, 1);
+                                        resultevent.term = negatedTerm;
+                                        resultevent.truth = Truth_Negation(resultevent.truth, dummy);
+                                        gotoNegation = true;
+                                    }
+                                    if(gotoNegation)
+                                    {
+                                        goto HANDLE_NEGATION;
                                     }
                                 }
                             }

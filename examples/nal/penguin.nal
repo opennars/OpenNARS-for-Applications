@@ -1,0 +1,11 @@
+<pingu --> penguin>.
+<sam --> raven>.
+<<$1 --> penguin> ==> (! <$1 --> [fly]>)>.
+<raven --> bird>.
+<penguin --> bird>.
+<bird --> [fly]>.
+100
+<sam --> [fly]>?
+//expected: Answer: <sam --> [fly]>. Truth: frequency=1.000000, confidence=0.729000
+<pingu --> [fly]>?
+//expected: Answer: <pingu --> [fly]>. Truth: frequency=0.000000, confidence=0.810000
