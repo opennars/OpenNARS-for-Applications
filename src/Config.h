@@ -38,6 +38,8 @@
 #define TOP_K_DECLARATIVE_IMPLICATIONS 20
 //When a concept belief was last updated to be used for declarative implication deduction
 #define BELIEF_LAST_USED_TOLERANCE 5
+//Anticipation model (0 assumption of failure, 1 hybrid, 2 classical anticipation)
+#define ANTICIPATION_MODE 1
 
 /*---------------------*/
 /* Decision parameters */
@@ -219,8 +221,8 @@
 //Allow declarative implication events, 0 NONE, 1 INPUT, 2 ALL
 #define ALLOW_IMPLICATION_EVENTS 1
 //Eternalization model: 0 None, 1 event-eternal, 2 ALL
-#define ALLOW_ETERNALIZATION 0
+#define ALLOW_ETERNALIZATION 2
 //Whether declarative inference should happen on events
-#define EVENT_EVENT_DECLARATIVE_INFERENCE false
+#define EVENT_EVENT_DECLARATIVE_INFERENCE true
 
 #endif
