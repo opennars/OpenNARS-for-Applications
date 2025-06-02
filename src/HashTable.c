@@ -28,7 +28,7 @@ void *HashTable_Get(HashTable *hashtable, void *key)
 {
     HASH_TYPE keyhash = hashtable->hash(key) % hashtable->buckets;
     VMItem *item = hashtable->HT[keyhash];
-    for(; item!=NULL; item=item->next)
+    for(; item!=NULL; item=(VMItem*) item->next)
     {
         if(hashtable->equal(item->key, key))
         {
@@ -56,11 +56,11 @@ void HashTable_Set(HashTable *hashtable, void *key, void *value)
             if(item->next == NULL)
                 break;
             else
-                item=item->next;
+                item=(VMItem*) item->next;
         }
     }
     //Retrieve recycled VMItem from the stack and set its value to c
-    VMItem *popped = Stack_Pop(&hashtable->VMStack);
+    VMItem *popped = (VMItem*) Stack_Pop(&hashtable->VMStack);
     popped->value = value;
     popped->key = key;
     popped->next = NULL;
@@ -90,7 +90,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
         return;
     }
     //If there is more than 1 item, we have to remove the item from chain, relinking previous to next
-    for(; item!=NULL; previous=item, item=item->next)
+    for(; item!=NULL; previous=item, item=(VMItem*) item->next)
     {
         //item found?
         if(hashtable->equal(item->key, key))
@@ -98,7 +98,7 @@ void HashTable_Delete(HashTable *hashtable, void *key)
             //remove item and return
             if(previous == NULL)
             {
-                hashtable->HT[keyhash] = item->next;
+                hashtable->HT[keyhash] = (VMItem*) item->next;
             }
             else
             {
@@ -140,7 +140,7 @@ int HashTable_MaximumChainLength(HashTable *hashtable)
     {
         VMItem *item = hashtable->HT[i];
         int cnt = 0;
-        for(;item != NULL; item=item->next, cnt++);
+        for(;item != NULL; item=(VMItem*) item->next, cnt++);
         maxlen = MAX(maxlen, cnt);
     }
     return maxlen;

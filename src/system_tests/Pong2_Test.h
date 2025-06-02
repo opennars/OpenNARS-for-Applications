@@ -23,19 +23,19 @@
  */
 
 bool NAR_Pong_Left_executed = false;
-Feedback NAR_Pong_Left()
+Feedback NAR_Pong_Left(Term args)
 {
     NAR_Pong_Left_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Pong_Right_executed = false;
-Feedback NAR_Pong_Right()
+Feedback NAR_Pong_Right(Term args)
 {
     NAR_Pong_Right_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Pong_Stop_executed = false;
-Feedback NAR_Pong_Stop()
+Feedback NAR_Pong_Stop(Term args)
 {
     NAR_Pong_Stop_executed = true;
     return (Feedback) {0};

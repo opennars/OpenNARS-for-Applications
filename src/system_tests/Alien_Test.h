@@ -23,21 +23,21 @@
  */
 
 bool NAR_Alien_Left_executed = false;
-Feedback NAR_Alien_Left()
+Feedback NAR_Alien_Left(Term args)
 {
     puts("NAR invoked left");
     NAR_Alien_Left_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Alien_Right_executed = false;
-Feedback NAR_Alien_Right()
+Feedback NAR_Alien_Right(Term args)
 {
     puts("NAR invoked right");
     NAR_Alien_Right_executed = true;
     return (Feedback) {0};
 }
 bool NAR_Alien_Shoot_executed = false;
-Feedback NAR_Alien_Shoot()
+Feedback NAR_Alien_Shoot(Term args)
 {
     puts("NAR invoked shoot");
     NAR_Alien_Shoot_executed = true;
